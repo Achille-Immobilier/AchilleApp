@@ -1046,6 +1046,65 @@ body.lex-admin-editing .lex-save-btn{display:block;}
 .ec-modal-lock svg{width:10px;height:10px;stroke:var(--gris-2);fill:none;stroke-width:2;}
 .ec-modal-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:20px;padding-top:14px;border-top:1px solid var(--border);}
 
+
+/* ── Dossier Notaire ── */
+.notaire-bloc-title{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:700;color:var(--kaki);margin-bottom:16px;margin-top:28px;padding-bottom:8px;border-bottom:2px solid var(--kaki-p);}
+.notaire-section-title{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--terra);margin-bottom:10px;margin-top:18px;}
+.notaire-checklist{display:flex;flex-direction:column;gap:7px;margin-bottom:4px;}
+.notaire-checklist label{display:flex;align-items:flex-start;gap:10px;font-size:13px;cursor:pointer;line-height:1.5;}
+.notaire-checklist input[type=checkbox]{accent-color:var(--terra);width:15px;height:15px;flex-shrink:0;margin-top:2px;}
+.notaire-alert{padding:8px 12px;border-radius:5px;font-size:12px;font-style:italic;margin-top:8px;margin-bottom:4px;}
+.notaire-alert-terra{background:var(--terra-p);color:var(--terra);}
+.notaire-alert-red{background:rgba(160,50,34,.08);color:var(--rouge);}
+
+/* ── Onglets Lexique ── */
+.lex-tabs{display:flex;gap:0;border-bottom:2px solid var(--beige-2);padding:0 22px;background:var(--blanc);flex-shrink:0;}
+.lex-tab-btn{padding:10px 20px;border:none;background:transparent;font-family:'Jost',sans-serif;font-size:12px;font-weight:500;color:var(--gris);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .2s;}
+.lex-tab-btn.active{color:var(--terra);border-bottom-color:var(--terra);font-weight:600;}
+.lex-tab-btn:hover:not(.active){color:var(--noir);}
+#lex-panel-definitions{display:flex;flex-direction:column;flex:1;overflow:hidden;}
+#lex-panel-definitions.hidden{display:none;}
+#lex-panel-caspratiques{display:none;flex-direction:column;flex:1;min-height:0;overflow:hidden;}
+#lex-panel-caspratiques.active{display:flex;}
+.lex-cp-link{display:inline-block;margin-left:6px;color:var(--terra);font-size:13px;cursor:pointer;opacity:.7;transition:opacity .15s;}
+.lex-cp-link:hover{opacity:1;}
+/* ── Cas pratiques ── */
+.cp-page{display:flex;flex-direction:column;flex:1;min-height:0;overflow:hidden;}
+.cp-toolbar{background:var(--blanc);border-bottom:1px solid var(--border);padding:8px 22px;display:flex;align-items:center;gap:10px;flex-shrink:0;}
+.cp-add-btn{padding:7px 16px;border-radius:5px;background:var(--terra);color:#fff;border:none;font-family:'Jost',sans-serif;font-size:11px;font-weight:500;cursor:pointer;}
+.cp-add-btn:hover{background:var(--terra-l);}
+.cp-list{flex:1;overflow-y:auto;padding:20px 24px;display:flex;flex-direction:column;gap:14px;}
+.cp-list::-webkit-scrollbar{width:5px;}
+.cp-list::-webkit-scrollbar-thumb{background:var(--beige-3);border-radius:3px;}
+.cp-card{background:var(--blanc);border:1px solid var(--border);border-radius:8px;box-shadow:0 1px 4px rgba(0,0,0,.05);}
+.cp-card-head{display:flex;align-items:center;gap:10px;padding:13px 16px;cursor:pointer;background:var(--beige);border-bottom:1px solid var(--beige-2);}
+.cp-card-head:hover{background:var(--beige-2);}
+.cp-card-title{font-family:'Cormorant Garamond',serif;font-size:17px;font-weight:700;color:var(--noir);flex:1;}
+.cp-card-toggle{font-size:11px;color:var(--gris);transition:transform .2s;}
+.cp-card-toggle.open{transform:rotate(180deg);}
+.cp-card-body{display:none;padding:16px;}
+.cp-card-body.open{display:block;}
+.cp-section{margin-bottom:14px;}
+.cp-section-title{font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--terra);margin-bottom:6px;}
+.cp-section-content{font-size:13px;color:var(--noir);line-height:1.6;background:var(--beige);border-radius:5px;padding:10px 12px;white-space:pre-wrap;}
+.cp-keyphrase{background:rgba(180,115,96,.12);border-left:3px solid var(--terra);border-radius:0 5px 5px 0;padding:10px 14px;font-size:13px;font-style:italic;color:var(--noir);line-height:1.5;}
+.cp-card-actions{display:flex;gap:6px;margin-left:auto;}
+.cp-btn-edit{padding:4px 10px;border-radius:4px;border:1px solid var(--border);background:transparent;font-size:11px;color:var(--gris);cursor:pointer;}
+.cp-btn-edit:hover{background:var(--beige);color:var(--noir);}
+.cp-btn-del{padding:4px 10px;border-radius:4px;border:none;background:transparent;font-size:11px;color:var(--rouge);cursor:pointer;}
+.cp-empty{text-align:center;padding:60px 20px;color:var(--gris);font-size:13px;}
+.cp-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:500;display:none;align-items:center;justify-content:center;}
+.cp-modal-overlay.open{display:flex;}
+.cp-modal{background:var(--blanc);border-radius:10px;width:640px;max-width:95vw;max-height:88vh;overflow-y:auto;padding:28px 32px;box-shadow:0 8px 40px rgba(0,0,0,.18);}
+.cp-modal-title{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:700;color:var(--noir);margin-bottom:20px;}
+.cp-modal label{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--gris);display:block;margin-bottom:4px;margin-top:12px;}
+.cp-modal input,.cp-modal textarea{width:100%;padding:9px 12px;border:1.5px solid var(--beige-2);border-radius:5px;font-family:'Jost',sans-serif;font-size:13px;color:var(--noir);background:var(--blanc);box-sizing:border-box;resize:vertical;}
+.cp-modal input:focus,.cp-modal textarea:focus{outline:none;border-color:var(--terra);}
+.cp-modal-btns{display:flex;gap:8px;justify-content:flex-end;margin-top:20px;}
+.cp-modal-save{padding:8px 20px;border-radius:5px;background:var(--terra);color:#fff;border:none;font-family:'Jost',sans-serif;font-size:12px;font-weight:500;cursor:pointer;}
+.cp-modal-save:hover{background:var(--terra-l);}
+.cp-modal-cancel{padding:8px 16px;border-radius:5px;background:transparent;border:1px solid var(--border);font-family:'Jost',sans-serif;font-size:12px;color:var(--gris);cursor:pointer;}
+
 </style>
 <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob: https: http:;">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
@@ -1237,6 +1296,7 @@ body.lex-admin-editing .lex-save-btn{display:block;}
       <div class="docs-tabs">
         <button class="docs-tab active" onclick="docsTab('modeles',this)">📁 Modèles & Documents types</button>
         <button class="docs-tab" onclick="docsTab('affaires',this)">📂 Documents par affaire</button>
+        <button class="docs-tab" onclick="docsTab('notaires',this)">⚖️ Dossier Notaire</button>
       </div>
       <div class="docs-body">
 
@@ -1328,7 +1388,9 @@ body.lex-admin-editing .lex-save-btn{display:block;}
   </div>
 </div>
           </div>
-        </div>
+        
+      
+      </div>
 
         <!-- AFFAIRES (existing content migrated) -->
         <div class="docs-panel" id="docs-affaires">
@@ -1345,6 +1407,101 @@ body.lex-admin-editing .lex-save-btn{display:block;}
             <div class="doc-item"><span class="doc-icon">📄</span><div><div class="doc-name">Diagnostic DPE</div><div class="doc-meta">Non reçu — Relancer le propriétaire</div></div><span class="doc-status miss">Manquant</span></div>
           </div>
         </div>
+
+        <!-- PANEL NOTAIRES -->
+        <div class="docs-panel" id="docs-notaires">
+          <div style="font-family:'Cormorant Garamond',serif;font-size:28px;color:var(--noir);margin-bottom:6px;">Dossier <span style="color:var(--terra)">Notaire</span></div>
+          <div style="font-size:12px;color:var(--gris);margin-bottom:28px;">Documents à transmettre au notaire pour la promesse et l'acte authentique</div>
+
+          <div class="notaire-bloc-title">1. Dossier pour la promesse de vente</div>
+
+          <div class="notaire-section-title">A — Documents sur le bien</div>
+          <div class="notaire-checklist">
+            <label><input type="checkbox"> Titre de propriété (acte d'achat ou attestation notariée)</label>
+            <label><input type="checkbox"> Dernière taxe foncière</label>
+            <label><input type="checkbox"> Plan du lot (si existant)</label>
+            <label><input type="checkbox"> Relevé de surfaces Carrez</label>
+            <label><input type="checkbox"> Règlement de copropriété + état descriptif de division</label>
+            <label><input type="checkbox"> PV des 3 dernières AG</label>
+            <label><input type="checkbox"> Carnet d'entretien de l'immeuble</label>
+            <label><input type="checkbox"> Fiche synthétique de la copropriété</label>
+          </div>
+          <div class="notaire-alert notaire-alert-terra">👉 En pratique : 80 % des retards viennent de la copro.</div>
+
+          <div class="notaire-section-title">B — Diagnostics techniques (DDT)</div>
+          <div style="font-size:12px;color:var(--gris);margin-bottom:8px;font-style:italic;">À fournir dès la promesse — sinon délai SRU bloqué</div>
+          <div class="notaire-checklist">
+            <label><input type="checkbox"> DPE</label>
+            <label><input type="checkbox"> Amiante</label>
+            <label><input type="checkbox"> Plomb — si immeuble avant 1949</label>
+            <label><input type="checkbox"> Électricité — si installation > 15 ans</label>
+            <label><input type="checkbox"> Gaz — si installation > 15 ans</label>
+            <label><input type="checkbox"> ERP (état des risques et pollutions)</label>
+            <label><input type="checkbox"> Métrage Carrez</label>
+            <label><input type="checkbox"> Termites — si zone concernée</label>
+            <label><input type="checkbox"> Assainissement non collectif — si applicable</label>
+          </div>
+          <div class="notaire-alert notaire-alert-red">Sans DDT complet : la promesse est juridiquement bancale.</div>
+
+          <div class="notaire-section-title">C — Situation financière du lot</div>
+          <div class="notaire-checklist">
+            <label><input type="checkbox"> Appel de charges en cours</label>
+            <label><input type="checkbox"> Solde vendeur</label>
+            <label><input type="checkbox"> État des impayés</label>
+            <label><input type="checkbox"> Travaux votés non encore appelés</label>
+            <label><input type="checkbox"> Pré-état daté (fourni par le syndic) ★</label>
+          </div>
+
+          <div class="notaire-section-title">D — Identité des vendeurs</div>
+          <div class="notaire-checklist">
+            <label><input type="checkbox"> Pièce d'identité (pour chaque vendeur)</label>
+            <label><input type="checkbox"> Livret de famille ou acte de mariage</label>
+            <label><input type="checkbox"> Contrat de mariage / PACS / jugement de divorce</label>
+            <label><input type="checkbox"> RIB</label>
+            <label><input type="checkbox"> Adresse fiscale</label>
+            <label><input type="checkbox"> Si société : Kbis, statuts, PV d'organe, délégation de pouvoir</label>
+          </div>
+
+          <div class="notaire-bloc-title">2. Dossier pour la vente définitive (acte authentique)</div>
+
+          <div class="notaire-section-title">A — Copropriété (version officielle)</div>
+          <div class="notaire-checklist">
+            <label><input type="checkbox"> État daté (fourni par le syndic) ★</label>
+            <label><input type="checkbox"> Derniers appels de fonds</label>
+            <label><input type="checkbox"> Solde du compte vendeur</label>
+            <label><input type="checkbox"> Situation des travaux en cours ou votés</label>
+          </div>
+          <div class="notaire-alert notaire-alert-red">Sans état daté → pas de signature.</div>
+
+          <div class="notaire-section-title">B — Mainlevées (si crédit en cours)</div>
+          <div class="notaire-checklist">
+            <label><input type="checkbox"> Attestation de la banque prêteuse</label>
+            <label><input type="checkbox"> Montant exact du capital restant dû</label>
+            <label><input type="checkbox"> Coordonnées bancaires pour remboursement notaire</label>
+          </div>
+
+          <div class="notaire-section-title">C — Fiscalité</div>
+          <div class="notaire-checklist">
+            <label><input type="checkbox"> Déclaration de plus-value (si applicable)</label>
+            <label><input type="checkbox"> Justificatif d'exonération — résidence principale, durée de détention</label>
+            <label><input type="checkbox"> Avis d'imposition (si demandé par le notaire)</label>
+          </div>
+
+          <div class="notaire-section-title">D — Derniers documents & remise des clés</div>
+          <div class="notaire-checklist">
+            <label><input type="checkbox"> Dernière taxe foncière</label>
+            <label><input type="checkbox"> Relevés de charges récents</label>
+            <label><input type="checkbox"> Diagnostics encore valides (vérifier dates)</label>
+            <label><input type="checkbox"> Clés, badges, bip parking, codes d'accès</label>
+            <label><input type="checkbox"> Garanties et notices des équipements (chaudière, VMC…)</label>
+          </div>
+
+          <div style="background:var(--kaki);border-radius:8px;padding:18px 22px;color:var(--blanc);margin-top:8px;">
+            <div style="font-family:'Cormorant Garamond',serif;font-size:17px;font-weight:700;margin-bottom:8px;">🧠 Le point que 90 % des vendeurs ignorent</div>
+            <div style="font-size:13px;line-height:1.7;opacity:.92;">Si vous transmettez tout dès la promesse, vous gagnez <strong>2 à 3 semaines</strong> sur le calendrier, vous sécurisez l'acquéreur et vous évitez les renégociations tardives.</div>
+          </div>
+        </div>
+
 
       </div>
     </div>
@@ -2024,6 +2181,11 @@ body.lex-admin-editing .lex-save-btn{display:block;}
   <!-- LEXIQUE -->
   <div class="page" id="page-lexique">
     <div class="lex-page">
+  <div class="lex-tabs">
+    <button class="lex-tab-btn active" id="tab-btn-definitions" onclick="cpSwitchTab('definitions')">📖 Définitions</button>
+    <button class="lex-tab-btn" id="tab-btn-caspratiques" onclick="cpSwitchTab('caspratiques')">🗂 Cas pratiques</button>
+  </div>
+  <div id="lex-panel-definitions">
       <div class="lex-abc">
         <button class="lex-abc-btn has-entries" onclick="lexJump('A')">A</button>
 <button class="lex-abc-btn has-entries" onclick="lexJump('B')">B</button>
@@ -2089,6 +2251,18 @@ body.lex-admin-editing .lex-save-btn{display:block;}
   <div class="lex-def" contenteditable="false">Réunion annuelle obligatoire des copropriétaires permettant de voter les décisions relatives à la vie de la copropriété : budget, travaux, choix du syndic.</div>
 </div>
 <button class="lex-entry-del" onclick="lexDelEntry(this)" title="Supprimer">✕</button></div>
+<div class="lex-entry" data-term="avant-contrat">
+  <div class="lex-term"><span class="lex-term-text" contenteditable="false">Avant-contrat</span><span class="lex-cat lex-cat-j">Juridique</span></div>
+  <div class="lex-def" contenteditable="false">Terme générique désignant tout acte signé avant l'acte authentique de vente : compromis de vente ou promesse unilatérale. Il engage les parties et fixe les conditions de la transaction.</div>
+</div>
+<div class="lex-entry" data-term="apport personnel">
+  <div class="lex-term"><span class="lex-term-text" contenteditable="false">Apport personnel</span><span class="lex-cat lex-cat-f">Financier</span></div>
+  <div class="lex-def" contenteditable="false">Somme dont dispose l'acquéreur sans recours à l'emprunt. Il représente généralement 10 à 20 % du prix d'achat. Un apport solide rassure la banque et améliore les conditions du crédit.</div>
+</div>
+<div class="lex-entry" data-term="attestation de superficie">
+  <div class="lex-term"><span class="lex-term-text" contenteditable="false">Attestation de superficie</span><span class="lex-cat lex-cat-u">Usage</span></div>
+  <div class="lex-def" contenteditable="false">Document certifiant la surface exacte d'un bien, établi par un géomètre ou un diagnostiqueur. Distinct du mesurage Carrez, il peut être demandé pour des biens non soumis à la loi Carrez, notamment les maisons individuelles.</div>
+</div>
 <div class="lex-letter-group" id="lex-B">
 <div class="lex-letter-anchor">B</div>
 <div class="lex-entry" data-term="bail">
@@ -2104,6 +2278,10 @@ body.lex-admin-editing .lex-save-btn{display:block;}
   <div class="lex-def" contenteditable="false">Document signé par l'acquéreur potentiel attestant qu'il a visité un bien par l'intermédiaire d'une agence précise. Protège l'agence en cas de tentative de contournement de sa commission.</div>
 </div>
 <button class="lex-entry-del" onclick="lexDelEntry(this)" title="Supprimer">✕</button></div>
+<div class="lex-entry" data-term="bail notarié">
+  <div class="lex-term"><span class="lex-term-text" contenteditable="false">Bail notarié</span><span class="lex-cat lex-cat-j">Juridique</span></div>
+  <div class="lex-def" contenteditable="false">Contrat de location rédigé et signé devant notaire. Contrairement au bail sous seing privé, il a force exécutoire, ce qui permet au bailleur d'engager une procédure d'expulsion sans passer par un jugement préalable.</div>
+</div>
 <div class="lex-letter-group" id="lex-C">
 <div class="lex-letter-anchor">C</div>
 <div class="lex-entry" data-term="carrez (loi)">
@@ -2131,6 +2309,26 @@ body.lex-admin-editing .lex-save-btn{display:block;}
   <div class="lex-def" contenteditable="false">Prêt à court terme permettant à un propriétaire d'acquérir un nouveau bien avant d'avoir vendu l'ancien. La banque avance une partie de la valeur estimée du bien à vendre.</div>
 </div>
 <button class="lex-entry-del" onclick="lexDelEntry(this)" title="Supprimer">✕</button></div>
+<div class="lex-entry" data-term="carnet d'entretien">
+  <div class="lex-term"><span class="lex-term-text" contenteditable="false">Carnet d'entretien</span><span class="lex-cat lex-cat-u">Usage</span></div>
+  <div class="lex-def" contenteditable="false">Document obligatoire en copropriété, tenu par le syndic. Il recense l'historique des travaux effectués sur les parties communes, les contrats d'entretien en cours et les références des entreprises intervenues.</div>
+</div>
+<div class="lex-entry" data-term="caution bancaire">
+  <div class="lex-term"><span class="lex-term-text" contenteditable="false">Caution bancaire</span><span class="lex-cat lex-cat-f">Financier</span></div>
+  <div class="lex-def" contenteditable="false">Garantie proposée par un organisme spécialisé (Crédit Logement, CAMCA…) en lieu et place d'une hypothèque. Moins coûteuse que l'hypothèque et plus simple à lever en fin de crédit.</div>
+</div>
+<div class="lex-entry" data-term="certificat d'urbanisme">
+  <div class="lex-term"><span class="lex-term-text" contenteditable="false">Certificat d'urbanisme</span><span class="lex-cat lex-cat-j">Juridique</span></div>
+  <div class="lex-def" contenteditable="false">Document délivré par la mairie renseignant sur les règles d'urbanisme applicables à un bien. Le CU informatif précise les droits et taxes. Le CU opérationnel indique si un projet est réalisable.</div>
+</div>
+<div class="lex-entry" data-term="clause de substitution">
+  <div class="lex-term"><span class="lex-term-text" contenteditable="false">Clause de substitution</span><span class="lex-cat lex-cat-j">Juridique</span></div>
+  <div class="lex-def" contenteditable="false">Clause insérée dans un compromis permettant à l'acquéreur signataire de se substituer une société (souvent une SCI) lors de la signature de l'acte authentique. Fréquente dans les acquisitions patrimoniales.</div>
+</div>
+<div class="lex-entry" data-term="clause pénale">
+  <div class="lex-term"><span class="lex-term-text" contenteditable="false">Clause pénale</span><span class="lex-cat lex-cat-j">Juridique</span></div>
+  <div class="lex-def" contenteditable="false">Clause d'un avant-contrat prévoyant une indemnité forfaitaire en cas de défaillance d'une partie sans motif légitime. Son montant est généralement fixé à 10 % du prix de vente.</div>
+</div>
 <div class="lex-letter-group" id="lex-D">
 <div class="lex-letter-anchor">D</div>
 <div class="lex-entry" data-term="dpe (diagnostic de performance énergétique)">
@@ -2154,6 +2352,34 @@ body.lex-admin-editing .lex-save-btn{display:block;}
   <div class="lex-def" contenteditable="false">Somme versée par l'acquéreur à la signature du compromis (généralement 5 à 10 % du prix). Conservée par le vendeur si l'acquéreur se désengage sans motif légitime.</div>
 </div>
 <button class="lex-entry-del" onclick="lexDelEntry(this)" title="Supprimer">✕</button></div>
+<div class="lex-entry" data-term="déficit foncier">
+  <div class="lex-term"><span class="lex-term-text" contenteditable="false">Déficit foncier</span><span class="lex-cat lex-cat-f">Financier</span></div>
+  <div class="lex-def" contenteditable="false">Mécanisme fiscal permettant à un propriétaire bailleur de déduire de ses revenus globaux les charges liées à des travaux de rénovation excédant ses revenus fonciers. Plafonné à 10 700 € par an.</div>
+</div>
+<div class="lex-entry" data-term="diagnostic amiante">
+  <div class="lex-term"><span class="lex-term-text" contenteditable="false">Diagnostic amiante</span><span class="lex-cat lex-cat-u">Usage</span></div>
+  <div class="lex-def" contenteditable="false">Diagnostic obligatoire pour tout bien dont le permis de construire a été délivré avant le 1er juillet 1997. Recherche la présence de matériaux contenant de l'amiante.</div>
+</div>
+<div class="lex-entry" data-term="diagnostic plomb">
+  <div class="lex-term"><span class="lex-term-text" contenteditable="false">Diagnostic plomb</span><span class="lex-cat lex-cat-u">Usage</span></div>
+  <div class="lex-def" contenteditable="false">Constat de risque d'exposition au plomb (CREP), obligatoire pour les biens construits avant 1949. Valable 1 an en cas de présence de plomb, illimité en cas d'absence.</div>
+</div>
+<div class="lex-entry" data-term="droits de mutation">
+  <div class="lex-term"><span class="lex-term-text" contenteditable="false">Droits de mutation</span><span class="lex-cat lex-cat-f">Financier</span></div>
+  <div class="lex-def" contenteditable="false">Taxes perçues lors du transfert de propriété d'un bien immobilier. Communément appelés frais de notaire, ils en représentent l'essentiel, soit environ 5,8 % du prix dans l'ancien.</div>
+</div>
+<div class="lex-entry" data-term="droit de délaissement">
+  <div class="lex-term"><span class="lex-term-text" contenteditable="false">Droit de délaissement</span><span class="lex-cat lex-cat-j">Juridique</span></div>
+  <div class="lex-def" contenteditable="false">Droit permettant au propriétaire d'un bien situé dans une zone de préemption de mettre en demeure la collectivité d'acheter son bien. C'est l'inverse de la préemption.</div>
+</div>
+<div class="lex-entry" data-term="dpu renforcé">
+  <div class="lex-term"><span class="lex-term-text" contenteditable="false">DPU renforcé</span><span class="lex-cat lex-cat-j">Juridique</span><span class="lex-cp-link" onclick="cpSwitchTab('caspratiques')" title="Voir le cas pratique">✦</span></div>
+  <div class="lex-def" contenteditable="false">Variante du droit de préemption urbain s'appliquant à un périmètre élargi défini par délibération du conseil municipal. Le délai de réponse de la mairie est de deux mois après notification du compromis par le notaire.</div>
+</div>
+<div class="lex-entry" data-term="dtg (diagnostic technique global)">
+  <div class="lex-term"><span class="lex-term-text" contenteditable="false">DTG (Diagnostic Technique Global)</span><span class="lex-cat lex-cat-u">Usage</span></div>
+  <div class="lex-def" contenteditable="false">Diagnostic dressant un état complet de l'immeuble en copropriété : parties communes, équipements collectifs, état des impayés. Sert de base à l'élaboration du PPPT.</div>
+</div>
 <div class="lex-letter-group" id="lex-E">
 <div class="lex-letter-anchor">E</div>
 <div class="lex-entry" data-term="erp (état des risques et pollutions)">
@@ -2165,6 +2391,14 @@ body.lex-admin-editing .lex-save-btn{display:block;}
   <div class="lex-def" contenteditable="false">Bail de longue durée (18 à 99 ans) accordant au preneur des droits étendus sur un bien immobilier, notamment celui d'y réaliser des constructions ou améliorations.</div>
 </div>
 <button class="lex-entry-del" onclick="lexDelEntry(this)" title="Supprimer">✕</button></div>
+<div class="lex-entry" data-term="état daté">
+  <div class="lex-term"><span class="lex-term-text" contenteditable="false">État daté</span><span class="lex-cat lex-cat-u">Usage</span></div>
+  <div class="lex-def" contenteditable="false">Document établi par le syndic lors de la vente d'un lot de copropriété. Il détaille la situation financière du copropriétaire vendeur : charges courantes, fonds de travaux, dettes éventuelles. Obligatoire et à la charge du vendeur.</div>
+</div>
+<div class="lex-entry" data-term="état hypothécaire">
+  <div class="lex-term"><span class="lex-term-text" contenteditable="false">État hypothécaire</span><span class="lex-cat lex-cat-j">Juridique</span></div>
+  <div class="lex-def" contenteditable="false">Document délivré par le service de publicité foncière listant toutes les inscriptions hypothécaires et privilèges grevant un bien. Vérifié par le notaire avant toute vente.</div>
+</div>
 <div class="lex-letter-group" id="lex-F">
 <div class="lex-letter-anchor">F</div>
 <div class="lex-entry" data-term="fai (frais d'agence inclus)">
@@ -2205,13 +2439,25 @@ body.lex-admin-editing .lex-save-btn{display:block;}
   <div class="lex-def" contenteditable="false">Situation juridique dans laquelle plusieurs personnes sont propriétaires d'un même bien sans que leurs parts soient matériellement divisées. Fréquente en cas d'héritage ou d'achat en commun hors mariage.</div>
 </div>
 <button class="lex-entry-del" onclick="lexDelEntry(this)" title="Supprimer">✕</button></div>
+<div class="lex-entry" data-term="ifi (impôt sur la fortune immobilière)">
+  <div class="lex-term"><span class="lex-term-text" contenteditable="false">IFI (Impôt sur la Fortune Immobilière)</span><span class="lex-cat lex-cat-f">Financier</span></div>
+  <div class="lex-def" contenteditable="false">Impôt annuel dû par les personnes physiques dont le patrimoine immobilier net taxable dépasse 1,3 million d'euros. Il a remplacé l'ISF en 2018. Le taux est progressif de 0,5 % à 1,5 %.</div>
+</div>
 <div class="lex-letter-group" id="lex-L">
 <div class="lex-letter-anchor">L</div>
+<div class="lex-entry" data-term="lettre de confort">
+  <div class="lex-term"><span class="lex-term-text" contenteditable="false">Lettre de confort</span><span class="lex-cat lex-cat-f">Financier</span></div>
+  <div class="lex-def" contenteditable="false">Document émis par la banque d'un acquéreur attestant que son dossier de financement est étudié favorablement et que le prêt pourra vraisemblablement être accordé. Elle ne vaut pas offre de prêt définitive mais rassure le vendeur sur la solvabilité de l'acheteur. À distinguer de l'accord de principe (plus formel) et de l'offre de prêt (contractuelle).</div>
+</div>
 <div class="lex-entry" data-term="lot">
   <div class="lex-term"><span class="lex-term-text" contenteditable="false">Lot</span><span class="lex-cat lex-cat-j">Juridique</span></div>
   <div class="lex-def" contenteditable="false">Fraction d'un immeuble en copropriété comprenant une partie privative (appartement, cave, parking) et une quote-part des parties communes, exprimée en tantièmes.</div>
 </div>
 <button class="lex-entry-del" onclick="lexDelEntry(this)" title="Supprimer">✕</button></div>
+<div class="lex-entry" data-term="loi sru">
+  <div class="lex-term"><span class="lex-term-text" contenteditable="false">Loi SRU</span><span class="lex-cat lex-cat-j">Juridique</span></div>
+  <div class="lex-def" contenteditable="false">Loi Solidarité et Renouvellement Urbain (2000). Elle a notamment instauré le délai de rétractation de 10 jours pour l'acquéreur non professionnel signataire d'un avant-contrat.</div>
+</div>
 <div class="lex-letter-group" id="lex-M">
 <div class="lex-letter-anchor">M</div>
 <div class="lex-entry" data-term="mainlevée">
@@ -2227,6 +2473,10 @@ body.lex-admin-editing .lex-save-btn{display:block;}
   <div class="lex-def" contenteditable="false">Location saisonnière d'un logement meublé pour une courte durée à une clientèle de passage. Soumis à déclaration en mairie et, dans certaines communes, à autorisation de changement d'usage.</div>
 </div>
 <button class="lex-entry-del" onclick="lexDelEntry(this)" title="Supprimer">✕</button></div>
+<div class="lex-entry" data-term="mitoyenneté">
+  <div class="lex-term"><span class="lex-term-text" contenteditable="false">Mitoyenneté</span><span class="lex-cat lex-cat-j">Juridique</span></div>
+  <div class="lex-def" contenteditable="false">Situation juridique d'un mur, d'une clôture ou d'un fossé appartenant en commun à deux propriétaires voisins. Le mur mitoyen est entretenu et financé à frais partagés.</div>
+</div>
 <div class="lex-letter-group" id="lex-N">
 <div class="lex-letter-anchor">N</div>
 <div class="lex-entry" data-term="notaire">
@@ -2268,6 +2518,22 @@ body.lex-admin-editing .lex-save-btn{display:block;}
   <div class="lex-def" contenteditable="false">Voir Droit de préemption.</div>
 </div>
 <button class="lex-entry-del" onclick="lexDelEntry(this)" title="Supprimer">✕</button></div>
+<div class="lex-entry" data-term="pppt">
+  <div class="lex-term"><span class="lex-term-text" contenteditable="false">PPPT</span><span class="lex-cat lex-cat-u">Usage</span></div>
+  <div class="lex-def" contenteditable="false">Plan Pluriannuel de Préservation et de Travaux. Document planifiant les travaux à réaliser sur un immeuble en copropriété sur 10 ans. Obligatoire pour les copropriétés de plus de 15 ans.</div>
+</div>
+<div class="lex-entry" data-term="pré-état daté">
+  <div class="lex-term"><span class="lex-term-text" contenteditable="false">Pré-état daté</span><span class="lex-cat lex-cat-u">Usage</span></div>
+  <div class="lex-def" contenteditable="false">Document facultatif établi par le syndic en amont de la vente, avant la signature du compromis. Il donne une image financière rapide de la copropriété.</div>
+</div>
+<div class="lex-entry" data-term="ptz (prêt à taux zéro)">
+  <div class="lex-term"><span class="lex-term-text" contenteditable="false">PTZ (Prêt à Taux Zéro)</span><span class="lex-cat lex-cat-f">Financier</span></div>
+  <div class="lex-def" contenteditable="false">Prêt immobilier sans intérêts, accordé sous conditions de ressources pour l'achat d'une résidence principale. Réservé aux primo-accédants.</div>
+</div>
+<div class="lex-entry" data-term="purge des droits de préemption">
+  <div class="lex-term"><span class="lex-term-text" contenteditable="false">Purge des droits de préemption</span><span class="lex-cat lex-cat-j">Juridique</span></div>
+  <div class="lex-def" contenteditable="false">Procédure obligatoire consistant à notifier à toutes les collectivités titulaires d'un droit de préemption la mise en vente d'un bien, afin qu'elles puissent exercer ou renoncer à leur droit.</div>
+</div>
 <div class="lex-letter-group" id="lex-R">
 <div class="lex-letter-anchor">R</div>
 <div class="lex-entry" data-term="règlement de copropriété">
@@ -2294,6 +2560,14 @@ body.lex-admin-editing .lex-save-btn{display:block;}
   <div class="lex-def" contenteditable="false">Professionnel ou bénévole mandaté par les copropriétaires pour administrer l'immeuble : gestion comptable, entretien, exécution des décisions d'AG. Son mandat est renouvelé en AG.</div>
 </div>
 <button class="lex-entry-del" onclick="lexDelEntry(this)" title="Supprimer">✕</button></div>
+<div class="lex-entry" data-term="séquestre">
+  <div class="lex-term"><span class="lex-term-text" contenteditable="false">Séquestre</span><span class="lex-cat lex-cat-f">Financier</span></div>
+  <div class="lex-def" contenteditable="false">Somme versée par l'acquéreur lors de la signature du compromis, représentant généralement 5 à 10 % du prix. Conservée par le notaire jusqu'à l'acte authentique. Restituée en cas de rétractation légitime.</div>
+</div>
+<div class="lex-entry" data-term="servitude">
+  <div class="lex-term"><span class="lex-term-text" contenteditable="false">Servitude</span><span class="lex-cat lex-cat-j">Juridique</span></div>
+  <div class="lex-def" contenteditable="false">Charge imposée sur un bien immobilier au profit d'un autre bien ou d'une collectivité. Elle peut être de passage, de vue, d'écoulement des eaux. Attachée au bien, elle se transmet avec lui.</div>
+</div>
 <div class="lex-letter-group" id="lex-T">
 <div class="lex-letter-anchor">T</div>
 <div class="lex-entry" data-term="tantièmes">
@@ -2309,6 +2583,10 @@ body.lex-admin-editing .lex-save-btn{display:block;}
   <div class="lex-def" contenteditable="false">Acte notarié attestant qu'une personne est propriétaire d'un bien. Remis lors de la signature de l'acte authentique de vente. À conserver impérativement.</div>
 </div>
 <button class="lex-entry-del" onclick="lexDelEntry(this)" title="Supprimer">✕</button></div>
+<div class="lex-entry" data-term="taux d'endettement">
+  <div class="lex-term"><span class="lex-term-text" contenteditable="false">Taux d'endettement</span><span class="lex-cat lex-cat-f">Financier</span></div>
+  <div class="lex-def" contenteditable="false">Ratio exprimant la part des revenus mensuels nets consacrée au remboursement de l'ensemble des crédits. Le HCSF le plafonne à 35 % pour les emprunteurs immobiliers en France.</div>
+</div>
 <div class="lex-letter-group" id="lex-U">
 <div class="lex-letter-anchor">U</div>
 <div class="lex-entry" data-term="usufruit">
@@ -2341,7 +2619,44 @@ body.lex-admin-editing .lex-save-btn{display:block;}
 
         <div class="lex-no-result" id="lex-no-result" style="display:none;">Aucun terme trouvé</div>
       </div>
-    <button class="lex-entry-del" onclick="lexDelEntry(this)" title="Supprimer">✕</button></div>
+    </div>
+  </div><!-- fin lex-panel-definitions -->
+
+  <!-- Panel Cas pratiques -->
+  <div id="lex-panel-caspratiques">
+    <div class="cp-page">
+      <div class="cp-toolbar">
+        <button class="cp-add-btn" onclick="cpOpenModal()">✏️ Nouvelle fiche</button>
+        <span style="font-size:11px;color:var(--gris);margin-left:8px;">Capitalisez vos situations terrain</span>
+      </div>
+      <div class="cp-list" id="cp-list"></div>
+    </div>
+  </div>
+
+  <!-- Modal Cas pratique -->
+  <div class="cp-modal-overlay" id="cp-modal-overlay" onclick="cpCloseModal(event)">
+    <div class="cp-modal">
+      <div class="cp-modal-title" id="cp-modal-title">Nouvelle fiche cas pratique</div>
+      <input type="hidden" id="cp-edit-id" value="">
+      <label>Titre de la situation *</label>
+      <input type="text" id="cp-f-titre" placeholder="Ex : DPU renforcé à Neuilly">
+      <label>Contexte</label>
+      <textarea id="cp-f-contexte" rows="2"></textarea>
+      <label>Version simple (pédagogique)</label>
+      <textarea id="cp-f-v1" rows="4"></textarea>
+      <label>Version expert (positionnement)</label>
+      <textarea id="cp-f-v2" rows="4"></textarea>
+      <label>Version rassurante (client anxieux)</label>
+      <textarea id="cp-f-v3" rows="4"></textarea>
+      <label>Phrase clé à retenir</label>
+      <input type="text" id="cp-f-keyphrase">
+      <div class="cp-modal-btns">
+        <button class="cp-modal-cancel" onclick="cpCloseModal()">Annuler</button>
+        <button class="cp-modal-save" onclick="cpSaveFiche()">Enregistrer</button>
+      </div>
+    </div>
+  </div>
+
   </div>
 
   <!-- PROSPECTION -->
@@ -4620,6 +4935,190 @@ body.lex-admin-editing .lex-save-btn{display:block;}
   // Init
   lexLoadSaved();
   lexCheckRole();
+
+
+  // ========== CAS PRATIQUES ==========
+  var CP_KEY='ach_cp_v1';
+  var CP_DPU={
+    id:'cp_dpu',
+    titre:'DPU renforc\u00e9 \u00e0 Neuilly-sur-Seine',
+    contexte:'\u00c0 Neuilly-sur-Seine, lors de toute vente immobili\u00e8re. La commune est enti\u00e8rement couverte par un DPU renforc\u00e9.',
+    v1:'\u00c0 Neuilly, la commune a mis en place ce qu\u2019on appelle un droit de pr\u00e9emption urbain renforc\u00e9. Concr\u00e8tement, cela signifie qu\u2019une fois que nous aurons sign\u00e9 un compromis avec un acheteur, le notaire devra notifier la mairie.\n\nLa mairie aura alors un d\u00e9lai l\u00e9gal de deux mois pour dire si elle souhaite se substituer \u00e0 l\u2019acqu\u00e9reur.\n\nDans l\u2019immense majorit\u00e9 des cas \u00e0 Neuilly, elle renonce. Mais ce d\u00e9lai est obligatoire et incompressible.\n\nDonc nous l\u2019int\u00e9grons d\u00e8s le d\u00e9part dans le calendrier pour \u00e9viter toute mauvaise surprise.',
+    v2:'\u00c0 Neuilly, nous sommes en DPU renforc\u00e9 sur toute la commune. Cela ne signifie pas que la mairie pr\u00e9empte r\u00e9guli\u00e8rement, mais juridiquement elle en a la possibilit\u00e9 sur un p\u00e9rim\u00e8tre \u00e9largi.\n\nLa cons\u00e9quence principale est un d\u00e9lai administratif de deux mois apr\u00e8s la signature du compromis.\n\nMon r\u00f4le est d\u2019anticiper cela dans la strat\u00e9gie de vente et dans la gestion des attentes de l\u2019acqu\u00e9reur pour s\u00e9curiser l\u2019op\u00e9ration.',
+    v3:'Je pr\u00e9f\u00e8re vous le dire maintenant plut\u00f4t que vous l\u2019apprendre en cours de route : la vente sera juridiquement soumise \u00e0 un d\u00e9lai de pr\u00e9emption.\n\nCela fait partie du processus normal \u00e0 Neuilly.\n\nCe n\u2019est pas un risque en soi, c\u2019est un d\u00e9lai administratif que nous pilotons.',
+    keyphrase:'Ce n\u2019est pas un risque, c\u2019est un d\u00e9lai administratif encadr\u00e9.',
+    date:'17/03/2026'
+  };
+  function cpLoad(){
+    try{
+      var d=JSON.parse(localStorage.getItem(CP_KEY));
+      if(!d||!Array.isArray(d)||!d.length){cpSeed();return JSON.parse(localStorage.getItem(CP_KEY))||[];}
+      return d;
+    }catch(e){return[];}
+  }
+  function cpSave(d){localStorage.setItem(CP_KEY,JSON.stringify(d));}
+  
+  var CP_CP_ETAPES_VENTE={
+    id:"cp_etapes_vente",
+    titre:"\u00c9tapes d'une vente",
+    contexte:"\u00c0 utiliser comme r\u00e9f\u00e9rence interne et support de formation pour l'\u00e9quipe. R\u00e9sume le parcours complet d'une transaction immobili\u00e8re, de la prospection \u00e0 la remise des cl\u00e9s.",
+    v1:"1. PROSPECTION\nIdentifier des biens \u00e0 vendre : analyse de march\u00e9, porte-\u00e0-porte, appels, r\u00e9seaux sociaux, flyers, partenariats (notaires, artisans).\n\n2. PRISE DE CONTACT\nComprendre les motivations du propri\u00e9taire, pr\u00e9senter vos services, proposer une estimation gratuite bas\u00e9e sur des comparables.\n\n3. SIGNATURE DU MANDAT\nMandat simple (propri\u00e9taire libre de vendre ailleurs) ou exclusif (agence seule). Pr\u00e9ciser prix, commission, conditions. Respecter la loi Hoguet.\n\n4. MISE EN VALEUR\nHome staging, photos/vid\u00e9os professionnelles, annonce percutante, plans 3D et visites virtuelles.\n\n5. DIFFUSION\nSites sp\u00e9cialis\u00e9s (SeLoger, Leboncoin, Bien'ici), vitrine agence, r\u00e9seaux sociaux, r\u00e9seau personnel.\n\n6. VISITES\nQualifier les prospects (budget, financement), regrouper les visites, adapter la pr\u00e9sentation, recueillir les retours.\n\n7. OFFRE D'ACHAT\nN\u00e9gocier entre les deux parties, formaliser l'offre par \u00e9crit et sign\u00e9e.\n\n8. COMPROMIS DE VENTE\nR\u00e9diger avec un notaire, mentionner les conditions suspensives (obtention du pr\u00eat), informer sur le d\u00e9lai de r\u00e9tractation de 10 jours.\n\n9. SUIVI DU FINANCEMENT\nAccompagner l'acheteur dans ses d\u00e9marches bancaires, v\u00e9rifier l'avanc\u00e9e du dossier, respecter les d\u00e9lais.\n\n10. ACTE AUTHENTIQUE\nSignature chez le notaire, v\u00e9rification de tous les documents, remise des cl\u00e9s, perception de la commission.",
+    v2:"",
+    v3:"",
+    keyphrase:"De la prospection \u00e0 la remise des cl\u00e9s : 10 \u00e9tapes, z\u00e9ro improvisation.",
+    date:"17/03/2026"
+  };
+  var CP_CP_LOI_HOGUET={
+    id:"cp_loi_hoguet",
+    titre:"Loi Hoguet",
+    contexte:"Cadre l\u00e9gal obligatoire pour tout professionnel de l'immobilier en France. Loi n\u00b0 70-9 du 2 janvier 1970.",
+    v1:"La loi Hoguet r\u00e9glemente les professions immobili\u00e8res (agents, administrateurs de biens, syndics) pour prot\u00e9ger les consommateurs et garantir la transparence des transactions.\n\n1. CARTE PROFESSIONNELLE OBLIGATOIRE\nD\u00e9livr\u00e9e par la CCI. Conditions : dipl\u00f4me immobilier ou exp\u00e9rience, assurance RCP, garantie financi\u00e8re si gestion de fonds. Types : Transaction, Gestion locative, Syndic.\n\n2. MANDAT \u00c9CRIT OBLIGATOIRE\nAvant toute mission. Doit pr\u00e9ciser : \u00e9tendue des pouvoirs (exclusif ou non), conditions de r\u00e9mun\u00e9ration, dur\u00e9e de validit\u00e9.\n\n3. ENCADREMENT DE LA R\u00c9MUN\u00c9RATION\nCommission due uniquement si la transaction est conclue. Honoraires clairement affich\u00e9s. La publicit\u00e9 doit indiquer si les frais sont \u00e0 charge du vendeur ou de l'acqu\u00e9reur.\n\n4. GARANTIE FINANCI\u00c8RE\nObligatoire si manipulation de fonds (d\u00e9p\u00f4ts, loyers). Souscrite aupr\u00e8s d'une banque ou assurance. Prot\u00e8ge les clients en cas de d\u00e9faillance.\n\n5. OBLIGATIONS PROFESSIONNELLES\nDevoir de conseil, v\u00e9racit\u00e9 des annonces, tenue d'un registre des mandats et des comptes.\n\n6. SANCTIONS\nExercice sans carte professionnelle = exercice ill\u00e9gal. Sanctions : amendes et peines de prison.",
+    v2:"",
+    v3:"",
+    keyphrase:"Pas de mandat \u00e9crit = pas de commission. Pas de carte professionnelle = exercice ill\u00e9gal.",
+    date:"17/03/2026"
+  };
+  var CP_CP_COMMISSIONS={
+    id:"cp_commissions",
+    titre:"\u00c9tablissement des commissions",
+    contexte:"\u00c0 utiliser en r\u00e9ponse aux clients qui questionnent le niveau de commission, ou en formation interne sur la politique tarifaire de l'agence.",
+    v1:"En France, il n'existe pas de pourcentage de commission l\u00e9galement fix\u00e9 pour les transactions immobili\u00e8res.\n\nLIBERT\u00c9 DE FIXATION\nChaque agence fixe librement ses honoraires, exprim\u00e9s en pourcentage du prix de vente. Ce taux varie selon : la localisation du bien, sa typologie, le type de mandat (exclusif ou simple), et le niveau de service propos\u00e9.\n\nAFFICHAGE OBLIGATOIRE\nLa loi impose d'afficher clairement le montant total des honoraires \u00e0 la charge de l'acheteur ou du vendeur, ainsi que le prix net vendeur (prix hors frais d'agence).\n\nN\u00c9GOCIATION POSSIBLE\nLe montant n'\u00e9tant pas fix\u00e9 par la loi, il est tout \u00e0 fait possible de n\u00e9gocier. Comparer les offres de diff\u00e9rentes agences permet d'obtenir un meilleur tarif.\n\nCONSEILS PRATIQUES\n\u2022 Demander plusieurs devis pour comparer les prix du march\u00e9.\n\u2022 Lire attentivement les conditions g\u00e9n\u00e9rales et les prestations incluses.\n\u2022 Ne pas choisir uniquement sur le prix : la qualit\u00e9 de service compte autant.",
+    v2:"",
+    v3:"",
+    keyphrase:"Pas de bar\u00e8me l\u00e9gal, mais affichage obligatoire. La transparence est notre meilleure carte.",
+    date:"17/03/2026"
+  };
+  function cpSeed(){
+    var ex=[];
+    try{ex=JSON.parse(localStorage.getItem(CP_KEY))||[];}catch(e){}
+    if(!ex.find(function(f){return f.id==='cp_dpu';})){
+      ex.unshift(CP_DPU);
+    }
+    if(!ex.find(function(f){return f.id==="cp_etapes_vente";})){ex.push(CP_CP_ETAPES_VENTE);}
+    if(!ex.find(function(f){return f.id==="cp_loi_hoguet";})){ex.push(CP_CP_LOI_HOGUET);}
+    if(!ex.find(function(f){return f.id==="cp_commissions";})){ex.push(CP_CP_COMMISSIONS);}
+    localStorage.setItem(CP_KEY,JSON.stringify(ex));
+  }
+  window.cpSwitchTab=function(tab){
+    var dp=document.getElementById('lex-panel-definitions');
+    var cp=document.getElementById('lex-panel-caspratiques');
+    var lexPage=document.querySelector('.lex-page');
+    if(cp && lexPage && cp.parentElement !== lexPage) lexPage.appendChild(cp);
+    if(tab==='definitions'){
+      if(dp)dp.classList.remove('hidden');
+      if(cp)cp.classList.remove('active');
+    }else{
+      if(dp)dp.classList.add('hidden');
+      if(cp)cp.classList.add('active');
+      cpRender();
+      // Réattacher le gestionnaire après déplacement DOM
+      var list=document.getElementById('cp-list');
+      if(list){
+        list.onclick=null;
+        list.onclick=function(e){
+          var t=e.target,el;
+          el=t.closest('[data-toggle]');if(el&&!t.closest('[data-edit],[data-del]')){cpToggleCard(el.dataset.toggle);return;}
+          el=t.closest('[data-edit]');if(el){e.stopPropagation();cpOpenModal(el.dataset.edit);return;}
+          el=t.closest('[data-del]');if(el){e.stopPropagation();cpDeleteFiche(el.dataset.del);return;}
+        };
+      }
+    }
+    var bd=document.getElementById('tab-btn-definitions');
+    var bc=document.getElementById('tab-btn-caspratiques');
+    if(bd)bd.classList.toggle('active',tab==='definitions');
+    if(bc)bc.classList.toggle('active',tab==='caspratiques');
+  };
+  window.cpOpenModal=function(id){
+    var o=document.getElementById('cp-modal-overlay');
+    if(id){
+      var f=cpLoad().find(function(x){return x.id===id;});
+      if(!f)return;
+      document.getElementById('cp-modal-title').textContent='Modifier la fiche';
+      document.getElementById('cp-edit-id').value=id;
+      document.getElementById('cp-f-titre').value=f.titre||'';
+      document.getElementById('cp-f-contexte').value=f.contexte||'';
+      document.getElementById('cp-f-v1').value=f.v1||'';
+      document.getElementById('cp-f-v2').value=f.v2||'';
+      document.getElementById('cp-f-v3').value=f.v3||'';
+      document.getElementById('cp-f-keyphrase').value=f.keyphrase||'';
+    }else{
+      document.getElementById('cp-modal-title').textContent='Nouvelle fiche';
+      document.getElementById('cp-edit-id').value='';
+      ['cp-f-titre','cp-f-contexte','cp-f-v1','cp-f-v2','cp-f-v3','cp-f-keyphrase'].forEach(function(i){document.getElementById(i).value='';});
+    }
+    o.classList.add('open');
+  };
+  window.cpCloseModal=function(e){
+    if(!e||e.target===document.getElementById('cp-modal-overlay'))
+      document.getElementById('cp-modal-overlay').classList.remove('open');
+  };
+  window.cpSaveFiche=function(){
+    var titre=document.getElementById('cp-f-titre').value.trim();
+    if(!titre){alert('Le titre est obligatoire.');return;}
+    var data=cpLoad(),editId=document.getElementById('cp-edit-id').value;
+    var f={id:editId||('cp_'+Date.now()),titre:titre,
+      contexte:document.getElementById('cp-f-contexte').value.trim(),
+      v1:document.getElementById('cp-f-v1').value.trim(),
+      v2:document.getElementById('cp-f-v2').value.trim(),
+      v3:document.getElementById('cp-f-v3').value.trim(),
+      keyphrase:document.getElementById('cp-f-keyphrase').value.trim(),
+      date:new Date().toLocaleDateString('fr-FR')};
+    if(editId){var i=data.findIndex(function(x){return x.id===editId;});if(i>=0)data[i]=f;else data.push(f);}
+    else data.push(f);
+    cpSave(data);
+    document.getElementById('cp-modal-overlay').classList.remove('open');
+    cpRender();
+  };
+  window.cpDeleteFiche=function(id){
+    if(!confirm('Supprimer cette fiche ?'))return;
+    cpSave(cpLoad().filter(function(f){return f.id!==id;}));
+    cpRender();
+  };
+  window.cpToggleCard=function(id){
+    var b=document.getElementById('cp-body-'+id),a=document.getElementById('cp-arrow-'+id);
+    if(!b)return;b.classList.toggle('open');if(a)a.classList.toggle('open');
+  };
+  function cpSect(label,text){
+    if(!text)return'';
+    return'<div class="cp-section"><div class="cp-section-title">'+label+'</div><div class="cp-section-content">'+text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')+'</div></div>';
+  }
+  function cpRender(){
+    var list=document.getElementById('cp-list');
+    if(!list)return;
+    cpSeed();
+    var data=cpLoad();
+    if(!data.length){
+      list.innerHTML='<div class="cp-empty"><div style="font-size:32px;margin-bottom:10px;">&#128193;</div>Aucune fiche.<br>Cliquez sur Nouvelle fiche.</div>';
+      return;
+    }
+    list.innerHTML=data.map(function(f){
+      var dt=f.date?'<span style="font-size:10px;color:var(--gris);">'+f.date+'</span>':'';
+      var kp=f.keyphrase?'<div class="cp-keyphrase">&#128172; &ldquo;'+f.keyphrase+'&rdquo;</div>':'';
+      return'<div class="cp-card">'+
+        '<div class="cp-card-head" data-toggle="'+f.id+'">'+
+          '<div class="cp-card-title">'+f.titre+'</div>'+dt+
+          '<div class="cp-card-actions">'+
+            '<button class="cp-btn-edit" data-edit="'+f.id+'">&#9998; Modifier</button>'+
+            '<button class="cp-btn-del" data-del="'+f.id+'">&#10005;</button>'+
+          '</div>'+
+          '<span class="cp-card-toggle" id="cp-arrow-'+f.id+'">&#9660;</span>'+
+        '</div>'+
+        '<div class="cp-card-body" id="cp-body-'+f.id+'">'+
+          cpSect('Contexte',f.contexte)+
+          cpSect('\uD83C\uDFAF Version simple \u2014 p\u00e9dagogique',f.v1)+
+          cpSect('\uD83C\uDFAF Version expert \u2014 positionnement',f.v2)+
+          cpSect('\uD83C\uDFAF Version rassurante \u2014 client anxieux',f.v3)+
+          kp+
+        '</div>'+
+      '</div>';
+    }).join('');
+    list.onclick=function(e){
+      var t=e.target,el;
+      el=t.closest('[data-toggle]');if(el&&!t.closest('[data-edit],[data-del]')){cpToggleCard(el.dataset.toggle);return;}
+      el=t.closest('[data-edit]');if(el){e.stopPropagation();cpOpenModal(el.dataset.edit);return;}
+      el=t.closest('[data-del]');if(el){e.stopPropagation();cpDeleteFiche(el.dataset.del);return;}
+    };
+  }
 
   // ========== DOCUMENTS ==========
   var MODELES_PREVIEW = {
