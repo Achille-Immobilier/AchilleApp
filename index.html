@@ -1540,7 +1540,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     </div>
   </div>
   </div>
-  <div class="logo-ver app-ver">Achille App — v6.05</div>
+  <div class="logo-ver app-ver">Achille App — v6.06</div>
 </aside>
 <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Réduire la barre latérale">‹</button>
 
@@ -9093,7 +9093,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
   // Clés locales (propres à chaque appareil) — JAMAIS synchronisées
   var LOCAL_ONLY = ['achille_curpage','achille_lastbackup',
     'ach_comm_authmig_v1','ach_ec_statut_migr','ach_fin_datereset_v1',
-    'ach_reset_v600','ach_reset_v605','ach_cure_v605','ach_pige_seeded_v1','ach_pige_fipacmig_v1','ach_pige_statutmig_v1'];  /* marqueurs one-shot PROPRES À CHAQUE POSTE */
+    'ach_reset_v600','ach_reset_v605','ach_cure_v605','ach_cure_v606','ach_pige_seeded_v1','ach_pige_fipacmig_v1','ach_pige_statutmig_v1'];  /* marqueurs one-shot PROPRES À CHAQUE POSTE */
 
   // Une donnée est "partagée" si sa clé commence par ach_ et n'est pas locale
   function isSync(k){ return k && k.indexOf('ach_')===0 && LOCAL_ONLY.indexOf(k)<0; }
@@ -9116,7 +9116,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
   var pushTimers = {};
   var justPushed = {}; // anti-écho temps réel
   var _lastSyncErr = '';   // dernière erreur d'envoi (pour le diagnostic 🔌)
-  function _trace(t){ try{ var a=(window.ACH_SYNC_TRACE=window.ACH_SYNC_TRACE||[]); a.push(new Date().toISOString().slice(11,19)+' '+t); if(a.length>40) a.shift(); }catch(e){} }
+  function _trace(t){ try{ var a=(window.ACH_SYNC_TRACE=window.ACH_SYNC_TRACE||[]); a.push(new Date().toISOString().slice(11,19)+' '+t); if(a.length>80) a.shift(); }catch(e){} }
   /* ===== Rafraîchissement SILENCIEUX de la vue (remplace le pop-up "nouvelles données") ===== */
   var _softTimer=null, _pendingRefresh=false;
   function _ach_safeToRefresh(){
@@ -9435,14 +9435,14 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
   };
 
   // ---------- Tirer les données du cloud vers le local ----------
-  /* ===== Nettoyage curatif one-shot (v6.05) =====
-     Supprime, PAR LA VOIE OFFICIELLE (donc avec certificats de suppression qui se propagent
-     à tous les postes), les résidus de l'incident du 08-09/07 :
-     - fiches de pige "coquilles vides" (sans prix, sans vendeur, sans téléphone)
-     - post-its de test (texte contenant "test")
-     Idempotent, marqué par poste, inoffensif si le cloud est déjà propre. */
-  function _ach_cureV605(){
-    if(window.localStorage.getItem('ach_cure_v605')) return;
+  /* ===== Nettoyage curatif one-shot (v6.06) =====
+     Exécuté UNIQUEMENT quand le détecteur de modifications est actif (dans activate()),
+     pour que chaque suppression laisse son certificat (tombstone) et se propage partout.
+     Envois IMMÉDIATS au cloud (aucune minuterie qui puisse être coupée par un rechargement). */
+  function _ach_cureV606(){
+    if(window.localStorage.getItem('ach_cure_v606')) return;
+    if(!window._ach_itcOK){ _trace('cure v606 reporté : détecteur inactif'); return; }
+    var didPige=false, didPi=false;
     try{
       var raw=window.localStorage.getItem('ach_pige_v1');
       if(raw){
@@ -9454,13 +9454,14 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
             var noTel=!f||!(''+(f.tel||'')).trim();
             return !(noPrix&&noVend&&noTel);
           });
+          _trace('cure v606 pige : '+a.length+' fiches, '+(a.length-keep.length)+' coquille(s) à supprimer');
           if(keep.length!==a.length){
-            window.localStorage.setItem('ach_pige_v1', JSON.stringify(keep));  /* voie interceptée : tombstones + envoi auto */
-            _trace('cure : '+(a.length-keep.length)+' coquille(s) de pige supprimée(s) définitivement');
+            window.localStorage.setItem('ach_pige_v1', JSON.stringify(keep));  /* voie interceptée : certificats posés */
+            didPige=true;
           }
         }
       }
-    }catch(e){ _trace('cure pige erreur : '+((e&&e.message)||e)); }
+    }catch(e){ _trace('cure v606 pige erreur : '+((e&&e.message)||e)); }
     try{
       var rawPi=window.localStorage.getItem('ach_pi_v4');
       if(rawPi){
@@ -9469,14 +9470,25 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
           var n0=d.piNotes.length;
           var reTest=/(^|[^a-zà-ÿ])test($|[^a-zà-ÿ])/i;  /* mot entier : ne touche pas à "attestation", "contestation"… */
           d.piNotes=d.piNotes.filter(function(n){ return !reTest.test(''+(n.content||'')); });
+          _trace('cure v606 post-its : '+n0+' notes, '+(n0-d.piNotes.length)+' test(s) à supprimer');
           if(d.piNotes.length!==n0){
-            window.localStorage.setItem('ach_pi_v4', JSON.stringify(d));      /* voie interceptée : tombstones + envoi auto */
-            _trace('cure : '+(n0-d.piNotes.length)+' post-it(s) de test supprimé(s) définitivement');
+            window.localStorage.setItem('ach_pi_v4', JSON.stringify(d));      /* voie interceptée : certificats posés */
+            didPi=true;
           }
         }
       }
-    }catch(e){ _trace('cure post-its erreur : '+((e&&e.message)||e)); }
-    try{ Object.getPrototypeOf(window.localStorage).setItem.call(window.localStorage,'ach_cure_v605','1'); }catch(e){}
+    }catch(e){ _trace('cure v606 post-its erreur : '+((e&&e.message)||e)); }
+    /* Envoi IMMÉDIAT : certificats d'abord, données ensuite — sans minuterie */
+    try{
+      if(didPige||didPi){
+        try{ clearTimeout(pushTimers[TOMB_KEY]); pushTimers[TOMB_KEY]=null; }catch(e){}
+        pushKey(TOMB_KEY);
+        if(didPige){ try{ clearTimeout(pushTimers['ach_pige_v1']); pushTimers['ach_pige_v1']=null; }catch(e){} pushKey('ach_pige_v1'); }
+        if(didPi){ try{ clearTimeout(pushTimers['ach_pi_v4']); pushTimers['ach_pi_v4']=null; }catch(e){} pushKey('ach_pi_v4'); }
+        _trace('cure v606 : envois immédiats effectués');
+      }
+    }catch(e){ _trace('cure v606 push erreur : '+((e&&e.message)||e)); }
+    try{ Object.getPrototypeOf(window.localStorage).setItem.call(window.localStorage,'ach_cure_v606','1'); }catch(e){}
     try{ _ach_scheduleSoftRefresh(); }catch(e){}
   }
   function pullAll(cb){
@@ -9517,7 +9529,6 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
           if(isSync(lk) && !cloudKeys[lk]){ try{ schedulePush(lk); }catch(e){} } }
         try{ _ach_applyTombLocal(); }catch(e){}
         window.ACH_PULLED=true;   /* signal : le cloud a été téléchargé au moins une fois */
-        try{ _ach_cureV605(); }catch(e){ _trace('cure v605 erreur : '+((e&&e.message)||e)); }
         if(_pullChanged){ try{ _ach_scheduleSoftRefresh(); }catch(e){} }  /* la vue se met à jour toute seule */
         cb(true);
       }
@@ -9692,11 +9703,12 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
   function activate(){
     installInterceptor._init=true;       // pas de log pendant l'init
     installInterceptor();
+    try{ _ach_cureV606(); }catch(e){ _trace('cure v606 erreur : '+((e&&e.message)||e)); }
     setupRoleArea();
     startRealtime();
     var ov=document.getElementById('ach-login-overlay'); if(ov) ov.classList.add('ach-hidden');
     var ub=document.getElementById('ach-userbar'); if(ub) ub.style.display='none';
-    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v6.05';
+    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v6.06';
     flag('Synchronis\u00e9');
     // fin de l'init : on autorise la journalisation des actions
     setTimeout(function(){ installInterceptor._init=false; }, 1500);
@@ -12282,14 +12294,36 @@ select.pg-chip{padding:6px 10px;}
         if(st2.err) L.push('⚠️ Dernière erreur d’envoi : '+st2.err);
         var tr=(window.ACH_SYNC_TRACE||[]).slice(-10);
         if(tr.length){ L.push(''); L.push('— Boîte noire (dernières étapes) —'); tr.forEach(function(t){ L.push(t); }); }
-        alert('RAPPORT DU CIRCUIT DE SYNCHRONISATION\n\n'+L.join('\n')+(ok?'\n\n🎉 Tout fonctionne sur cet appareil.':'\n\n👉 Recopiez ce rapport mot pour mot à Claude.'));
+        achShowDiag('RAPPORT DU CIRCUIT DE SYNCHRONISATION\n\n'+L.join('\n')+(ok?'\n\n🎉 Tout fonctionne sur cet appareil.':'\n\n👉 Utilisez « Tout copier » et envoyez le rapport à Claude.'));
       }, function(e){
         L.push('❌ Vérification impossible : '+((e&&e.message)||e));
-        alert('RAPPORT DU CIRCUIT\n\n'+L.join('\n'));
+        achShowDiag('RAPPORT DU CIRCUIT\n\n'+L.join('\n'));
       });
     }, 4000);
   };
 
+  window.achShowDiag=function(txt){
+    var old=document.getElementById('ach-diag-modal'); if(old) old.remove();
+    var ov=document.createElement('div'); ov.id='ach-diag-modal';
+    ov.style.cssText='position:fixed;inset:0;background:rgba(26,26,24,.55);z-index:9500;display:flex;align-items:center;justify-content:center;padding:26px;';
+    var box=document.createElement('div');
+    box.style.cssText='background:#fff;border-radius:14px;box-shadow:0 22px 60px rgba(0,0,0,.3);width:min(860px,96vw);max-height:88vh;display:flex;flex-direction:column;overflow:hidden;';
+    box.innerHTML='<div style="display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid #e5ded3;">'
+      +'<div style="font-family:\'Cormorant Garamond\',serif;font-size:21px;color:#1a1a18;">🔌 Rapport du circuit de synchronisation</div>'
+      +'<div style="display:flex;gap:8px;">'
+      +'<button id="ach-diag-copy" style="background:#fff;border:1px solid #e5ded3;border-radius:8px;padding:7px 13px;font-family:\'Jost\',sans-serif;font-size:12.5px;cursor:pointer;">📋 Tout copier</button>'
+      +'<button id="ach-diag-close" style="background:#1a1a18;color:#fff;border:none;border-radius:8px;padding:7px 15px;font-family:\'Jost\',sans-serif;font-size:12.5px;cursor:pointer;">Fermer</button>'
+      +'</div></div>'
+      +'<pre id="ach-diag-body" style="margin:0;padding:18px 22px;overflow:auto;flex:1;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12.5px;line-height:1.65;color:#1a1a18;white-space:pre-wrap;"></pre>';
+    ov.appendChild(box); document.body.appendChild(ov);
+    document.getElementById('ach-diag-body').textContent=txt;
+    document.getElementById('ach-diag-close').onclick=function(){ ov.remove(); };
+    document.getElementById('ach-diag-copy').onclick=function(){
+      try{ navigator.clipboard.writeText(txt).then(function(){ if(window.toast) toast('Rapport copié ✓'); }); }
+      catch(e){ var r=document.createRange(); r.selectNodeContents(document.getElementById('ach-diag-body')); var s=getSelection(); s.removeAllRanges(); s.addRange(r); document.execCommand('copy'); if(window.toast) toast('Rapport copié ✓'); }
+    };
+    ov.addEventListener('mousedown',function(e){ if(e.target===ov) ov.remove(); });
+  };
   window.accesTab=function(t){
     var tabs={comptes:'acces-tab-comptes', droits:'acces-tab-droits', data:'acces-tab-data'};
     Object.keys(tabs).forEach(function(k){
