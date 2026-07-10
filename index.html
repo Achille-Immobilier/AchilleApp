@@ -1540,7 +1540,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     </div>
   </div>
   </div>
-  <div class="logo-ver app-ver">Achille App — v6.09</div>
+  <div class="logo-ver app-ver">Achille App — v6.10</div>
 </aside>
 <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Réduire la barre latérale">‹</button>
 
@@ -9150,6 +9150,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
   function _ach_isObj(o){ return o && typeof o==='object' && !Array.isArray(o); }
   function _ach_isItemArr(a){ return Array.isArray(a) && a.length>0 && a.every(function(x){ return x && typeof x==='object' && x.id!==undefined; }); }
   function _ach_ts(o){ var v=o && (o.updated||o.updated_at||o.created||o.t||o.date); return v?(''+v):''; }
+  function _ach_isoTs(s){ return /^\d{4}-\d{2}-\d{2}/.test(''+(s||'')); }  /* seul un horodatage complet (AAAA-MM-JJ…) est comparable à un certificat */
   function _ach_rich(o){ /* score de "complétude" d'un élément : nombre de champs réellement remplis */
     var n=0; if(!o||typeof o!=='object') return 0;
     for(var k in o){ if(!Object.prototype.hasOwnProperty.call(o,k)) continue; var v=o[k];
@@ -9175,7 +9176,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     var out=[];
     order.forEach(function(id){ var it=byId[id];
       var del = tomb ? _ach_tombDel(tomb[id]) : null;
-      if(del!==null){ var itTs=_ach_ts(it); if(itTs && itTs > del) out.push(it); }
+      if(del!==null){ var itTs=_ach_ts(it); if(_ach_isoTs(itTs) && itTs > del) out.push(it); }
       else out.push(it); });
     return out;
   }
@@ -9403,7 +9404,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
                refiltré automatiquement à la prochaine fusion. C'était la cause des post-its
                qui "ressuscitaient" à l'actualisation. */
             var its=_ach_ts(newItems[id]||null);
-            if(its && its > _ach_tombDate(prev)){ tomb[k][id]='R:'+now; }
+            if(_ach_isoTs(its) && its > _ach_tombDate(prev)){ tomb[k][id]='R:'+now; }
           });
           origSetItem(TOMB_KEY, JSON.stringify(tomb));
           if(db&&ME){ schedulePush(TOMB_KEY); }
@@ -9728,7 +9729,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     startRealtime();
     var ov=document.getElementById('ach-login-overlay'); if(ov) ov.classList.add('ach-hidden');
     var ub=document.getElementById('ach-userbar'); if(ub) ub.style.display='none';
-    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v6.09';
+    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v6.10';
     flag('Synchronis\u00e9');
     // fin de l'init : on autorise la journalisation des actions
     setTimeout(function(){ installInterceptor._init=false; }, 1500);
