@@ -1540,7 +1540,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     </div>
   </div>
   </div>
-  <div class="logo-ver app-ver">Achille App — v6.07</div>
+  <div class="logo-ver app-ver">Achille App — v6.08</div>
 </aside>
 <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Réduire la barre latérale">‹</button>
 
@@ -9199,6 +9199,10 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     if(_ach_isItemArr(val)){ val.forEach(function(it){ ids[it.id]=1; }); }
     else if(_ach_isObj(val)){ Object.keys(val).forEach(function(k){ if(_ach_isItemArr(val[k])) val[k].forEach(function(it){ ids[it.id]=1; }); }); }
     return ids; }
+  function _ach_collectItems(val){ var m={};
+    if(_ach_isItemArr(val)){ val.forEach(function(it){ m[it.id]=it; }); }
+    else if(_ach_isObj(val)){ Object.keys(val).forEach(function(k){ if(_ach_isItemArr(val[k])) val[k].forEach(function(it){ m[it.id]=it; }); }); }
+    return m; }
   function _ach_tombDate(entry){ var s=''+(entry==null?'':entry); return (s.charAt(1)===':')? s.slice(2) : s; }
   function _ach_mergeTomb(L, C){ var out={}, mods={};
     [L,C].forEach(function(o){ if(o) Object.keys(o).forEach(function(k){ mods[k]=1; }); });
@@ -9373,15 +9377,28 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
   function achCustomSetItem(k,v){
     if(isSync(k) && k!==TOMB_KEY){
       try{
+        var newParsed=_ach_parse(v)||{};
         var oldIds=_ach_collectIds(_ach_parse(window.localStorage.getItem(k))||{});
-        var newIds=_ach_collectIds(_ach_parse(v)||{});
+        var newIds=_ach_collectIds(newParsed);
+        var newItems=_ach_collectItems(newParsed);
         var removed=[], added=[];
         Object.keys(oldIds).forEach(function(id){ if(!newIds[id]) removed.push(id); });
         Object.keys(newIds).forEach(function(id){ if(!oldIds[id]) added.push(id); });
         if(removed.length||added.length){
           var tomb=_ach_tombAll(); tomb[k]=tomb[k]||{}; var now=new Date().toISOString();
           removed.forEach(function(id){ tomb[k][id]='D:'+now; });
-          added.forEach(function(id){ if(tomb[k][id]!==undefined) tomb[k][id]='R:'+now; });
+          added.forEach(function(id){
+            var prev=tomb[k][id];
+            if(prev===undefined) return;                        /* jamais supprimé : rien à annoter */
+            if((''+prev).charAt(0)==='R'){ tomb[k][id]='R:'+now; return; }
+            /* prev = certificat de suppression (D). On ne le lève QUE pour une VRAIE recréation :
+               l'élément réapparu doit être PLUS RÉCENT que la suppression. Une réintroduction par
+               une mémoire périmée (élément ancien) laisse le certificat vivant → l'élément sera
+               refiltré automatiquement à la prochaine fusion. C'était la cause des post-its
+               qui "ressuscitaient" à l'actualisation. */
+            var its=_ach_ts(newItems[id]||null);
+            if(its && its > _ach_tombDate(prev)){ tomb[k][id]='R:'+now; }
+          });
           origSetItem(TOMB_KEY, JSON.stringify(tomb));
           if(db&&ME){ schedulePush(TOMB_KEY); }
         }
@@ -9705,7 +9722,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     startRealtime();
     var ov=document.getElementById('ach-login-overlay'); if(ov) ov.classList.add('ach-hidden');
     var ub=document.getElementById('ach-userbar'); if(ub) ub.style.display='none';
-    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v6.07';
+    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v6.08';
     flag('Synchronis\u00e9');
     // fin de l'init : on autorise la journalisation des actions
     setTimeout(function(){ installInterceptor._init=false; }, 1500);
