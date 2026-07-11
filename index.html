@@ -1539,7 +1539,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     </div>
   </div>
   </div>
-  <div class="logo-ver app-ver">Achille App — v6.21</div>
+  <div class="logo-ver app-ver">Achille App — v6.22</div>
 </aside>
 <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Réduire la barre latérale">‹</button>
 
@@ -9824,7 +9824,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     startRealtime();
     var ov=document.getElementById('ach-login-overlay'); if(ov) ov.classList.add('ach-hidden');
     var ub=document.getElementById('ach-userbar'); if(ub) ub.style.display='none';
-    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v6.21';
+    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v6.22';
     flag('Synchronis\u00e9');
     // fin de l'init : on autorise la journalisation des actions
     setTimeout(function(){ installInterceptor._init=false; }, 1500);
@@ -10890,7 +10890,7 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
       <select class="form-select" id="pg-dossier" style="width:auto;min-width:0;padding:4px 26px 4px 9px;font-size:12px;" title="Dossier personnalisé"><option value="">📁 —</option></select>
       <input type="hidden" id="pg-statut" value="encours">
     </div>
-    <input type="hidden" id="pg-edit-id"><input type="hidden" id="pg-new-url"><input type="hidden" id="pg-new-src">
+    <input type="hidden" id="pg-edit-id"><input type="hidden" id="pg-tempref"><input type="hidden" id="pg-created"><input type="hidden" id="pg-new-url"><input type="hidden" id="pg-new-src">
     <div id="pg-srcline" style="font-size:12px;color:var(--gris);margin-bottom:8px;"></div>
     <div id="pg-lock-warn" style="display:none;background:#fdf3e7;border:1px solid #e8c9a0;color:#8a5a1e;border-radius:8px;padding:9px 13px;font-size:12.5px;margin-bottom:10px;line-height:1.5;"></div>
     <div class="pige-grid">
@@ -10916,7 +10916,6 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
           <div class="form-group fg-etage"><label class="form-label">Étage</label><input class="form-input" id="pg-etage" placeholder="3e / RDC"></div>
           <div class="form-group fg-dpe"><label class="form-label">DPE</label><select class="form-select" id="pg-dpe"><option value="">—</option><option>A</option><option>B</option><option>C</option><option>D</option><option>E</option><option>F</option><option>G</option></select></div>
           <div class="form-group fg-annee"><label class="form-label">Année de construction</label><input class="form-input" inputmode="numeric" id="pg-annee" placeholder="1930"></div>
-          <div class="form-group"><label class="form-label">Date de l'annonce <span style="color:var(--gris-2);font-weight:400;">(pour la température 🔥🌤❄️)</span></label><input class="form-input" type="date" id="pg-dateannonce"></div>
         </div>
         <div class="form-group"><label class="form-label">Caractéristiques</label>
           <div class="pg-carac-boxes">
@@ -10947,6 +10946,7 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
         <div class="form-row" style="margin-top:2px;">
           <div class="form-group" style="flex:1.6;"><label class="form-label">Suivi</label><select class="form-select" id="pg-suivi" onchange="pigeSuiviChanged()"><option value="">—</option><option value="pdr">PDR</option><option value="msg">Message laissé</option><option value="mandat">Mandat → Apimo</option><option value="visite">Accord de visite → Apimo</option><option value="relance">Bon contact à relancer</option><option value="refus-rel">Refus à relancer</option><option value="refus">Refus catégorique</option></select></div>
           <div class="form-group"><label class="form-label">Date du suivi</label><input type="date" class="form-input" id="pg-suivi-date"></div>
+          <div id="pg-temp-line" style="grid-column:1/-1;display:flex;align-items:center;gap:10px;font-size:12.5px;color:var(--gris);margin-top:2px;"><span id="pg-temp-txt">🌡 Température : —</span><button type="button" class="btn btn-sm" style="border:1px solid var(--beige-2);background:#fff;color:var(--gris);font-size:11.5px;padding:4px 10px;" onclick="rapTempReset()" title="Annonce republiée ou nouveau cycle de prospection : la température repart de zéro (pris en compte à l'enregistrement)">↺ Repartir d'aujourd'hui</button></div>
         </div>
         <div id="pg-com-bloc">
       <div class="form-label" style="margin-top:10px;">Suivi &amp; commentaires</div>
@@ -11517,7 +11517,8 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
     var dw=document.getElementById('pg-dup-warn'); if(dw) dw.style.display='none';
     document.getElementById('pg-suivi').value=(r.suivi&&SUIVI[r.suivi])?r.suivi:'';
     S('pg-suivi-date', r.suiviDate||'');
-    S('pg-dateannonce', r.dateAnnonce||'');
+    S('pg-tempref', r.tempRef||'');
+    S('pg-created', r.created||'');
     pigeCalcM2();
     _photo=r.photo||''; _plan=r.plan||''; pgPhotoShow(); pgPlanShow();
     document.getElementById('pg-modal-title').textContent='Fiche de pige';
@@ -11563,7 +11564,7 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
       chambres:(document.getElementById('pg-chambres').value||'').trim(),
       etage:(document.getElementById('pg-etage').value||'').trim(),
       annee:(document.getElementById('pg-annee').value||'').trim(),
-      dateAnnonce:(document.getElementById('pg-dateannonce')||{value:''}).value||'',
+      tempRef:(document.getElementById('pg-tempref')||{value:''}).value||'',
       dpe:document.getElementById('pg-dpe').value||'',
       cave:cval('pg-cave'), parking:cval('pg-parking'), balcon:cval('pg-balcon'), terrasse:cval('pg-terrasse'), jardin:cval('pg-jardin'),
       descriptif:(document.getElementById('pg-descriptif').value||'').trim(),
@@ -13325,7 +13326,7 @@ function rapAVenir(n){ var t=todayISO(), lim=addDaysISO(n); return rapOpen().fil
 
 /* ---------- Température de pige ---------- */
 window.rapTempOf=function(r){
-  var base=(r&&(r.dateAnnonce||r.created))||null;
+  var base=(r&&(r.tempRef||r.dateAnnonce||r.created))||null;
   if(!base) return null;
   var d=new Date(base); if(isNaN(d)) return null;
   var days=(Date.now()-d.getTime())/86400000;
@@ -13336,7 +13337,7 @@ window.rapTempOf=function(r){
 };
 window.rapTempChip=function(r){
   var t=window.rapTempOf(r); if(!t) return '';
-  var src=r.dateAnnonce?'annonce du '+frDate(r.dateAnnonce):'en pige depuis le '+ (r.created? new Date(r.created).toLocaleDateString('fr-FR'):'');
+  var src=r.tempRef?'repart du '+frDate(r.tempRef):(r.dateAnnonce?'annonce du '+frDate(r.dateAnnonce):'en pige depuis le '+ (r.created? new Date(r.created).toLocaleDateString('fr-FR'):''));
   return '<span class="pg-suivi-badge" title="'+rEsc(t.label+' — '+t.days+' j ('+src+')')+'" style="background:'+t.col+'14;color:'+t.col+';border:1px solid '+t.col+'44;">'+t.ico+' '+t.days+' j</span>';
 };
 window.rapRowChip=function(r){
@@ -13490,10 +13491,30 @@ window.rapFicheBtnClick=function(){
   var vi=(document.getElementById('pg-ville')||{}).value||'';
   window.rapOpenModal('pige', id, (ad||vi||'Fiche de pige'));
 };
-/* mise à jour du bouton à chaque ouverture de fiche */
+/* ---------- Ligne température dans la fiche (v6.22) ---------- */
+window.rapTempLine=function(){
+  var txt=document.getElementById('pg-temp-txt'); if(!txt) return;
+  var id=(document.getElementById('pg-edit-id')||{}).value||'';
+  if(!id){ txt.innerHTML='🌡 Température : calculée dès l\u2019enregistrement de la fiche'; return; }
+  var fake={ tempRef:(document.getElementById('pg-tempref')||{}).value||'', created:(document.getElementById('pg-created')||{}).value||'' };
+  var t=window.rapTempOf(fake);
+  if(!t){ txt.innerHTML='🌡 Température : —'; return; }
+  var src=fake.tempRef?('repart du '+fake.tempRef.split('-').reverse().join('/')):'depuis l\u2019entrée en pige';
+  txt.innerHTML='🌡 <span style="color:'+t.col+';font-weight:600;">'+t.ico+' '+t.label+'</span> — '+t.days+' j <span style="color:var(--gris-2);">('+src+')</span>';
+};
+window.rapTempReset=function(){
+  var h=document.getElementById('pg-tempref'); if(!h) return;
+  var id=(document.getElementById('pg-edit-id')||{}).value||'';
+  if(!id){ if(window.toast) toast('Enregistrez d\u2019abord la fiche'); return; }
+  var d=new Date();
+  h.value=d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2);
+  window.rapTempLine();
+  if(window.toast) toast('🌡 La température repartira d\u2019aujourd\u2019hui à l\u2019enregistrement');
+};
+/* mise à jour du bouton + de la ligne température à chaque ouverture de fiche */
 if(window.pigeEdit){
   var _basePigeEdit=window.pigeEdit;
-  window.pigeEdit=function(id){ var r=_basePigeEdit.apply(this, arguments); try{ rapFicheBtn(); }catch(e){} return r; };
+  window.pigeEdit=function(id){ var r=_basePigeEdit.apply(this, arguments); try{ rapFicheBtn(); }catch(e){} try{ window.rapTempLine(); }catch(e){} return r; };
 }
 
 /* ---------- v6.21 : bouton 🔔 sur les 4 autres pages ---------- */
