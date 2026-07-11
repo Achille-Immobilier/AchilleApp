@@ -1539,7 +1539,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     </div>
   </div>
   </div>
-  <div class="logo-ver app-ver">Achille App — v6.22</div>
+  <div class="logo-ver app-ver">Achille App — v6.23</div>
 </aside>
 <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Réduire la barre latérale">‹</button>
 
@@ -9824,7 +9824,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     startRealtime();
     var ov=document.getElementById('ach-login-overlay'); if(ov) ov.classList.add('ach-hidden');
     var ub=document.getElementById('ach-userbar'); if(ub) ub.style.display='none';
-    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v6.22';
+    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v6.23';
     flag('Synchronis\u00e9');
     // fin de l'init : on autorise la journalisation des actions
     setTimeout(function(){ installInterceptor._init=false; }, 1500);
@@ -10915,7 +10915,7 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
           <div class="form-group fg-chambres"><label class="form-label">Chambres</label><input class="form-input" inputmode="numeric" id="pg-chambres" placeholder="2"></div>
           <div class="form-group fg-etage"><label class="form-label">Étage</label><input class="form-input" id="pg-etage" placeholder="3e / RDC"></div>
           <div class="form-group fg-dpe"><label class="form-label">DPE</label><select class="form-select" id="pg-dpe"><option value="">—</option><option>A</option><option>B</option><option>C</option><option>D</option><option>E</option><option>F</option><option>G</option></select></div>
-          <div class="form-group fg-annee"><label class="form-label">Année de construction</label><input class="form-input" inputmode="numeric" id="pg-annee" placeholder="1930"></div>
+          <div class="form-group fg-annee"><label class="form-label" title="Année de construction" style="white-space:nowrap;">Année de constr.</label><input class="form-input" inputmode="numeric" id="pg-annee" placeholder="1930"></div>
         </div>
         <div class="form-group"><label class="form-label">Caractéristiques</label>
           <div class="pg-carac-boxes">
@@ -10946,8 +10946,8 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
         <div class="form-row" style="margin-top:2px;">
           <div class="form-group" style="flex:1.6;"><label class="form-label">Suivi</label><select class="form-select" id="pg-suivi" onchange="pigeSuiviChanged()"><option value="">—</option><option value="pdr">PDR</option><option value="msg">Message laissé</option><option value="mandat">Mandat → Apimo</option><option value="visite">Accord de visite → Apimo</option><option value="relance">Bon contact à relancer</option><option value="refus-rel">Refus à relancer</option><option value="refus">Refus catégorique</option></select></div>
           <div class="form-group"><label class="form-label">Date du suivi</label><input type="date" class="form-input" id="pg-suivi-date"></div>
-          <div id="pg-temp-line" style="grid-column:1/-1;display:flex;align-items:center;gap:10px;font-size:12.5px;color:var(--gris);margin-top:2px;"><span id="pg-temp-txt">🌡 Température : —</span><button type="button" class="btn btn-sm" style="border:1px solid var(--beige-2);background:#fff;color:var(--gris);font-size:11.5px;padding:4px 10px;" onclick="rapTempReset()" title="Annonce republiée ou nouveau cycle de prospection : la température repart de zéro (pris en compte à l'enregistrement)">↺ Repartir d'aujourd'hui</button></div>
         </div>
+        <div id="pg-temp-line" style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--gris);margin:5px 2px 8px;"><span id="pg-temp-txt">🌡 —</span><button type="button" style="margin-left:auto;border:1px solid var(--beige-2);background:#fff;color:var(--gris);font-size:11px;padding:3px 10px;border-radius:8px;font-family:'Jost',sans-serif;cursor:pointer;flex:none;" onclick="rapTempReset()" title="Annonce republiée ou nouveau cycle de prospection : la température repart de zéro (pris en compte à l'enregistrement de la fiche)">↺ Repartir d'aujourd'hui</button></div>
         <div id="pg-com-bloc">
       <div class="form-label" style="margin-top:10px;">Suivi &amp; commentaires</div>
       <div id="pg-com-list" class="pg-com-list"></div>
@@ -13495,10 +13495,10 @@ window.rapFicheBtnClick=function(){
 window.rapTempLine=function(){
   var txt=document.getElementById('pg-temp-txt'); if(!txt) return;
   var id=(document.getElementById('pg-edit-id')||{}).value||'';
-  if(!id){ txt.innerHTML='🌡 Température : calculée dès l\u2019enregistrement de la fiche'; return; }
+  if(!id){ txt.innerHTML='🌡 <span style="color:var(--gris-2);">Température calculée dès l\u2019enregistrement</span>'; return; }
   var fake={ tempRef:(document.getElementById('pg-tempref')||{}).value||'', created:(document.getElementById('pg-created')||{}).value||'' };
   var t=window.rapTempOf(fake);
-  if(!t){ txt.innerHTML='🌡 Température : —'; return; }
+  if(!t){ txt.innerHTML='🌡 —'; return; }
   var src=fake.tempRef?('repart du '+fake.tempRef.split('-').reverse().join('/')):'depuis l\u2019entrée en pige';
   txt.innerHTML='🌡 <span style="color:'+t.col+';font-weight:600;">'+t.ico+' '+t.label+'</span> — '+t.days+' j <span style="color:var(--gris-2);">('+src+')</span>';
 };
