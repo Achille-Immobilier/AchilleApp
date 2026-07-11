@@ -1538,7 +1538,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     </div>
   </div>
   </div>
-  <div class="logo-ver app-ver">Achille App — v6.14</div>
+  <div class="logo-ver app-ver">Achille App — v6.15</div>
 </aside>
 <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Réduire la barre latérale">‹</button>
 
@@ -1854,22 +1854,19 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
 
   <!-- CALCULS RENTA -->
   <div class="page" id="page-renta">
-    <div style="height:calc(100vh - 54px);overflow-y:auto;padding:0 0 40px;">
-
-      <!-- HEADER RENTA — Option A -->
-      <div style="background:var(--beige);border-bottom:3px solid var(--terra);margin:-22px -24px 0;padding:22px 32px 0;">
-        <div style="font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--terra);font-weight:600;margin-bottom:8px;">Analyse financière</div>
-        <div style="font-family:'Cormorant Garamond',serif;font-size:30px;font-weight:300;color:var(--noir);line-height:1.1;margin-bottom:4px;">Calculs <span style="color:var(--terra);font-style:italic;">Rentabilité</span></div>
-        <div style="font-size:12px;color:var(--gris);margin-bottom:18px;letter-spacing:.02em;">Investissement locatif &nbsp;·&nbsp; Marchand de biens &nbsp;·&nbsp; 3 niveaux d'analyse</div>
-        <div style="display:flex;gap:0;border-top:1px solid var(--beige-2);margin:0 -32px;padding:0 32px;">
-          <button id="renta-tab-1" onclick="rentaTab(1)" style="padding:11px 20px;border:none;border-bottom:3px solid var(--terra);background:transparent;font-family:'Jost',sans-serif;font-size:12px;cursor:pointer;letter-spacing:.04em;color:var(--terra);font-weight:600;margin-bottom:-3px;">⚡ Coup d'œil</button>
-          <button id="renta-tab-2" onclick="rentaTab(2)" style="padding:11px 20px;border:none;border-bottom:3px solid transparent;background:transparent;font-family:'Jost',sans-serif;font-size:12px;cursor:pointer;letter-spacing:.04em;color:var(--gris);margin-bottom:-3px;">🏠 Investissement locatif</button>
-          <button id="renta-tab-3" onclick="rentaTab(3)" style="padding:11px 20px;border:none;border-bottom:3px solid transparent;background:transparent;font-family:'Jost',sans-serif;font-size:12px;cursor:pointer;letter-spacing:.04em;color:var(--gris);margin-bottom:-3px;">🔨 Marchand de biens</button>
-        </div>
-      </div>
-      <div style="height:24px;"></div>
-
-      <!-- ══════════ NIVEAU 1 ══════════ -->
+  <div class="nx-wrap nx-wide">
+  <div class="std-head">
+    <div class="std-kicker">Analyse financière</div>
+    <div class="std-title">Calculs <span>Rentabilité</span></div>
+    <div class="std-sub">Trois niveaux d'analyse pour trois profils : le coup d'œil 30 secondes, l'étude complète pour l'investisseur, et l'opération marchand de biens.</div>
+  </div>
+  <div class="std-tabs">
+    <button class="std-tab on" id="renta-tab-1" onclick="rentaTab(1)">⚡ Coup d'œil</button>
+    <button class="std-tab" id="renta-tab-2" onclick="rentaTab(2)">🏠 Investissement locatif</button>
+    <button class="std-tab" id="renta-tab-3" onclick="rentaTab(3)">🔨 Marchand de biens</button>
+  </div>
+  <div style="height:8px;"></div>
+  <!-- ══════════ NIVEAU 1 ══════════ -->
       <div id="renta-panel-1" style="padding:0 24px;">
         <div style="max-width:560px;margin:0 auto;">
           <div style="background:var(--blanc);border-radius:14px;padding:24px;box-shadow:var(--shadow);margin-bottom:20px;">
@@ -1892,7 +1889,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
               <div style="font-size:12px;letter-spacing:.12em;text-transform:uppercase;margin-bottom:6px;" id="r1-label">—</div>
               <div style="font-family:'Cormorant Garamond',serif;font-size:52px;font-weight:600;line-height:1;" id="r1-val">—</div>
               <div style="font-size:14px;margin-top:6px;opacity:.8;" id="r1-sub">—</div>
-              <div style="margin-top:16px;font-size:14px;padding:10px 16px;background:rgba(255,255,255,.25);border-radius:8px;" id="r1-verdict">—</div>
+              <div style="margin-top:16px;font-size:14px;padding:10px 16px;background:rgba(255,255,255,.25);border-radius:8px;" id="r1-verdict">—</div><div style="text-align:right;margin:12px 0 2px;"><button class="tpl-copy" style="font-size:12.5px;padding:7px 14px;" onclick="rentaCopy(1)">📋 Copier le résumé pour le client</button></div>
             </div>
           </div>
 
@@ -1924,12 +1921,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
       </div>
 
       <!-- ══════════ NIVEAU 2 ══════════ -->
-      <div id="renta-panel-2" style="padding:0 24px;display:none;">
-        <div style="max-width:860px;margin:0 auto;">
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;align-items:start;">
-
-            <!-- Colonne gauche : saisie -->
-            <div>
+      <div id="renta-panel-2" style="padding:0 24px;display:none;"><div style="max-width:1280px;margin:0 auto;"><div class="renta3col"><div>
               <!-- Acquisition -->
               <div style="background:var(--blanc);border-radius:14px;padding:20px;box-shadow:var(--shadow);margin-bottom:14px;">
                 <div style="font-size:12px;font-weight:600;color:var(--kaki);letter-spacing:.1em;text-transform:uppercase;margin-bottom:14px;display:flex;align-items:center;gap:8px;"><span style="width:8px;height:8px;border-radius:50%;background:var(--kaki);display:inline-block;"></span>Acquisition</div>
@@ -1979,10 +1971,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
                   </div>
                 </div>
               </div>
-            </div>
-
-            <!-- Colonne droite : résultats -->
-            <div style="position:sticky;top:20px;">
+            </div><div>
               <div id="r2-results" style="background:var(--noir);border-radius:14px;padding:22px;box-shadow:var(--shadow-m);">
                 <div style="font-family:'Cormorant Garamond',serif;font-size:18px;color:var(--blanc);margin-bottom:16px;">Résultats <span style="color:var(--terra-l);">analyse locative</span></div>
 
@@ -2013,10 +2002,44 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
 
                 <!-- Verdict -->
                 <div id="r2-verdict" style="border-radius:10px;padding:12px;font-size:13px;line-height:1.6;display:none;"></div>
-              </div>
-
-              <!-- Glossaire rapide -->
-              <div style="background:var(--blanc);border-radius:14px;padding:16px 20px;box-shadow:var(--shadow);margin-top:14px;">
+              </div><div style="text-align:right;margin:12px 0 2px;"><button class="tpl-copy" style="font-size:12.5px;padding:7px 14px;" onclick="rentaCopy(2)">📋 Copier le résumé pour le client</button></div>
+<div style="background:var(--blanc);border-radius:14px;padding:20px 24px;box-shadow:var(--shadow);margin-top:14px;">
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px;flex-wrap:wrap;">
+    <div style="font-family:'Cormorant Garamond',serif;font-size:19px;color:var(--noir);">Fiscalité — rentabilité « nette-nette »</div>
+  </div>
+  <div style="font-size:12.5px;color:var(--gris);margin-bottom:14px;">Facultatif : renseignez le profil fiscal du client pour voir ce qu'il reste vraiment après impôts — souvent l'argument décisif face à un investisseur aguerri.</div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+    <div>
+      <div style="font-size:11.5px;color:var(--gris);margin-bottom:5px;">Type de location</div>
+      <select id="rf-type" onchange="rentaFisc()" style="width:100%;padding:9px 10px;border:1px solid var(--beige-2);border-radius:8px;font-family:'Jost',sans-serif;font-size:13px;background:#fff;">
+        <option value="nue">Nue — micro-foncier (abattement 30 %)</option>
+        <option value="lmnp">Meublée LMNP — micro-BIC (abattement 50 %)</option>
+      </select>
+    </div>
+    <div>
+      <div style="font-size:11.5px;color:var(--gris);margin-bottom:5px;">Tranche d'imposition (TMI)</div>
+      <select id="rf-tmi" onchange="rentaFisc()" style="width:100%;padding:9px 10px;border:1px solid var(--beige-2);border-radius:8px;font-family:'Jost',sans-serif;font-size:13px;background:#fff;">
+        <option value="0">0 %</option><option value="11">11 %</option><option value="30" selected>30 %</option><option value="41">41 %</option><option value="45">45 %</option>
+      </select>
+    </div>
+  </div>
+  <div id="rf-out" style="margin-top:16px;padding:14px 16px;background:var(--beige);border-radius:10px;">
+    <div style="display:flex;gap:24px;flex-wrap:wrap;align-items:baseline;">
+      <div><div style="font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--gris);">Renta nette-nette</div><div id="rf-nn" style="font-family:'Cormorant Garamond',serif;font-size:30px;font-weight:500;color:var(--gris-2);">—</div></div>
+      <div style="font-size:13px;color:var(--gris);">Impôt estimé : <strong id="rf-impot" style="color:var(--noir);">—</strong> / an<br><span style="color:var(--gris-2);font-size:11.5px;">(TMI + 17,2 % de prélèvements sociaux sur la base après abattement)</span></div>
+    </div>
+    <div style="font-size:11.5px;color:var(--gris-2);margin-top:8px;">Estimation indicative hors régime réel et amortissements — pour une étude précise, orienter le client vers son conseil.</div>
+  </div>
+</div></div><div>
+<div style="background:var(--blanc);border-radius:14px;padding:20px 24px;box-shadow:var(--shadow);border-left:4px solid var(--terra);">
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap;"><div style="font-family:'Cormorant Garamond',serif;font-size:19px;color:var(--noir);">📌 Repères de marché 2026</div></div>
+  <div style="font-size:13px;color:var(--gris);line-height:1.7;">
+    <strong style="color:var(--noir);">5 à 7 % brut</strong> est considéré comme bon en France · en nette, viser <strong style="color:var(--noir);">3 à 5 %</strong>.<br><br>
+    À Paris et dans l'Ouest parisien, <strong style="color:var(--noir);">3 à 4 % brut est cohérent</strong> : la rentabilité s'y complète d'une <strong style="color:var(--noir);">valorisation patrimoniale</strong> et d'une vacance quasi nulle — un 3 % à Neuilly vaut souvent mieux qu'un 8 % dans une ville sans demande.<br><br>
+    Au-delà de <strong style="color:var(--noir);">9 % brut affiché</strong> : se méfier (vacance, dévalorisation, travaux cachés).<br><br>
+    Le <strong style="color:var(--noir);">cash-flow</strong> mesure la soutenabilité mensuelle ; la <strong style="color:var(--noir);">nette-nette</strong>, le gain réel.
+  </div>
+</div><div style="background:var(--blanc);border-radius:14px;padding:16px 20px;box-shadow:var(--shadow);margin-top:14px;">
                 <div style="font-size:12px;font-weight:600;color:var(--gris);letter-spacing:.08em;text-transform:uppercase;margin-bottom:10px;">Glossaire rapide</div>
                 <div style="font-size:12px;color:var(--gris);line-height:2;">
                   <div><strong style="color:var(--noir);">Rendement brut</strong> = Loyers annuels ÷ Prix total</div>
@@ -2025,11 +2048,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
                   <div><strong style="color:var(--noir);">PNO</strong> = Assurance Propriétaire Non Occupant</div>
                   <div><strong style="color:var(--noir);">Vacance locative</strong> = Période sans locataire (pertes de loyer)</div>
                 </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+              </div></div></div></div></div>
 
       <!-- ══════════ NIVEAU 3 ══════════ -->
       <div id="renta-panel-3" style="padding:0 24px;display:none;">
@@ -2100,7 +2119,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
                   <div id="r3-detail" style="font-size:13px;color:var(--blanc);line-height:2.2;"></div>
                 </div>
 
-                <div id="r3-verdict" style="border-radius:10px;padding:12px;font-size:13px;line-height:1.6;display:none;"></div>
+                <div id="r3-verdict" style="border-radius:10px;padding:12px;font-size:13px;line-height:1.6;display:none;"></div><div style="text-align:right;margin:12px 0 2px;"><button class="tpl-copy" style="font-size:12.5px;padding:7px 14px;" onclick="rentaCopy(3)">📋 Copier le résumé pour le client</button></div><div style="font-size:12.5px;color:var(--gris);margin:10px 2px 0;">📌 <strong style="color:var(--noir);">Repère métier :</strong> un marchand de biens vise en général une <strong style="color:var(--noir);">marge nette ≥ 15 à 20 % du prix de revente</strong> pour couvrir l'aléa (délais, découvertes travaux, marché). En dessous de 10 %, l'opération est considérée fragile. </div>
               </div>
 
               <!-- Glossaire MDB -->
@@ -2119,8 +2138,9 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
         </div>
       </div>
 
-    </div>
+    
   </div>
+</div>
 
   <!-- VISITES -->
   <div class="page" id="page-visites">
@@ -2812,91 +2832,24 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
 
   <!-- PROSPECTION -->
   <div class="page" id="page-prospection">
-    <div class="prosp-page">
-      <div class="prosp-tabs">
-        <button class="prosp-tab active" onclick="prospTab('acquereur',this)">📞 Déballe Acquéreur</button>
-        <button class="prosp-tab" onclick="prospTab('vendeur',this)">🤝 Déballe Vendeur</button>
-        <button class="prosp-tab" onclick="prospTab('docs-vendeur',this)">📋 Docs Vendeur</button>
-        <button class="prosp-tab" onclick="prospTab('docs-acquereur',this)">📋 Docs Acquéreur</button>
-        <button class="prosp-tab" onclick="prospTab('arguments',this)">💡 Arguments clés</button>
-        <button class="prosp-tab" onclick="prospTab('objections',this)">🛡 Objections</button>
-      </div>
-      <div class="prosp-body">
-
-        <!-- ═══ DÉBALLE ACQUÉREUR ═══ -->
-        <div class="prosp-panel active" id="prosp-acquereur">
-          <div class="script-intro">
-            <div class="script-intro-title">Déballe téléphonique — Acquéreur</div>
-            <div class="script-intro-sub">Script d'appel entrant ou sortant. Cochez chaque point traité au fil de la conversation.</div>
-          </div>
-
-          <div class="script-step open" onclick="prospToggle(this)">
-            <div class="script-step-hd"><div class="script-step-num">1</div><div class="script-step-title">Accroche & présentation</div><span class="script-step-arrow">▶</span></div>
-            <div class="script-step-body">
-              <div class="script-text">« Bonjour, <strong>Achille Immobilier</strong>, [Prénom] à l'appareil. Je vous appelle / Merci de nous appeler — comment puis-je vous aider ? »</div>
-              <div class="check-list">
-                <div class="check-item" onclick="prospCheck(this,event)"><div class="check-box"></div><div><div class="check-label">Se présenter : prénom + agence</div></div></div>
-                <div class="check-item" onclick="prospCheck(this,event)"><div class="check-box"></div><div><div class="check-label">Valider le projet : achat résidence principale, investissement, résidence secondaire ?</div></div></div>
-                <div class="check-item" onclick="prospCheck(this,event)"><div class="check-box"></div><div><div class="check-label">Confirmer le secteur recherché (Neuilly, Paris 16e, 17e…)</div></div></div>
-              </div>
-            </div>
-          </div>
-
-          <div class="script-step" onclick="prospToggle(this)">
-            <div class="script-step-hd"><div class="script-step-num">2</div><div class="script-step-title">Qualification du projet</div><span class="script-step-arrow">▶</span></div>
-            <div class="script-step-body">
-              <div class="script-text">« Pour vous proposer les biens les plus adaptés, j'ai quelques questions — vous avez 3 minutes ? »</div>
-              <div class="check-list">
-                <div class="check-item" onclick="prospCheck(this,event)"><div class="check-box"></div><div><div class="check-label">Budget global (FAI ou hors frais ?)</div></div></div>
-                <div class="check-item" onclick="prospCheck(this,event)"><div class="check-box"></div><div><div class="check-label">Apport disponible + financement (cash, crédit, courtier mandaté ?)</div></div></div>
-                <div class="check-item" onclick="prospCheck(this,event)"><div class="check-box"></div><div><div class="check-label">Surface souhaitée (m², pièces, étage, ascenseur, parking…)</div></div></div>
-                <div class="check-item" onclick="prospCheck(this,event)"><div class="check-box"></div><div><div class="check-label">Critères non négociables vs souhaits</div></div></div>
-                <div class="check-item" onclick="prospCheck(this,event)"><div class="check-box"></div><div><div class="check-label">Calendrier : délai d'achat souhaité ?</div></div></div>
-                <div class="check-item" onclick="prospCheck(this,event)"><div class="check-box"></div><div><div class="check-label">Situation actuelle : locataire, propriétaire à vendre, déjà en recherche ?</div></div></div>
-              </div>
-            </div>
-          </div>
-
-          <div class="script-step" onclick="prospToggle(this)">
-            <div class="script-step-hd"><div class="script-step-num">3</div><div class="script-step-title">Sectorisation & école (si famille)</div><span class="script-step-arrow">▶</span></div>
-            <div class="script-step-body">
-              <div class="script-text">« Avez-vous des enfants scolarisés ? La sectorisation est un critère important dans notre secteur — je peux vous indiquer les adresses rattachées au collège Pasteur ou à Janson de Sailly. »</div>
-              <div class="check-list">
-                <div class="check-item" onclick="prospCheck(this,event)"><div class="check-box"></div><div><div class="check-label">Enfants : âges et établissements souhaités ?</div></div></div>
-                <div class="check-item" onclick="prospCheck(this,event)"><div class="check-box"></div><div><div class="check-label">Sectorisation collège / lycée mentionnée (Pasteur, Janson, Carnot…)</div></div></div>
-                <div class="check-item" onclick="prospCheck(this,event)"><div class="check-box"></div><div><div class="check-label">Transports importants (proximité métro, RER…) ?</div></div></div>
-              </div>
-            </div>
-          </div>
-
-          <div class="script-step" onclick="prospToggle(this)">
-            <div class="script-step-hd"><div class="script-step-num">4</div><div class="script-step-title">Exclusivités & biens en portefeuille</div><span class="script-step-arrow">▶</span></div>
-            <div class="script-step-body">
-              <div class="script-text">« Nous avons en ce moment [X biens] correspondant à votre recherche, dont certains en exclusivité non diffusés sur les portails. Je vous envoie une sélection personnalisée ? »</div>
-              <div class="check-list">
-                <div class="check-item" onclick="prospCheck(this,event)"><div class="check-box"></div><div><div class="check-label">Mentionner les exclusivités non publiées</div></div></div>
-                <div class="check-item" onclick="prospCheck(this,event)"><div class="check-box"></div><div><div class="check-label">Proposer une alerte personnalisée</div></div></div>
-                <div class="check-item" onclick="prospCheck(this,event)"><div class="check-box"></div><div><div class="check-label">Valider email + WhatsApp pour envoi de sélection</div></div></div>
-              </div>
-            </div>
-          </div>
-
-          <div class="script-step" onclick="prospToggle(this)">
-            <div class="script-step-hd"><div class="script-step-num">5</div><div class="script-step-title">Prise de rendez-vous visite</div><span class="script-step-arrow">▶</span></div>
-            <div class="script-step-body">
-              <div class="script-text">« Je vous propose de visiter [adresse] — vous êtes disponible [jour] matin ou après-midi ? Je bloque le créneau. »</div>
-              <div class="check-list">
-                <div class="check-item" onclick="prospCheck(this,event)"><div class="check-box"></div><div><div class="check-label">Proposer 2 créneaux concrets (ne pas laisser le choix ouvert)</div></div></div>
-                <div class="check-item" onclick="prospCheck(this,event)"><div class="check-box"></div><div><div class="check-label">Confirmer le RDV par SMS / email dans la foulée</div></div></div>
-                <div class="check-item" onclick="prospCheck(this,event)"><div class="check-box"></div><div><div class="check-label">Demander accord de visite si copropriété le requiert</div></div></div>
-                <div class="check-item" onclick="prospCheck(this,event)"><div class="check-box"></div><div><div class="check-label">Créer la fiche client dans Apimo</div></div></div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- ═══ DÉBALLE VENDEUR ═══ -->
-        <div class="prosp-panel" id="prosp-vendeur">
+  <div class="nx-wrap">
+  <div class="std-head">
+    <div class="std-kicker">Équipe · Prospection</div>
+    <div class="std-title">Outils de <span>Prospection</span></div>
+    <div class="std-sub">Scripts d'appel, argumentaire, documents à collecter et méthode terrain — pour l'agent confirmé comme pour le junior.</div>
+  </div>
+  <div class="std-tabs" id="prosp-std-tabs">
+    <button class="std-tab on" onclick="prospTab2('scripts',this)">📞 Scripts d'appel</button>
+    <button class="std-tab" onclick="prospTab2('argu',this)">💡 Argumentaire</button>
+    <button class="std-tab" onclick="prospTab2('docs',this)">📋 Documents</button>
+    <button class="std-tab" onclick="prospTab2('guide',this)">🧭 Guide terrain</button>
+  </div>
+  <div class="nx-tabpanel" id="nxtab-scripts">
+    <div class="seg-switch">
+      <button class="seg on" id="seg-vendeur" onclick="prospScript('vendeur')">🤝 Appel Vendeur</button>
+      <button class="seg" id="seg-acquereur" onclick="prospScript('acquereur')">📞 Appel Acquéreur</button>
+    </div>
+    <div id="wrap-vendeur"><div id="prosp-vendeur">
           <div class="script-intro">
             <div class="script-intro-title">Déballe téléphonique — Vendeur</div>
             <div class="script-intro-sub">Prise de contact pour estimation et mandat. Chaque point coché = information collectée.</div>
@@ -2970,10 +2923,178 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
               </div>
             </div>
           </div>
-        </div>
+        </div></div>
+    <div id="wrap-acquereur" style="display:none;"><div id="prosp-acquereur">
+          <div class="script-intro">
+            <div class="script-intro-title">Déballe téléphonique — Acquéreur</div>
+            <div class="script-intro-sub">Script d'appel entrant ou sortant. Cochez chaque point traité au fil de la conversation.</div>
+          </div>
 
-        <!-- ═══ DOCS VENDEUR ═══ -->
-        <div class="prosp-panel" id="prosp-docs-vendeur">
+          <div class="script-step open" onclick="prospToggle(this)">
+            <div class="script-step-hd"><div class="script-step-num">1</div><div class="script-step-title">Accroche & présentation</div><span class="script-step-arrow">▶</span></div>
+            <div class="script-step-body">
+              <div class="script-text">« Bonjour, <strong>Achille Immobilier</strong>, [Prénom] à l'appareil. Je vous appelle / Merci de nous appeler — comment puis-je vous aider ? »</div>
+              <div class="check-list">
+                <div class="check-item" onclick="prospCheck(this,event)"><div class="check-box"></div><div><div class="check-label">Se présenter : prénom + agence</div></div></div>
+                <div class="check-item" onclick="prospCheck(this,event)"><div class="check-box"></div><div><div class="check-label">Valider le projet : achat résidence principale, investissement, résidence secondaire ?</div></div></div>
+                <div class="check-item" onclick="prospCheck(this,event)"><div class="check-box"></div><div><div class="check-label">Confirmer le secteur recherché (Neuilly, Paris 16e, 17e…)</div></div></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="script-step" onclick="prospToggle(this)">
+            <div class="script-step-hd"><div class="script-step-num">2</div><div class="script-step-title">Qualification du projet</div><span class="script-step-arrow">▶</span></div>
+            <div class="script-step-body">
+              <div class="script-text">« Pour vous proposer les biens les plus adaptés, j'ai quelques questions — vous avez 3 minutes ? »</div>
+              <div class="check-list">
+                <div class="check-item" onclick="prospCheck(this,event)"><div class="check-box"></div><div><div class="check-label">Budget global (FAI ou hors frais ?)</div></div></div>
+                <div class="check-item" onclick="prospCheck(this,event)"><div class="check-box"></div><div><div class="check-label">Apport disponible + financement (cash, crédit, courtier mandaté ?)</div></div></div>
+                <div class="check-item" onclick="prospCheck(this,event)"><div class="check-box"></div><div><div class="check-label">Surface souhaitée (m², pièces, étage, ascenseur, parking…)</div></div></div>
+                <div class="check-item" onclick="prospCheck(this,event)"><div class="check-box"></div><div><div class="check-label">Critères non négociables vs souhaits</div></div></div>
+                <div class="check-item" onclick="prospCheck(this,event)"><div class="check-box"></div><div><div class="check-label">Calendrier : délai d'achat souhaité ?</div></div></div>
+                <div class="check-item" onclick="prospCheck(this,event)"><div class="check-box"></div><div><div class="check-label">Situation actuelle : locataire, propriétaire à vendre, déjà en recherche ?</div></div></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="script-step" onclick="prospToggle(this)">
+            <div class="script-step-hd"><div class="script-step-num">3</div><div class="script-step-title">Sectorisation & école (si famille)</div><span class="script-step-arrow">▶</span></div>
+            <div class="script-step-body">
+              <div class="script-text">« Avez-vous des enfants scolarisés ? La sectorisation est un critère important dans notre secteur — je peux vous indiquer les adresses rattachées au collège Pasteur ou à Janson de Sailly. »</div>
+              <div class="check-list">
+                <div class="check-item" onclick="prospCheck(this,event)"><div class="check-box"></div><div><div class="check-label">Enfants : âges et établissements souhaités ?</div></div></div>
+                <div class="check-item" onclick="prospCheck(this,event)"><div class="check-box"></div><div><div class="check-label">Sectorisation collège / lycée mentionnée (Pasteur, Janson, Carnot…)</div></div></div>
+                <div class="check-item" onclick="prospCheck(this,event)"><div class="check-box"></div><div><div class="check-label">Transports importants (proximité métro, RER…) ?</div></div></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="script-step" onclick="prospToggle(this)">
+            <div class="script-step-hd"><div class="script-step-num">4</div><div class="script-step-title">Exclusivités & biens en portefeuille</div><span class="script-step-arrow">▶</span></div>
+            <div class="script-step-body">
+              <div class="script-text">« Nous avons en ce moment [X biens] correspondant à votre recherche, dont certains en exclusivité non diffusés sur les portails. Je vous envoie une sélection personnalisée ? »</div>
+              <div class="check-list">
+                <div class="check-item" onclick="prospCheck(this,event)"><div class="check-box"></div><div><div class="check-label">Mentionner les exclusivités non publiées</div></div></div>
+                <div class="check-item" onclick="prospCheck(this,event)"><div class="check-box"></div><div><div class="check-label">Proposer une alerte personnalisée</div></div></div>
+                <div class="check-item" onclick="prospCheck(this,event)"><div class="check-box"></div><div><div class="check-label">Valider email + WhatsApp pour envoi de sélection</div></div></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="script-step" onclick="prospToggle(this)">
+            <div class="script-step-hd"><div class="script-step-num">5</div><div class="script-step-title">Prise de rendez-vous visite</div><span class="script-step-arrow">▶</span></div>
+            <div class="script-step-body">
+              <div class="script-text">« Je vous propose de visiter [adresse] — vous êtes disponible [jour] matin ou après-midi ? Je bloque le créneau. »</div>
+              <div class="check-list">
+                <div class="check-item" onclick="prospCheck(this,event)"><div class="check-box"></div><div><div class="check-label">Proposer 2 créneaux concrets (ne pas laisser le choix ouvert)</div></div></div>
+                <div class="check-item" onclick="prospCheck(this,event)"><div class="check-box"></div><div><div class="check-label">Confirmer le RDV par SMS / email dans la foulée</div></div></div>
+                <div class="check-item" onclick="prospCheck(this,event)"><div class="check-box"></div><div><div class="check-label">Demander accord de visite si copropriété le requiert</div></div></div>
+                <div class="check-item" onclick="prospCheck(this,event)"><div class="check-box"></div><div><div class="check-label">Créer la fiche client dans Apimo</div></div></div>
+              </div>
+            </div>
+          </div>
+        </div></div>
+  </div>
+  <div class="nx-tabpanel" id="nxtab-argu" style="display:none;">
+    <div class="argu-2col">
+      <div><div id="prosp-arguments">
+          <div class="script-intro">
+            <div class="script-intro-title">Arguments clés Achille Immobilier</div>
+            <div class="script-intro-sub">À placer naturellement en conversation, selon le profil de l'interlocuteur.</div>
+          </div>
+          <div class="grid-2">
+            <div>
+              <div class="arg-card">
+                <div class="arg-title">Expertise locale exclusive</div>
+                <div class="arg-text">Nous travaillons exclusivement sur Neuilly, Levallois, Boulogne et les arrondissements 6, 7, 8, 15, 16, 17. Cette concentration nous permet de connaître chaque immeuble, chaque micro-secteur et d'anticiper les prix au m² par rue.</div>
+                <div class="arg-phrase">« On ne vend pas Paris en entier — on connaît votre rue. »</div>
+              </div>
+              <div class="arg-card">
+                <div class="arg-title">Fichier acquéreurs actifs</div>
+                <div class="arg-text">Nous disposons d'un fichier d'acquéreurs qualifiés et solvables, dont certains attendent un bien correspondant exactement à votre profil. Un bien en exclusivité peut trouver preneur avant même sa mise en ligne.</div>
+                <div class="arg-phrase">« Votre bien, certains de nos clients l'attendent déjà. »</div>
+              </div>
+              <div class="arg-card">
+                <div class="arg-title">Discrétion & confidentialité</div>
+                <div class="arg-text">Pour les biens haut de gamme, nous proposons une commercialisation off-market sur demande. Aucune mise en ligne publique — diffusion ciblée à une sélection d'acquéreurs triés sur le volet.</div>
+                <div class="arg-phrase">« Pas besoin que tout le quartier sache que vous vendez. »</div>
+              </div>
+            </div>
+            <div>
+              <div class="arg-card">
+                <div class="arg-title">Accompagnement complet</div>
+                <div class="arg-text">De l'estimation à la remise des clés : nous gérons les visites, les négociations, la coordination avec notaires, banques et diagnostiqueurs. Vous n'avez rien à organiser.</div>
+                <div class="arg-phrase">« Nous gérons tout — vous n'avez qu'à signer. »</div>
+              </div>
+              <div class="arg-card">
+                <div class="arg-title">Sectorisation scolaire</div>
+                <div class="arg-text">Nous maîtrisons la sectorisation scolaire rue par rue. Un bien rattaché au collège Pasteur, à Janson de Sailly ou à Carnot se vend plus vite et plus cher. C'est un argument décisif pour les familles.</div>
+                <div class="arg-phrase">« Avec Pasteur, votre bien vaut plus — et ça, on sait le valoriser. »</div>
+              </div>
+              <div class="arg-card">
+                <div class="arg-title">Réactivité & transparence</div>
+                <div class="arg-text">Compte rendu de visite sous 24h, rapport mensuel d'activité, disponibilité 7j/7. Vous savez toujours où en est votre dossier.</div>
+                <div class="arg-phrase">« Nous ne disparaissons pas après la signature du mandat. »</div>
+              </div>
+            </div>
+          </div>
+        </div></div>
+      <div><div id="prosp-objections">
+          <div class="script-intro">
+            <div class="script-intro-title">Objections fréquentes & réponses</div>
+            <div class="script-intro-sub">Cliquez sur une objection pour voir la réponse recommandée.</div>
+          </div>
+
+          <div style="margin-bottom:16px;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--gris-2);">Objections vendeur</div>
+
+          <div class="obj-card" onclick="prospObj(this)">
+            <div class="obj-card-hd"><span class="obj-q">« Votre commission est trop élevée. »</span><span class="obj-tag obj-tag-freq">Très fréquent</span><span class="obj-arrow">▶</span></div>
+            <div class="obj-card-body"><div class="obj-rep">Notre honoraire couvre une prestation complète : estimation précise, photos professionnelles, diffusion premium, gestion intégrale des visites, négociation et suivi jusqu'à l'acte. <strong>Un bien mal valorisé ou mal vendu vous coûte bien plus</strong> qu'une commission. De plus, notre taux de vente sur mandat exclusif est de X semaines en moyenne.</div></div>
+          </div>
+
+          <div class="obj-card" onclick="prospObj(this)">
+            <div class="obj-card-hd"><span class="obj-q">« Je vais essayer de vendre seul d'abord. »</span><span class="obj-tag obj-tag-freq">Très fréquent</span><span class="obj-arrow">▶</span></div>
+            <div class="obj-card-body"><div class="obj-rep">C'est tout à fait votre droit. Ce que nos clients constatent souvent, c'est que les acheteurs qui passent par particuliers négocient beaucoup plus agressivement, et que la gestion administrative prend énormément de temps. <strong>Nous pouvons travailler en parallèle sans exclusivité</strong> dans un premier temps — vous gardez le choix.</div></div>
+          </div>
+
+          <div class="obj-card" onclick="prospObj(this)">
+            <div class="obj-card-hd"><span class="obj-q">« Une autre agence m'a donné un prix plus élevé. »</span><span class="obj-tag obj-tag-freq">Très fréquent</span><span class="obj-arrow">▶</span></div>
+            <div class="obj-card-body"><div class="obj-rep">C'est une pratique connue : surestimer pour décrocher le mandat, puis demander une baisse de prix 2 mois plus tard. <strong>Notre estimation est basée sur les ventes réelles des 12 derniers mois dans votre rue</strong> — je peux vous montrer les références. Un bien au bon prix se vend plus vite et évite de se dévaluer sur le marché.</div></div>
+          </div>
+
+          <div class="obj-card" onclick="prospObj(this)">
+            <div class="obj-card-hd"><span class="obj-q">« Je ne veux pas signer d'exclusivité. »</span><span class="obj-tag obj-tag-common">Fréquent</span><span class="obj-arrow">▶</span></div>
+            <div class="obj-card-body"><div class="obj-rep">Je comprends. L'exclusivité peut faire peur, mais elle est en réalité dans votre intérêt : <strong>un seul interlocuteur, une stratégie de prix cohérente</strong>, pas de concurrence entre agences qui dévalorise le bien. Nous la proposons sur 3 mois renouvelables, avec clause de sortie mensuelle.</div></div>
+          </div>
+
+          <div class="obj-card" onclick="prospObj(this)">
+            <div class="obj-card-hd"><span class="obj-q">« J'ai déjà une agence. »</span><span class="obj-tag obj-tag-common">Fréquent</span><span class="obj-arrow">▶</span></div>
+            <div class="obj-card-body"><div class="obj-rep">Depuis combien de temps ? Et comment se passe le suivi ? <strong>Nous sommes complémentaires</strong> — notre fichier acquéreurs est différent. Si votre mandat est simple, nous pouvons intervenir en parallèle sans frais supplémentaires pour vous.</div></div>
+          </div>
+
+          <div style="margin-top:20px;margin-bottom:16px;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--gris-2);">Objections acquéreur</div>
+
+          <div class="obj-card" onclick="prospObj(this)">
+            <div class="obj-card-hd"><span class="obj-q">« Je ne suis pas encore prêt, je regarde juste. »</span><span class="obj-tag obj-tag-freq">Très fréquent</span><span class="obj-arrow">▶</span></div>
+            <div class="obj-card-body"><div class="obj-rep">C'est parfait — c'est exactement le bon moment pour se positionner. <strong>Les meilleurs biens partent avant d'être publiés</strong>. Je vous inscris dans notre base de recherche, et vous recevez nos exclusivités en avant-première. Ça ne vous engage à rien.</div></div>
+          </div>
+
+          <div class="obj-card" onclick="prospObj(this)">
+            <div class="obj-card-hd"><span class="obj-q">« Je travaille avec plusieurs agences. »</span><span class="obj-tag obj-tag-common">Fréquent</span><span class="obj-arrow">▶</span></div>
+            <div class="obj-card-body"><div class="obj-rep">Bien sûr. Ce que je vous propose en plus : <strong>nos exclusivités et off-market</strong> que vous ne verrez pas ailleurs. Si vous me confiez votre recherche en priorité, je vous alerte en premier dès qu'un bien correspond — avant la mise en ligne.</div></div>
+          </div>
+
+          <div class="obj-card" onclick="prospObj(this)">
+            <div class="obj-card-hd"><span class="obj-q">« Le prix est trop élevé par rapport au marché. »</span><span class="obj-tag obj-tag-common">Fréquent</span><span class="obj-arrow">▶</span></div>
+            <div class="obj-card-body"><div class="obj-rep">Vous avez raison de le signaler — c'est votre rôle. <strong>Partageons nos références de ventes récentes ensemble</strong> et je pourrai vous accompagner dans une négociation argumentée. Sur ce secteur, les marges de négociation tournent en moyenne autour de X%.</div></div>
+          </div>
+
+        </div></div>
+    </div>
+  </div>
+  <div class="nx-tabpanel" id="nxtab-docs" style="display:none;">
+    <div class="docs-2col">
+      <div class="doc-col doc-col-v"><div id="prosp-docs-vendeur">
           <div class="script-intro">
             <div class="script-intro-title">Documents à réclamer au Vendeur</div>
             <div class="script-intro-sub">Cochez au fil de la collecte. La barre de progression se met à jour automatiquement.</div>
@@ -3030,10 +3151,8 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
               <div class="check-item" onclick="prospCheckDoc(this,event)"><div class="check-box"></div><div><div class="check-label">Mainlevée d'hypothèque (si besoin)</div></div></div>
             </div>
           </div>
-        </div>
-
-        <!-- ═══ DOCS ACQUÉREUR ═══ -->
-        <div class="prosp-panel" id="prosp-docs-acquereur">
+        </div></div>
+      <div class="doc-col doc-col-a"><div id="prosp-docs-acquereur">
           <div class="script-intro">
             <div class="script-intro-title">Documents à réclamer à l'Acquéreur</div>
             <div class="script-intro-sub">À collecter avant la mise en relation avec un vendeur ou la rédaction d'une offre.</div>
@@ -3072,108 +3191,84 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
               <div class="check-item" onclick="prospCheckDoc(this,event)"><div class="check-box"></div><div><div class="check-label">Mandat en cours sur ce bien ? Avec quelle agence ?</div></div></div>
             </div>
           </div>
-        </div>
-
-        <!-- ═══ ARGUMENTS ═══ -->
-        <div class="prosp-panel" id="prosp-arguments">
-          <div class="script-intro">
-            <div class="script-intro-title">Arguments clés Achille Immobilier</div>
-            <div class="script-intro-sub">À placer naturellement en conversation, selon le profil de l'interlocuteur.</div>
-          </div>
-          <div class="grid-2">
-            <div>
-              <div class="arg-card">
-                <div class="arg-title">Expertise locale exclusive</div>
-                <div class="arg-text">Nous travaillons exclusivement sur Neuilly, Levallois, Boulogne et les arrondissements 6, 7, 8, 15, 16, 17. Cette concentration nous permet de connaître chaque immeuble, chaque micro-secteur et d'anticiper les prix au m² par rue.</div>
-                <div class="arg-phrase">« On ne vend pas Paris en entier — on connaît votre rue. »</div>
-              </div>
-              <div class="arg-card">
-                <div class="arg-title">Fichier acquéreurs actifs</div>
-                <div class="arg-text">Nous disposons d'un fichier d'acquéreurs qualifiés et solvables, dont certains attendent un bien correspondant exactement à votre profil. Un bien en exclusivité peut trouver preneur avant même sa mise en ligne.</div>
-                <div class="arg-phrase">« Votre bien, certains de nos clients l'attendent déjà. »</div>
-              </div>
-              <div class="arg-card">
-                <div class="arg-title">Discrétion & confidentialité</div>
-                <div class="arg-text">Pour les biens haut de gamme, nous proposons une commercialisation off-market sur demande. Aucune mise en ligne publique — diffusion ciblée à une sélection d'acquéreurs triés sur le volet.</div>
-                <div class="arg-phrase">« Pas besoin que tout le quartier sache que vous vendez. »</div>
-              </div>
-            </div>
-            <div>
-              <div class="arg-card">
-                <div class="arg-title">Accompagnement complet</div>
-                <div class="arg-text">De l'estimation à la remise des clés : nous gérons les visites, les négociations, la coordination avec notaires, banques et diagnostiqueurs. Vous n'avez rien à organiser.</div>
-                <div class="arg-phrase">« Nous gérons tout — vous n'avez qu'à signer. »</div>
-              </div>
-              <div class="arg-card">
-                <div class="arg-title">Sectorisation scolaire</div>
-                <div class="arg-text">Nous maîtrisons la sectorisation scolaire rue par rue. Un bien rattaché au collège Pasteur, à Janson de Sailly ou à Carnot se vend plus vite et plus cher. C'est un argument décisif pour les familles.</div>
-                <div class="arg-phrase">« Avec Pasteur, votre bien vaut plus — et ça, on sait le valoriser. »</div>
-              </div>
-              <div class="arg-card">
-                <div class="arg-title">Réactivité & transparence</div>
-                <div class="arg-text">Compte rendu de visite sous 24h, rapport mensuel d'activité, disponibilité 7j/7. Vous savez toujours où en est votre dossier.</div>
-                <div class="arg-phrase">« Nous ne disparaissons pas après la signature du mandat. »</div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- ═══ OBJECTIONS ═══ -->
-        <div class="prosp-panel" id="prosp-objections">
-          <div class="script-intro">
-            <div class="script-intro-title">Objections fréquentes & réponses</div>
-            <div class="script-intro-sub">Cliquez sur une objection pour voir la réponse recommandée.</div>
-          </div>
-
-          <div style="margin-bottom:16px;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--gris-2);">Objections vendeur</div>
-
-          <div class="obj-card" onclick="prospObj(this)">
-            <div class="obj-card-hd"><span class="obj-q">« Votre commission est trop élevée. »</span><span class="obj-tag obj-tag-freq">Très fréquent</span><span class="obj-arrow">▶</span></div>
-            <div class="obj-card-body"><div class="obj-rep">Notre honoraire couvre une prestation complète : estimation précise, photos professionnelles, diffusion premium, gestion intégrale des visites, négociation et suivi jusqu'à l'acte. <strong>Un bien mal valorisé ou mal vendu vous coûte bien plus</strong> qu'une commission. De plus, notre taux de vente sur mandat exclusif est de X semaines en moyenne.</div></div>
-          </div>
-
-          <div class="obj-card" onclick="prospObj(this)">
-            <div class="obj-card-hd"><span class="obj-q">« Je vais essayer de vendre seul d'abord. »</span><span class="obj-tag obj-tag-freq">Très fréquent</span><span class="obj-arrow">▶</span></div>
-            <div class="obj-card-body"><div class="obj-rep">C'est tout à fait votre droit. Ce que nos clients constatent souvent, c'est que les acheteurs qui passent par particuliers négocient beaucoup plus agressivement, et que la gestion administrative prend énormément de temps. <strong>Nous pouvons travailler en parallèle sans exclusivité</strong> dans un premier temps — vous gardez le choix.</div></div>
-          </div>
-
-          <div class="obj-card" onclick="prospObj(this)">
-            <div class="obj-card-hd"><span class="obj-q">« Une autre agence m'a donné un prix plus élevé. »</span><span class="obj-tag obj-tag-freq">Très fréquent</span><span class="obj-arrow">▶</span></div>
-            <div class="obj-card-body"><div class="obj-rep">C'est une pratique connue : surestimer pour décrocher le mandat, puis demander une baisse de prix 2 mois plus tard. <strong>Notre estimation est basée sur les ventes réelles des 12 derniers mois dans votre rue</strong> — je peux vous montrer les références. Un bien au bon prix se vend plus vite et évite de se dévaluer sur le marché.</div></div>
-          </div>
-
-          <div class="obj-card" onclick="prospObj(this)">
-            <div class="obj-card-hd"><span class="obj-q">« Je ne veux pas signer d'exclusivité. »</span><span class="obj-tag obj-tag-common">Fréquent</span><span class="obj-arrow">▶</span></div>
-            <div class="obj-card-body"><div class="obj-rep">Je comprends. L'exclusivité peut faire peur, mais elle est en réalité dans votre intérêt : <strong>un seul interlocuteur, une stratégie de prix cohérente</strong>, pas de concurrence entre agences qui dévalorise le bien. Nous la proposons sur 3 mois renouvelables, avec clause de sortie mensuelle.</div></div>
-          </div>
-
-          <div class="obj-card" onclick="prospObj(this)">
-            <div class="obj-card-hd"><span class="obj-q">« J'ai déjà une agence. »</span><span class="obj-tag obj-tag-common">Fréquent</span><span class="obj-arrow">▶</span></div>
-            <div class="obj-card-body"><div class="obj-rep">Depuis combien de temps ? Et comment se passe le suivi ? <strong>Nous sommes complémentaires</strong> — notre fichier acquéreurs est différent. Si votre mandat est simple, nous pouvons intervenir en parallèle sans frais supplémentaires pour vous.</div></div>
-          </div>
-
-          <div style="margin-top:20px;margin-bottom:16px;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--gris-2);">Objections acquéreur</div>
-
-          <div class="obj-card" onclick="prospObj(this)">
-            <div class="obj-card-hd"><span class="obj-q">« Je ne suis pas encore prêt, je regarde juste. »</span><span class="obj-tag obj-tag-freq">Très fréquent</span><span class="obj-arrow">▶</span></div>
-            <div class="obj-card-body"><div class="obj-rep">C'est parfait — c'est exactement le bon moment pour se positionner. <strong>Les meilleurs biens partent avant d'être publiés</strong>. Je vous inscris dans notre base de recherche, et vous recevez nos exclusivités en avant-première. Ça ne vous engage à rien.</div></div>
-          </div>
-
-          <div class="obj-card" onclick="prospObj(this)">
-            <div class="obj-card-hd"><span class="obj-q">« Je travaille avec plusieurs agences. »</span><span class="obj-tag obj-tag-common">Fréquent</span><span class="obj-arrow">▶</span></div>
-            <div class="obj-card-body"><div class="obj-rep">Bien sûr. Ce que je vous propose en plus : <strong>nos exclusivités et off-market</strong> que vous ne verrez pas ailleurs. Si vous me confiez votre recherche en priorité, je vous alerte en premier dès qu'un bien correspond — avant la mise en ligne.</div></div>
-          </div>
-
-          <div class="obj-card" onclick="prospObj(this)">
-            <div class="obj-card-hd"><span class="obj-q">« Le prix est trop élevé par rapport au marché. »</span><span class="obj-tag obj-tag-common">Fréquent</span><span class="obj-arrow">▶</span></div>
-            <div class="obj-card-body"><div class="obj-rep">Vous avez raison de le signaler — c'est votre rôle. <strong>Partageons nos références de ventes récentes ensemble</strong> et je pourrai vous accompagner dans une négociation argumentée. Sur ce secteur, les marges de négociation tournent en moyenne autour de X%.</div></div>
-          </div>
-
-        </div>
-
-      </div>
+        </div></div>
     </div>
   </div>
+  <div class="nx-tabpanel" id="nxtab-guide" style="display:none;">
+    
+<div id="prosp-guide">
+  <div class="script-intro">
+    <div class="script-intro-title">Guide terrain — méthode & bons réflexes </div>
+    <div class="script-intro-sub">Quand appeler, qui appeler en priorité, quoi envoyer, et le cadre légal à respecter.</div>
+  </div>
+  <div class="legal-box">
+    <div class="legal-title">⚠️ Cadre légal du démarchage — à connaître absolument </div>
+    <div class="legal-item"><strong>À partir du 11 août 2026</strong> (loi n° 2025-594 du 30 juin 2025) : le démarchage téléphonique d'un particulier nécessite son <strong>consentement préalable</strong>. Sanctions encourues : jusqu'à 75 000 € (personne physique) et 375 000 € (personne morale).</div>
+    <div class="legal-item"><strong>Nos réflexes :</strong> consigner par écrit chaque consentement obtenu (date, canal, formulation) · privilégier les canaux où le vendeur vient à nous (annonce de l'agence, site, recommandation, passage vitrine) · vérifier Bloctel · le RGPD s'applique même si le numéro figure sur une annonce publique.</div>
+    <div class="legal-item"><strong>Phrase de désamorçage</strong> (début d'appel) : <em>« Votre numéro figure sur votre annonce publiée sur [portail]. Si vous préférez ne pas être recontacté, je le note immédiatement et je retire vos coordonnées de notre base. »</em> — proposer le retrait détend l'échange et, dans la plupart des cas, le vendeur enchaîne de lui-même.</div>
+    <div class="legal-note">Ces règles évoluent : faites valider vos pratiques par votre conseil juridique.</div>
+  </div>
+  <div class="guide-sec-title">🌡 Les 3 températures de pige — adapter l'angle d'attaque </div>
+  <div class="grid-3">
+    <div class="temp-card temp-hot">
+      <div class="temp-hd">🔥 Pige chaude <span class="temp-when">annonce &lt; 7 jours</span></div>
+      <div class="temp-mind">Le vendeur est euphorique, sur-sollicité par les agences, convaincu de vendre seul.</div>
+      <div class="temp-strat"><strong>Angle :</strong> ne pas vendre l'agence — se rendre utile. Apporter une info secteur, se présenter, poser un jalon pour plus tard.</div>
+      <div class="arg-phrase">« Je ne vous appelle pas pour vous convaincre — j'ai une information sur votre secteur qui peut vous être utile. »</div>
+    </div>
+    <div class="temp-card temp-warm">
+      <div class="temp-hd">🌤 Pige tiède <span class="temp-when">2 à 6 semaines</span></div>
+      <div class="temp-mind">Les curieux sont passés, pas d'offre sérieuse. Le doute s'installe. <strong>Meilleur ratio effort / résultat.</strong></div>
+      <div class="temp-strat"><strong>Angle :</strong> faire le point sur les retours. Qualifier : des visites ? des offres ? À quel niveau ?</div>
+      <div class="arg-phrase">« Est-ce que c'était des acheteurs sérieux, ou plutôt des curieux ? »</div>
+    </div>
+    <div class="temp-card temp-cold">
+      <div class="temp-hd">❄️ Pige froide <span class="temp-when">&gt; 2 mois</span></div>
+      <div class="temp-mind">Vendeur frustré, fatigué des visites inutiles. Beaucoup plus réceptif à un accompagnement professionnel.</div>
+      <div class="temp-strat"><strong>Angle :</strong> diagnostic honnête (prix, photos, diffusion) + fichier acquéreurs. C'est ici que se signent les mandats.</div>
+      <div class="arg-phrase">« Beaucoup de mes clients ont d'abord essayé seuls. Puis-je vous dire ce que j'observe sur votre secteur ? »</div>
+    </div>
+  </div>
+  <div class="guide-sec-title">🕑 Les bons créneaux d'appel </div>
+  <div class="arg-card">
+    <div class="arg-text"><strong>Plages efficaces :</strong> 10 h – 13 h et 14 h – 20 h, du lundi au vendredi (hors jours fériés). Les <strong>meilleurs taux de réponse : mardi et jeudi en milieu de matinée</strong>.</div>
+    <div class="slot-grid">
+      <div class="slot slot-bad">Lundi matin<span>à éviter — urgences de début de semaine</span></div>
+      <div class="slot slot-best">Mardi 10h–12h<span>★ créneau le plus efficace</span></div>
+      <div class="slot slot-ok">Mercredi<span>correct, après 14 h</span></div>
+      <div class="slot slot-best">Jeudi 10h–12h<span>★ créneau le plus efficace</span></div>
+      <div class="slot slot-bad">Vendredi après-midi<span>à éviter — disponibilité réduite</span></div>
+    </div>
+    <div class="arg-text" style="margin-top:10px;"><strong>Repère volume :</strong> comptez en moyenne 50 à 60 appels pour 1 mandat — la régularité (un créneau fixe chaque jour) prime sur les grosses sessions ponctuelles.</div>
+  </div>
+  <div class="guide-sec-title">💬 Modèles SMS &amp; e-mails — prospection multi-canal </div>
+  <div class="grid-2">
+    <div class="tpl-card">
+      <div class="tpl-hd"><span class="tpl-tag">SMS</span> Premier contact vendeur <button class="tpl-copy" onclick="guideCopy(this)">📋 Copier</button></div>
+      <div class="tpl-body">Bonjour, [Prénom] de l'agence Achille Immobilier (Neuilly). J'ai vu votre annonce pour votre bien [rue/quartier]. Nous avons des acquéreurs en recherche active sur ce secteur précis. Puis-je vous appeler 3 minutes pour vous en dire plus ? Bien à vous, [Prénom]</div>
+    </div>
+    <div class="tpl-card">
+      <div class="tpl-hd"><span class="tpl-tag">SMS</span> Relance J+21 (pige tiède) <button class="tpl-copy" onclick="guideCopy(this)">📋 Copier</button></div>
+      <div class="tpl-body">Bonjour [Prénom], [Prénom] d'Achille Immobilier. Nous avions échangé au sujet de votre bien [quartier]. Sans nouvelles de votre côté, je me permets un point rapide : avez-vous eu des visites sérieuses ? Si utile, je peux vous partager les dernières ventes du secteur. Bonne journée !</div>
+    </div>
+    <div class="tpl-card">
+      <div class="tpl-hd"><span class="tpl-tag">E-MAIL</span> Après un premier appel <button class="tpl-copy" onclick="guideCopy(this)">📋 Copier</button></div>
+      <div class="tpl-body">Objet : Suite à notre échange — votre bien [quartier]&#10;&#10;Bonjour [Prénom],&#10;Merci pour notre échange de ce jour. Comme convenu, voici en quelques lignes ce que l'agence peut vous apporter : une estimation précise appuyée sur les ventes réelles de votre rue, un fichier d'acquéreurs qualifiés sur votre secteur, et un accompagnement complet jusqu'à l'acte.&#10;Je reste à votre disposition pour un rendez-vous d'estimation sans engagement.&#10;Bien cordialement,&#10;[Prénom] — Achille Immobilier, Neuilly-sur-Seine</div>
+    </div>
+    <div class="tpl-card">
+      <div class="tpl-hd"><span class="tpl-tag">E-MAIL</span> Bien invendu &gt; 60 jours <button class="tpl-copy" onclick="guideCopy(this)">📋 Copier</button></div>
+      <div class="tpl-body">Objet : Votre bien [quartier] — un regard extérieur ?&#10;&#10;Bonjour [Prénom],&#10;Votre annonce est en ligne depuis plusieurs semaines. C'est souvent à ce stade qu'un regard professionnel change la donne : positionnement du prix, qualité des photos, canaux de diffusion. Je vous propose un diagnostic gratuit et sans engagement de votre commercialisation — 20 minutes, chez vous ou par téléphone.&#10;Bien cordialement,&#10;[Prénom] — Achille Immobilier</div>
+    </div>
+  </div>
+  <div class="guide-sec-title">⭐ Le réflexe e-réputation </div>
+  <div class="arg-card">
+    <div class="arg-text">Après un appel, 9 vendeurs sur 10 tapent le nom de l'agence sur Google. Autant les y inviter nous-mêmes : c'est ce qui nous différencie des appels anonymes.</div>
+    <div class="arg-phrase">« Si vous souhaitez vérifier notre sérieux avant notre rendez-vous, consultez les avis de nos clients sur Google — ils racontent mieux que moi comment nous travaillons. »</div>
+  </div>
+</div>
+  </div>
+  </div>
+</div>
 
   <div class="page" id="page-acces">
     <div style="padding:24px 30px;overflow-y:auto;height:100%;box-sizing:border-box;">
@@ -4881,14 +4976,9 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
   };
 
   window.prospSaveEdits = function() {
-    var page = document.getElementById('page-prospection');
-    if(!page) return;
-    try {
-      localStorage.setItem('ach_prosp_v1', page.innerHTML);
-      toast('Prospection sauvegardee !');
-    } catch(e) {
-      toast('Erreur sauvegarde');
-    }
+    /* v6.15 : neutralisé (l'édition libre de la page Prospection est retirée
+       avec le nouveau design — la sauvegarde de page.innerHTML était fragile). */
+    if(window.toast) toast('Édition de la page Prospection désactivée depuis la v6.15');
   };
 
   window.prospDelCheck = function(btn, e) {
@@ -4921,16 +5011,9 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
 
   // Load saved version if exists
   function prospLoadSaved() {
-    try {
-      var saved = localStorage.getItem('ach_prosp_v1');
-      if(saved) {
-        var page = document.getElementById('page-prospection');
-        if(page) {
-          page.innerHTML = saved;
-          toast('Prospection restauree depuis la sauvegarde');
-        }
-      }
-    } catch(e){}
+    /* v6.15 : neutralisé. L'ancien mécanisme réinjectait page.innerHTML depuis
+       ach_prosp_v1 et écraserait le nouveau design de la page Prospection.
+       Confirmé avec Laurent : aucune personnalisation n'a jamais été sauvegardée. */
   }
 
   // Hook into role switching to show/hide edit button
@@ -9733,7 +9816,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     startRealtime();
     var ov=document.getElementById('ach-login-overlay'); if(ov) ov.classList.add('ach-hidden');
     var ub=document.getElementById('ach-userbar'); if(ub) ub.style.display='none';
-    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v6.14';
+    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v6.15';
     flag('Synchronis\u00e9');
     // fin de l'init : on autorise la journalisation des actions
     setTimeout(function(){ installInterceptor._init=false; }, 1500);
@@ -12366,5 +12449,162 @@ select.pg-chip{padding:6px 10px;}
 })();
 </script>
 
+
+<!-- ══════════ v6.15 : refonte Prospection + Calculs Renta ══════════ -->
+<style>
+
+.nx-wrap{max-width:1150px;margin:0 auto;padding:26px 26px 60px;}
+.nx-wrap.nx-wide{max-width:1320px;}
+.std-head{margin-bottom:6px;}
+.std-kicker{font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--terra);font-weight:600;margin-bottom:8px;}
+.std-title{font-family:'Cormorant Garamond',serif;font-size:34px;font-weight:300;line-height:1.1;margin-bottom:6px;color:var(--noir);}
+.std-title span{color:var(--terra);font-style:italic;}
+.std-sub{font-size:13px;color:var(--gris);margin-bottom:16px;max-width:640px;}
+.std-tabs{display:flex;gap:8px;margin:8px 0 24px;border-bottom:1px solid var(--border);flex-wrap:wrap;}
+.std-tab{background:transparent;border:none;border-bottom:2.5px solid transparent;color:var(--gris);font-family:'Jost',sans-serif;font-size:13.5px;padding:8px 14px 10px;cursor:pointer;transition:all .15s;}
+.std-tab:hover{color:var(--noir);}
+.std-tab.on{color:var(--noir);font-weight:600;border-bottom-color:var(--terra);}
+.seg-switch{display:inline-flex;background:var(--blanc);border:1px solid var(--beige-2);border-radius:11px;padding:4px;gap:4px;margin-bottom:22px;box-shadow:var(--shadow);}
+.seg{border:none;background:transparent;border-radius:8px;padding:9px 20px;font-family:'Jost',sans-serif;font-size:13.5px;color:var(--gris);cursor:pointer;transition:all .15s;}
+.seg.on{background:var(--noir);color:#fff;font-weight:500;}
+.docs-2col,.argu-2col{display:grid;grid-template-columns:1fr 1fr;gap:26px;align-items:start;}
+.argu-2col .grid-2{grid-template-columns:1fr;}
+@media(max-width:960px){.docs-2col,.argu-2col{grid-template-columns:1fr;}}
+.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:26px;}
+@media(max-width:960px){.grid-3{grid-template-columns:1fr;}}
+.renta3col{display:grid;grid-template-columns:1.05fr 1fr .85fr;gap:20px;align-items:start;}
+@media(max-width:1150px){.renta3col{grid-template-columns:1fr 1fr;}}
+@media(max-width:860px){.renta3col{grid-template-columns:1fr;}}
+.guide-sec-title{font-family:'Cormorant Garamond',serif;font-size:22px;margin:30px 0 14px;display:flex;align-items:center;gap:10px;color:var(--noir);}
+.legal-box{background:#fdf6ee;border:1px solid #e8c9a0;border-left:4px solid var(--orange,#c87830);border-radius:12px;padding:18px 22px;margin-bottom:8px;}
+.legal-title{font-family:'Jost',sans-serif;font-weight:600;font-size:14.5px;color:#8a5215;margin-bottom:10px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.legal-item{font-size:13px;color:#5a4632;line-height:1.6;margin-bottom:9px;}
+.legal-note{font-size:11.5px;color:#a08252;font-style:italic;}
+.temp-card{background:var(--blanc);border-radius:13px;padding:18px;box-shadow:var(--shadow);border-top:4px solid var(--beige-2);}
+.temp-hot{border-top-color:#a03222;}.temp-warm{border-top-color:#c87830;}.temp-cold{border-top-color:#4a7ba6;}
+.temp-hd{font-family:'Jost',sans-serif;font-weight:600;font-size:14.5px;margin-bottom:8px;display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;color:var(--noir);}
+.temp-when{font-weight:400;font-size:11.5px;color:var(--gris-2);}
+.temp-mind{font-size:12.5px;color:var(--gris);line-height:1.55;margin-bottom:8px;}
+.temp-strat{font-size:12.5px;color:var(--noir);line-height:1.55;margin-bottom:8px;}
+.slot-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-top:12px;}
+@media(max-width:960px){.slot-grid{grid-template-columns:1fr 1fr;}}
+.slot{border-radius:9px;padding:10px;font-size:12px;font-weight:500;text-align:center;line-height:1.35;}
+.slot span{display:block;font-size:10.5px;font-weight:400;opacity:.75;margin-top:3px;}
+.slot-best{background:rgba(46,110,80,.13);color:var(--vert,#2e6e50);border:1px solid rgba(46,110,80,.3);}
+.slot-ok{background:var(--blanc);color:var(--gris);border:1px solid var(--beige-2);}
+.slot-bad{background:rgba(160,50,34,.08);color:#a03222;border:1px solid rgba(160,50,34,.22);}
+.tpl-card{background:var(--blanc);border-radius:13px;box-shadow:var(--shadow);overflow:hidden;}
+.tpl-hd{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--border);font-size:13px;font-weight:500;color:var(--noir);}
+.tpl-tag{background:var(--noir);color:#fff;font-size:9.5px;letter-spacing:.1em;border-radius:5px;padding:3px 8px;font-weight:600;}
+.tpl-copy{margin-left:auto;border:1px solid var(--beige-2);background:#fff;border-radius:7px;padding:5px 11px;font-family:'Jost',sans-serif;font-size:11.5px;color:var(--noir);cursor:pointer;transition:all .15s;}
+.tpl-copy:hover{background:var(--noir);color:#fff;border-color:var(--noir);}
+.tpl-body{padding:14px 16px;font-size:12.5px;color:var(--gris);line-height:1.6;white-space:pre-line;}
+.doc-col{background:var(--blanc);border-radius:14px;padding:20px 22px;box-shadow:var(--shadow);border-top:4px solid var(--beige-2);}
+.doc-col-v{border-top-color:var(--terra);}
+.doc-col-a{border-top-color:var(--vert,#2e6e50);}
+.doc-col-v .script-intro-title,.doc-col-v .doc-section-title{color:var(--terra);}
+.doc-col-a .script-intro-title,.doc-col-a .doc-section-title{color:var(--vert,#2e6e50);}
+.doc-col .doc-section{border-left:3px solid var(--beige-2);padding-left:14px;}
+.doc-col-v .doc-section{border-left-color:rgba(180,85,45,.35);}
+.doc-col-a .doc-section{border-left-color:rgba(46,110,80,.35);}
+.doc-col-v .doc-progress-bar{background:linear-gradient(90deg,var(--terra),#d29674);}
+.doc-col-a .doc-progress-bar{background:linear-gradient(90deg,var(--vert,#2e6e50),#5aa87f);}
+.new-badge{display:inline-block;background:var(--terra);color:#fff;font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;font-weight:600;border-radius:5px;padding:3px 8px;vertical-align:middle;font-family:'Jost',sans-serif;}
+
+</style>
+<script>
+
+window.prospTab2=function(id,btn){
+  ['scripts','argu','docs','guide'].forEach(function(t){ var p=document.getElementById('nxtab-'+t); if(p) p.style.display=(t===id)?'':'none'; });
+  var tabs=document.querySelectorAll('#prosp-std-tabs .std-tab');
+  [].forEach.call(tabs,function(b){ b.classList.toggle('on', b===btn); });
+};
+window.prospScript=function(which){
+  var v=document.getElementById('wrap-vendeur'), a=document.getElementById('wrap-acquereur');
+  if(v) v.style.display=(which==='vendeur')?'':'none';
+  if(a) a.style.display=(which==='acquereur')?'':'none';
+  var sv=document.getElementById('seg-vendeur'), sa=document.getElementById('seg-acquereur');
+  if(sv) sv.classList.toggle('on', which==='vendeur');
+  if(sa) sa.classList.toggle('on', which==='acquereur');
+};
+window.rentaTab=function(n){
+  [1,2,3].forEach(function(i){
+    var panel=document.getElementById('renta-panel-'+i);
+    var btn=document.getElementById('renta-tab-'+i);
+    if(panel) panel.style.display=(i===n)?'':'none';
+    if(btn) btn.classList.toggle('on', i===n);
+  });
+};
+window.guideCopy=function(btn){
+  var card=btn.closest('.tpl-card'); if(!card) return;
+  var body=card.querySelector('.tpl-body'); if(!body) return;
+  var txt=body.innerText;
+  function ok(){ btn.textContent='✓ Copié !'; setTimeout(function(){btn.textContent='📋 Copier';},1600); }
+  if(navigator.clipboard&&navigator.clipboard.writeText){ navigator.clipboard.writeText(txt).then(ok).catch(function(){ guideCopyFb(txt); ok(); }); }
+  else { guideCopyFb(txt); ok(); }
+};
+function guideCopyFb(txt){ var ta=document.createElement('textarea'); ta.value=txt; document.body.appendChild(ta); ta.select(); try{document.execCommand('copy');}catch(e){} ta.remove(); }
+window.rentaFisc=function(){
+  var nn=document.getElementById('rf-nn'), imp=document.getElementById('rf-impot');
+  if(!nn||!imp) return;
+  var prix=rentaV('r2-prix'), notaire=rentaV('r2-notaire'), agence=rentaV('r2-agence'), travaux=rentaV('r2-travaux');
+  var loyer=rentaV('r2-loyer'), vacance=rentaV('r2-vacance');
+  var taxe=rentaV('r2-taxe'), charges=rentaV('r2-charges'), assur=rentaV('r2-assurance'), gestion=rentaV('r2-gestion'), entret=rentaV('r2-entretien');
+  if(!prix||!loyer){ nn.textContent='—'; nn.style.color='var(--gris-2)'; imp.textContent='—'; return; }
+  var cout=prix+notaire+agence+travaux;
+  var loyersAn=loyer*12*(1-(vacance||0)/100);
+  var gestAn=loyersAn*(gestion||0)/100;
+  var chargesAn=(taxe||0)+(charges||0)*12+(assur||0)+gestAn+(entret||0);
+  var tEl=document.getElementById('rf-type'), mEl=document.getElementById('rf-tmi');
+  var abatt=(tEl&&tEl.value==='lmnp')?0.5:0.3;
+  var tmi=mEl?(parseFloat(mEl.value)||0):30;
+  var impot=loyersAn*(1-abatt)*((tmi+17.2)/100);
+  var netnet=((loyersAn-chargesAn-impot)/cout)*100;
+  imp.textContent=Math.round(impot).toLocaleString('fr-FR')+' €';
+  nn.textContent=netnet.toFixed(2).replace('.',',')+' %';
+  nn.style.color=rentaColor(netnet);
+};
+(function(){ var base=window.rentaCalc2; if(base){ window.rentaCalc2=function(){ base(); try{ rentaFisc(); }catch(e){} }; } })();
+window.rentaCopy=function(n){
+  var L=[];
+  function v(id){ return rentaV(id); }
+  function eur(x){ return Math.round(x).toLocaleString('fr-FR')+' €'; }
+  function txtOf(id){ var e=document.getElementById(id); return e?e.textContent.replace(/\u00a0/g,' ').trim():'—'; }
+  if(n===1){
+    var prix=v('r1-prix'), loyer=v('r1-loyer');
+    if(!prix||!loyer){ alert('Renseignez d\'abord le prix et le loyer.'); return; }
+    var brut=(loyer*12/prix)*100;
+    L=['— Achille Immobilier · Estimation rapide de rentabilité —',
+       'Prix du bien : '+eur(prix), 'Loyer mensuel estimé : '+eur(loyer),
+       'Rentabilité brute : '+brut.toFixed(2).replace('.',',')+' %',
+       '', 'Estimation indicative — étude complète sur demande.'];
+  } else if(n===2){
+    var prix2=v('r2-prix'); if(!prix2){ alert('Renseignez d\'abord le calculateur.'); return; }
+    L=['— Achille Immobilier · Étude de rentabilité locative —',
+       'Coût total du projet : '+eur(prix2+v('r2-notaire')+v('r2-agence')+v('r2-travaux')),
+       'Loyer mensuel : '+eur(v('r2-loyer')),
+       'Rentabilité brute : '+txtOf('r2-brut'),
+       'Rentabilité nette (après charges) : '+txtOf('r2-net')];
+    var nn=txtOf('rf-nn');
+    if(nn.indexOf('%')>=0){ L.push('Rentabilité nette-nette (après impôts, estimation) : '+nn);
+      L.push('Impôt annuel estimé : '+txtOf('rf-impot')); }
+    var cf=txtOf('r2-cf'); if(cf&&cf!=='—') L.push('Cash-flow mensuel (avec crédit) : '+cf);
+    L.push('','Estimation indicative — hors régime réel et situation fiscale personnelle.');
+  } else {
+    var prix3=v('r3-prix'), rev=v('r3-revente'); if(!prix3||!rev){ alert('Renseignez d\'abord le calculateur.'); return; }
+    L=['— Achille Immobilier · Opération marchand de biens —',
+       'Acquisition : '+eur(prix3)+'  ·  Revente visée : '+eur(rev),
+       'Marge brute : '+txtOf('r3-marge-brute'),
+       'Marge nette : '+txtOf('r3-marge-nette'),
+       'ROI : '+txtOf('r3-roi'),
+       '','Repère métier : marge nette visée ≥ 15–20 % du prix de revente.'];
+  }
+  var txt=L.join('\n');
+  function done(){ var m='📋 Résumé copié — prêt à coller dans un e-mail ou SMS'; toast(m); }
+  if(navigator.clipboard&&navigator.clipboard.writeText){ navigator.clipboard.writeText(txt).then(done).catch(function(){ guideCopyFb(txt); done(); }); }
+  else { guideCopyFb(txt); done(); }
+};
+
+</script>
 </body>
 </html>
