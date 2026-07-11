@@ -1499,7 +1499,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
   </div>
   <div class="nav-section" style="margin-top:8px;">
     <div class="nav-lbl">Équipe</div>
-    <div class="nav-item" onclick="navTo('planning',this)"><span class="nav-icon">📅</span><span class="nav-item-label">Planning</span><span class="nav-badge" id="badge-tasks" style="display:none;"></span></div>
+    <div class="nav-item" onclick="navTo('planning',this)"><span class="nav-icon">📅</span><span class="nav-item-label">Planning</span><span class="nav-badge" id="badge-tasks" style="display:none;"></span><span class="nav-badge-rap" id="badge-rappels" style="display:none;"></span></div>
     <div class="nav-item" onclick="navTo('postits',this)"><span class="nav-icon">📌</span><span class="nav-item-label">Post-its</span></div>
     <div class="nav-item" onclick="navTo('sectorisation',this)"><span class="nav-icon">🗺</span><span class="nav-item-label">Sectorisation</span></div>
     <div class="nav-item" onclick="navTo('honoraires',this)"><span class="nav-icon">€</span><span class="nav-item-label">Honoraires</span></div>
@@ -1539,7 +1539,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     </div>
   </div>
   </div>
-  <div class="logo-ver app-ver">Achille App — v6.19</div>
+  <div class="logo-ver app-ver">Achille App — v6.21</div>
 </aside>
 <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Réduire la barre latérale">‹</button>
 
@@ -1579,6 +1579,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
   <!-- DASHBOARD -->
   <div class="page active" id="page-dashboard">
     <div class="sec-hd"><div><div class="sec-title">Tableau de <span>Bord</span></div><div class="sec-sub">Vue d'ensemble de l'activité</div></div><button class="btn btn-terra btn-sm" onclick="affNew()">+ Nouvelle affaire</button></div>
+    <div id="rap-dash"></div>
     <div id="dash-body"></div>
   </div>
 
@@ -2372,6 +2373,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
   <!-- PLANNING -->
   <div class="page" id="page-planning">
     <div class="plan-page">
+      <div id="rap-plan"></div>
 
       <!-- Toolbar -->
       <div class="plan-toolbar" style="flex-wrap:nowrap;overflow-x:auto;">
@@ -3657,7 +3659,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
 
 <!-- MODALS -->
 <div class="modal-overlay" id="modal-deal"><div class="modal"><button class="modal-close" onclick="closeModal('modal-deal')">x</button><div class="modal-title" id="aff-modal-title">Nouvelle affaire</div><input type="hidden" id="aff-edit-id" value="">
-<div id="aff-lock-warn" style="display:none;background:#fdf3e7;border:1px solid #e8c9a0;color:#8a5a1e;border-radius:8px;padding:9px 13px;font-size:12.5px;margin-bottom:10px;line-height:1.5;"></div><div class="form-row"><div class="form-group"><label class="form-label">Type</label><select class="form-select" id="aff-type"><option>Vente</option><option>Location</option></select></div><div class="form-group"><label class="form-label">Étape</label><select class="form-select" id="aff-stage"><option>Prospect</option><option>Échanges</option><option>Estimation</option><option>Mandat</option><option>Visite</option><option>Offre</option></select></div><div class="form-group"><label class="form-label">Priorité</label><select class="form-select" id="aff-stars"><option value="0">☆ Aucune</option><option value="1">★</option><option value="2">★★</option><option value="3">★★★</option></select></div></div><div class="form-group" style="position:relative;"><label class="form-label">Adresse postale</label><input class="form-input" type="text" id="aff-adresse" autocomplete="off" placeholder="Commencez à taper l’adresse…" oninput="affACInput()" onblur="setTimeout(affACHide,150)"><div id="aff-ac-list" style="display:none;position:absolute;left:0;right:0;top:100%;z-index:60;background:#fff;border:1px solid var(--border);border-radius:8px;box-shadow:0 6px 20px rgba(0,0,0,.14);max-height:220px;overflow-y:auto;"></div></div><div class="form-group"><label class="form-label">Bien</label><input class="form-input" type="text" id="aff-bien" placeholder="Ex. Appartement T4, 120 m²"></div><div class="form-row"><div class="form-group"><label class="form-label">Prix (€)</label><input class="form-input js-thousands" type="text" inputmode="decimal" id="aff-prix" placeholder="Ex. 2 450 000"></div><div class="form-group"><label class="form-label">Négociateur</label><select class="form-select" id="aff-nego"></select></div></div><div class="form-row"><div class="form-group"><label class="form-label">Client (acquéreur)</label><input class="form-input" type="text" id="aff-client" placeholder="Nom du client"></div><div class="form-group"><label class="form-label">Vendeur</label><input class="form-input" type="text" id="aff-vendeur" placeholder="Nom du vendeur"></div></div><div class="form-group"><label class="form-label">Observations</label><textarea class="form-input" id="aff-notes" rows="4" placeholder="(optionnel)" style="resize:vertical;min-height:96px;font-family:inherit;line-height:1.4;"></textarea></div><div class="modal-actions"><button class="btn btn-outline" onclick="affCancel()">Annuler</button><button class="btn btn-terra" onclick="affSaveNew()">Enregistrer l'affaire</button></div></div></div>
+<div id="aff-lock-warn" style="display:none;background:#fdf3e7;border:1px solid #e8c9a0;color:#8a5a1e;border-radius:8px;padding:9px 13px;font-size:12.5px;margin-bottom:10px;line-height:1.5;"></div><div class="form-row"><div class="form-group"><label class="form-label">Type</label><select class="form-select" id="aff-type"><option>Vente</option><option>Location</option></select></div><div class="form-group"><label class="form-label">Étape</label><select class="form-select" id="aff-stage"><option>Prospect</option><option>Échanges</option><option>Estimation</option><option>Mandat</option><option>Visite</option><option>Offre</option></select></div><div class="form-group"><label class="form-label">Priorité</label><select class="form-select" id="aff-stars"><option value="0">☆ Aucune</option><option value="1">★</option><option value="2">★★</option><option value="3">★★★</option></select></div></div><div class="form-group" style="position:relative;"><label class="form-label">Adresse postale</label><input class="form-input" type="text" id="aff-adresse" autocomplete="off" placeholder="Commencez à taper l’adresse…" oninput="affACInput()" onblur="setTimeout(affACHide,150)"><div id="aff-ac-list" style="display:none;position:absolute;left:0;right:0;top:100%;z-index:60;background:#fff;border:1px solid var(--border);border-radius:8px;box-shadow:0 6px 20px rgba(0,0,0,.14);max-height:220px;overflow-y:auto;"></div></div><div class="form-group"><label class="form-label">Bien</label><input class="form-input" type="text" id="aff-bien" placeholder="Ex. Appartement T4, 120 m²"></div><div class="form-row"><div class="form-group"><label class="form-label">Prix (€)</label><input class="form-input js-thousands" type="text" inputmode="decimal" id="aff-prix" placeholder="Ex. 2 450 000"></div><div class="form-group"><label class="form-label">Négociateur</label><select class="form-select" id="aff-nego"></select></div></div><div class="form-row"><div class="form-group"><label class="form-label">Client (acquéreur)</label><input class="form-input" type="text" id="aff-client" placeholder="Nom du client"></div><div class="form-group"><label class="form-label">Vendeur</label><input class="form-input" type="text" id="aff-vendeur" placeholder="Nom du vendeur"></div></div><div class="form-group"><label class="form-label">Observations</label><textarea class="form-input" id="aff-notes" rows="4" placeholder="(optionnel)" style="resize:vertical;min-height:96px;font-family:inherit;line-height:1.4;"></textarea></div><div class="modal-actions"><button class="btn btn-outline" onclick="affCancel()">Annuler</button><button class="btn btn-sm" type="button" id="aff-rap-btn" style="display:none;border:1px solid var(--terra);color:var(--terra);background:#fff;margin-right:auto;" onclick="rapAffBtnClick()">🔔 Ajouter un rappel</button><button class="btn btn-terra" onclick="affSaveNew()">Enregistrer l'affaire</button></div></div></div>
 
 
 
@@ -3776,6 +3778,9 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     if(id==='lexique') { if(typeof lexRender==='function') lexRender(); }
     if(id==='prospection') { if(typeof prospLoadSaved==='function') prospLoadSaved(); }
     if(id==='generateur') { if(typeof dgInit==='function') dgInit(); }
+    if(id==='dashboard') { if(typeof rapDashRender==='function') rapDashRender(); }
+    if(id==='planning') { if(typeof rapPlanRender==='function') rapPlanRender(); }
+    if(typeof rapBadge==='function') rapBadge();
     if(id==='finances') { if(typeof finInit==='function') finInit(); }
     if(id==='encours') { if(typeof encoursInit==='function') encoursInit(); }
     if(id==='honoraires') { if(typeof honoInit==='function') honoInit(); }
@@ -8601,7 +8606,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
 <script>
 (function(){
   var AUDIT_KEY='ach_audit_v1';
-  var LABELS={ach_pi_v4:'Post-its',ach_encours_v1:'Ventes (En cours)',ach_todos_v1:'To-dos',ach_plan_events:'Planning',ach_vt_v4:'Visites',ach_bv_obs:'Bons de visite (observations)',ach_bv_extra:'Bons de visite',ach_bv_pending:'Bons de visite (validation)',ach_bv_notifs:'Notifications',ach_fin_v3:'Finances',ach_prosp_v1:'Prospection',ach_lex_html_v1:'Lexique',ach_lex_proposals:'Lexique (propositions)',ach_pige_v1:'Pige',ach_docaff_v1:'Documents par affaire',ach_docs_cfg_v1:'Documents (réglages)', ach_docgen_assets_v1:'Générateur (charte & polices)'};
+  var LABELS={ach_pi_v4:'Post-its',ach_encours_v1:'Ventes (En cours)',ach_todos_v1:'To-dos',ach_plan_events:'Planning',ach_vt_v4:'Visites',ach_bv_obs:'Bons de visite (observations)',ach_bv_extra:'Bons de visite',ach_bv_pending:'Bons de visite (validation)',ach_bv_notifs:'Notifications',ach_fin_v3:'Finances',ach_prosp_v1:'Prospection',ach_lex_html_v1:'Lexique',ach_lex_proposals:'Lexique (propositions)',ach_pige_v1:'Pige',ach_docaff_v1:'Documents par affaire',ach_docs_cfg_v1:'Documents (réglages)', ach_docgen_assets_v1:'Générateur (charte & polices)', ach_rappels_v1:'Rappels'};
   var _orig=localStorage.setItem.bind(localStorage);
   function curName(){var e=document.getElementById('s-name');return e?e.textContent:'?';}
   function curRole(){var e=document.getElementById('s-role');return e?e.textContent:'';}
@@ -9194,7 +9199,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     ach_pi_v4:'Post-its', ach_plan_events:'Planning', ach_todos_v1:'To-do',
     ach_prosp_v1:'Prospection', ach_lex_html_v1:'Lexique', ach_lex_proposals:'Lexique (propositions)',
     ach_fin_hist_v3:'Honoraires', ach_fin_ops_v3:'Finances', ach_fin_lines_v1:'Finances',
-    ach_fin_solde_v3:'Finances', ach_encours_v1:'Affaires en cours', ach_audit_v1:'Journal', ach_pige_v1:'Pige', ach_docaff_v1:'Documents par affaire', ach_docs_cfg_v1:'Documents (réglages)', ach_docgen_assets_v1:'Générateur (charte & polices)', ach_tomb_v2:'(technique) suppressions'
+    ach_fin_solde_v3:'Finances', ach_encours_v1:'Affaires en cours', ach_audit_v1:'Journal', ach_pige_v1:'Pige', ach_docaff_v1:'Documents par affaire', ach_docs_cfg_v1:'Documents (réglages)', ach_docgen_assets_v1:'Générateur (charte & polices)', ach_rappels_v1:'Rappels', ach_tomb_v2:'(technique) suppressions'
   };
   function labelFor(k){ return LABELS[k] || k; }
 
@@ -9819,7 +9824,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     startRealtime();
     var ov=document.getElementById('ach-login-overlay'); if(ov) ov.classList.add('ach-hidden');
     var ub=document.getElementById('ach-userbar'); if(ub) ub.style.display='none';
-    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v6.19';
+    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v6.21';
     flag('Synchronis\u00e9');
     // fin de l'init : on autorise la journalisation des actions
     setTimeout(function(){ installInterceptor._init=false; }, 1500);
@@ -10911,6 +10916,7 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
           <div class="form-group fg-etage"><label class="form-label">Étage</label><input class="form-input" id="pg-etage" placeholder="3e / RDC"></div>
           <div class="form-group fg-dpe"><label class="form-label">DPE</label><select class="form-select" id="pg-dpe"><option value="">—</option><option>A</option><option>B</option><option>C</option><option>D</option><option>E</option><option>F</option><option>G</option></select></div>
           <div class="form-group fg-annee"><label class="form-label">Année de construction</label><input class="form-input" inputmode="numeric" id="pg-annee" placeholder="1930"></div>
+          <div class="form-group"><label class="form-label">Date de l'annonce <span style="color:var(--gris-2);font-weight:400;">(pour la température 🔥🌤❄️)</span></label><input class="form-input" type="date" id="pg-dateannonce"></div>
         </div>
         <div class="form-group"><label class="form-label">Caractéristiques</label>
           <div class="pg-carac-boxes">
@@ -10953,7 +10959,7 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
     <div class="modal-actions" style="margin-top:16px;">
       <button class="btn btn-ghost btn-sm" id="pg-del-btn" style="color:var(--rouge);margin-right:auto;" onclick="pigeDelete()">Supprimer</button>
       <button class="btn btn-outline" onclick="pigeCancel()">Annuler</button>
-      <button class="btn btn-terra" onclick="pigeSave()">Enregistrer la fiche</button>
+      <button class="btn btn-sm" type="button" id="pg-rap-btn" style="display:none;border:1px solid var(--terra);color:var(--terra);background:#fff;margin-right:auto;" onclick="rapFicheBtnClick()">🔔 Ajouter un rappel</button><button class="btn btn-terra" onclick="pigeSave()">Enregistrer la fiche</button>
     </div>
   </div>
 </div>
@@ -11425,7 +11431,7 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
       var pm2v=(r.prix&&num(r.surface))? (fmtN(r.prix/num(r.surface))+' €/m²') : '';
       var plan=r.plan?' <span class="pg-planflag" title="Plan disponible">🗺️</span>':'';
       return '<div class="pg-fiche" style="border-left:4px solid '+_st.col+';" onclick="pigeEdit(\''+r.id+'\')">'+ph
-        +'<div class="pg-main"><div class="pg-top"><span class="pg-statut-dot" title="'+_st.label+' — cliquez pour changer" style="background:'+_st.col+';" onclick="event.stopPropagation();pigeStatutMenu(\''+r.id+'\',event)"></span>'+srcBadges(r)+'<span class="pg-date">'+dstr(r.created)+'</span>'+(nc?'<span class="pg-date">💬 '+nc+'</span>':'')+suiviBadge(r)+'</div>'
+        +'<div class="pg-main"><div class="pg-top"><span class="pg-statut-dot" title="'+_st.label+' — cliquez pour changer" style="background:'+_st.col+';" onclick="event.stopPropagation();pigeStatutMenu(\''+r.id+'\',event)"></span>'+srcBadges(r)+'<span class="pg-date">'+dstr(r.created)+'</span>'+(nc?'<span class="pg-date">💬 '+nc+'</span>':'')+suiviBadge(r)+(window.rapTempChip?rapTempChip(r):'')+(window.rapRowChip?rapRowChip(r):'')+'</div>'
         +'<div class="pg-titre">📍 '+titre+plan+'</div>'
         +(r.ville?'<div class="pg-ville-line">'+esc(r.ville)+'</div>':'')
         +(ml?'<div class="pg-carac">'+ml+'</div>':'')
@@ -11511,6 +11517,7 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
     var dw=document.getElementById('pg-dup-warn'); if(dw) dw.style.display='none';
     document.getElementById('pg-suivi').value=(r.suivi&&SUIVI[r.suivi])?r.suivi:'';
     S('pg-suivi-date', r.suiviDate||'');
+    S('pg-dateannonce', r.dateAnnonce||'');
     pigeCalcM2();
     _photo=r.photo||''; _plan=r.plan||''; pgPhotoShow(); pgPlanShow();
     document.getElementById('pg-modal-title').textContent='Fiche de pige';
@@ -11556,6 +11563,7 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
       chambres:(document.getElementById('pg-chambres').value||'').trim(),
       etage:(document.getElementById('pg-etage').value||'').trim(),
       annee:(document.getElementById('pg-annee').value||'').trim(),
+      dateAnnonce:(document.getElementById('pg-dateannonce')||{value:''}).value||'',
       dpe:document.getElementById('pg-dpe').value||'',
       cave:cval('pg-cave'), parking:cval('pg-parking'), balcon:cval('pg-balcon'), terrasse:cval('pg-terrasse'), jardin:cval('pg-jardin'),
       descriptif:(document.getElementById('pg-descriptif').value||'').trim(),
@@ -13229,6 +13237,301 @@ window.dgGenerer=function(){
     st.textContent='✗ Erreur : '+(e&&e.message||e)+' — vérifiez la connexion internet.';
   });
 };
+
+</script>
+
+<!-- ══════════ v6.20 : moteur de rappels ══════════ -->
+<style>
+
+/* ══ v6.20 : moteur de rappels ══ */
+.nav-badge-rap{display:none;align-items:center;justify-content:center;min-width:17px;height:17px;padding:0 5px;margin-left:auto;background:var(--terra);color:#fff;border-radius:9px;font-size:10.5px;font-weight:600;}
+.rap-card{background:var(--blanc);border:1px solid var(--border);border-radius:12px;padding:14px 16px;box-shadow:var(--shadow);margin-bottom:18px;border-left:4px solid var(--terra);}
+.rap-card-plan{margin:14px 14px 4px;}
+.rap-hd{display:flex;align-items:center;gap:12px;margin-bottom:8px;}
+.rap-hd-t{font-family:'Jost',sans-serif;font-weight:600;font-size:13.5px;color:var(--noir);}
+.rap-new{margin-left:auto;background:#fff;border:1px solid var(--beige-2);border-radius:16px;padding:5px 12px;font-family:'Jost',sans-serif;font-size:12px;color:var(--terra);cursor:pointer;}
+.rap-new:hover{border-color:var(--terra);}
+.rap-empty{font-size:12.5px;color:var(--gris);padding:2px 0 4px;}
+.rap-item{display:flex;align-items:center;gap:9px;padding:7px 2px;border-top:1px solid rgba(76,83,59,.08);font-size:13px;}
+.rap-item:first-of-type{border-top:none;}
+.rap-i-ico{flex:none;}
+.rap-i-txt{flex:1;min-width:0;color:var(--noir);}
+.rap-i-txt b{font-weight:600;}
+.rap-i-date{color:var(--gris-2);font-size:12px;}
+.rap-i-late{color:#a03222;font-size:12px;font-weight:600;}
+.rap-late{background:rgba(160,50,34,.05);border-radius:8px;padding-left:8px;padding-right:6px;}
+.rap-i-open,.rap-i-done{flex:none;border-radius:8px;padding:4px 10px;font-family:'Jost',sans-serif;font-size:11.5px;cursor:pointer;}
+.rap-i-open{background:#fff;border:1px solid var(--beige-2);color:var(--gris);}
+.rap-i-open:hover{border-color:var(--terra);color:var(--terra);}
+.rap-i-done{background:var(--vert,#2e6e50);border:none;color:#fff;}
+.rap-i-done:hover{filter:brightness(1.1);}
+.rap-next{font-size:12px;color:var(--gris-2);padding-top:7px;border-top:1px solid rgba(76,83,59,.08);margin-top:2px;}
+.rap-overlay{position:fixed;inset:0;background:rgba(26,26,24,.45);z-index:400;display:flex;align-items:center;justify-content:center;padding:20px;}
+.rap-box{background:var(--blanc);border-radius:16px;padding:22px 24px;width:100%;max-width:430px;box-shadow:0 18px 60px rgba(0,0,0,.3);}
+.rap-box-t{font-family:'Jost',sans-serif;font-weight:600;font-size:16px;margin-bottom:10px;}
+.rap-box-src{margin-bottom:12px;}
+.rap-src-chip{display:inline-block;background:var(--beige);border-radius:8px;padding:6px 12px;font-size:13px;color:var(--noir);}
+.rap-lbl{display:block;font-size:12px;color:var(--gris);margin:10px 0 5px;}
+.rap-quick{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:7px;}
+.rap-quick button{background:#fff;border:1px solid var(--beige-2);border-radius:14px;padding:5px 11px;font-family:'Jost',sans-serif;font-size:12px;color:var(--gris);cursor:pointer;}
+.rap-quick button:hover{border-color:var(--terra);color:var(--terra);}
+.rap-inp{width:100%;padding:9px 11px;border:1px solid var(--beige-2);border-radius:9px;font-family:'Jost',sans-serif;font-size:13.5px;background:#fff;color:var(--noir);}
+.rap-inp:focus{outline:none;border-color:var(--terra);}
+.rap-box-btns{display:flex;gap:10px;justify-content:flex-end;margin-top:18px;}
+.rap-btn{background:var(--terra);color:#fff;border:none;border-radius:10px;padding:10px 18px;font-family:'Jost',sans-serif;font-weight:600;font-size:13px;cursor:pointer;}
+.rap-btn-sec{background:#fff;border:1px solid var(--beige-2);border-radius:10px;padding:10px 16px;font-family:'Jost',sans-serif;font-size:13px;color:var(--gris);cursor:pointer;}
+#pg-rap-btn.rap-has{background:rgba(180,85,45,.08);}
+.rap-pagebar{display:flex;justify-content:flex-end;padding:8px 14px 0;}
+#aff-rap-btn.rap-has{background:rgba(180,85,45,.08);}
+
+</style>
+<script>
+/* ══════════ v6.20 — MOTEUR DE RAPPELS TRANSVERSAL ══════════
+   Une seule donnée synchronisée (ach_rappels_v1, canal ach_ existant).
+   Affichages : encart Dashboard (#rap-dash), bandeau Planning (#rap-plan),
+   pastille menu (#badge-rappels), puces sur les fiches de Pige.
+   v6.20 : intégration Pige. v6.21 (à venir) : Visites, En cours, Finances, Communication. */
+(function(){
+'use strict';
+var RAP_KEY='ach_rappels_v1';
+var RAP_MODS={ pige:{ico:'🔎',nom:'Pige'}, visites:{ico:'🏠',nom:'Visite'}, encours:{ico:'◈',nom:'En cours'},
+               finances:{ico:'💶',nom:'Finances'}, communication:{ico:'📣',nom:'Communication'}, libre:{ico:'🔔',nom:'Rappel'} };
+
+function rEsc(s){ return (''+(s==null?'':s)).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function todayISO(){ var d=new Date(); return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2); }
+function frDate(iso){ if(!iso) return ''; var p=iso.split('-'); return p.length===3? p[2]+'/'+p[1]+'/'+p[0] : iso; }
+function addDaysISO(n){ var d=new Date(); d.setDate(d.getDate()+n); return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2); }
+
+function rapAll(){
+  var list=[];
+  try{ list=JSON.parse(localStorage.getItem(RAP_KEY)||'[]')||[]; }catch(e){ list=[]; }
+  if(!Array.isArray(list)) list=[];
+  /* nettoyage : rappels faits depuis plus de 30 jours */
+  var lim=Date.now()-30*86400000, before=list.length;
+  list=list.filter(function(r){ return !(r.done && r.doneAt && new Date(r.doneAt).getTime()<lim); });
+  if(list.length!==before) rapSave(list);
+  return list;
+}
+function rapSave(list){ try{ localStorage.setItem(RAP_KEY, JSON.stringify(list)); }catch(e){} }
+
+window.rapPendingFor=function(mod, refId){
+  return rapAll().filter(function(r){ return !r.done && r.mod===mod && r.refId===refId; })
+    .sort(function(a,b){ return (a.date||'').localeCompare(b.date||''); })[0]||null;
+};
+function rapOpen(){ return rapAll().filter(function(r){ return !r.done; }); }
+function rapLate(){ var t=todayISO(); return rapOpen().filter(function(r){ return r.date<t; }).sort(function(a,b){return a.date.localeCompare(b.date);}); }
+function rapToday(){ var t=todayISO(); return rapOpen().filter(function(r){ return r.date===t; }); }
+function rapAVenir(n){ var t=todayISO(), lim=addDaysISO(n); return rapOpen().filter(function(r){ return r.date>t && r.date<=lim; }); }
+
+/* ---------- Température de pige ---------- */
+window.rapTempOf=function(r){
+  var base=(r&&(r.dateAnnonce||r.created))||null;
+  if(!base) return null;
+  var d=new Date(base); if(isNaN(d)) return null;
+  var days=(Date.now()-d.getTime())/86400000;
+  if(days<0) days=0;
+  if(days<7)  return {ico:'🔥', label:'Pige chaude',  col:'#a03222', days:Math.floor(days)};
+  if(days<=42)return {ico:'🌤', label:'Pige tiède',   col:'#c87830', days:Math.floor(days)};
+  return       {ico:'❄️', label:'Pige froide',  col:'#4a7ba6', days:Math.floor(days)};
+};
+window.rapTempChip=function(r){
+  var t=window.rapTempOf(r); if(!t) return '';
+  var src=r.dateAnnonce?'annonce du '+frDate(r.dateAnnonce):'en pige depuis le '+ (r.created? new Date(r.created).toLocaleDateString('fr-FR'):'');
+  return '<span class="pg-suivi-badge" title="'+rEsc(t.label+' — '+t.days+' j ('+src+')')+'" style="background:'+t.col+'14;color:'+t.col+';border:1px solid '+t.col+'44;">'+t.ico+' '+t.days+' j</span>';
+};
+window.rapRowChip=function(r){
+  var p=window.rapPendingFor('pige', r.id); if(!p) return '';
+  var late=p.date<todayISO();
+  var col=late?'#a03222':'#b4552d';
+  return '<span class="pg-suivi-badge" title="'+rEsc('Rappel'+(p.note?' : '+p.note:''))+'" style="background:'+col+'14;color:'+col+';border:1px solid '+col+'44;">🔔 '+(late?'⚠ ':'')+frDate(p.date)+'</span>';
+};
+
+/* ---------- Modale de création ---------- */
+function ensureModal(){
+  if(document.getElementById('rap-modal')) return;
+  var m=document.createElement('div');
+  m.id='rap-modal'; m.className='rap-overlay'; m.style.display='none';
+  m.innerHTML='<div class="rap-box">'
+    +'<div class="rap-box-t">🔔 Nouveau rappel</div>'
+    +'<div class="rap-box-src" id="rap-m-src"></div>'
+    +'<label class="rap-lbl">Pour quand ?</label>'
+    +'<div class="rap-quick">'
+      +'<button onclick="rapQuick(1)">Demain</button><button onclick="rapQuick(3)">+3 j</button>'
+      +'<button onclick="rapQuick(7)">+7 j</button><button onclick="rapQuick(21)">+21 j</button><button onclick="rapQuick(60)">+2 mois</button>'
+    +'</div>'
+    +'<input type="date" class="rap-inp" id="rap-m-date">'
+    +'<label class="rap-lbl">Note (facultatif)</label>'
+    +'<input class="rap-inp" id="rap-m-note" placeholder="Ex. : rappeler après ses congés, parler du prix…">'
+    +'<div class="rap-box-btns"><button class="rap-btn-sec" onclick="rapModalClose()">Annuler</button><button class="rap-btn" onclick="rapModalSave()">Enregistrer le rappel</button></div>'
+    +'</div>';
+  m.addEventListener('click', function(e){ if(e.target===m) window.rapModalClose(); });
+  document.body.appendChild(m);
+}
+var _mCtx=null;
+window.rapOpenModal=function(mod, refId, label){
+  ensureModal();
+  _mCtx={mod:mod||'libre', refId:refId||'', label:label||''};
+  var mm=RAP_MODS[_mCtx.mod]||RAP_MODS.libre;
+  var src=document.getElementById('rap-m-src');
+  if(!label){
+    var mmn=(RAP_MODS[_mCtx.mod]||RAP_MODS.libre);
+    src.innerHTML='<span class="rap-src-chip" style="margin-bottom:7px;display:inline-block;">'+mmn.ico+' '+mmn.nom+'</span>'
+      +'<input class="rap-inp" id="rap-m-label" placeholder="Sujet du rappel (ex. : rappeler M. Martin après sa visite)">';
+  } else {
+    src.innerHTML='<span class="rap-src-chip">'+mm.ico+' '+rEsc(_mCtx.label||mm.nom)+'</span>';
+  }
+  document.getElementById('rap-m-date').value=addDaysISO(1);
+  document.getElementById('rap-m-note').value='';
+  document.getElementById('rap-modal').style.display='flex';
+};
+window.rapQuick=function(n){ document.getElementById('rap-m-date').value=addDaysISO(n); };
+window.rapModalClose=function(){ var m=document.getElementById('rap-modal'); if(m) m.style.display='none'; };
+window.rapModalSave=function(){
+  var date=document.getElementById('rap-m-date').value;
+  if(!date){ if(window.toast) toast('Choisissez une date'); return; }
+  var note=document.getElementById('rap-m-note').value.trim();
+  var lblEl=document.getElementById('rap-m-label');
+  var label=_mCtx.label || (lblEl?lblEl.value.trim():'');
+  if(!label){ if(window.toast) toast('Indiquez le sujet du rappel'); return; }
+  var list=rapAll();
+  list.push({ id:'rap-'+Date.now()+'-'+Math.floor(Math.random()*1000),
+    mod:_mCtx.mod, refId:_mCtx.refId, label:label, date:date, note:note,
+    done:0, created:new Date().toISOString(),
+    by:(window.ACH_USER&&window.ACH_USER.key)||'' });
+  rapSave(list);
+  window.rapModalClose();
+  if(window.toast) toast('🔔 Rappel enregistré pour le '+frDate(date));
+  rapRefreshAll();
+};
+
+/* ---------- Actions ---------- */
+window.rapDone=function(id){
+  var list=rapAll(), f=null;
+  list.forEach(function(r){ if(r.id===id){ r.done=1; r.doneAt=new Date().toISOString(); f=r; } });
+  rapSave(list);
+  if(window.toast&&f) toast('✓ Rappel fait'+(f.label?' — '+f.label:''));
+  rapRefreshAll();
+};
+window.rapDelete=function(id){
+  rapSave(rapAll().filter(function(r){ return r.id!==id; }));
+  rapRefreshAll();
+};
+window.rapGo=function(mod, refId){
+  function nav(p){ var el=document.querySelector('.nav-item[onclick*="\''+p+'\'"]'); if(window.navTo) navTo(p, el); }
+  if(mod==='pige'){ nav('pige'); if(refId) setTimeout(function(){ if(window.pigeEdit) pigeEdit(refId); }, 180); }
+  else if(mod==='encours'){ nav('encours'); if(refId) setTimeout(function(){ if(window.affEdit) affEdit(refId); }, 180); }
+  else if(RAP_MODS[mod] && mod!=='libre'){ nav(mod); }
+};
+
+/* ---------- Rendus ---------- */
+function itemHtml(r, compact){
+  var mm=RAP_MODS[r.mod]||RAP_MODS.libre;
+  var late=r.date<todayISO();
+  var openBtn=((r.mod==='pige'||r.mod==='encours')&&r.refId)?'<button class="rap-i-open" onclick="rapGo(\''+r.mod+'\',\''+rEsc(r.refId)+'\')">ouvrir</button>':'';
+  return '<div class="rap-item'+(late?' rap-late':'')+'">'
+    +'<span class="rap-i-ico">'+mm.ico+'</span>'
+    +'<span class="rap-i-txt"><b>'+rEsc(r.label||mm.nom)+'</b>'+(r.note?' — '+rEsc(r.note):'')
+    +(late?' <span class="rap-i-late">⚠ prévu le '+frDate(r.date)+'</span>':(compact?'':' <span class="rap-i-date">'+frDate(r.date)+'</span>'))+'</span>'
+    +openBtn
+    +'<button class="rap-i-done" title="Marquer fait" onclick="rapDone(\''+r.id+'\')">✓ Fait</button>'
+    +'</div>';
+}
+window.rapDashRender=function(){
+  var box=document.getElementById('rap-dash'); if(!box) return;
+  var late=rapLate(), tod=rapToday(), next=rapAVenir(7);
+  var h='<div class="rap-card"><div class="rap-hd"><span class="rap-hd-t">🔔 À relancer aujourd\u2019hui</span>'
+    +'<button class="rap-new" onclick="rapOpenModal(\'libre\',\'\',\'\')">＋ Nouveau rappel</button></div>';
+  if(!late.length && !tod.length){
+    h+='<div class="rap-empty">Rien à relancer aujourd\u2019hui ✓'+(next.length?' — '+next.length+' rappel'+(next.length>1?'s':'')+' à venir sous 7 jours.':'')+'</div>';
+  } else {
+    late.forEach(function(r){ h+=itemHtml(r,false); });
+    tod.forEach(function(r){ h+=itemHtml(r,true); });
+    if(next.length) h+='<div class="rap-next">＋ '+next.length+' rappel'+(next.length>1?'s':'')+' à venir sous 7 jours</div>';
+  }
+  box.innerHTML=h+'</div>';
+};
+window.rapPlanRender=function(){
+  var box=document.getElementById('rap-plan'); if(!box) return;
+  var late=rapLate(), tod=rapToday();
+  if(!late.length && !tod.length){ box.innerHTML=''; return; }
+  var h='<div class="rap-card rap-card-plan"><div class="rap-hd"><span class="rap-hd-t">🔔 Rappels du jour</span></div>';
+  late.concat(tod).forEach(function(r){ h+=itemHtml(r, r.date>=todayISO()); });
+  box.innerHTML=h+'</div>';
+};
+window.rapBadge=function(){
+  var b=document.getElementById('badge-rappels'); if(!b) return;
+  var n=rapLate().length + rapToday().length;
+  b.textContent=n>0?n:''; b.style.display=n>0?'inline-flex':'none';
+};
+function rapRefreshAll(){
+  window.rapBadge();
+  window.rapDashRender();
+  window.rapPlanRender();
+  try{ if(document.getElementById('page-pige') && document.getElementById('page-pige').classList.contains('active') && window.pigeRender) pigeRender(); }catch(e){}
+  try{ rapFicheBtn(); }catch(e){}
+  try{ rapAffBtn(); }catch(e){}
+}
+window.rapRefreshAll=rapRefreshAll;
+
+/* ---------- Bouton dans la fiche de pige ---------- */
+function rapFicheBtn(){
+  var btn=document.getElementById('pg-rap-btn'); if(!btn) return;
+  var id=(document.getElementById('pg-edit-id')||{}).value||'';
+  if(!id){ btn.style.display='none'; return; }
+  btn.style.display='';
+  var p=window.rapPendingFor('pige', id);
+  btn.innerHTML=p? '🔔 Rappel le '+frDate(p.date) : '🔔 Ajouter un rappel';
+  btn.classList.toggle('rap-has', !!p);
+}
+window.rapFicheBtnClick=function(){
+  var id=(document.getElementById('pg-edit-id')||{}).value||'';
+  if(!id){ if(window.toast) toast('Enregistrez d\u2019abord la fiche'); return; }
+  var ad=(document.getElementById('pg-adresse')||{}).value||'';
+  var vi=(document.getElementById('pg-ville')||{}).value||'';
+  window.rapOpenModal('pige', id, (ad||vi||'Fiche de pige'));
+};
+/* mise à jour du bouton à chaque ouverture de fiche */
+if(window.pigeEdit){
+  var _basePigeEdit=window.pigeEdit;
+  window.pigeEdit=function(id){ var r=_basePigeEdit.apply(this, arguments); try{ rapFicheBtn(); }catch(e){} return r; };
+}
+
+/* ---------- v6.21 : bouton 🔔 sur les 4 autres pages ---------- */
+function rapPageBars(){
+  [['page-visites','visites'],['page-finances','finances'],['page-communication','communication']].forEach(function(pp){
+    var pg=document.getElementById(pp[0]);
+    if(!pg || document.getElementById('rap-bar-'+pp[1])) return;
+    var bar=document.createElement('div');
+    bar.className='rap-pagebar'; bar.id='rap-bar-'+pp[1];
+    bar.innerHTML='<button class="rap-new" onclick="rapOpenModal(\''+pp[1]+'\',\'\',\'\')">🔔 Nouveau rappel</button>';
+    pg.insertBefore(bar, pg.firstChild);
+  });
+}
+/* bouton dans la modale d'affaire (Pipeline / En cours) */
+function rapAffBtn(){
+  var btn=document.getElementById('aff-rap-btn'); if(!btn) return;
+  var id=(document.getElementById('aff-edit-id')||{}).value||'';
+  if(!id){ btn.style.display='none'; return; }
+  btn.style.display='';
+  var p=window.rapPendingFor('encours', id);
+  btn.innerHTML=p? '🔔 Rappel le '+frDate(p.date) : '🔔 Ajouter un rappel';
+  btn.classList.toggle('rap-has', !!p);
+}
+window.rapAffBtn=rapAffBtn;
+window.rapAffBtnClick=function(){
+  var id=(document.getElementById('aff-edit-id')||{}).value||'';
+  if(!id){ if(window.toast) toast('Enregistrez d\u2019abord l\u2019affaire'); return; }
+  var lbl=(document.getElementById('aff-adresse')||{}).value||(document.getElementById('aff-client')||{}).value||(document.getElementById('aff-bien')||{}).value||'Affaire';
+  window.rapOpenModal('encours', id, lbl);
+};
+if(window.affEdit){
+  var _baseAffEdit=window.affEdit;
+  window.affEdit=function(id){ var r=_baseAffEdit.apply(this, arguments); try{ rapAffBtn(); }catch(e){} return r; };
+}
+try{ rapPageBars(); }catch(e){}
+/* pastille au chargement */
+try{ window.rapBadge(); }catch(e){}
+})();
 
 </script>
 </body>
