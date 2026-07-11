@@ -1538,7 +1538,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     </div>
   </div>
   </div>
-  <div class="logo-ver app-ver">Achille App — v6.13</div>
+  <div class="logo-ver app-ver">Achille App — v6.14</div>
 </aside>
 <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Réduire la barre latérale">‹</button>
 
@@ -9733,7 +9733,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     startRealtime();
     var ov=document.getElementById('ach-login-overlay'); if(ov) ov.classList.add('ach-hidden');
     var ub=document.getElementById('ach-userbar'); if(ub) ub.style.display='none';
-    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v6.13';
+    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v6.14';
     flag('Synchronis\u00e9');
     // fin de l'init : on autorise la journalisation des actions
     setTimeout(function(){ installInterceptor._init=false; }, 1500);
@@ -10885,10 +10885,10 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
   var DOSS_K='ach_pige_dossiers_v1';           /* dossiers personnalisés (synchronisé) */
   var STATUT_MIG='ach_pige_statutmig_v1';      /* marqueur migration one-shot (local) */
   var PG_STATUTS=[
-    {k:'chaud',   label:'Chaud',    col:'#a03222'},
-    {k:'encours', label:'En cours', col:'#2e6e50'},
-    {k:'offline', label:'Offline',  col:'#4a4a48'},
-    {k:'termine', label:'Terminé',  col:'#1a1a18'}
+    {k:'chaud',   label:'Chaud',    col:'#a03222', ico:'🔥'},
+    {k:'encours', label:'En cours', col:'#2e6e50', ico:'⏳'},
+    {k:'offline', label:'Offline',  col:'#4a4a48', ico:'🌙'},
+    {k:'termine', label:'Terminé',  col:'#1a1a18', ico:'<span style="color:#ff5f4e;font-weight:700;">✕</span>'}
   ];
   function pgStatutDef(k){ for(var i=0;i<PG_STATUTS.length;i++){ if(PG_STATUTS[i].k===k) return PG_STATUTS[i]; } return PG_STATUTS[1]; }
   function pgStatutOf(r){ return (r&&r.statut)||'encours'; }
@@ -10972,19 +10972,19 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
     var cnt={tous:all.length, chaud:0, encours:0, offline:0, termine:0};
     all.forEach(function(r){ var s=pgStatutOf(r); cnt[s]=(cnt[s]||0)+1; });
     var doss=dossLoad();
-    function ic(on){ return on?'📂':'📁'; }
+    function dot(col){ return '<span class="pg-fold-dot" style="background:'+col+';"></span>'; }
     var onTous=(pgDossier==='tous');
     var html='<button class="pg-fold'+(onTous?' on':'')+'" onclick="pigeDossPick(\'tous\')">'+(onTous?'🗂':'🗃')+' Tous <b>'+cnt.tous+'</b></button>';
     PG_STATUTS.forEach(function(s){
       var on=(pgDossier===s.k);
-      html+='<button class="pg-fold'+(on?' on':'')+'" style="border-bottom:3px solid '+s.col+';" onclick="pigeDossPick(\''+s.k+'\')">'
-        +ic(on)+' '+s.label+' <b>'+(cnt[s.k]||0)+'</b></button>';
+      html+='<button class="pg-fold'+(on?' on':'')+'" style="border-bottom:3px solid '+s.col+';'+(on?'background:'+s.col+'14;color:'+s.col+';':'')+'" onclick="pigeDossPick(\''+s.k+'\')">'
+        +dot(s.col)+' '+s.label+' <b>'+(cnt[s.k]||0)+'</b></button>';
     });
     doss.forEach(function(d){
       var c=all.filter(function(r){return r.dossier===d.id;}).length;
       var on=(pgDossier==='d:'+d.id);
       html+='<button class="pg-fold pg-fold-cust'+(on?' on':'')+'" onclick="pigeDossPick(\'d:'+d.id+'\')">'
-        +ic(on)+' '+esc(d.nom)+' <b>'+c+'</b>'
+        +dot('#b8b2a6')+' '+esc(d.nom)+' <b>'+c+'</b>'
         +(pgIsManager()?'<span class="pg-fold-x" title="Renommer" onclick="pigeDossRename(\''+d.id+'\',event)">✎</span><span class="pg-fold-x" title="Supprimer" onclick="pigeDossDelete(\''+d.id+'\',event)">×</span>':'')
         +'</button>';
     });
@@ -11016,14 +11016,15 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
   window.pigeStatutSet=function(k){
     var hid=document.getElementById('pg-statut'); if(hid) hid.value=k;
     var box=document.getElementById('pg-statut-pick'); if(!box) return;
-    [].slice.call(box.children).forEach(function(el){ el.classList.toggle('on', el.getAttribute('data-k')===k); });
+    [].slice.call(box.children).forEach(function(el){ if(el.classList.contains('opt')) el.classList.toggle('on', el.getAttribute('data-k')===k); });
+    var lbl=document.getElementById('pg-statut-lbl'); if(lbl) lbl.textContent=pgStatutDef(k).label;
   };
   function pigeStatutPickRender(cur){
     var box=document.getElementById('pg-statut-pick'); if(!box) return;
     cur=cur||'encours';
     box.innerHTML=PG_STATUTS.map(function(s){
-      return '<span class="opt'+(s.k===cur?' on':'')+'" data-k="'+s.k+'" title="'+s.label+'" onclick="pigeStatutSet(\''+s.k+'\')" style="background:'+s.col+';"></span>';
-    }).join('');
+      return '<span class="opt'+(s.k===cur?' on':'')+'" data-k="'+s.k+'" title="'+s.label+'" onclick="pigeStatutSet(\''+s.k+'\')" style="background:'+s.col+';">'+s.ico+'</span>';
+    }).join('')+'<span class="pg-statut-lbl" id="pg-statut-lbl">'+pgStatutDef(cur).label+'</span>';
     var hid=document.getElementById('pg-statut'); if(hid) hid.value=cur;
   }
   function pigeDossSelectFill(cur){
@@ -12090,7 +12091,7 @@ select.pg-chip{padding:6px 10px;}
 
 /* ===== Classement pige : dossiers, pastilles, pagination (v5.12) ===== */
 /* ===== Bulle de compte (topbar) + version (v6.03) ===== */
-.app-ver{position:absolute;bottom:10px;left:14px;font-family:'Jost',sans-serif;font-size:10px;color:rgba(255,255,255,.35);letter-spacing:.07em;pointer-events:none;}
+.app-ver{position:absolute;bottom:10px;right:14px;font-family:'Jost',sans-serif;font-size:10px;color:rgba(255,255,255,.35);letter-spacing:.07em;pointer-events:none;}
 .sidebar.collapsed .app-ver{display:none;}
 .tb-id-wrap{position:relative;display:flex;align-items:center;}
 .tb-id{width:34px;height:34px;border-radius:50%;border:none;background:var(--noir,#1a1a18);color:#fff;font-family:'Jost',sans-serif;font-size:12.5px;font-weight:600;letter-spacing:.04em;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:transform .15s, box-shadow .15s;}
@@ -12123,9 +12124,11 @@ select.pg-chip{padding:6px 10px;}
 .pg-fold-x:hover{opacity:1;background:rgba(0,0,0,.08);}
 .pg-dot{display:inline-block;width:10px;height:10px;border-radius:50%;flex:none;}
 .pg-statut-mini{display:inline-flex;align-items:center;gap:7px;}
-.pg-statut-mini .opt{width:17px;height:17px;border-radius:50%;cursor:pointer;border:2px solid rgba(255,255,255,.9);box-shadow:0 0 0 1px rgba(0,0,0,.15);transition:transform .12s;}
-.pg-statut-mini .opt:hover{transform:scale(1.18);}
-.pg-statut-mini .opt.on{box-shadow:0 0 0 2.5px var(--terra,#b4552d);transform:scale(1.12);}
+.pg-statut-mini .opt{width:21px;height:21px;border-radius:50%;cursor:pointer;border:2px solid rgba(255,255,255,.9);box-shadow:0 0 0 1px rgba(0,0,0,.15);transition:transform .12s;display:inline-flex;align-items:center;justify-content:center;font-size:10px;line-height:1;user-select:none;}
+.pg-statut-mini .opt:hover{transform:scale(1.15);}
+.pg-statut-mini .opt.on{box-shadow:0 0 0 2.5px var(--terra,#b4552d);transform:scale(1.1);}
+.pg-statut-lbl{font-family:'Jost',sans-serif;font-size:12.5px;color:var(--gris,#6b6b63);letter-spacing:.03em;margin-left:2px;white-space:nowrap;}
+.pg-fold-dot{display:inline-block;width:10px;height:10px;border-radius:50%;flex:none;box-shadow:0 0 0 1px rgba(0,0,0,.08);}
 
 .pg-statut-dot{display:inline-block;width:13px;height:13px;border-radius:50%;flex:none;cursor:pointer;border:1.5px solid rgba(255,255,255,.7);box-shadow:0 0 0 1px rgba(0,0,0,.12);margin-right:2px;vertical-align:middle;}
 .pg-statut-dot:hover{transform:scale(1.2);}
