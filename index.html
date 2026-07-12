@@ -1362,6 +1362,16 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
 /* ====== ACHILLE CLOUD — styles connexion / sync / historique ====== */
 #ach-login-overlay{position:fixed;inset:0;z-index:99999;background:linear-gradient(135deg,#2b2f22,#4c533b);display:flex;align-items:center;justify-content:center;font-family:'Jost',sans-serif;}
 #ach-login-overlay.ach-hidden{display:none;}
+#ach-login-overlay.ach-checking .ach-login-card{display:none;}
+#ach-splash{display:none;}
+#ach-login-overlay.ach-checking #ach-splash{display:flex;flex-direction:column;align-items:center;gap:6px;}
+.ach-splash-t{font-family:'Cormorant Garamond',Georgia,serif;font-size:64px;color:#f5f1ea;letter-spacing:.02em;}
+.ach-splash-s{font-family:'Cormorant Garamond',Georgia,serif;font-style:italic;font-size:18px;color:rgba(245,241,234,.7);letter-spacing:.3em;}
+.ach-splash-dot{width:34px;height:3px;border-radius:2px;background:rgba(245,241,234,.35);margin-top:22px;overflow:hidden;position:relative;}
+.ach-splash-dot::after{content:'';position:absolute;left:-40%;top:0;bottom:0;width:40%;background:#b47360;border-radius:2px;animation:achsplash 1.1s ease-in-out infinite;}
+@keyframes achsplash{0%{left:-40%;}100%{left:100%;}}
+.ach-forgot{text-align:center;margin-top:9px;font-size:12.5px;color:rgba(180,115,96,.85);cursor:pointer;text-decoration:underline;}
+
 .ach-login-card{background:#faf8f5;border-radius:18px;padding:38px 40px;width:380px;max-width:90vw;box-shadow:0 24px 60px rgba(0,0,0,.35);}
 .ach-login-card h2{font-family:'Cormorant Garamond',Georgia,serif;font-size:30px;color:#1a1a18;margin:0 0 4px;text-align:center;}
 .ach-login-card .ach-sub{font-size:14px;color:#7a7570;text-align:center;margin:0 0 24px;}
@@ -1439,7 +1449,8 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
   ⚠️ <b>Attention : une modification n'a pas pu être enregistrée dans le cloud.</b> Votre saisie récente n'est peut-être pas sauvegardée ni partagée avec l'équipe. Vérifiez votre connexion internet, puis <span style="text-decoration:underline;cursor:pointer;" onclick="window.location.reload()">rechargez la page</span> et refaites la dernière saisie si besoin.
 </div>
 <!-- ====== ACHILLE CLOUD — interface ====== -->
-<div id="ach-login-overlay">
+<div id="ach-login-overlay" class="ach-checking">
+  <div id="ach-splash"><div class="ach-splash-t">Achille</div><div class="ach-splash-s">· IMMOBILIER ·</div><div class="ach-splash-dot"></div></div>
   <div class="ach-login-card">
     <h2>Achille</h2>
     <div class="ach-sub">Espace de l'agence — connexion</div>
@@ -1449,6 +1460,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     <input id="ach-pass" type="password" autocomplete="current-password" placeholder="Votre mot de passe">
     <button class="ach-login-btn" id="ach-login-btn">Se connecter</button>
     <div class="ach-login-toggle" id="ach-login-toggle">Première connexion ? Créer mon mot de passe</div>
+    <div class="ach-forgot" id="ach-forgot" onclick="achForgotPw()">Mot de passe oublié ?</div>
     <div class="ach-login-msg" id="ach-login-msg"></div>
     <div class="ach-login-foot" id="ach-login-foot">Connexion sécurisée. Vos données sont enregistrées automatiquement.</div>
   </div>
@@ -1539,7 +1551,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     </div>
   </div>
   </div>
-  <div class="logo-ver app-ver">Achille App — v6.23</div>
+  <div class="logo-ver app-ver">Achille App — v6.24</div>
 </aside>
 <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Réduire la barre latérale">‹</button>
 
@@ -9763,6 +9775,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
         signupMode=false; refreshMode();
         return;
       }
+      try{ window.localStorage.setItem('achille_login_day', new Date().toISOString().slice(0,10)); }catch(e){}
       afterLogin();
     }, function(){ setBusy(false); msg('Connexion impossible. R\u00e9essayez.','err'); });
   }
@@ -9824,7 +9837,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     startRealtime();
     var ov=document.getElementById('ach-login-overlay'); if(ov) ov.classList.add('ach-hidden');
     var ub=document.getElementById('ach-userbar'); if(ub) ub.style.display='none';
-    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v6.23';
+    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v6.24';
     flag('Synchronis\u00e9');
     // fin de l'init : on autorise la journalisation des actions
     setTimeout(function(){ installInterceptor._init=false; }, 1500);
@@ -9859,12 +9872,23 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
 
       // Session déjà ouverte ? (visite suivante / après rechargement)
       db.auth.getSession().then(function(s){
-        if(s.data && s.data.session){ afterLogin(); }
-        else {
+        function showLogin(reason){
           sessionStorage.removeItem('ach_synced');
-          var ov=document.getElementById('ach-login-overlay'); if(ov) ov.classList.remove('ach-hidden');
+          var ov=document.getElementById('ach-login-overlay');
+          if(ov){ ov.classList.remove('ach-hidden'); ov.classList.remove('ach-checking'); }
           refreshMode();
+          if(reason) msg(reason,'');
         }
+        if(s.data && s.data.session){
+          /* v6.24 : reconnexion quotidienne obligatoire */
+          var day=new Date().toISOString().slice(0,10);
+          var last=null; try{ last=window.localStorage.getItem('achille_login_day'); }catch(e){}
+          if(last && last!==day){
+            db.auth.signOut().then(function(){ showLogin('Nouvelle journée : merci de vous reconnecter.'); },
+                                   function(){ showLogin('Nouvelle journée : merci de vous reconnecter.'); });
+          } else { afterLogin(); }
+        }
+        else { showLogin(''); }
       }, function(){ fallbackLocal('session illisible'); });
     });
   }
@@ -13552,6 +13576,95 @@ if(window.affEdit){
 try{ rapPageBars(); }catch(e){}
 /* pastille au chargement */
 try{ window.rapBadge(); }catch(e){}
+})();
+
+</script>
+
+<!-- ══════════ v6.24 : sécurité (déconnexion auto, mot de passe oublié, écran d'accueil) ══════════ -->
+<script>
+
+/* ══════════ v6.24 — SÉCURITÉ : déconnexion auto + mot de passe oublié + écran d'accueil ══════════ */
+(function(){
+'use strict';
+var INACT_MS = 2*60*60*1000;   /* 2 heures */
+function now(){ return Date.now(); }
+function touch(){ try{ localStorage.setItem('achille_lastact', String(now())); }catch(e){} }
+var _thr=0;
+['mousedown','keydown','touchstart','scroll','pointermove'].forEach(function(ev){
+  window.addEventListener(ev, function(){ var t=now(); if(t-_thr>30000){ _thr=t; touch(); } }, {passive:true});
+});
+if(!localStorage.getItem('achille_lastact')) touch();
+
+function doAutoLogout(reason){
+  try{ localStorage.setItem('achille_logout_reason', reason); }catch(e){}
+  try{ sessionStorage.removeItem('ach_synced'); }catch(e){}
+  if(window.ACH_DB && window.ACH_DB.auth){
+    window.ACH_DB.auth.signOut().then(function(){ location.reload(); }, function(){ location.reload(); });
+  } else location.reload();
+}
+function check(){
+  if(!window.ACH_REAL) return;                       /* pas connecté : rien à faire */
+  var last=parseInt(localStorage.getItem('achille_lastact')||'0',10)||now();
+  if(now()-last > INACT_MS){ doAutoLogout('Par sécurité, vous avez été déconnecté après 2 h d\u2019inactivité.'); return; }
+  var day=new Date().toISOString().slice(0,10);
+  var ld=localStorage.getItem('achille_login_day');
+  if(ld && ld!==day){ doAutoLogout('Nouvelle journée : merci de vous reconnecter.'); }
+}
+setInterval(check, 60000);
+document.addEventListener('visibilitychange', function(){ if(!document.hidden) check(); });
+
+/* Affichage de la raison sur l'écran de connexion (quand il devient visible) */
+var _msgTimer=setInterval(function(){
+  var ov=document.getElementById('ach-login-overlay');
+  if(!ov || ov.classList.contains('ach-hidden') || ov.classList.contains('ach-checking')) return;
+  var reason=localStorage.getItem('achille_logout_reason');
+  if(reason){
+    var m=document.getElementById('ach-login-msg');
+    if(m){ m.textContent=reason; m.className='ach-login-msg ok'; }
+    try{ localStorage.removeItem('achille_logout_reason'); }catch(e){}
+  }
+  clearInterval(_msgTimer);
+}, 700);
+
+/* Garde-fou : si la vérification cloud traîne (>10 s), révéler le formulaire */
+setTimeout(function(){
+  var ov=document.getElementById('ach-login-overlay');
+  if(ov && !ov.classList.contains('ach-hidden') && ov.classList.contains('ach-checking')){
+    ov.classList.remove('ach-checking');
+    var m=document.getElementById('ach-login-msg');
+    if(m){ m.textContent='La connexion au cloud est lente — vous pouvez vous connecter manuellement.'; m.className='ach-login-msg'; }
+  }
+}, 10000);
+
+/* ---------- Mot de passe oublié ---------- */
+window.achForgotPw=function(){
+  var m=document.getElementById('ach-login-msg');
+  function say(t,cls){ if(m){ m.textContent=t; m.className='ach-login-msg '+(cls||''); } }
+  var email=(document.getElementById('ach-email').value||'').trim().toLowerCase();
+  if(!email){ say('Saisissez d\u2019abord votre adresse e-mail ci-dessus, puis recliquez.','err'); return; }
+  if(!(window.ACH_DB && window.ACH_DB.auth)){ say('Cloud indisponible pour le moment. Réessayez.','err'); return; }
+  say('Envoi de l\u2019e-mail de réinitialisation…','');
+  window.ACH_DB.auth.resetPasswordForEmail(email, { redirectTo: location.href.split('#')[0].split('?')[0] })
+    .then(function(res){
+      if(res && res.error){ say('Échec : '+res.error.message,'err'); return; }
+      say('E-mail envoyé à '+email+' — ouvrez le lien reçu (pensez aux indésirables), il vous ramènera ici pour choisir un nouveau mot de passe.','ok');
+    }, function(){ say('Envoi impossible. Réessayez, ou contactez Laurent.','err'); });
+};
+
+/* Retour du lien de réinitialisation : ouvrir le changement de mot de passe */
+(function waitDb(n){
+  if(window.ACH_DB && window.ACH_DB.auth && window.ACH_DB.auth.onAuthStateChange){
+    window.ACH_DB.auth.onAuthStateChange(function(event){
+      if(event==='PASSWORD_RECOVERY'){
+        var open=function(){
+          if(window.pwChangeOpen){ pwChangeOpen(); if(window.toast) toast('🔑 Choisissez votre nouveau mot de passe'); }
+          else setTimeout(open, 500);
+        };
+        setTimeout(open, 800);
+      }
+    });
+  } else if(n<40) setTimeout(function(){ waitDb(n+1); }, 500);
+})(0);
 })();
 
 </script>
