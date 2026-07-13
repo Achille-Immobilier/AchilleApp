@@ -1519,7 +1519,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     <div class="nav-item" onclick="navTo('honoraires',this)"><span class="nav-icon">€</span><span class="nav-item-label">Honoraires</span></div>
     <div class="nav-item" onclick="navTo('renta',this)"><span class="nav-icon">📈</span><span class="nav-item-label">Calculs Renta</span></div>
     <div class="nav-item" onclick="navTo('prospection',this)"><span class="nav-icon">📞</span><span class="nav-item-label">Prospection</span></div>
-    <div class="nav-item" onclick="navTo('pige',this)"><span class="nav-icon">🔎</span><span class="nav-item-label">Pige</span></div>
+    <div class="nav-item" onclick="navTo('pige',this)"><span class="nav-icon">🔎</span><span class="nav-item-label">Pige</span><span class="nav-badge-rap" id="badge-pige" style="display:none;"></span></div>
     <div class="nav-item" onclick="navTo('communication',this)"><span class="nav-icon">📣</span><span class="nav-item-label">Communication</span></div><div class="nav-item" onclick="navTo('lexique',this)"><span class="nav-icon">📖</span><span class="nav-item-label">Lexique</span></div>
   </div>
   <div class="nav-section" style="margin-top:8px;">
@@ -1553,7 +1553,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     </div>
   </div>
   </div>
-  <div class="logo-ver app-ver">Achille App — v6.30</div>
+  <div class="logo-ver app-ver">Achille App — v6.32</div>
 </aside>
 <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Réduire la barre latérale">‹</button>
 
@@ -9854,7 +9854,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     startRealtime();
     var ov=document.getElementById('ach-login-overlay'); if(ov) ov.classList.add('ach-hidden');
     var ub=document.getElementById('ach-userbar'); if(ub) ub.style.display='none';
-    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v6.30';
+    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v6.32';
     flag('Synchronis\u00e9');
     // fin de l'init : on autorise la journalisation des actions
     setTimeout(function(){ installInterceptor._init=false; }, 1500);
@@ -10947,8 +10947,8 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
         <div class="form-group fg-fipac"><label class="form-label">Lien Fipac (optionnel)</label><input class="form-input" id="pg-fipac" oninput="pigeDupCheck()" placeholder="https://www.fipac.fr/…"></div>
         <div id="pg-dup-warn" style="display:none;background:#fdf3e7;border:1px solid #e8c9a0;color:#8a5a1e;border-radius:8px;padding:9px 13px;font-size:12.5px;margin-bottom:11px;line-height:1.5;"></div>
         <div class="form-row">
-          <div class="form-group fg-prix"><label class="form-label">Prix (€)</label><input class="form-input js-thousands" inputmode="decimal" id="pg-prix" placeholder="1 250 000" oninput="pigeCalcM2()"></div>
-          <div class="form-group fg-surface"><label class="form-label">Surface (m²)</label><input class="form-input" inputmode="decimal" id="pg-surface" placeholder="92" oninput="pigeCalcM2()"></div>
+          <div class="form-group fg-prix"><label class="form-label">Prix (€)</label><input class="form-input js-thousands" inputmode="decimal" id="pg-prix" placeholder="1 250 000" oninput="pigeCalcM2();pigeDupCheck()"></div>
+          <div class="form-group fg-surface"><label class="form-label">Surface (m²)</label><input class="form-input" inputmode="decimal" id="pg-surface" placeholder="92" oninput="pigeCalcM2();pigeDupCheck()"></div>
           <div class="form-group fg-pm2"><label class="form-label">Prix au m²</label><input class="form-input" id="pg-prixm2" readonly tabindex="-1" style="background:var(--beige);color:var(--kaki);font-weight:600;" placeholder="—"></div>
           <div class="form-group fg-pieces"><label class="form-label">Pièces</label><input class="form-input" inputmode="numeric" id="pg-pieces" placeholder="4"></div>
         </div>
@@ -10965,7 +10965,7 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
         </div>
         <div class="form-row">
           <div class="form-group fg-vendeur"><label class="form-label">Vendeur</label><input class="form-input" id="pg-vendeur" placeholder="Nom du vendeur"></div>
-          <div class="form-group fg-tel"><label class="form-label">Téléphone</label><input class="form-input" id="pg-tel" placeholder="06 12 34 56 78" oninput="pigeTelFmt(this)"></div>
+          <div class="form-group fg-tel"><label class="form-label">Téléphone</label><input class="form-input" id="pg-tel" placeholder="06 12 34 56 78" oninput="pigeTelFmt(this);pigeDupCheck()"></div>
         </div>
         <div class="form-row">
           <div class="form-group"><label class="form-label">Attribuée à</label><select class="form-select" id="pg-user"><option value="">— Personne —</option><option value="admin">Laurent Sellem</option><option value="gerant">Marine Attias</option><option value="collaborateur">Marine Zoretic</option><option value="alternant">Liloé Pichat</option></select></div>
@@ -11245,7 +11245,7 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
   window.pigeAdrHide=function(){ var l=document.getElementById('pg-ac-list'); if(l) l.style.display='none'; };
   /* ----- Détection de doublon (adresse / lien / téléphone) ----- */
   function pgNorm(s){ return (s==null?'':''+s).trim().toLowerCase().replace(/\s+/g,' '); }
-  function pgNormUrl(u){ return pgNorm(u).replace(/^https?:\/\/(www\.)?/,'').replace(/[?#].*$/,'').replace(/\/$/,''); }
+  function pgNormUrl(u){ return pgNorm(u).replace(/^https?:\/\/(www\.|m\.)?/,'').replace(/[?#].*$/,'').replace(/\/$/,''); }
   function pgNormTel(t){ return (t==null?'':''+t).replace(/\D/g,''); }
   window.pigeDupCheck=function(){
     var warn=document.getElementById('pg-dup-warn'); if(!warn) return;
@@ -11254,12 +11254,15 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
     var tel=pgNormTel((document.getElementById('pg-tel')||{}).value);
     var urls=[]; document.querySelectorAll('#pg-links .pg-link-url').forEach(function(i){ if(i.value.trim()) urls.push(pgNormUrl(i.value)); });
     var fp=(document.getElementById('pg-fipac')||{}).value; if(fp&&fp.trim()) urls.push(pgNormUrl(fp));
-    if(!adr && !tel && !urls.length){ warn.style.display='none'; return; }
+    var prix=window.NUMV?NUMV((document.getElementById('pg-prix')||{}).value):0;
+    var surf=window.NUMV?NUMV((document.getElementById('pg-surface')||{}).value):0;
+    if(!adr && !tel && !urls.length && !(prix>0&&surf>0)){ warn.style.display='none'; return; }
     var reasons=[];
     load().forEach(function(r){
       if(r.id===id) return;
       if(adr && adr.length>4 && pgNorm(r.adresse)===adr) reasons.push('la même adresse');
       if(tel && tel.length>=6 && pgNormTel(r.tel)===tel) reasons.push('le même téléphone');
+      if(prix>0 && surf>0 && NUMV(r.prix)===prix && NUMV(r.surface)===surf) reasons.push('le même couple prix + surface');
       var rurls=pigeSources(r).map(function(l){return pgNormUrl(l.url);}); if(r.fipac) rurls.push(pgNormUrl(r.fipac));
       urls.forEach(function(u){ if(u && rurls.indexOf(u)>=0) reasons.push('un lien identique'); });
     });
@@ -11472,7 +11475,7 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
       var pm2v=(r.prix&&num(r.surface))? (fmtN(r.prix/num(r.surface))+' €/m²') : '';
       var plan=r.plan?' <span class="pg-planflag" title="Plan disponible">🗺️</span>':'';
       return '<div class="pg-fiche" style="border-left:4px solid '+_st.col+';" onclick="pigeEdit(\''+r.id+'\')">'+ph
-        +'<div class="pg-main"><div class="pg-top"><span class="pg-statut-dot" title="'+_st.label+' — cliquez pour changer" style="background:'+_st.col+';" onclick="event.stopPropagation();pigeStatutMenu(\''+r.id+'\',event)"></span>'+srcBadges(r)+'<span class="pg-date">'+dstr(r.created)+'</span>'+(nc?'<span class="pg-date">💬 '+nc+'</span>':'')+suiviBadge(r)+(window.rapTempChip?rapTempChip(r):'')+(window.rapRowChip?rapRowChip(r):'')+'</div>'
+        +'<div class="pg-main"><div class="pg-top"><span class="pg-statut-dot" title="'+_st.label+' — cliquez pour changer" style="background:'+_st.col+';" onclick="event.stopPropagation();pigeStatutMenu(\''+r.id+'\',event)"></span>'+srcBadges(r)+'<span class="pg-date">'+dstr(r.created)+'</span>'+(nc?'<span class="pg-date">💬 '+nc+'</span>':'')+suiviBadge(r)+(window.rapTempChip?rapTempChip(r):'')+(window.rapRowChip?rapRowChip(r):'')+(window.pgNewChip?pgNewChip(r):'')+'</div>'
         +'<div class="pg-titre">📍 '+titre+(r.ville?' <span class="pg-titre-ville">· '+esc(r.ville)+'</span>':'')+plan+'</div>'
         +(ml?'<div class="pg-carac">'+ml+'</div>':'')
         +(clh?'<div class="pg-carac" style="color:var(--gris);">'+esc(clh)+'</div>':'')
@@ -11647,7 +11650,8 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
     else{ obj.id='pg-'+Date.now()+Math.floor(Math.random()*1000);
       obj.created=new Date().toISOString();
       obj.notes=(window._pgNewComs&&window._pgNewComs.length)? window._pgNewComs.slice() : [];
-      window._pgNewComs=[]; a.push(obj); }
+      window._pgNewComs=[]; a.push(obj);
+      if(window.pgReadMark) pgReadMark(obj.id);   /* v6.32 : pas de « Nouveau » pour son créateur */ }
     save(a);
     if(id && window.achLockClear) achLockClear(id);
     closeModal('modal-pige'); pigeRender();
@@ -11724,7 +11728,7 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
     var zone=document.getElementById(zoneId); if(!zone) return;
     zone.addEventListener('paste',function(e){
       var items=(e.clipboardData||{}).items||[];
-      for(var i=0;i<items.length;i++){ if(items[i].type.indexOf('image')===0){ pgCompress(items[i].getAsFile(), target); e.preventDefault(); return; } } });
+      for(var i=0;i<items.length;i++){ if(items[i].type.indexOf('image')===0){ pgCompress(items[i].getAsFile(), target); e.preventDefault(); e.stopPropagation(); return; } } });
     zone.addEventListener('dragover',function(e){e.preventDefault();});
     zone.addEventListener('drop',function(e){ e.preventDefault(); var f=e.dataTransfer.files&&e.dataTransfer.files[0]; if(f&&f.type.indexOf('image')===0) pgCompress(f, target); });
   }
@@ -11732,6 +11736,7 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
   document.addEventListener('paste',function(e){
     var mo=document.getElementById('modal-pige'); if(!mo||!mo.classList.contains('open')) return;
     var tgt=e.target; if(tgt && (tgt.tagName==='INPUT'||tgt.tagName==='TEXTAREA')) return;
+    if(tgt && tgt.closest && tgt.closest('#pg-photo,#pg-plan')) return;   /* v6.31 : les zones ont leur propre collage ciblé */
     var items=(e.clipboardData||{}).items||[];
     for(var i=0;i<items.length;i++){ if(items[i].type.indexOf('image')===0){ pgCompress(items[i].getAsFile(),'photo'); e.preventDefault(); return; } }
   });
@@ -13811,6 +13816,77 @@ window.r3FlashToDetail=function(){
   var card=document.getElementById('r3-prix'); if(card&&card.scrollIntoView) card.scrollIntoView({behavior:'smooth',block:'center'});
   if(window.toast) toast('Hypothèses basculées — affinez et saisissez le prix de revente visé');
 };
+
+</script>
+
+<!-- ══════════ v6.32 : pige non lue ══════════ -->
+<style>
+
+/* ══ v6.32 : marqueur Nouveau (pige) ══ */
+.pg-new-chip{display:inline-block;background:var(--terra);color:#fff;font-family:'Jost',sans-serif;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:2.5px 8px;border-radius:9px;vertical-align:1px;}
+
+</style>
+<script>
+
+/* ══════════ v6.32 — PIGE : marqueur « Nouveau » par utilisateur ══════════
+   Registre de lecture PAR UTILISATEUR : clé ach_pgread_<user>_v1 (synchronisée
+   entre les appareils du même utilisateur ; un seul rédacteur par clé → aucun conflit).
+   Première utilisation : toutes les fiches existantes sont considérées lues
+   (seules les fiches créées ENSUITE porteront « Nouveau »). */
+(function(){
+'use strict';
+function userKey(){ return (window.ACH_USER&&ACH_USER.key)||'local'; }
+function regKey(){ return 'ach_pgread_'+userKey()+'_v1'; }
+function pigeAll(){ try{ return JSON.parse(localStorage.getItem('ach_pige_v1')||'[]')||[]; }catch(e){ return []; } }
+function regGet(){
+  try{
+    var raw=localStorage.getItem(regKey());
+    if(raw) return JSON.parse(raw)||{};
+  }catch(e){}
+  /* première fois pour cet utilisateur : baseline = tout est lu */
+  var base={};
+  pigeAll().forEach(function(r){ if(r&&r.id) base[r.id]=1; });
+  try{ localStorage.setItem(regKey(), JSON.stringify(base)); }catch(e){}
+  return base;
+}
+function regSet(reg){ try{ localStorage.setItem(regKey(), JSON.stringify(reg)); }catch(e){} }
+
+window.pgReadMark=function(id){
+  if(!id) return;
+  var reg=regGet();
+  if(reg[id]) return;
+  reg[id]=1;
+  /* nettoyage : retirer les ids de fiches disparues */
+  var ids={}; pigeAll().forEach(function(r){ if(r&&r.id) ids[r.id]=1; });
+  Object.keys(reg).forEach(function(k){ if(!ids[k]) delete reg[k]; });
+  regSet(reg);
+  window.pgReadBadge();
+};
+window.pgNewChip=function(r){
+  if(!r||!r.id) return '';
+  var reg=regGet();
+  if(reg[r.id]) return '';
+  return '<span class="pg-new-chip">Nouveau</span>';
+};
+window.pgReadBadge=function(){
+  var b=document.getElementById('badge-pige'); if(!b) return;
+  var reg=regGet(), n=0;
+  pigeAll().forEach(function(r){ if(r&&r.id&&!reg[r.id]) n++; });
+  b.textContent=n>0?n:''; b.style.display=n>0?'inline-flex':'none';
+};
+
+/* ouvrir une fiche = la lire */
+if(window.pigeEdit){
+  var _base=window.pigeEdit;
+  window.pigeEdit=function(id){ var r=_base.apply(this, arguments); try{ window.pgReadMark(id); }catch(e){} return r; };
+}
+/* la pastille suit chaque rendu de la liste (créations, synchro…) */
+if(window.pigeRender){
+  var _baseR=window.pigeRender;
+  window.pigeRender=function(){ var r=_baseR.apply(this, arguments); try{ window.pgReadBadge(); }catch(e){} return r; };
+}
+try{ window.pgReadBadge(); }catch(e){}
+})();
 
 </script>
 </body>
