@@ -1553,7 +1553,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     </div>
   </div>
   </div>
-  <div class="logo-ver app-ver">Achille App — v6.29</div>
+  <div class="logo-ver app-ver">Achille App — v6.30</div>
 </aside>
 <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Réduire la barre latérale">‹</button>
 
@@ -2071,6 +2071,29 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
       <!-- ══════════ NIVEAU 3 ══════════ -->
       <div id="renta-panel-3" style="padding:0 24px;display:none;">
         <div style="max-width:860px;margin:0 auto;">
+          <div id="r3-flash" style="background:var(--blanc);border:1px solid var(--border);border-left:4px solid var(--terra);border-radius:12px;padding:16px 20px;margin-bottom:18px;box-shadow:var(--shadow);">
+            <div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;">
+              <div style="font-family:'Jost',sans-serif;font-weight:600;font-size:14px;color:var(--noir);">⚡ Analyse flash</div>
+              <div style="font-size:11.5px;color:var(--gris-2);">le prix suffit — verdict immédiat avec vos hypothèses standard</div>
+            </div>
+            <div style="display:grid;grid-template-columns:1.3fr 1fr 0.9fr;gap:10px;margin-top:12px;">
+              <div><label style="font-size:12px;color:var(--gris);display:block;margin-bottom:4px;">Prix d'achat (€)</label><input id="r3f-prix" type="text" inputmode="decimal" placeholder="ex : 1 000 000" oninput="r3Flash()" style="width:100%;padding:8px 10px;border:1.5px solid var(--border);border-radius:7px;font-family:'Jost',sans-serif;font-size:14px;background:var(--beige);color:var(--noir);outline:none;" class="js-thousands"></div>
+              <div><label style="font-size:12px;color:var(--gris);display:block;margin-bottom:4px;">Travaux estimés (€) <span style="color:var(--gris-2);">facultatif</span></label><input id="r3f-travaux" type="text" inputmode="decimal" placeholder="0" oninput="r3Flash()" style="width:100%;padding:8px 10px;border:1.5px solid var(--border);border-radius:7px;font-family:'Jost',sans-serif;font-size:14px;background:var(--beige);color:var(--noir);outline:none;" class="js-thousands"></div>
+              <div><label style="font-size:12px;color:var(--gris);display:block;margin-bottom:4px;">Surface (m²) <span style="color:var(--gris-2);">facultatif</span></label><input id="r3f-surface" type="text" inputmode="decimal" placeholder="—" oninput="r3Flash()" style="width:100%;padding:8px 10px;border:1.5px solid var(--border);border-radius:7px;font-family:'Jost',sans-serif;font-size:14px;background:var(--beige);color:var(--noir);outline:none;"></div>
+            </div>
+            <div class="r3h-row">
+              <span class="r3h-t">Hypothèses :</span>
+              <label>notaire <input id="r3h-notaire" value="2,5" inputmode="decimal" oninput="r3Flash()"> %</label>
+              <label>honoraires achat <input id="r3h-hon" value="5" inputmode="decimal" oninput="r3Flash()"> %</label>
+              <label>frais bancaires <input id="r3h-banque" value="5" inputmode="decimal" oninput="r3Flash()"> %</label>
+              <label>divers <input id="r3h-divers" value="" placeholder="0" inputmode="decimal" oninput="r3Flash()"> €</label>
+              <label>portage <input id="r3h-portm" value="" placeholder="0" inputmode="decimal" oninput="r3Flash()"> €/mois</label>
+              <label>durée <input id="r3h-duree" value="12" inputmode="numeric" oninput="r3Flash()"> mois</label>
+              <label>impôt marge <input id="r3h-impot" value="25" inputmode="decimal" oninput="r3Flash()"> %</label>
+            </div>
+            <div id="r3f-out"><div style="font-size:12px;color:var(--gris-2);padding:6px 2px 0;">Saisissez le prix : le coût de revient et les prix de revente nécessaires s'affichent instantanément.</div></div>
+            <div class="r3f-custom"><span>Autre palier :</span> <input id="r3h-marge" value="30" inputmode="decimal" oninput="r3Flash()"> % <button class="r3f-go" onclick="r3FlashToDetail()">↓ Affiner cette opération dans le calculateur</button></div>
+          </div>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;align-items:start;">
 
             <!-- Colonne gauche -->
@@ -2078,10 +2101,11 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
               <div style="background:var(--blanc);border-radius:14px;padding:20px;box-shadow:var(--shadow);margin-bottom:14px;">
                 <div style="font-size:12px;font-weight:600;color:var(--kaki);letter-spacing:.1em;text-transform:uppercase;margin-bottom:14px;display:flex;align-items:center;gap:8px;"><span style="width:8px;height:8px;border-radius:50%;background:var(--kaki);display:inline-block;"></span>Acquisition</div>
                 <div style="display:grid;gap:10px;">
-                  <div><label style="font-size:12px;color:var(--gris);display:block;margin-bottom:4px;">Prix d'achat (€)</label><input id="r3-prix" type="text" inputmode="decimal" placeholder="ex : 400 000" oninput="rentaCalc3()" style="width:100%;padding:8px 10px;border:1.5px solid var(--border);border-radius:7px;font-family:'Jost',sans-serif;font-size:14px;background:var(--beige);color:var(--noir);outline:none;" class="js-thousands"></div>
+                  <div><label style="font-size:12px;color:var(--gris);display:block;margin-bottom:4px;">Prix d'achat (€)</label><input id="r3-prix" type="text" inputmode="decimal" placeholder="ex : 400 000" oninput="r3NotSync();r3AgSync();rentaCalc3()" style="width:100%;padding:8px 10px;border:1.5px solid var(--border);border-radius:7px;font-family:'Jost',sans-serif;font-size:14px;background:var(--beige);color:var(--noir);outline:none;" class="js-thousands"></div>
                   <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
-                    <div><label style="font-size:12px;color:var(--gris);display:block;margin-bottom:4px;">Frais de notaire (€) <span style="cursor:help;" title="~7-8% dans l'ancien, ~2-3% dans le neuf">ℹ</span></label><input id="r3-notaire" type="text" inputmode="decimal" placeholder="≈ 8%" oninput="rentaCalc3()" style="width:100%;padding:8px 10px;border:1.5px solid var(--border);border-radius:7px;font-family:'Jost',sans-serif;font-size:14px;background:var(--beige);color:var(--noir);outline:none;" class="js-thousands"></div>
-                    <div><label style="font-size:12px;color:var(--gris);display:block;margin-bottom:4px;">Honoraires agence (€)</label><input id="r3-agence" type="text" inputmode="decimal" placeholder="0" oninput="rentaCalc3()" style="width:100%;padding:8px 10px;border:1.5px solid var(--border);border-radius:7px;font-family:'Jost',sans-serif;font-size:14px;background:var(--beige);color:var(--noir);outline:none;" class="js-thousands"></div>
+                    <div><label style="font-size:12px;color:var(--gris);display:block;margin-bottom:4px;">Frais de notaire <span style="cursor:help;" title="Marchand de biens : ~2,5 % (engagement de revente) · ancien classique : 7-8 % · neuf : 2-3 %">ℹ</span></label><div style="display:flex;gap:8px;align-items:center;"><input id="r3-notaire-pct" type="text" inputmode="decimal" value="2,5" oninput="r3NotSync(true)" style="width:100%;padding:8px 10px;border:1.5px solid var(--border);border-radius:7px;font-family:'Jost',sans-serif;font-size:14px;background:var(--beige);color:var(--noir);outline:none;width:72px;flex:none;text-align:right;"><span style="font-size:12px;color:var(--gris-2);flex:none;">% →</span><input id="r3-notaire" type="text" inputmode="decimal" placeholder="montant €" oninput="window._r3NotManual=true;rentaCalc3()" style="width:100%;padding:8px 10px;border:1.5px solid var(--border);border-radius:7px;font-family:'Jost',sans-serif;font-size:14px;background:var(--beige);color:var(--noir);outline:none;flex:1;" class="js-thousands"></div></div>
+                    <div><label style="font-size:12px;color:var(--gris);display:block;margin-bottom:4px;">Honoraires agence</label><div style="display:flex;gap:8px;align-items:center;"><input id="r3-agence-val" type="text" inputmode="decimal" placeholder="0" oninput="r3AgSync()" style="width:100%;padding:8px 10px;border:1.5px solid var(--border);border-radius:7px;font-family:'Jost',sans-serif;font-size:14px;background:var(--beige);color:var(--noir);outline:none;flex:1;" class="js-thousands"><select id="r3-agence-mode" onchange="r3AgSync()" style="width:100%;padding:8px 10px;border:1.5px solid var(--border);border-radius:7px;font-family:'Jost',sans-serif;font-size:14px;background:var(--beige);color:var(--noir);outline:none;width:66px;flex:none;padding:8px 6px;"><option value="pct">%</option><option value="eur" selected>€</option></select><span id="r3-agence-eq" style="font-size:11.5px;color:var(--gris-2);flex:none;min-width:70px;"></span></div><input type="hidden" id="r3-agence"></div>
+              <div><label style="font-size:12px;color:var(--gris);display:block;margin-bottom:4px;">Frais bancaires (€) <span style="cursor:help;" title="Frais de dossier, garanties, intérêts liés au financement de l'opération">ℹ</span></label><input id="r3-banque" type="text" inputmode="decimal" placeholder="0" oninput="rentaCalc3()" style="width:100%;padding:8px 10px;border:1.5px solid var(--border);border-radius:7px;font-family:'Jost',sans-serif;font-size:14px;background:var(--beige);color:var(--noir);outline:none;" class="js-thousands"></div>
                   </div>
                 </div>
               </div>
@@ -2140,17 +2164,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
                 <div id="r3-verdict" style="border-radius:10px;padding:12px;font-size:13px;line-height:1.6;display:none;"></div><div style="text-align:right;margin:12px 0 2px;"><button class="tpl-copy" style="font-size:12.5px;padding:7px 14px;" onclick="rentaCopy(3)">📋 Copier le résumé pour le client</button></div><div style="font-size:12.5px;color:rgba(255,255,255,.72);margin:10px 2px 0;line-height:1.6;">📌 <strong style="color:#fff;">Repère métier :</strong> un marchand de biens vise en général une <strong style="color:#e8c9a0;">marge nette ≥ 15 à 20 % du prix de revente</strong> pour couvrir l'aléa (délais, découvertes travaux, marché). En dessous de 10 %, l'opération est considérée fragile.</div>
               </div>
 
-              <!-- Glossaire MDB -->
-              <div style="background:var(--blanc);border-radius:14px;padding:16px 20px;box-shadow:var(--shadow);">
-                <div style="font-size:12px;font-weight:600;color:var(--gris);letter-spacing:.08em;text-transform:uppercase;margin-bottom:10px;">Vocabulaire marchand de biens</div>
-                <div style="font-size:12px;color:var(--gris);line-height:2;">
-                  <div><strong style="color:var(--noir);">Marge brute</strong> = Prix revente − Prix achat</div>
-                  <div><strong style="color:var(--noir);">Marge nette</strong> = Marge brute − Tous les coûts</div>
-                  <div><strong style="color:var(--noir);">ROI</strong> = Bénéfice net ÷ Investissement total × 100</div>
-                  <div><strong style="color:var(--noir);">Rentabilité annualisée</strong> = ROI × (12 ÷ durée en mois)</div>
-                  <div><strong style="color:var(--noir);">Frais de portage</strong> = Coûts pendant la détention (intérêts, taxes...)</div>
-                </div>
-              </div>
+              
             </div>
           </div>
         </div>
@@ -8250,7 +8264,8 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
       document.getElementById('r3-verdict').style.display='none';
       return;
     }
-    var coutTotal=prix+notaire+agence+travaux+divers+portage;
+    var banque=rentaV('r3-banque');
+    var coutTotal=prix+notaire+agence+travaux+divers+portage+banque;
     var produitNet=revente-honVente-impot;
     var margeBrute=revente-prix;
     var margeNette=produitNet-coutTotal;
@@ -9839,7 +9854,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     startRealtime();
     var ov=document.getElementById('ach-login-overlay'); if(ov) ov.classList.add('ach-hidden');
     var ub=document.getElementById('ach-userbar'); if(ub) ub.style.display='none';
-    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v6.29';
+    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v6.30';
     flag('Synchronis\u00e9');
     // fin de l'init : on autorise la journalisation des actions
     setTimeout(function(){ installInterceptor._init=false; }, 1500);
@@ -13691,6 +13706,111 @@ window.achForgotPw=function(){
   } else if(n<40) setTimeout(function(){ waitDb(n+1); }, 500);
 })(0);
 })();
+
+</script>
+
+<!-- ══════════ v6.30 : MDB analyse flash ══════════ -->
+<style>
+
+/* ══ v6.30 : analyse flash marchand de biens ══ */
+.r3h-row{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;margin-top:10px;padding-top:9px;border-top:1px dashed var(--beige-2);font-size:11.5px;color:var(--gris);}
+.r3h-t{font-weight:600;color:var(--gris);}
+.r3h-row label{display:inline-flex;align-items:center;gap:4px;white-space:nowrap;}
+.r3h-row input{width:46px;padding:3px 5px;border:1px solid var(--beige-2);border-radius:6px;font-family:'Jost',sans-serif;font-size:11.5px;text-align:right;background:#fff;color:var(--noir);outline:none;}
+.r3h-row input:focus{border-color:var(--terra);}
+.r3f-t{width:100%;border-collapse:collapse;margin-top:12px;font-size:12.5px;}
+.r3f-t td{padding:4px 2px;border-bottom:1px solid rgba(76,83,59,.08);color:var(--gris);}
+.r3f-t td:last-child{text-align:right;color:var(--noir);font-variant-numeric:tabular-nums;}
+.r3f-total td{font-weight:700;color:var(--noir)!important;border-bottom:none;border-top:2px solid var(--terra);padding-top:6px;font-size:13.5px;}
+.r3f-pal-t{font-size:12px;font-weight:600;color:var(--noir);margin:12px 0 7px;}
+.r3f-pals{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;}
+.r3f-pal{background:var(--beige);border-radius:9px;padding:8px 10px;display:flex;flex-direction:column;gap:2px;font-size:12px;color:var(--noir);}
+.r3f-pal b{font-size:13px;}
+.r3f-pal-star{background:rgba(180,115,96,.13);border:1px solid rgba(180,115,96,.35);}
+.r3f-net{font-size:11px;color:var(--gris);}
+.r3f-custom{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:10px;font-size:12px;color:var(--gris);}
+.r3f-custom input{width:46px;padding:3px 5px;border:1px solid var(--beige-2);border-radius:6px;font-family:'Jost',sans-serif;font-size:11.5px;text-align:right;background:#fff;outline:none;}
+.r3f-go{margin-left:auto;background:var(--noir);color:#fff;border:none;border-radius:9px;padding:8px 14px;font-family:'Jost',sans-serif;font-size:12px;cursor:pointer;}
+.r3f-go:hover{background:var(--terra);}
+
+</style>
+<script>
+
+/* ══════════ v6.30 — Marchand de biens : analyse flash + champs intelligents ══════════ */
+function r3H(id, def){ var e=document.getElementById(id); if(!e) return def; var v=NUMV(e.value); return (e.value===''||isNaN(v))?def:v; }
+window.r3NotSync=function(fromPct){
+  if(fromPct) window._r3NotManual=false;
+  if(window._r3NotManual) { rentaCalc3(); return; }
+  var prix=rentaV('r3-prix'), pct=r3H('r3-notaire-pct',2.5);
+  var e=document.getElementById('r3-notaire'); if(!e) return;
+  e.value = prix? new Intl.NumberFormat('fr-FR').format(Math.round(prix*pct/100)) : '';
+  rentaCalc3();
+};
+window.r3AgSync=function(){
+  var mode=(document.getElementById('r3-agence-mode')||{}).value||'eur';
+  var val=r3H('r3-agence-val',0), prix=rentaV('r3-prix');
+  var hid=document.getElementById('r3-agence'), eq=document.getElementById('r3-agence-eq');
+  if(!hid) return;
+  var eur = mode==='pct'? prix*val/100 : val;
+  hid.value=String(Math.round(eur));
+  if(eq) eq.textContent = (mode==='pct'&&val&&prix)? '= '+new Intl.NumberFormat('fr-FR').format(Math.round(eur))+' €' : '';
+  rentaCalc3();
+};
+window.r3Flash=function(){
+  var out=document.getElementById('r3f-out'); if(!out) return;
+  var prix=rentaV('r3f-prix');
+  if(!prix){ out.innerHTML='<div style="font-size:12px;color:var(--gris-2);padding:6px 2px 0;">Saisissez le prix : le coût de revient et les prix de revente nécessaires s\u2019affichent instantanément.</div>'; return; }
+  var travaux=rentaV('r3f-travaux'), surface=rentaV('r3f-surface');
+  var pNot=r3H('r3h-notaire',2.5), pHon=r3H('r3h-hon',5), pBanq=r3H('r3h-banque',5);
+  var divers=r3H('r3h-divers',0), portm=r3H('r3h-portm',0), duree=r3H('r3h-duree',12), tImp=r3H('r3h-impot',25)/100;
+  var notaire=prix*pNot/100, hon=prix*pHon/100, banque=prix*pBanq/100, portage=portm*duree;
+  var cout=prix+notaire+hon+banque+travaux+divers+portage;
+  var F=function(n){ return new Intl.NumberFormat('fr-FR').format(Math.round(n))+'\u00a0€'; };
+  var h='<table class="r3f-t"><tbody>'
+    +'<tr><td>Prix d\u2019achat</td><td>'+F(prix)+'</td></tr>'
+    +'<tr><td>Frais de notaire ('+String(pNot).replace('.',',')+'\u00a0%)</td><td>'+F(notaire)+'</td></tr>'
+    +'<tr><td>Honoraires achat ('+String(pHon).replace('.',',')+'\u00a0%)</td><td>'+F(hon)+'</td></tr>'
+    +'<tr><td>Frais bancaires ('+String(pBanq).replace('.',',')+'\u00a0%)</td><td>'+F(banque)+'</td></tr>'
+    +(travaux?'<tr><td>Travaux estimés</td><td>'+F(travaux)+'</td></tr>':'')
+    +(divers?'<tr><td>Coûts divers</td><td>'+F(divers)+'</td></tr>':'')
+    +(portage?'<tr><td>Portage ('+new Intl.NumberFormat('fr-FR').format(portm)+'\u00a0€ × '+duree+'\u00a0mois)</td><td>'+F(portage)+'</td></tr>':'')
+    +'<tr class="r3f-total"><td>Coût de revient</td><td>'+F(cout)+'</td></tr>'
+    +'</tbody></table>';
+  var marges=[10,15,20,25], custom=r3H('r3h-marge',30);
+  if(custom && marges.indexOf(custom)<0) marges.push(custom);
+  h+='<div class="r3f-pal-t">Prix de revente nécessaire <span style="font-weight:400;color:var(--gris-2);">(marge nette après impôt '+Math.round(tImp*100)+'\u00a0%, en % du prix de revente)</span></div>';
+  h+='<div class="r3f-pals">';
+  marges.sort(function(a,b){return a-b;}).forEach(function(m){
+    var denom=1-tImp-m/100;
+    var star=(m>=15&&m<=20)?' ★':'';
+    if(denom<=0.02){ h+='<div class="r3f-pal"><b>'+m+'\u00a0%</b><span>impossible avec cet impôt</span></div>'; return; }
+    var R=cout*(1-tImp)/denom;
+    var net=(R-cout)*(1-tImp);
+    h+='<div class="r3f-pal'+((m>=15&&m<=20)?' r3f-pal-star':'')+'"><b>'+m+'\u00a0%'+star+'</b><span>revendre ≥ '+F(R)+'</span><span class="r3f-net">net ≈ +'+F(net)+(surface?' · '+new Intl.NumberFormat('fr-FR').format(Math.round(R/surface))+'\u00a0€/m²':'')+'</span></div>';
+  });
+  h+='</div>';
+  out.innerHTML=h;
+};
+window.r3FlashToDetail=function(){
+  var S=function(id,v){ var e=document.getElementById(id); if(e) e.value=(v===0||v)?String(v):''; };
+  var F=function(n){ return new Intl.NumberFormat('fr-FR').format(Math.round(n)); };
+  var prix=rentaV('r3f-prix'); if(!prix){ if(window.toast) toast('Saisissez d\u2019abord un prix dans l\u2019analyse flash'); return; }
+  var pNot=r3H('r3h-notaire',2.5), pHon=r3H('r3h-hon',5), pBanq=r3H('r3h-banque',5);
+  S('r3-prix',F(prix));
+  var pe=document.getElementById('r3-notaire-pct'); if(pe) pe.value=String(pNot).replace('.',',');
+  window._r3NotManual=false;
+  S('r3-agence-val',F(prix*pHon/100));
+  var am=document.getElementById('r3-agence-mode'); if(am) am.value='eur';
+  S('r3-banque',F(prix*pBanq/100));
+  var tv=rentaV('r3f-travaux'); S('r3-travaux', tv?F(tv):'');
+  var dv=r3H('r3h-divers',0); S('r3-divers', dv?F(dv):'');
+  var pm=r3H('r3h-portm',0), du=r3H('r3h-duree',12);
+  S('r3-portage', pm?F(pm*du):'');
+  S('r3-duree', du||'');
+  r3NotSync(); r3AgSync();
+  var card=document.getElementById('r3-prix'); if(card&&card.scrollIntoView) card.scrollIntoView({behavior:'smooth',block:'center'});
+  if(window.toast) toast('Hypothèses basculées — affinez et saisissez le prix de revente visé');
+};
 
 </script>
 </body>
