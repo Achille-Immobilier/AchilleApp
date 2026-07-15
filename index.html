@@ -1553,7 +1553,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     </div>
   </div>
   </div>
-  <div class="logo-ver app-ver">Achille App — v6.39</div>
+  <div class="logo-ver app-ver">Achille App — v6.40</div>
 </aside>
 <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Réduire la barre latérale">‹</button>
 
@@ -9868,7 +9868,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     startRealtime();
     var ov=document.getElementById('ach-login-overlay'); if(ov) ov.classList.add('ach-hidden');
     var ub=document.getElementById('ach-userbar'); if(ub) ub.style.display='none';
-    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v6.39';
+    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v6.40';
     flag('Synchronis\u00e9');
     // fin de l'init : on autorise la journalisation des actions
     setTimeout(function(){ installInterceptor._init=false; }, 1500);
@@ -14029,7 +14029,7 @@ function place(el){
 function isTarget(el){
   if(!el || el.tagName!=='INPUT') return false;
   var id=el.id||'';
-  if(id==='plan-ev-adresse' || id==='cm-c-adresse' || id==='vt-addr') return true;
+  if(id==='plan-ev-adresse' || id==='cm-c-adresse' || id==='vt-addr' || id==='ecf-addr') return true;
   if(id.indexOf('f-')===0 && id.indexOf('adresse')>=0) return true;
   return false;
 }
