@@ -1050,7 +1050,7 @@ body.lex-admin-editing .lex-save-btn{display:block;}
 .fin-enc-count span{color:var(--terra);font-weight:600;}
 
 /* Corps 2 colonnes */
-.fin-body{flex:1;display:flex;gap:0;overflow:hidden;}
+.fin-body{flex:1;min-height:0;display:flex;gap:0;overflow:hidden;}
 .fin-left{flex:1;display:flex;flex-direction:column;overflow:hidden;border-right:1px solid var(--border);}
 .fin-left-scroll{flex:1;overflow-y:auto;background:var(--blanc);}
 .fin-left-scroll::-webkit-scrollbar{width:4px;}
@@ -1525,7 +1525,6 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
   <div class="nav-section" style="margin-top:8px;">
     <div class="nav-lbl">Gestion</div>
     <div class="nav-item" onclick="navTo('visites',this)"><span class="nav-icon">🏠</span><span class="nav-item-label">Visites</span></div>
-    <div class="nav-item" onclick="navTo('generateur',this)"><span class="nav-icon">📄</span><span class="nav-item-label">Générateur</span></div>
     <div class="nav-item" onclick="navTo('documents',this)"><span class="nav-icon">◧</span><span class="nav-item-label">Documents</span></div>
     <div class="nav-item" onclick="navTo('finances',this)"><span class="nav-icon">💶</span><span class="nav-item-label">Finances</span></div>
     <div class="nav-item" onclick="navTo('encours',this)"><span class="nav-icon">◈</span><span class="nav-item-label">En cours</span></div>
@@ -1553,7 +1552,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     </div>
   </div>
   </div>
-  <div class="logo-ver app-ver">Achille App — v6.40</div>
+  <div class="logo-ver app-ver">Achille App — v6.41</div>
 </aside>
 <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Réduire la barre latérale">‹</button>
 
@@ -1650,18 +1649,20 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
   </div>
 
   <div class="page" id="page-generateur">
-  <div class="nx-wrap">
-    <div class="nx-head"><span class="pg-lbl">Générateur de documents</span><span class="nx-hint">Vos modèles officiels — remplir la fiche, générer le PDF (polices de l'agence incorporées), envoyer ou imprimer</span></div>
-    <div id="dg-view"></div>
-  </div>
+  
 </div>
 <div class="page" id="page-documents">
     <div class="docs-page">
       <div class="docs-tabs">
         <button class="docs-tab active" onclick="docsTab('modeles',this)">📁 Documents de l’agence</button>
         <button class="docs-tab" onclick="docsTab('affaires',this)">📂 Documents par affaire</button>
+        <button class="docs-tab" onclick="docsTab('generer',this)">⚡ Générer un document</button>
       </div>
       <div class="docs-body">
+        <div class="docs-panel" id="docs-generer"><div class="nx-wrap">
+    <div class="nx-head"><span class="pg-lbl">Générateur de documents</span><span class="nx-hint">Vos modèles officiels — remplir la fiche, générer le PDF (polices de l'agence incorporées), envoyer ou imprimer</span></div>
+    <div id="dg-view"></div>
+  </div></div>
 
         <div class="docs-panel active" id="docs-modeles">
           <div style="display:flex;align-items:baseline;gap:12px;margin-bottom:20px;">
@@ -9868,7 +9869,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     startRealtime();
     var ov=document.getElementById('ach-login-overlay'); if(ov) ov.classList.add('ach-hidden');
     var ub=document.getElementById('ach-userbar'); if(ub) ub.style.display='none';
-    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v6.40';
+    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v6.41';
     flag('Synchronis\u00e9');
     // fin de l'init : on autorise la journalisation des actions
     setTimeout(function(){ installInterceptor._init=false; }, 1500);
@@ -10112,14 +10113,13 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
           +(adm?'<button class="hd-edit" title="Renommer la catégorie" onclick="docsRenameTheme(\''+t.id+'\')">✎</button>':'')
           +'</div>';
         rows.forEach(function(r,idx){
-          var moveBtns=adm? ('<button class="doc-mini-btn" title="Monter" '+(idx===0?'style="opacity:.25;" ':'')+'onclick="docsMove(\''+t.id+'\',\''+r.kind+'\',\''+r.id+'\',-1)">▲</button>'
-            +'<button class="doc-mini-btn" title="Descendre" '+(idx===rows.length-1?'style="opacity:.25;" ':'')+'onclick="docsMove(\''+t.id+'\',\''+r.kind+'\',\''+r.id+'\',1)">▼</button>') : '';
+          var moveBtns='';   /* v6.41 : flèches de réordonnancement retirées (demande Laurent) */
           if(r.kind==='type'){
             var d=r.data;
             out+='<div class="doc-item"><span class="doc-icon">📄</span><div style="flex:1;min-width:0;">'
               +'<div class="doc-name">'+esc(d.titre)+'</div>'
               +'<div class="doc-meta">'+esc(d.desc)+'</div></div>'
-              +'<div class="doc-actions">'+d.files.map(function(f){ return tile(f.k,f.oc,(f.k==='word'?'Word':'PDF')); }).join('')
+              +'<div class="doc-actions">'+(window.DG_DOC_MAP&&DG_DOC_MAP[d.tid]?'<button class="doc-gen-btn" title="Remplir la fiche et générer le PDF aux couleurs Achille" onclick="docsOpenGen(\''+DG_DOC_MAP[d.tid]+'\')">⚡ Générer</button>':'')+d.files.map(function(f){ return tile(f.k,f.oc,(f.k==='word'?'Word':'PDF')); }).join('')
               +(adm?'<button class="doc-mini-btn" title="Modifier" onclick="docsEditType(\''+d.tid+'\')">✎</button>'+moveBtns:'')
               +'</div></div>';
           } else {
@@ -10457,7 +10457,7 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
   var _origNavTo=window.navTo;
   if(typeof _origNavTo==='function'){ window.navTo=function(pg,el){ _origNavTo(pg,el); if(pg==='documents'){ setTimeout(window.docsRenderCustom,80); setTimeout(window.docaffRender,120); } }; }
   var _origDocsTab=window.docsTab;
-  if(typeof _origDocsTab==='function'){ window.docsTab=function(id,btn){ _origDocsTab(id,btn); if(id==='modeles') setTimeout(window.docsRenderCustom,60); if(id==='affaires') setTimeout(window.docaffRender,60); }; }
+  if(typeof _origDocsTab==='function'){ window.docsTab=function(id,btn){ _origDocsTab(id,btn); if(id==='modeles') setTimeout(window.docsRenderCustom,60); if(id==='affaires') setTimeout(window.docaffRender,60); if(id==='generer') setTimeout(window.dgInit,60); }; }
   var _prevSRdocs=window.setRole;
   window.setRole=function(r,btn){ if(_prevSRdocs) _prevSRdocs(r,btn); try{ var ap=document.querySelector('.page.active'); if(ap&&ap.id==='page-documents'){ setTimeout(window.docsRenderCustom,60); setTimeout(window.docaffRender,90); } }catch(e){} };
   document.addEventListener('DOMContentLoaded', function(){ setTimeout(function(){ if(window.docsRenderCustom) docsRenderCustom(); if(window.docaffRender) docaffRender(); }, 1500); });
@@ -14070,6 +14070,38 @@ document.addEventListener('focusout', function(e){ if(cur && e.target===cur){ se
 window.addEventListener('scroll', function(){ if(cur) place(cur); }, true);
 window.addEventListener('resize', function(){ if(cur) place(cur); });
 })();
+
+</script>
+
+<!-- ══════════ v6.41 : générateur dans documents ══════════ -->
+<style>
+
+/* ══ v6.41 : bouton Générer dans Documents ══ */
+.doc-gen-btn{background:var(--terra);color:#fff;border:none;border-radius:8px;padding:7px 12px;font-family:'Jost',sans-serif;font-size:11.5px;font-weight:600;letter-spacing:.02em;cursor:pointer;white-space:nowrap;box-shadow:0 1px 4px rgba(180,115,96,.35);}
+.doc-gen-btn:hover{background:var(--noir);}
+#docs-generer .nx-head{margin-top:4px;}
+
+</style>
+<script>
+
+/* ══════════ v6.41 — Générateur intégré à l'onglet Documents ══════════ */
+window.DG_DOC_MAP = {
+  'visite-estim': 'visite_estimation',
+  'offre':        'offre_achat',
+  'avl':          'estimation_locative',
+  'edl':          'etat_des_lieux'
+};
+window.docsOpenGen = function(k){
+  var btns=document.querySelectorAll('.docs-tab');
+  var genBtn=null;
+  btns.forEach(function(b){ if((b.textContent||'').indexOf('Générer')>=0) genBtn=b; });
+  if(window.docsTab) docsTab('generer', genBtn||btns[btns.length-1]);
+  setTimeout(function(){
+    if(typeof dgInit==='function') dgInit();
+    if(document.querySelector('#dg-view .dg-install')) return;
+    if(typeof dgOpenForm==='function') try{ dgOpenForm(k); }catch(e){}
+  }, 80);
+};
 
 </script>
 </body>
