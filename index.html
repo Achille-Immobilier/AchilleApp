@@ -1552,7 +1552,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     </div>
   </div>
   </div>
-  <div class="logo-ver app-ver">Achille App — v6.42</div>
+  <div class="logo-ver app-ver">Achille App — v6.43</div>
 </aside>
 <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Réduire la barre latérale">‹</button>
 
@@ -7524,6 +7524,17 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     document.getElementById('ecf-not-vendeur').value= row.notVendeur;
     document.getElementById('ecf-acquereur').value  = row.acquereur;
     document.getElementById('ecf-not-acq').value    = row.notAcq;
+    /* v6.43 : coordonnées repliables */
+    [['ecf-vendeur','coordVend'],['ecf-not-vendeur','coordNotV'],['ecf-acquereur','coordAcq'],['ecf-not-acq','coordNotA']].forEach(function(p){
+      var c=row[p[1]]||{tel:'',mail:'',adr:''};
+      var t=document.getElementById(p[0]+'-tel');  if(t) t.value=c.tel||'';
+      var m=document.getElementById(p[0]+'-mail'); if(m) m.value=c.mail||'';
+      var a=document.getElementById(p[0]+'-adr');  if(a) a.value=c.adr||'';
+      var wrap=document.getElementById(p[0]+'-coord');
+      if(wrap) wrap.style.display=(c.tel||c.mail||c.adr)?'grid':'none';
+      var btn=document.querySelector('[onclick="ecCoordTog(\''+p[0]+'\')"]');
+      if(btn) btn.textContent=(c.tel||c.mail||c.adr)?'−':'＋';
+    });
     document.getElementById('ecf-prix').value       = window.numFmtStr(row.prix);
     document.getElementById('ecf-net').value        = window.numFmtStr(row.net);
     document.getElementById('ecf-cs').value         = row.cs||'';
@@ -7665,6 +7676,15 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     row.notVendeur = document.getElementById('ecf-not-vendeur').value.trim();
     row.acquereur  = document.getElementById('ecf-acquereur').value.trim();
     row.notAcq     = document.getElementById('ecf-not-acq').value.trim();
+    /* v6.43 : coordonnées repliables */
+    ['ecf-vendeur','ecf-not-vendeur','ecf-acquereur','ecf-not-acq'].forEach(function(fid){
+      var key = ({'ecf-vendeur':'coordVend','ecf-not-vendeur':'coordNotV','ecf-acquereur':'coordAcq','ecf-not-acq':'coordNotA'})[fid];
+      row[key] = {
+        tel : (document.getElementById(fid+'-tel')||{}).value ? document.getElementById(fid+'-tel').value.trim() : '',
+        mail: (document.getElementById(fid+'-mail')||{}).value ? document.getElementById(fid+'-mail').value.trim() : '',
+        adr : (document.getElementById(fid+'-adr')||{}).value ? document.getElementById(fid+'-adr').value.trim() : ''
+      };
+    });
     row.prix       = window.NUMV(document.getElementById('ecf-prix').value);
     row.net        = window.NUMV(document.getElementById('ecf-net').value);
     row.cs         = document.getElementById('ecf-cs').value.trim();
@@ -8520,20 +8540,24 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
           <input class="ec-modal-input" id="ecf-promesse" type="text">
         </div>
         <div>
-          <div class="ec-modal-label">Vendeur</div>
+          <div class="ec-modal-label">Vendeur<button type="button" class="ec-coord-tog" onclick="ecCoordTog('ecf-vendeur')" title="Coordonnées">＋</button></div>
           <input class="ec-modal-input" id="ecf-vendeur" type="text">
+          <div class="ec-coord" id="ecf-vendeur-coord" style="display:none;"><input class="ec-modal-input ec-coord-in" id="ecf-vendeur-tel" placeholder="Téléphone" type="tel" autocomplete="off"><input class="ec-modal-input ec-coord-in" id="ecf-vendeur-mail" placeholder="E-mail" type="email" autocomplete="off"><input class="ec-modal-input ec-coord-in ec-coord-adr" id="ecf-vendeur-adr" placeholder="Adresse" autocomplete="off"></div>
         </div>
         <div>
-          <div class="ec-modal-label">Notaire vendeur</div>
+          <div class="ec-modal-label">Notaire vendeur<button type="button" class="ec-coord-tog" onclick="ecCoordTog('ecf-not-vendeur')" title="Coordonnées">＋</button></div>
           <input class="ec-modal-input" id="ecf-not-vendeur" type="text">
+          <div class="ec-coord" id="ecf-not-vendeur-coord" style="display:none;"><input class="ec-modal-input ec-coord-in" id="ecf-not-vendeur-tel" placeholder="Téléphone" type="tel" autocomplete="off"><input class="ec-modal-input ec-coord-in" id="ecf-not-vendeur-mail" placeholder="E-mail" type="email" autocomplete="off"><input class="ec-modal-input ec-coord-in ec-coord-adr" id="ecf-not-vendeur-adr" placeholder="Étude / adresse" autocomplete="off"></div>
         </div>
         <div>
-          <div class="ec-modal-label">Acquéreur</div>
+          <div class="ec-modal-label">Acquéreur<button type="button" class="ec-coord-tog" onclick="ecCoordTog('ecf-acquereur')" title="Coordonnées">＋</button></div>
           <input class="ec-modal-input" id="ecf-acquereur" type="text">
+          <div class="ec-coord" id="ecf-acquereur-coord" style="display:none;"><input class="ec-modal-input ec-coord-in" id="ecf-acquereur-tel" placeholder="Téléphone" type="tel" autocomplete="off"><input class="ec-modal-input ec-coord-in" id="ecf-acquereur-mail" placeholder="E-mail" type="email" autocomplete="off"><input class="ec-modal-input ec-coord-in ec-coord-adr" id="ecf-acquereur-adr" placeholder="Adresse" autocomplete="off"></div>
         </div>
         <div>
-          <div class="ec-modal-label">Notaire acquéreur</div>
+          <div class="ec-modal-label">Notaire acquéreur<button type="button" class="ec-coord-tog" onclick="ecCoordTog('ecf-not-acq')" title="Coordonnées">＋</button></div>
           <input class="ec-modal-input" id="ecf-not-acq" type="text">
+          <div class="ec-coord" id="ecf-not-acq-coord" style="display:none;"><input class="ec-modal-input ec-coord-in" id="ecf-not-acq-tel" placeholder="Téléphone" type="tel" autocomplete="off"><input class="ec-modal-input ec-coord-in" id="ecf-not-acq-mail" placeholder="E-mail" type="email" autocomplete="off"><input class="ec-modal-input ec-coord-in ec-coord-adr" id="ecf-not-acq-adr" placeholder="Étude / adresse" autocomplete="off"></div>
         </div>
         <div>
           <div class="ec-modal-label">Prix FAI (€)</div>
@@ -9871,7 +9895,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     startRealtime();
     var ov=document.getElementById('ach-login-overlay'); if(ov) ov.classList.add('ach-hidden');
     var ub=document.getElementById('ach-userbar'); if(ub) ub.style.display='none';
-    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v6.42';
+    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v6.43';
     flag('Synchronis\u00e9');
     // fin de l'init : on autorise la journalisation des actions
     setTimeout(function(){ installInterceptor._init=false; }, 1500);
@@ -10037,6 +10061,9 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
     return '<button class="dl-tile" onclick="'+onclick+'" title="Télécharger ('+lb+')"><span class="dl-ic '+cls+'">'+ic+'</span><span class="dl-lb">'+lb+'</span></button>';
   }
   var DOCS_TYPES=[
+    {tid:'estim-vente', themeId:'vente', ord:5, titre:'Estimation de Valeur',
+     desc:'Avis de valeur vente — le dossier remis au propriétaire (à générer aux couleurs de l\u2019agence).',
+     files:[]},
     {tid:'prosp-acq', themeId:'prospection', ord:10, titre:'Fiche Prospection Acquéreurs',
      desc:'Fiche pour recueillir les critères de recherche des acquéreurs : coordonnées, budget, superficie, localisation, impératifs.',
      files:[{k:'pdf',oc:"downloadProspection()"}]},
@@ -14088,6 +14115,7 @@ window.addEventListener('resize', function(){ if(cur) place(cur); });
 
 /* ══════════ v6.41 — Générateur intégré à l'onglet Documents ══════════ */
 window.DG_DOC_MAP = {
+  'estim-vente':  'estimation_vente',
   'visite-estim': 'visite_estimation',
   'offre':        'offre_achat',
   'avl':          'estimation_locative',
@@ -14104,6 +14132,46 @@ window.docsOpenGen = function(k){
     if(typeof dgOpenForm==='function') try{ dgOpenForm(k); }catch(e){}
   }, 80);
 };
+
+</script>
+
+<!-- ══════════ v6.43 : coordonnées ventes ══════════ -->
+<style>
+
+/* ══ v6.43 : coordonnées repliables (En cours / Ventes) ══ */
+.ec-coord-tog{background:none;border:none;color:var(--terra);cursor:pointer;font-size:15px;line-height:1;padding:0 4px;margin-left:6px;vertical-align:middle;font-weight:600;}
+.ec-coord-tog:hover{color:var(--noir);}
+.ec-coord{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:6px;}
+.ec-coord-in{font-size:12.5px!important;padding:6px 9px!important;background:rgba(180,115,96,.04)!important;}
+.ec-coord-adr{grid-column:1/-1;}
+
+</style>
+<script>
+
+/* ══════════ v6.43 — Coordonnées repliables sur la fiche Vente ══════════ */
+window.ecCoordTog = function(fid){
+  var wrap = document.getElementById(fid+'-coord'); if(!wrap) return;
+  var open = wrap.style.display!=='none';
+  wrap.style.display = open ? 'none' : 'grid';
+  var btn = document.querySelector('[onclick="ecCoordTog(\''+fid+'\')"]');
+  if(btn) btn.textContent = open ? '＋' : '−';
+  if(!open){
+    var first = wrap.querySelector('input'); if(first) first.focus();
+  }
+};
+(function(){
+  if(!window.ecOpenNew) return;
+  var _base = window.ecOpenNew;
+  window.ecOpenNew = function(){
+    var r = _base.apply(this, arguments);
+    ['ecf-vendeur','ecf-not-vendeur','ecf-acquereur','ecf-not-acq'].forEach(function(fid){
+      ['-tel','-mail','-adr'].forEach(function(s){ var el=document.getElementById(fid+s); if(el) el.value=''; });
+      var wrap=document.getElementById(fid+'-coord'); if(wrap) wrap.style.display='none';
+      var btn=document.querySelector('[onclick="ecCoordTog(\''+fid+'\')"]'); if(btn) btn.textContent='＋';
+    });
+    return r;
+  };
+})();
 
 </script>
 </body>
