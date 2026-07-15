@@ -1553,7 +1553,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     </div>
   </div>
   </div>
-  <div class="logo-ver app-ver">Achille App — v6.38</div>
+  <div class="logo-ver app-ver">Achille App — v6.39</div>
 </aside>
 <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Réduire la barre latérale">‹</button>
 
@@ -9868,7 +9868,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     startRealtime();
     var ov=document.getElementById('ach-login-overlay'); if(ov) ov.classList.add('ach-hidden');
     var ub=document.getElementById('ach-userbar'); if(ub) ub.style.display='none';
-    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v6.38';
+    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v6.39';
     flag('Synchronis\u00e9');
     // fin de l'init : on autorise la journalisation des actions
     setTimeout(function(){ installInterceptor._init=false; }, 1500);
@@ -13996,6 +13996,79 @@ if(window.pigeRender){
   window.pigeRender=function(){ var r=_baseR.apply(this, arguments); try{ window.pgReadBadge(); }catch(e){} return r; };
 }
 try{ window.pgReadBadge(); }catch(e){}
+})();
+
+</script>
+
+<!-- ══════════ v6.39 : adresses unifiées ══════════ -->
+<script>
+
+/* ══════════ v6.39 — Autocomplétion d'adresse UNIFIÉE (api-adresse.data.gouv.fr) ══════════
+   Équipe par DÉLÉGATION les champs adresse encore orphelins :
+   #plan-ev-adresse (Planning), #cm-c-adresse (Communication), #vt-addr (Visites),
+   et les champs dynamiques du Générateur (id commençant par « f- » et contenant « adresse »).
+   Les champs déjà équipés (pige, affaires, bons, tableau communication) gardent leur mécanisme. */
+(function(){
+'use strict';
+var box=null, timer=null, cur=null;
+function ensureBox(){
+  if(box) return box;
+  box=document.createElement('div');
+  box.id='ach-adr-box';
+  box.style.cssText='position:absolute;z-index:100000;display:none;background:#fff;border:1px solid #e3dccf;border-radius:8px;box-shadow:0 6px 18px rgba(0,0,0,.12);overflow:hidden;';
+  document.body.appendChild(box);
+  return box;
+}
+function hide(){ if(box) box.style.display='none'; cur=null; }
+function place(el){
+  var r=el.getBoundingClientRect();
+  box.style.left=(r.left+window.scrollX)+'px';
+  box.style.top=(r.bottom+window.scrollY+3)+'px';
+  box.style.width=Math.max(r.width,220)+'px';
+}
+function isTarget(el){
+  if(!el || el.tagName!=='INPUT') return false;
+  var id=el.id||'';
+  if(id==='plan-ev-adresse' || id==='cm-c-adresse' || id==='vt-addr') return true;
+  if(id.indexOf('f-')===0 && id.indexOf('adresse')>=0) return true;
+  return false;
+}
+document.addEventListener('input', function(e){
+  var el=e.target;
+  if(!isTarget(el)) return;
+  clearTimeout(timer);
+  var val=el.value||'';
+  if(val.length<3){ hide(); return; }
+  timer=setTimeout(function(){
+    fetch('https://api-adresse.data.gouv.fr/search/?q='+encodeURIComponent(val)+'&limit=5')
+      .then(function(r){ return r.json(); })
+      .then(function(d){
+        if(document.activeElement!==el) return;      /* l'utilisateur est parti ailleurs */
+        if(!d.features || !d.features.length){ hide(); return; }
+        var b=ensureBox(); b.innerHTML=''; cur=el;
+        d.features.forEach(function(f){
+          var p=f.properties, div=document.createElement('div');
+          div.style.cssText='padding:9px 12px;cursor:pointer;font-size:13.5px;border-bottom:1px solid #f0ebe3;font-family:Jost,sans-serif;background:#fff;';
+          div.textContent=p.label;
+          div.addEventListener('mousedown', function(ev){
+            ev.preventDefault();
+            el.value=p.label;
+            hide();
+            el.dispatchEvent(new Event('change',{bubbles:true}));
+          });
+          div.addEventListener('mouseover', function(){ this.style.background='#f7f3ee'; });
+          div.addEventListener('mouseout', function(){ this.style.background='#fff'; });
+          b.appendChild(div);
+        });
+        place(el);
+        b.style.display='block';
+      })
+      .catch(function(){ hide(); });
+  }, 250);
+}, true);
+document.addEventListener('focusout', function(e){ if(cur && e.target===cur){ setTimeout(hide,150); } }, true);
+window.addEventListener('scroll', function(){ if(cur) place(cur); }, true);
+window.addEventListener('resize', function(){ if(cur) place(cur); });
 })();
 
 </script>
