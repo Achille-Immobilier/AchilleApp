@@ -1553,7 +1553,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     </div>
   </div>
   </div>
-  <div class="logo-ver app-ver">Achille App — v7.06</div>
+  <div class="logo-ver app-ver">Achille App — v7.07</div>
 </aside>
 <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Réduire la barre latérale">‹</button>
 
@@ -4375,9 +4375,9 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
       sectShowResult(shortAddr, dispName, lat, lon, isHDS, isParis, isBoth);
 
       // Charger collège de secteur + établissements + transports (en parallèle)
+      sectLoadTransport(lat, lon);   // le plus lent (Overpass) : on le lance d'abord
       sectLoadSecteur(lat, lon, isHDS, isParis);
       sectLoadSchools(lat, lon);
-      sectLoadTransport(lat, lon);
 
     } catch(e) {
       toast('Erreur de connexion');
@@ -4767,7 +4767,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     };
     var RC = {'A':'#E2231A','B':'#4E9CD5','C':'#F0C244','D':'#007852','E':'#B656A1'};
 
-    var metro = [], rer = [], tram = [], busMap = {}, schools = [];
+    var metroStations = [], metroEntrances = [], rer = [], tram = [], busMap = {}, schools = [];
 
     // ── Extraction des lignes depuis les tags OSM ──
     function extractLines(t) {
@@ -4820,15 +4820,15 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
         return;
       }
 
-      // ── MÉTRO ──
-      // Critères : subway_entrance OU station=subway OU réseau RATP + pas de train/RER
-      var isMetro = (rw === 'subway_entrance')
-        || (rw === 'station' && st === 'subway')
+      // ── MÉTRO ── (on sépare STATIONS et bouches ; les bouches, souvent nommées par la rue,
+      //   portent parfois le n° de ligne → on le fusionne dans la station la plus proche plus bas)
+      var isEntrance = (rw === 'subway_entrance');
+      var isMetroStation = (rw === 'station' && st === 'subway')
         || (net === 'ratp' && rw === 'station' && st !== 'light_rail' && t.train !== 'yes');
-      if(isMetro && d <= Rm) {
-        // Nettoyer le nom
+      if((isEntrance || isMetroStation) && d <= Rm) {
         var cleanName = name.replace(/\s*[-–]\s*(métro|metro|ligne\s*\d+.*)/gi,'').trim();
-        metro.push({ name: cleanName || name, lines: lines, dist: d });
+        var mObj = { name: cleanName || name, lines: lines, dist: d, lat: elLat, lon: elLon };
+        if(isMetroStation) metroStations.push(mObj); else metroEntrances.push(mObj);
         return;
       }
 
@@ -4850,11 +4850,17 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
       // ── BUS ──
       if(hw === 'bus_stop' && d <= Rb) {
         var refs = (t.ref || t.route_ref || '').split(/[;,]/).map(function(x){ return x.trim(); }).filter(function(x){ return x && x !== '0' && !/^\d{4,}$/.test(x); });
-        if(!refs.length) refs = ['?'];
-        refs.forEach(function(ref) {
-          if(!busMap[ref]) busMap[ref] = { name: name || 'Arrêt', dists: [] };
-          busMap[ref].dists.push(d);
-        });
+        if(refs.length){
+          refs.forEach(function(ref) {
+            if(!busMap[ref]) busMap[ref] = { name: name || 'Arrêt', dists: [], line: ref };
+            busMap[ref].dists.push(d);
+          });
+        } else if(name) {
+          // arrêt sans n° de ligne dans l'open data : on le montre par son NOM, sans badge « ? »
+          var nk = 'n:'+name.toLowerCase();
+          if(!busMap[nk]) busMap[nk] = { name: name, dists: [], line: '' };
+          busMap[nk].dists.push(d);
+        }
       }
     });
 
@@ -4872,13 +4878,21 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
         });
     }
 
+    // Fusion des lignes des bouches dans la station la plus proche (≤300m) → noms de station propres AVEC leurs lignes
+    metroEntrances.forEach(function(e){
+      if(!e.lines.length) return;
+      var best=null, bd=301;
+      metroStations.forEach(function(st2){ var dd=sectM(e.lat,e.lon,st2.lat,st2.lon); if(dd<bd){bd=dd;best=st2;} });
+      if(best){ e.lines.forEach(function(l){ if(best.lines.indexOf(l)<0) best.lines.push(l); }); }
+    });
+    var metro = metroStations.length ? metroStations : metroEntrances;   // repli : jamais rien perdu
     metro  = dedup(metro);
     rer    = dedup(rer);
     tram   = dedup(tram);
     schools.sort(function(a,b){ return a.dist - b.dist; });
 
     var busList = Object.keys(busMap)
-      .map(function(k){ return { line:k, name:busMap[k].name, dist:Math.min.apply(null, busMap[k].dists) }; })
+      .map(function(k){ var b=busMap[k]; return { line:b.line||'', name:b.name, dist:Math.min.apply(null, b.dists) }; })
       .sort(function(a,b){ return a.dist - b.dist; });
 
     // ── Rendu d'un badge ligne ──
@@ -4944,7 +4958,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
 
     // Bus
     h += sectionHtml('🚌', 'Bus', Rb, busList.slice(0,15), function(b) {
-      var badge = '<span class="sect-badge sb-bus" style="font-weight:700;font-size:11px;">'+b.line+'</span>';
+      var badge = b.line ? '<span class="sect-badge sb-bus" style="font-weight:700;font-size:11px;">'+b.line+'</span>' : '';
       return itemRow('🚌', b.name, badge, b.dist);
     });
 
@@ -9965,7 +9979,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     startRealtime();
     var ov=document.getElementById('ach-login-overlay'); if(ov) ov.classList.add('ach-hidden');
     var ub=document.getElementById('ach-userbar'); if(ub) ub.style.display='none';
-    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v7.06';
+    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v7.07';
     flag('Synchronis\u00e9');
     // fin de l'init : on autorise la journalisation des actions
     setTimeout(function(){ installInterceptor._init=false; }, 1500);
