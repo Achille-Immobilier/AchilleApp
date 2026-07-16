@@ -1559,7 +1559,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     </div>
   </div>
   </div>
-  <div class="logo-ver app-ver">Achille App — v7.10</div>
+  <div class="logo-ver app-ver">Achille App — v7.11</div>
 </aside>
 <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Réduire la barre latérale">‹</button>
 
@@ -1664,6 +1664,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
         <button class="docs-tab active" onclick="docsTab('modeles',this)">📁 Documents de l’agence</button>
         <button class="docs-tab" onclick="docsTab('affaires',this)">📂 Documents par affaire</button>
         <button class="docs-tab" onclick="docsTab('generer',this)">⚡ Générer un document</button>
+        <button class="docs-tab" onclick="docsTab('redac',this)">✍️ Rédaction quot.</button>
       </div>
       <div class="docs-body">
         <div class="docs-panel" id="docs-generer"><div class="nx-wrap">
@@ -1687,6 +1688,15 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
             <button id="docaff-add-aff-btn" class="btn btn-terra btn-sm" style="margin-left:auto;display:none;" onclick="docaffAddAff()">+ Ajouter une affaire</button>
           </div>
           <div id="docaff-list"><div style="color:var(--gris-2);font-style:italic;font-size:14px;">Chargement…</div></div>
+        </div>
+
+        <div class="docs-panel" id="docs-redac">
+          <div style="display:flex;align-items:baseline;gap:12px;margin-bottom:14px;">
+            <div style="font-family:'Cormorant Garamond',serif;font-size:28px;color:var(--noir);">Rédaction <span style="color:var(--terra);">quotidienne</span></div>
+            <div style="font-size:11px;color:var(--gris-2);">brouillons de mails et SMS/WhatsApp réutilisables — « Générer » remplit les variables</div>
+            <button id="redac-add-btn" class="btn btn-terra btn-sm" style="margin-left:auto;display:none;" onclick="redacAddOpen()">+ Ajouter un modèle</button>
+          </div>
+          <div id="redac-list"></div>
         </div>
 
       </div>
@@ -3479,9 +3489,9 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
       <div class="comm-tabs-bar ec-tabs-bar">
         <button class="comm-tab active" onclick="ecTab('liste',this)">📋 Suivi des ventes</button>
         <button class="comm-tab" onclick="ecTab('enc',this)">💶 Encaissements</button>
+        <button class="ec-add-btn" id="ec-add-btn" onclick="ecOpenNew()" style="margin-left:auto;align-self:center;margin-right:12px;">+ Nouvelle vente</button>
       </div>
       <div class="ec-tabpanel active" id="ec-tab-liste">
-      <div class="ec-toolbar"><button class="ec-add-btn" id="ec-add-btn" onclick="ecOpenNew()">+ Nouvelle vente</button></div>
       <div class="ec-hd">
         <span>Bien · Signature offre</span>
         <span>Vendeur · Notaire</span>
@@ -8778,7 +8788,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
 <script>
 (function(){
   var AUDIT_KEY='ach_audit_v1';
-  var LABELS={ach_pi_v4:'Post-its',ach_encours_v1:'Ventes (En cours)',ach_todos_v1:'To-dos',ach_plan_events:'Planning',ach_vt_v4:'Visites',ach_bv_obs:'Bons de visite (observations)',ach_bv_extra:'Bons de visite',ach_bv_pending:'Bons de visite (validation)',ach_bv_notifs:'Notifications',ach_fin_v3:'Finances',ach_prosp_v1:'Prospection',ach_lex_html_v1:'Lexique',ach_lex_proposals:'Lexique (propositions)',ach_pige_v1:'Pige',ach_docaff_v1:'Documents par affaire',ach_docs_cfg_v1:'Documents (réglages)', ach_docgen_assets_v1:'Générateur (charte & polices)', ach_rappels_v1:'Rappels'};
+  var LABELS={ach_pi_v4:'Post-its',ach_encours_v1:'Ventes (En cours)',ach_todos_v1:'To-dos',ach_plan_events:'Planning',ach_vt_v4:'Visites',ach_bv_obs:'Bons de visite (observations)',ach_bv_extra:'Bons de visite',ach_bv_pending:'Bons de visite (validation)',ach_bv_notifs:'Notifications',ach_fin_v3:'Finances',ach_prosp_v1:'Prospection',ach_lex_html_v1:'Lexique',ach_lex_proposals:'Lexique (propositions)',ach_pige_v1:'Pige',ach_docaff_v1:'Documents par affaire',ach_docs_cfg_v1:'Documents (réglages)', ach_docgen_assets_v1:'Générateur (charte & polices)', ach_rappels_v1:'Rappels', ach_redac_v1:'Rédaction quotidienne'};
   var _orig=localStorage.setItem.bind(localStorage);
   function curName(){var e=document.getElementById('s-name');return e?e.textContent:'?';}
   function curRole(){var e=document.getElementById('s-role');return e?e.textContent:'';}
@@ -9384,7 +9394,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     ach_pi_v4:'Post-its', ach_plan_events:'Planning', ach_todos_v1:'To-do',
     ach_prosp_v1:'Prospection', ach_lex_html_v1:'Lexique', ach_lex_proposals:'Lexique (propositions)',
     ach_fin_hist_v3:'Honoraires', ach_fin_ops_v3:'Finances', ach_fin_lines_v1:'Finances',
-    ach_fin_solde_v3:'Finances', ach_encours_v1:'Affaires en cours', ach_audit_v1:'Journal', ach_pige_v1:'Pige', ach_docaff_v1:'Documents par affaire', ach_docs_cfg_v1:'Documents (réglages)', ach_docgen_assets_v1:'Générateur (charte & polices)', ach_rappels_v1:'Rappels', ach_evol_v1:'Évolutions', ach_tomb_v2:'(technique) suppressions'
+    ach_fin_solde_v3:'Finances', ach_encours_v1:'Affaires en cours', ach_audit_v1:'Journal', ach_pige_v1:'Pige', ach_docaff_v1:'Documents par affaire', ach_docs_cfg_v1:'Documents (réglages)', ach_docgen_assets_v1:'Générateur (charte & polices)', ach_rappels_v1:'Rappels', ach_evol_v1:'Évolutions', ach_redac_v1:'Rédaction quotidienne', ach_tomb_v2:'(technique) suppressions'
   };
   function labelFor(k){ return LABELS[k] || k; }
 
@@ -10020,7 +10030,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     startRealtime();
     var ov=document.getElementById('ach-login-overlay'); if(ov) ov.classList.add('ach-hidden');
     var ub=document.getElementById('ach-userbar'); if(ub) ub.style.display='none';
-    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v7.10';
+    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v7.11';
     flag('Synchronis\u00e9');
     // fin de l'init : on autorise la journalisation des actions
     setTimeout(function(){ installInterceptor._init=false; }, 1500);
@@ -14429,5 +14439,204 @@ document.addEventListener('input', function(e){
     <div class="tde-foot"><button class="tde-btn" onclick="todoExpandClose()">Fermer</button><button class="tde-btn terra" id="tde-modif">✎ Modifier</button></div>
   </div>
 </div>
+<!-- ══════════ v7.11 : Rédaction quotidienne (mails & SMS/WhatsApp) ══════════ -->
+<style>
+.rd-sec{margin-bottom:26px;}
+.rd-sec-hd{font-family:'Cormorant Garamond',serif;font-size:20px;color:var(--noir);border-bottom:1px solid var(--border);padding-bottom:6px;margin-bottom:12px;}
+.rd-empty{color:var(--gris-2);font-style:italic;font-size:13px;padding:6px 2px;}
+.rd-row{display:flex;align-items:flex-start;gap:12px;background:#fff;border:1px solid var(--border);border-left:3px solid var(--terra);border-radius:10px;padding:12px 14px;margin-bottom:10px;box-shadow:0 1px 5px rgba(0,0,0,.04);}
+.rd-row-main{flex:1;min-width:0;}
+.rd-row-titre{font-family:'Jost',sans-serif;font-size:14px;font-weight:600;color:var(--noir);margin-bottom:3px;}
+.rd-row-prev{font-size:12px;color:var(--gris);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.rd-row-actions{display:flex;align-items:center;gap:6px;flex-shrink:0;}
+.rd-btn{font-family:'Jost',sans-serif;font-size:12.5px;font-weight:600;padding:7px 13px;border-radius:8px;cursor:pointer;border:1px solid var(--terra);background:var(--terra);color:#fff;white-space:nowrap;}
+.rd-btn:hover{background:var(--terra-l);border-color:var(--terra-l);}
+.rd-ic{width:30px;height:30px;border:1px solid var(--border);background:#fff;color:var(--gris-2);border-radius:8px;cursor:pointer;font-size:13px;display:inline-flex;align-items:center;justify-content:center;}
+.rd-ic:hover{color:var(--terra);border-color:var(--terra-l);}
+.rd-ic.del:hover{color:var(--rouge);border-color:var(--rouge);}
+/* modales */
+.rd-ov{position:fixed;inset:0;background:rgba(26,26,24,.42);display:none;align-items:center;justify-content:center;z-index:99994;padding:20px;font-family:'Jost',sans-serif;}
+.rd-ov.open{display:flex;}
+.rd-modal{background:var(--blanc);border-radius:14px;width:520px;max-width:100%;max-height:86vh;display:flex;flex-direction:column;box-shadow:0 18px 50px rgba(0,0,0,.3);border-top:5px solid var(--terra);overflow:hidden;}
+.rd-modal-hd{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:600;color:var(--noir);padding:16px 22px 12px;border-bottom:1px solid var(--border);}
+.rd-modal-bd{padding:16px 22px 18px;overflow-y:auto;}
+.rd-modal-ft{padding:12px 22px;border-top:1px solid var(--border);display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap;}
+.rd-fl{display:block;font-size:11px;letter-spacing:.05em;text-transform:uppercase;color:var(--terra);font-weight:600;margin:12px 0 5px;}
+.rd-fl:first-child{margin-top:0;}
+.rd-inp{width:100%;box-sizing:border-box;background:var(--beige);border:1px solid var(--border);border-radius:7px;padding:8px 11px;font-family:'Jost',sans-serif;font-size:13px;color:var(--noir);outline:none;}
+textarea.rd-inp{resize:vertical;line-height:1.45;}
+.rd-inp:focus{border-color:var(--terra);}
+.rd-hint{font-size:11.5px;color:var(--gris);line-height:1.5;margin-top:10px;background:var(--terra-p);border-radius:7px;padding:8px 11px;}
+.rd-b{font-family:'Jost',sans-serif;font-size:13px;padding:8px 15px;border-radius:8px;cursor:pointer;border:1px solid var(--border);background:#fff;color:var(--gris);}
+.rd-b.terra{background:var(--terra);color:#fff;border-color:var(--terra);}
+.rd-b.terra:hover{background:var(--terra-l);}
+.rd-gf{margin-bottom:9px;}
+.rd-gf label{display:block;font-size:11px;font-weight:600;color:var(--terra);margin-bottom:4px;}
+.rd-gf input{width:100%;box-sizing:border-box;background:var(--beige);border:1px solid var(--border);border-radius:7px;padding:7px 10px;font-family:'Jost',sans-serif;font-size:13px;outline:none;}
+.rd-gf input:focus{border-color:var(--terra);}
+.rd-gen-result{margin-top:14px;border-top:1px dashed var(--beige-3);padding-top:12px;}
+.rd-res-lbl{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--gris-2);font-weight:600;margin:8px 0 5px;}
+.rd-res{background:#fff;border:1px solid var(--border);border-radius:8px;padding:11px 13px;font-size:13.5px;color:#2c2a26;line-height:1.55;white-space:pre-wrap;}
+.rd-res-objet{font-weight:600;}
+</style>
+
+<div id="rd-edit-ov" class="rd-ov" onclick="if(event.target===this)redacEditClose()">
+  <div class="rd-modal">
+    <div class="rd-modal-hd" id="rd-edit-title">Nouveau modèle</div>
+    <div class="rd-modal-bd">
+      <input type="hidden" id="rd-edit-id">
+      <label class="rd-fl">Type de message</label>
+      <select id="rd-e-canal" class="rd-inp" onchange="redacCanalToggle()">
+        <option value="mail">✉️ Mail</option>
+        <option value="sms">💬 SMS / WhatsApp</option>
+      </select>
+      <label class="rd-fl">Titre du modèle</label>
+      <input id="rd-e-titre" class="rd-inp" placeholder="Ex. Relance après visite">
+      <div id="rd-e-objet-row"><label class="rd-fl">Objet du mail</label><input id="rd-e-objet" class="rd-inp" placeholder="Objet — variables [ ] possibles"></div>
+      <label class="rd-fl">Message</label>
+      <textarea id="rd-e-corps" class="rd-inp" rows="8" placeholder="Bonjour [prénom],&#10;&#10;Suite à votre visite du bien au [adresse]…"></textarea>
+      <div class="rd-hint">💡 Écrivez vos variables entre crochets, ex. <b>[prénom]</b>, <b>[adresse]</b>, <b>[date]</b>. Elles deviendront des champs à remplir au moment du « Générer ».</div>
+    </div>
+    <div class="rd-modal-ft"><button class="rd-b" onclick="redacEditClose()">Annuler</button><button class="rd-b terra" onclick="redacEditSave()">Enregistrer</button></div>
+  </div>
+</div>
+
+<div id="rd-gen-ov" class="rd-ov" onclick="if(event.target===this)redacGenClose()">
+  <div class="rd-modal">
+    <div class="rd-modal-hd" id="rd-gen-title">⚡ Générer</div>
+    <div class="rd-modal-bd">
+      <div id="rd-gen-fields"></div>
+      <div class="rd-gen-result">
+        <div id="rd-gen-objet-wrap"><div class="rd-res-lbl">Objet</div><div class="rd-res rd-res-objet" id="rd-gen-objet"></div></div>
+        <div class="rd-res-lbl">Message finalisé</div>
+        <div class="rd-res" id="rd-gen-corps"></div>
+      </div>
+    </div>
+    <div class="rd-modal-ft" id="rd-gen-ft"></div>
+  </div>
+</div>
+
+<script>
+(function(){
+  var RD_KEY='ach_redac_v1';
+  function esc(s){ return (''+(s==null?'':s)).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+  function load(){ try{ var a=JSON.parse(localStorage.getItem(RD_KEY)||'[]'); return Array.isArray(a)?a:[]; }catch(e){ return []; } }
+  function save(a){ try{ localStorage.setItem(RD_KEY, JSON.stringify(a)); }catch(e){} }
+  function newId(){ return 'rd-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,6); }
+  function find(list,id){ for(var i=0;i<list.length;i++){ if(list[i].id===id) return list[i]; } return null; }
+  function canManage(){ var k=(window.ACH_USER&&window.ACH_USER.key)||'admin'; return k==='admin'||k==='gerant'; }
+
+  window.redacRender=function(){
+    var box=document.getElementById('redac-list'); if(!box) return;
+    var manage=canManage();
+    var addBtn=document.getElementById('redac-add-btn'); if(addBtn) addBtn.style.display=manage?'':'none';
+    var list=load();
+    function section(canal, ico, label){
+      var items=list.filter(function(x){return x.canal===canal;}).sort(function(a,b){return (''+(b.updated||'')).localeCompare(''+(a.updated||''));});
+      var h='<div class="rd-sec"><div class="rd-sec-hd">'+ico+' '+label+'</div>';
+      if(!items.length){ h+='<div class="rd-empty">Aucun modèle pour l’instant.'+(manage?' Cliquez sur « + Ajouter un modèle ».':'')+'</div>'; }
+      else items.forEach(function(t){
+        var preview = (canal==='mail' && t.objet) ? t.objet : ((t.corps||'').split('\n')[0]||'(vide)');
+        h+='<div class="rd-row"><div class="rd-row-main">'
+          +'<div class="rd-row-titre">'+esc(t.titre||'(sans titre)')+'</div>'
+          +'<div class="rd-row-prev">'+esc(preview)+'</div></div>'
+          +'<div class="rd-row-actions">'
+          +'<button class="rd-btn" onclick="redacGenOpen(\''+t.id+'\')">⚡ Générer</button>'
+          +(manage?'<button class="rd-ic" title="Modifier" onclick="redacEditOpen(\''+t.id+'\')">✎</button><button class="rd-ic del" title="Supprimer" onclick="redacDel(\''+t.id+'\')">🗑</button>':'')
+          +'</div></div>';
+      });
+      return h+'</div>';
+    }
+    box.innerHTML = section('mail','✉️','Mails') + section('sms','💬','SMS / WhatsApp');
+  };
+
+  function openEdit(id){
+    var t = id ? find(load(),id) : null;
+    document.getElementById('rd-edit-id').value = id||'';
+    document.getElementById('rd-e-canal').value = (t&&t.canal)||'mail';
+    document.getElementById('rd-e-titre').value = (t&&t.titre)||'';
+    document.getElementById('rd-e-objet').value = (t&&t.objet)||'';
+    document.getElementById('rd-e-corps').value = (t&&t.corps)||'';
+    window.redacCanalToggle();
+    document.getElementById('rd-edit-title').textContent = id?'Modifier le modèle':'Nouveau modèle';
+    document.getElementById('rd-edit-ov').classList.add('open');
+    setTimeout(function(){ var e=document.getElementById('rd-e-titre'); if(e) e.focus(); },30);
+  }
+  window.redacAddOpen=function(){ if(canManage()) openEdit(null); };
+  window.redacEditOpen=function(id){ if(canManage()) openEdit(id); };
+  window.redacCanalToggle=function(){ var c=document.getElementById('rd-e-canal').value; var r=document.getElementById('rd-e-objet-row'); if(r) r.style.display = c==='mail'?'':'none'; };
+  window.redacEditClose=function(){ var o=document.getElementById('rd-edit-ov'); if(o) o.classList.remove('open'); };
+  window.redacEditSave=function(){
+    if(!canManage()) return;
+    var id=document.getElementById('rd-edit-id').value;
+    var canal=document.getElementById('rd-e-canal').value;
+    var titre=(document.getElementById('rd-e-titre').value||'').trim();
+    var objet=(document.getElementById('rd-e-objet').value||'').trim();
+    var corps=(document.getElementById('rd-e-corps').value||'');
+    if(!titre && !corps.trim()){ try{ toast('Indiquez au moins un titre ou un message'); }catch(e){} return; }
+    var list=load(), now=new Date().toISOString();
+    if(id){ var t=find(list,id); if(t){ t.canal=canal; t.titre=titre; t.objet=objet; t.corps=corps; t.updated=now; } }
+    else { list.push({id:newId(), canal:canal, titre:titre, objet:objet, corps:corps, created:now, updated:now}); }
+    save(list); window.redacEditClose(); window.redacRender();
+    try{ if(window.achLog) achLog(id?'modification':'ajout','Rédaction quotidienne',titre); }catch(e){}
+  };
+  window.redacDel=function(id){
+    if(!canManage()) return;
+    var t=find(load(),id), lbl=(t&&t.titre)||'';
+    if(!window.confirm('Supprimer le modèle'+(lbl?(' « '+lbl+' »'):'')+' ?')) return;
+    save(load().filter(function(x){ return x.id!==id; })); window.redacRender();
+    try{ if(window.achLog) achLog('suppression','Rédaction quotidienne',lbl||'(sans titre)'); }catch(e){}
+  };
+
+  // ---------- Générer ----------
+  function placeholders(text){
+    var re=/\[([^\][]+)\]/g, m, seen={}, out=[];
+    while((m=re.exec(text))){ var k=(m[1]||'').trim(); if(k && !seen[k.toLowerCase()]){ seen[k.toLowerCase()]=1; out.push(k); } }
+    return out;
+  }
+  var _rdCur=null;
+  window.redacGenOpen=function(id){
+    var t=find(load(),id); if(!t) return; _rdCur=t;
+    var full=(t.canal==='mail'?(t.objet||'')+'\n':'')+(t.corps||'');
+    var vars=placeholders(full), fh='';
+    if(vars.length){ vars.forEach(function(v){ fh+='<div class="rd-gf"><label>'+esc(v)+'</label><input type="text" data-ph="'+esc(v)+'" oninput="redacGenPreview()" placeholder="'+esc(v)+'"></div>'; }); }
+    else { fh='<div class="rd-empty" style="padding:2px 0 4px;">Aucune variable — le message est prêt tel quel.</div>'; }
+    document.getElementById('rd-gen-title').textContent='⚡ '+(t.titre||'Générer');
+    document.getElementById('rd-gen-fields').innerHTML=fh;
+    document.getElementById('rd-gen-objet-wrap').style.display = t.canal==='mail'?'':'none';
+    var ft;
+    if(t.canal==='mail'){ ft='<button class="rd-b" onclick="redacGenClose()">Fermer</button><button class="rd-b" onclick="redacCopyObjet(this)">Copier l’objet</button><button class="rd-b" onclick="redacCopyMsg(this)">Copier le message</button><button class="rd-b terra" onclick="redacOpenMail()">✉️ Ouvrir le mail</button>'; }
+    else { ft='<button class="rd-b" onclick="redacGenClose()">Fermer</button><button class="rd-b" onclick="redacCopyMsg(this)">Copier le message</button><button class="rd-b terra" onclick="redacOpenWA()">💬 Ouvrir WhatsApp</button>'; }
+    document.getElementById('rd-gen-ft').innerHTML=ft;
+    window.redacGenPreview();
+    document.getElementById('rd-gen-ov').classList.add('open');
+    setTimeout(function(){ var e=document.querySelector('#rd-gen-fields input'); if(e) e.focus(); },30);
+  };
+  function collectVals(){ var v={}; document.querySelectorAll('#rd-gen-fields input[data-ph]').forEach(function(inp){ v[(inp.getAttribute('data-ph')||'').toLowerCase()]=inp.value; }); return v; }
+  function fill(text, vals){ return (text||'').replace(/\[([^\][]+)\]/g, function(m,k){ var val=vals[(k||'').trim().toLowerCase()]; return (val && val.length)? val : m; }); }
+  window.redacGenPreview=function(){
+    if(!_rdCur) return; var vals=collectVals();
+    var oe=document.getElementById('rd-gen-objet'); if(oe) oe.textContent=fill(_rdCur.objet||'', vals);
+    document.getElementById('rd-gen-corps').textContent=fill(_rdCur.corps||'', vals);
+  };
+  window.redacGenClose=function(){ var o=document.getElementById('rd-gen-ov'); if(o) o.classList.remove('open'); _rdCur=null; };
+  function copyText(txt, btn){
+    var orig=btn?btn.textContent:'';
+    function ok(){ if(btn){ btn.textContent='Copié ✓'; setTimeout(function(){ btn.textContent=orig; },1400); } }
+    function fb(){ try{ var ta=document.createElement('textarea'); ta.value=txt; ta.style.position='fixed'; ta.style.left='-9999px'; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta); ok(); }catch(e){} }
+    try{ if(navigator.clipboard && navigator.clipboard.writeText){ navigator.clipboard.writeText(txt).then(ok, fb); } else fb(); }catch(e){ fb(); }
+  }
+  window.redacCopyMsg=function(btn){ copyText(document.getElementById('rd-gen-corps').textContent, btn); };
+  window.redacCopyObjet=function(btn){ copyText(document.getElementById('rd-gen-objet').textContent, btn); };
+  window.redacOpenWA=function(){ var t=document.getElementById('rd-gen-corps').textContent; window.open('https://wa.me/?text='+encodeURIComponent(t),'_blank','noopener'); };
+  window.redacOpenMail=function(){ var o=document.getElementById('rd-gen-objet').textContent, c=document.getElementById('rd-gen-corps').textContent; window.location.href='mailto:?subject='+encodeURIComponent(o)+'&body='+encodeURIComponent(c); };
+
+  // ---------- Intégration onglet Documents ----------
+  if(window.docsTab){ var _dt=window.docsTab; window.docsTab=function(id,btn){ _dt(id,btn); if(id==='redac') setTimeout(window.redacRender,50); }; }
+  if(window.setRole){ var _sr=window.setRole; window.setRole=function(r,btn){ if(typeof _sr==='function') _sr(r,btn); try{ var p=document.getElementById('docs-redac'); if(p && p.classList.contains('active')) window.redacRender(); }catch(e){} }; }
+  document.addEventListener('keydown',function(e){ if(e.key==='Escape'){ window.redacEditClose(); window.redacGenClose(); } });
+})();
+</script>
+
 </body>
 </html>
