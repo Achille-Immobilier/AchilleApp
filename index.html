@@ -1553,7 +1553,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     </div>
   </div>
   </div>
-  <div class="logo-ver app-ver">Achille App — v7.07</div>
+  <div class="logo-ver app-ver">Achille App — v7.08</div>
 </aside>
 <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Réduire la barre latérale">‹</button>
 
@@ -4417,7 +4417,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     if(isParis||isBoth){
       h += '<a class="sect-open-btn" href="'+parisUrl+'" target="_blank" rel="noopener" onclick="sectCopy(this)" data-addr="'+addr.replace(/"/g,'&quot;')+'">'
         + '<span class="sect-open-btn-ico">🏛️</span>'
-        + '<div style="flex:1;min-width:0;"><div class="sect-open-btn-title">Collège — Paris <span class="sect-clipboard-badge">adresse copiée</span></div>'
+        + '<div style="flex:1;min-width:0;"><div class="sect-open-btn-title">École &amp; collège — Paris <span class="sect-clipboard-badge">adresse copiée</span></div>'
         + '<div class="sect-open-btn-sub">Carte scolaire · Ville de Paris</div></div>'
         + '<span class="sect-open-btn-arrow">→</span></a>';
       h += '<a class="sect-open-btn" href="https://www.ac-paris.fr/affectation-en-seconde-gt-pour-un-eleve-scolarise-dans-un-etablissement-public-a-paris-122617" target="_blank" rel="noopener">'
@@ -4585,28 +4585,41 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
   };
   function sectSetNearestRail(lat, lon, els){
     if(!window.__sectCard) return;
-    var best=null;
+    /* v7.08 : on répertorie stations ET bouches ; le résultat privilégie le NOM DE STATION
+       (les bouches portent des noms de rue) et complète la LIGNE depuis les éléments voisins (≤300 m). */
+    function linesOf(t){
+      var raw=[t.ref,t.line,t.lines,t.route_ref,t['ref:FR:RATP']].filter(Boolean).join(';');
+      return raw.split(/[;,\s]+/).map(function(x){return x.trim();}).filter(function(x){return x && !/^\d{4,}$/.test(x);});
+    }
+    var cands=[];
     (els||[]).forEach(function(el){
       var t=el.tags||{}; var rw=t.railway||''; var net=(t.network||'').toLowerCase();
       var elat=el.lat||(el.center&&el.center.lat), elon=el.lon||(el.center&&el.center.lon);
       if(!elat||!elon) return;
-      var kind=null;
-      if(rw==='subway_entrance'||(rw==='station'&&t.station==='subway')||(net==='ratp'&&rw==='station'&&t.train!=='yes'&&t.station!=='light_rail')) kind='M\u00e9tro';
-      else if(rw==='station'&&(t.station==='light_rail'||t.train==='yes'||t.usage==='main')) kind='RER / Transilien';
-      else if(rw==='tram_stop') kind='Tram';
+      var kind=null, isStation=false;
+      if(rw==='station'&&t.station==='subway'){ kind='Métro'; isStation=true; }
+      else if(net==='ratp'&&rw==='station'&&t.train!=='yes'&&t.station!=='light_rail'){ kind='Métro'; isStation=true; }
+      else if(rw==='subway_entrance'){ kind='Métro'; }
+      else if(rw==='station'&&(t.station==='light_rail'||t.train==='yes'||t.usage==='main')){ kind='RER / Transilien'; isStation=true; }
+      else if(rw==='tram_stop'){ kind='Tram'; isStation=true; }
       if(!kind) return;
       var nm=(t.name||t['name:fr']||'').trim(); if(!nm) return;
-      nm=nm.replace(/\s*[-\u2013]\s*(m\u00e9tro|metro).*/i,'').replace(/\s*\(.*?\)\s*$/,'').trim();
-      var dd=sectM(lat,lon,elat,elon);
-      if(!best||dd<best.dist){
-        var raw=[t.ref,t.line,t.lines,t.route_ref,t['ref:FR:RATP']].filter(Boolean).join(';');
-        var lines=raw.split(/[;,\s]+/).map(function(x){return x.trim();}).filter(function(x){return x && !/^\d{4,}$/.test(x);});
-        best={name:nm, kind:kind, dist:dd, lines:lines.slice(0,4)};
-      }
+      nm=nm.replace(/\s*[-\u2013]\s*(métro|metro).*/i,'').replace(/\s*\(.*?\)\s*$/,'').trim();
+      cands.push({name:nm, kind:kind, isStation:isStation, dist:sectM(lat,lon,elat,elon), lat:elat, lon:elon, lines:linesOf(t)});
     });
-    if(best){ var sub=best.kind+(best.lines.length?(' '+best.lines.join(', ')):'')+' \u00b7 '+sectFD(best.dist);
-      window.__sectCard.transport={val:best.name, sub:sub}; }
-    else window.__sectCard.transport={none:'Aucune station \u00e0 proximit\u00e9'};
+    if(!cands.length){ window.__sectCard.transport={none:'Aucune station à proximité'}; sectCardRender(); return; }
+    cands.sort(function(a,b){return a.dist-b.dist;});
+    var best=cands[0];
+    if(!best.isStation){
+      /* le plus proche est une bouche : on prend le nom de la station attenante (≤300 m) en gardant la distance de la bouche */
+      var st=null, bd=301;
+      cands.forEach(function(c){ if(c.isStation&&c.kind===best.kind){ var dd=sectM(best.lat,best.lon,c.lat,c.lon); if(dd<bd){bd=dd;st=c;} } });
+      if(st) best={name:st.name, kind:best.kind, isStation:true, dist:best.dist, lat:best.lat, lon:best.lon, lines:best.lines.slice()};
+    }
+    /* compléter la ligne depuis TOUS les éléments du même type à ≤300 m (bouches comprises) */
+    cands.forEach(function(c){ if(c.kind===best.kind && sectM(best.lat,best.lon,c.lat,c.lon)<=300){ c.lines.forEach(function(l){ if(best.lines.indexOf(l)<0) best.lines.push(l); }); } });
+    var sub=best.kind+(best.lines.length?(' '+best.lines.slice(0,4).join(', ')):'')+' · '+sectFD(best.dist);
+    window.__sectCard.transport={val:best.name, sub:sub};
     sectCardRender();
   };
   function sectPickCollegeName(f){
@@ -4678,9 +4691,16 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
       setTimeout(function(){badge.textContent='adresse copiee';},2000); }
   };
 
+  var _sectTransCache={key:'',els:null};   /* v7.08 : cache par coordonnées — même adresse = affichage instantané */
   async function sectLoadTransport(lat, lon) {
     var panel = document.getElementById('sect-transport-panel');
     var Rm = 1500, Rt = 1000, Rb = 750;
+    var _ck=(+lat).toFixed(5)+','+(+lon).toFixed(5);
+    if(_sectTransCache.key===_ck && _sectTransCache.els){
+      try{ sectSetNearestRail(lat, lon, _sectTransCache.els); }catch(eC){}
+      panel.innerHTML = sectTransportHtml(lat, lon, _sectTransCache.els, Rm, Rt, Rb);
+      return;
+    }
 
     // 3 serveurs Overpass publics — on essaie dans l'ordre jusqu'à succès
     var SERVERS = [
@@ -4751,6 +4771,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
       }
     }
 
+    if(els && els.length) _sectTransCache={key:_ck, els:els};
     try{ sectSetNearestRail(lat, lon, els); }catch(eR){}
     panel.innerHTML = sectTransportHtml(lat, lon, els, Rm, Rt, Rb);
   }
@@ -9979,7 +10000,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     startRealtime();
     var ov=document.getElementById('ach-login-overlay'); if(ov) ov.classList.add('ach-hidden');
     var ub=document.getElementById('ach-userbar'); if(ub) ub.style.display='none';
-    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v7.07';
+    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v7.08';
     flag('Synchronis\u00e9');
     // fin de l'init : on autorise la journalisation des actions
     setTimeout(function(){ installInterceptor._init=false; }, 1500);
