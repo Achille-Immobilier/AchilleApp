@@ -1246,9 +1246,11 @@ body.lex-admin-editing .lex-save-btn{display:block;}
 .dash-cards{display:flex;flex-direction:column;gap:9px;}
 .mini-card{position:relative;background:#fff;border:1px solid var(--border);border-radius:10px;padding:10px 12px;cursor:pointer;box-shadow:0 1px 6px rgba(0,0,0,.04);transition:border-color .12s;}
 .mini-card:hover{border-color:var(--terra-l);}
-.mini-pin{position:absolute;top:8px;right:9px;border:none;background:none;cursor:pointer;font-size:15px;color:var(--gris-2);line-height:1;padding:0;}
+.mini-pin{position:absolute;top:8px;right:30px;border:none;background:none;cursor:pointer;font-size:15px;color:var(--gris-2);line-height:1;padding:0;}
 .mini-pin.on{color:var(--terra);}
-.mini-addr{font-weight:600;font-size:13px;padding-right:22px;line-height:1.25;color:var(--noir);}
+.mini-del{position:absolute;top:7px;right:8px;border:none;background:none;cursor:pointer;font-size:16px;color:var(--gris-2);line-height:1;padding:0 2px;transition:color .12s;}
+.mini-del:hover{color:var(--rouge);}
+.mini-addr{font-weight:600;font-size:13px;padding-right:46px;line-height:1.25;color:var(--noir);}
 .mini-bien{font-size:11px;color:var(--gris);margin-top:1px;}
 .mini-price{font-size:12.5px;color:var(--terra);margin-top:3px;font-weight:500;}
 .mini-foot{display:flex;justify-content:space-between;align-items:center;margin-top:6px;}
@@ -1551,7 +1553,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     </div>
   </div>
   </div>
-  <div class="logo-ver app-ver">Achille App — v7.00</div>
+  <div class="logo-ver app-ver">Achille App — v7.01</div>
 </aside>
 <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Réduire la barre latérale">‹</button>
 
@@ -8736,24 +8738,38 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     var body=document.getElementById('audit-body'); if(!body) return;
     var NMAP={'Laurent S.':'Laurent Sellem','Marine A.':'Marine Attias','Marine Z.':'Marine Zoretic','Lilo\u00e9 P.':'Lilo\u00e9 Pichat'};
     function normU(u){ u=u||'?'; return NMAP[u]||u; }
-    var all=loadAudit();
-    var f=document.getElementById('audit-filter');
-    if(f){
-      var cur=f.value;
-      var users=[]; all.forEach(function(e){ var n=normU(e.u); if(users.indexOf(n)<0) users.push(n); });
-      users.sort();
-      f.innerHTML='<option value="">Tous les utilisateurs</option>'+users.map(function(u){return '<option>'+u+'</option>';}).join('');
-      if(cur && users.indexOf(cur)>=0) f.value=cur;
-      f._filled=true;
+    function fmtT(ms){ var d=new Date(ms),p=function(n){return (n<10?'0':'')+n;}; return p(d.getDate())+'/'+p(d.getMonth()+1)+' '+p(d.getHours())+'h'+p(d.getMinutes()); }
+    function paint(rows){
+      var f=document.getElementById('audit-filter');
+      if(f){
+        var cur=f.value;
+        var users=[]; rows.forEach(function(e){ var n=normU(e.u); if(users.indexOf(n)<0) users.push(n); });
+        users.sort();
+        f.innerHTML='<option value="">Tous les utilisateurs</option>'+users.map(function(u){return '<option>'+u+'</option>';}).join('');
+        if(cur && users.indexOf(cur)>=0) f.value=cur;
+        f._filled=true;
+      }
+      var fv=f?f.value:'';
+      var a=rows.slice(); if(fv) a=a.filter(function(e){return normU(e.u)===fv;});
+      if(!a.length){ body.innerHTML='<tr><td colspan="3" style="text-align:center;color:#999;padding:18px;">Aucune modification enregistr\u00e9e pour le moment.</td></tr>'; return; }
+      body.innerHTML=a.map(function(e){
+        return '<tr><td>'+fmtT(e.t)+'</td><td><b>'+normU(e.u)+'</b></td><td>'+(e.a||'')+'</td></tr>';
+      }).join('');
     }
-    var fv=f?f.value:'';
-    var a=all.slice().reverse(); if(fv) a=a.filter(function(e){return normU(e.u)===fv;});
-    if(!a.length){ body.innerHTML='<tr><td colspan="3" style="text-align:center;color:#999;padding:18px;">Aucune modification enregistr\u00e9e pour le moment.</td></tr>'; return; }
-    body.innerHTML=a.map(function(e){
-      var d=new Date(e.t),p=function(n){return (n<10?'0':'')+n;};
-      var dt=p(d.getDate())+'/'+p(d.getMonth()+1)+' '+p(d.getHours())+'h'+p(d.getMinutes());
-      return '<tr><td>'+dt+'</td><td><b>'+normU(e.u)+'</b></td><td>'+(e.a||'')+'</td></tr>';
-    }).join('');
+    function localRows(){ return loadAudit().slice().reverse().map(function(e){ return {u:e.u, a:e.a, t:e.t}; }); }
+    /* Source PRINCIPALE = journal cloud partag\u00e9 (toute l'\u00e9quipe pour admin/g\u00e9rant, sinon ses propres actions).
+       La m\u00e9moire locale ne sert plus que de secours hors-ligne. */
+    if(window.achFetchHistory){
+      body.innerHTML='<tr><td colspan="3" style="text-align:center;color:#999;padding:18px;">Chargement\u2026</td></tr>';
+      window.achFetchHistory(400).then(function(data){
+        if(data){
+          paint(data.map(function(h){
+            var lbl=(h.entity||'')+(h.details?(' \u2014 '+h.details):'');
+            return { u:h.user_name||'?', a:lbl||(h.action||''), t:new Date(h.created_at).getTime() };
+          }));
+        } else { paint(localRows()); }   /* hors-ligne */
+      }, function(){ paint(localRows()); });
+    } else { paint(localRows()); }
   };
   window.auditClear=function(){ if(confirm('Vider tout l\'historique des modifications ?')){ _orig(AUDIT_KEY,'[]'); var f=document.getElementById('audit-filter'); if(f){f._filled=false;} auditRender(); } };
 
@@ -9807,6 +9823,16 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     }, function(){ body.innerHTML='<div class="ach-hist-empty">Historique indisponible.</div>'; });
   }
 
+  /* v7.01 : accès au journal cloud PARTAGÉ (toute l'équipe pour admin/gérant, ses actions sinon — RLS)
+     pour le tableau « Historique des modifications » de la page Droits & Accès. */
+  window.achFetchHistory=function(limit){
+    if(!db||!ME) return Promise.resolve(null);
+    try{
+      return db.from('history').select('*').order('created_at',{ascending:false}).limit(limit||400)
+        .then(function(res){ if(res.error||!res.data) return null; return res.data; }, function(){ return null; });
+    }catch(e){ return Promise.resolve(null); }
+  };
+
   // ---------- Connexion ----------
   var signupMode=false;
   function msg(t, cls){ var m=document.getElementById('ach-login-msg'); if(m){ m.textContent=t; m.className='ach-login-msg '+(cls||''); } }
@@ -9900,7 +9926,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     startRealtime();
     var ov=document.getElementById('ach-login-overlay'); if(ov) ov.classList.add('ach-hidden');
     var ub=document.getElementById('ach-userbar'); if(ub) ub.style.display='none';
-    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v7.00';
+    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v7.01';
     flag('Synchronis\u00e9');
     // fin de l'init : on autorise la journalisation des actions
     setTimeout(function(){ installInterceptor._init=false; }, 1500);
@@ -10639,7 +10665,7 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
     affPipeline(); affDashboard(); affReporting();
   };
   window.affMove=function(id, stage){ var a=load(); var o=a.find(function(x){return x.id===id;}); if(o){ o.stage=stage; save(a); affPipeline(); affDashboard(); affReporting(); } };
-  window.affDelete=function(id){ if(!confirm('Supprimer cette affaire ?')) return; var a=load().filter(function(x){return x.id!==id;}); save(a); affPipeline(); affDashboard(); affReporting(); };
+  window.affDelete=function(id){ var o=load().find(function(x){return x.id===id;}); var lbl=o&&o.adresse?(' « '+o.adresse+' »'):''; if(!confirm('Supprimer définitivement cette affaire'+lbl+' ?\nCette action est irréversible.')) return; var a=load().filter(function(x){return x.id!==id;}); save(a); if(window.achLog){ try{ achLog('suppression','Affaires en cours',(o&&o.adresse)||''); }catch(e){} } affPipeline(); affDashboard(); affReporting(); };
 
   window.affEdit=function(id){
     var a=load(); var o=a.find(function(x){return x.id===id;}); if(!o) return;
@@ -10830,6 +10856,7 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
       var qui=[a.client?('Client : '+esc(a.client)):'', a.vendeur?('Vendeur : '+esc(a.vendeur)):''].filter(Boolean).join(' \u00b7 ');
       return '<div class="mini-card" onclick="affEdit(\''+a.id+'\')">'
         +'<button class="mini-pin'+(s?' on':'')+'" onclick="event.stopPropagation();affPinToggle(\''+a.id+'\')" title="Priorit\u00e9 : \u2606 \u2192 \u2605 \u2192 \u2605\u2605 \u2192 \u2605\u2605\u2605">'+(s?'\u2605'.repeat(s):'\u2606')+'</button>'
+        +'<button class="mini-del" onclick="event.stopPropagation();affDelete(\''+a.id+'\')" title="Supprimer d\u00e9finitivement cette affaire">\u00d7</button>'
         +'<div class="mini-addr">'+esc(a.adresse)+'</div>'
         +(a.bien?'<div class="mini-bien">'+esc(a.bien)+'</div>':'')
         +'<div class="mini-price">'+fmtEur(a.prix)+' \u00b7 '+esc(a.type)+'</div>'
