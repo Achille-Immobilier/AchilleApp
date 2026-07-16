@@ -49,7 +49,7 @@ body{display:flex;}
 .sidebar-toggle{position:fixed;top:14px;left:208px;z-index:300;width:22px;height:22px;border-radius:50%;background:var(--blanc);border:1px solid var(--border);box-shadow:0 1px 6px rgba(0,0,0,.15);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:13px;color:var(--gris);transition:left .28s cubic-bezier(.4,0,.2,1);user-select:none;line-height:1;}
 .sidebar-toggle:hover{background:var(--beige);color:var(--noir);}
 /* Todo élargie quand sidebar collapsed */
-body.sb-collapsed .plan-todo{width:420px;}
+body.sb-collapsed .plan-todo{width:460px;}
 /* Finances : panneau droit élargi quand sidebar collapsed */
 body.sb-collapsed .sidebar::-webkit-scrollbar{width:3px;}
 .sidebar::-webkit-scrollbar-thumb{background:#333;}
@@ -610,7 +610,7 @@ body.sb-collapsed .sidebar::-webkit-scrollbar{width:3px;}
 .et-perso{background:#8b6fa8;color:#fff;}
 
 /* ── TODO SIDEBAR ── */
-.plan-todo{width:280px;flex-shrink:0;background:var(--blanc);border-left:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;}
+.plan-todo{width:340px;flex-shrink:0;background:var(--blanc);border-left:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;}
 .plan-todo-hd{padding:12px 16px 10px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;flex-shrink:0;}
 .plan-todo-title{font-family:'Cormorant Garamond',serif;font-size:18px;color:var(--noir);flex:1;}
 .plan-todo-add{width:26px;height:26px;border-radius:5px;background:var(--terra);color:#fff;border:none;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;}
@@ -662,7 +662,12 @@ body.sb-collapsed .sidebar::-webkit-scrollbar{width:3px;}
 .todo-bdate.late{background:rgba(160,50,34,.12);color:var(--rouge);}
 .todo-bdate.today{background:var(--terra-p);color:var(--terra);}
 .todo-bdate.soon{background:var(--kaki-p);color:var(--kaki);}
-.todo-bctx{font-size:10px;color:var(--gris-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:160px;}
+.todo-ctx{font-size:11px;color:var(--gris);line-height:1.4;white-space:pre-wrap;overflow:hidden;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;margin-top:3px;}
+.ctx-more{display:none;font-size:10.5px;color:var(--terra);font-weight:600;cursor:pointer;margin-top:3px;}
+.todo-item.clipped .ctx-more{display:inline-block;}
+.todo-expand{display:none;width:22px;height:22px;border:none;background:none;color:var(--gris-2);cursor:pointer;flex-shrink:0;align-items:center;justify-content:center;border-radius:6px;font-size:15px;margin-top:1px;padding:0;}
+.todo-expand:hover{color:var(--terra);background:var(--beige);}
+.todo-item:hover .todo-expand{display:flex;}
 .todo-del{display:none;width:15px;height:15px;border:none;background:none;color:var(--gris-2);cursor:pointer;font-size:12px;flex-shrink:0;align-items:center;justify-content:center;border-radius:3px;margin-top:1px;}
 .todo-edit{display:none;width:22px;height:22px;border:none;background:none;color:var(--gris-2);cursor:pointer;flex-shrink:0;align-items:center;justify-content:center;border-radius:6px;padding:0;}
 .todo-edit:hover{color:var(--terra);background:var(--beige);}
@@ -671,7 +676,8 @@ body.sb-collapsed .sidebar::-webkit-scrollbar{width:3px;}
 /* form todo étendu */
 .todo-add-input{display:none;flex-direction:column;gap:6px;padding:8px 10px;background:var(--blanc);border-bottom:2px solid var(--terra);flex-shrink:0;}
 .todo-add-input.open{display:flex;}
-.todo-add-input input,.todo-add-input select{background:var(--beige);border:1px solid var(--border);border-radius:5px;padding:5px 9px;font-family:'Jost',sans-serif;font-size:12px;color:var(--noir);outline:none;}
+.todo-add-input input,.todo-add-input select,.todo-add-input textarea{background:var(--beige);border:1px solid var(--border);border-radius:5px;padding:5px 9px;font-family:'Jost',sans-serif;font-size:12px;color:var(--noir);outline:none;}
+.todo-add-input textarea{resize:vertical;min-height:54px;line-height:1.4;width:100%;box-sizing:border-box;}
 .todo-add-input input:focus,.todo-add-input select:focus{border-color:var(--terra);}
 .todo-add-row{display:flex;gap:5px;}
 .todo-eq-fields{display:none;flex-direction:column;gap:5px;}
@@ -1553,7 +1559,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     </div>
   </div>
   </div>
-  <div class="logo-ver app-ver">Achille App — v7.09</div>
+  <div class="logo-ver app-ver">Achille App — v7.10</div>
 </aside>
 <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Réduire la barre latérale">‹</button>
 
@@ -2481,7 +2487,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
                 </select>
                 <input type="date" id="todo-new-date" style="flex:1">
               </div>
-              <input type="text" id="todo-new-ctx" placeholder="Contexte (ex: Pipeline › Argenson)">
+              <textarea id="todo-new-ctx" rows="3" placeholder="Contexte / notes — plusieurs lignes possibles"></textarea>
             </div>
             <div class="todo-add-btns">
               <button class="todo-confirm-btn" id="todo-confirm-btn" onclick="todoConfirmAdd()">Ajouter</button>
@@ -6352,8 +6358,10 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
       +'<span class="todo-btype '+(t.type||'perso')+'">'+(t.type==='corp'?'Équipe':'Perso')+'</span>'
       +(t.assign?'<span class="todo-bassign">'+( TD_USERS[t.assign]||t.assign)+'</span>':'')
       +(dl?'<span class="todo-bdate '+dc+'">'+dl+'</span>':'')
-      +(t.ctx?'<span class="todo-bctx">'+escH(t.ctx)+'</span>':'')
-      +'</div></div>'
+      +'</div>'
+      +(t.ctx?'<div class="todo-ctx">'+escH(t.ctx)+'</div><span class="ctx-more" onclick="todoExpandOpen(&quot;'+t.id+'&quot;)">Lire tout →</span>':'')
+      +'</div>'
+      +(t.ctx?'<button class="todo-expand" title="Agrandir le pense-bête" onclick="todoExpandOpen(&quot;'+t.id+'&quot;)">⤢</button>':'')
       +'<button class="todo-edit" title="Modifier" onclick="todoEditOpen(&quot;'+t.id+'&quot;)"><svg viewBox="0 0 20 20" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M13.8 3.7a1.6 1.6 0 0 1 2.3 2.3L7 15.1l-3.1.8.8-3.1 9.1-9.1Z"/></svg></button>'
       +'<button class="todo-del" title="Supprimer" onclick="todoDel(&quot;'+t.id+'&quot;)">✕</button>'
       +'</div>';
@@ -6380,6 +6388,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
       el.innerHTML=items.map(tdItemHtml).join('')
         ||'<div style="font-size:11px;color:var(--gris-2);padding:3px 6px;font-style:italic;">—</div>';
     });
+    tdMarkClipped();
   }
   window.planRenderTodos=planRenderTodos;
 
@@ -6462,6 +6471,30 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     var b=document.getElementById('todo-confirm-btn'); if(b) b.textContent='Enregistrer';
     document.getElementById('todo-new-text').focus();
   };
+  function tdMarkClipped(){
+    try{ document.querySelectorAll('.plan-todo-body .todo-item').forEach(function(it){
+      var c=it.querySelector('.todo-ctx'); if(!c){ it.classList.remove('clipped'); return; }
+      if(c.scrollHeight > c.clientHeight+1) it.classList.add('clipped'); else it.classList.remove('clipped');
+    }); }catch(e){}
+  }
+  window.todoExpandOpen=function(id){
+    var t=todoLoad().find(function(x){ return x.id===id; }); if(!t) return;
+    var dc=tdDlCls(t.date,t.done), dl=tdDlLbl(t.date,t.done);
+    var PRIO={urgent:'🔴 Urgent',normal:'🟡 Normal',low:'🔵 Faible'};
+    var chips='<span class="tde-chip '+(t.type==='corp'?'corp':'perso')+'">'+(t.type==='corp'?'Équipe':'Perso')+'</span>';
+    chips+='<span class="tde-chip prio">'+(PRIO[t.prio||'normal'])+'</span>';
+    if(t.assign) chips+='<span class="tde-chip">'+(TD_USERS[t.assign]||t.assign)+'</span>';
+    if(dl) chips+='<span class="tde-chip '+(dc||'')+'">'+dl+'</span>';
+    document.getElementById('tde-chips').innerHTML=chips;
+    document.getElementById('tde-title').textContent=t.text||'';
+    var cx=document.getElementById('tde-ctx');
+    if(t.ctx){ cx.textContent=t.ctx; cx.classList.remove('empty'); }
+    else { cx.textContent='Aucune note pour ce pense-bête.'; cx.classList.add('empty'); }
+    document.getElementById('tde-modif').onclick=function(){ todoExpandClose(); todoEditOpen(id); };
+    document.getElementById('td-expand-ov').classList.add('open');
+  };
+  window.todoExpandClose=function(){ var o=document.getElementById('td-expand-ov'); if(o) o.classList.remove('open'); };
+  document.addEventListener('keydown',function(e){ if(e.key==='Escape') todoExpandClose(); });
 
   // Filtres
   window.todoFilt=function(f,btn){
@@ -9987,7 +10020,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     startRealtime();
     var ov=document.getElementById('ach-login-overlay'); if(ov) ov.classList.add('ach-hidden');
     var ub=document.getElementById('ach-userbar'); if(ub) ub.style.display='none';
-    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v7.09';
+    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v7.10';
     flag('Synchronis\u00e9');
     // fin de l'init : on autorise la journalisation des actions
     setTimeout(function(){ installInterceptor._init=false; }, 1500);
@@ -14365,5 +14398,36 @@ document.addEventListener('input', function(e){
 })();
 
 </script>
+<!-- ══════════ v7.10 : fenêtre « Agrandir » d'un pense-bête (ToDo) ══════════ -->
+<style>
+#td-expand-ov{position:fixed;inset:0;background:rgba(26,26,24,.42);display:none;align-items:center;justify-content:center;z-index:99995;padding:20px;font-family:'Jost',sans-serif;}
+#td-expand-ov.open{display:flex;}
+.tde-card{background:var(--blanc);border-radius:14px;width:440px;max-width:100%;max-height:78vh;display:flex;flex-direction:column;box-shadow:0 18px 50px rgba(0,0,0,.3);border-top:5px solid var(--terra);overflow:hidden;}
+.tde-hd{padding:18px 22px 12px;border-bottom:1px solid var(--border);}
+.tde-chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:9px;}
+.tde-chip{font-size:10px;font-weight:600;padding:2px 9px;border-radius:20px;background:var(--beige-2);color:var(--gris);}
+.tde-chip.corp{background:var(--terra-p);color:var(--terra);}
+.tde-chip.perso{background:var(--kaki-p);color:var(--kaki);}
+.tde-chip.prio{background:var(--beige);color:var(--noir);}
+.tde-chip.late{background:rgba(160,50,34,.12);color:var(--rouge);}
+.tde-chip.today{background:var(--terra-p);color:var(--terra);}
+.tde-chip.soon{background:var(--kaki-p);color:var(--kaki);}
+.tde-title{font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:600;color:var(--noir);line-height:1.2;}
+.tde-body{padding:16px 22px 20px;overflow-y:auto;}
+.tde-lbl{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--terra);font-weight:600;margin-bottom:7px;}
+.tde-ctx{font-size:13.5px;color:#33302b;line-height:1.6;white-space:pre-wrap;}
+.tde-ctx.empty{color:var(--gris-2);font-style:italic;}
+.tde-foot{padding:12px 22px;border-top:1px solid var(--border);display:flex;gap:10px;justify-content:flex-end;}
+.tde-btn{font-family:'Jost',sans-serif;font-size:13px;padding:8px 16px;border-radius:8px;cursor:pointer;border:1px solid var(--border);background:#fff;color:var(--gris);}
+.tde-btn.terra{background:var(--terra);color:#fff;border-color:var(--terra);}
+.tde-btn.terra:hover{background:var(--terra-l);}
+</style>
+<div id="td-expand-ov" onclick="if(event.target===this)todoExpandClose()">
+  <div class="tde-card">
+    <div class="tde-hd"><div class="tde-chips" id="tde-chips"></div><div class="tde-title" id="tde-title"></div></div>
+    <div class="tde-body"><div class="tde-lbl">Contexte / notes</div><div class="tde-ctx" id="tde-ctx"></div></div>
+    <div class="tde-foot"><button class="tde-btn" onclick="todoExpandClose()">Fermer</button><button class="tde-btn terra" id="tde-modif">✎ Modifier</button></div>
+  </div>
+</div>
 </body>
 </html>
