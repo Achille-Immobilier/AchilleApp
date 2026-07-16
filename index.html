@@ -1553,7 +1553,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     </div>
   </div>
   </div>
-  <div class="logo-ver app-ver">Achille App — v7.05</div>
+  <div class="logo-ver app-ver">Achille App — v7.06</div>
 </aside>
 <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Réduire la barre latérale">‹</button>
 
@@ -4441,6 +4441,23 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     var c=new AbortController(); var tm=setTimeout(function(){c.abort();}, ms||10000);
     return fetch(url,{signal:c.signal}).then(function(r){ clearTimeout(tm); return r.json(); });
   }
+
+  /* v7.06 : UN SEUL appel à l'annuaire Éducation nationale, mis en cache et PARTAGÉ par la carte de secteur
+     (lycée/école) et la liste des établissements. Avant : 2 appels 3 km/300 → lourdeur ressentie côté transports. */
+  var _sectAnn={key:'',p:null};
+  function sectAnnuaireNear(lat, lon){
+    var key=(+lat).toFixed(5)+','+(+lon).toFixed(5);
+    if(_sectAnn.key===key && _sectAnn.p) return _sectAnn.p;
+    var u='https://data.education.gouv.fr/api/records/1.0/search/?dataset=fr-en-annuaire-education&geofilter.distance='+lat+','+lon+',3000&rows=300';
+    var p=sectFetchJSON(u,12000).then(function(d){
+      return (d.records||[]).map(function(rec){ var f=rec.fields||{}; var g=(rec.geometry&&rec.geometry.coordinates)||null;
+        var elat=g?g[1]:f.latitude, elon=g?g[0]:f.longitude;
+        return {name:f.nom_etablissement||f.appellation_officielle||'Établissement', type:(f.type_etablissement||'').toLowerCase(), statut:(f.statut_public_prive||''), commune:(f.nom_commune||f.libelle_commune||''), cp:(''+(f.code_postal||'')), dist:(elat&&elon)?sectM(lat,lon,elat,elon):99999}; })
+        .sort(function(a,b){return a.dist-b.dist;});
+    });
+    _sectAnn={key:key,p:p};
+    return p;
+  }
   function sectTcase(s){ return (''+s).toLowerCase().replace(/(^|[\s\-'\u2019])([a-z\u00e0-\u00ff])/g, function(m,a,c){return a+c.toUpperCase();}); }
   function sectSmartCase(s){ s=''+s; return (s && s===s.toUpperCase())? sectTcase(s): s; }
   function sectCleanEtab(s){ return (''+s).replace(/\s*\(\d+\)\s*/g,' ').replace(/\s+poly(valente)?\s*$/i,'').replace(/\s+/g,' ').trim(); }
@@ -4497,7 +4514,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
   };
   window.sectOpenIDFM=function(){
     sectCopyAddr();
-    window.open('https://me-deplacer.iledefrance-mobilites.fr/','_blank','noopener');
+    window.open('https://me-deplacer.iledefrance-mobilites.fr/autour-de-moi','_blank','noopener');
   };
   window.sectLoadSecteur = function(lat, lon, isHDS, isParis){
     var box=document.getElementById('sect-secteur-result'); if(!box) return;
@@ -4543,12 +4560,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     // 3) Lycée le plus proche (même département, jamais d'autre académie) + note secteur ; école du 92 (Paris : polygone au bloc 2)
     (async function(){
       try{
-        var u='https://data.education.gouv.fr/api/records/1.0/search/?dataset=fr-en-annuaire-education&geofilter.distance='+lat+','+lon+',3000&rows=300';
-        var d=await sectFetchJSON(u, 12000);
-        var recs=(d.records||[]).map(function(rec){ var f=rec.fields||{}; var g=(rec.geometry&&rec.geometry.coordinates)||null;
-          var elat=g?g[1]:f.latitude, elon=g?g[0]:f.longitude;
-          return {name:f.nom_etablissement||f.appellation_officielle||'Établissement', type:(f.type_etablissement||'').toLowerCase(), statut:(f.statut_public_prive||''), commune:(f.nom_commune||f.libelle_commune||''), cp:(''+(f.code_postal||'')), dist:(elat&&elon)?sectM(lat,lon,elat,elon):99999}; })
-          .sort(function(a,b){return a.dist-b.dist;});
+        var recs=await sectAnnuaireNear(lat, lon);
         var isPub=function(s){ return /public/i.test(s); };
         var wantCP = isParis ? '75' : '92';
         var sameDept=function(r){ return r.cp.indexOf(wantCP)===0; };
@@ -4619,21 +4631,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     if(!panel) return;
     panel.innerHTML = '<div class="sect-loading">Chargement des \u00e9tablissements\u2026</div>';
     try {
-      var url = 'https://data.education.gouv.fr/api/records/1.0/search/?dataset=fr-en-annuaire-education'
-              + '&geofilter.distance='+lat+','+lon+',3000&rows=300';
-      var ctrl=new AbortController(); var timer=setTimeout(function(){ctrl.abort();},12000);
-      var r=await fetch(url,{signal:ctrl.signal}); clearTimeout(timer);
-      if(!r.ok) throw new Error('HTTP '+r.status);
-      var d=await r.json();
-      var recs=(d.records||[]).map(function(rec){
-        var f=rec.fields||{};
-        var g=(rec.geometry&&rec.geometry.coordinates)||null;
-        var elat=g?g[1]:f.latitude, elon=g?g[0]:f.longitude;
-        var dist=(elat&&elon)?sectM(lat,lon,elat,elon):99999;
-        return {name:f.nom_etablissement||f.appellation_officielle||'\u00c9tablissement',
-                type:(f.type_etablissement||'').toLowerCase(),
-                statut:(f.statut_public_prive||''), commune:(f.nom_commune||f.libelle_commune||''), dist:dist};
-      }).sort(function(a,b){return a.dist-b.dist;});
+      var recs=await sectAnnuaireNear(lat, lon);
       panel.innerHTML = sectSchoolsHtml(recs);
     } catch(e){
       panel.innerHTML = '<div class="sect-section"><div class="sect-sec-title"><span>\uD83C\uDFEB</span> \u00c9tablissements scolaires</div>'
@@ -9967,7 +9965,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     startRealtime();
     var ov=document.getElementById('ach-login-overlay'); if(ov) ov.classList.add('ach-hidden');
     var ub=document.getElementById('ach-userbar'); if(ub) ub.style.display='none';
-    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v7.05';
+    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v7.06';
     flag('Synchronis\u00e9');
     // fin de l'init : on autorise la journalisation des actions
     setTimeout(function(){ installInterceptor._init=false; }, 1500);
