@@ -1553,7 +1553,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     </div>
   </div>
   </div>
-  <div class="logo-ver app-ver">Achille App — v7.02</div>
+  <div class="logo-ver app-ver">Achille App — v7.03</div>
 </aside>
 <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Réduire la barre latérale">‹</button>
 
@@ -4398,23 +4398,33 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     var h = '<div class="sect-addr-hd">'+addr+'</div>';
     h += '<div class="sect-addr-sub">'+sectEsc(dispName)+'</div>';
 
-    // ── Sectorisation (collège de secteur auto + lien officiel) ──
-    h += '<div class="sect-section"><div class="sect-sec-title"><span>\uD83C\uDFEB</span> Coll\u00e8ge / lyc\u00e9e de secteur</div>';
+    // ── Sectorisation : collège auto + cartes officielles (collège & lycée) ──
+    h += '<div class="sect-section"><div class="sect-sec-title"><span>🏫</span> Collège / lycée de secteur</div>';
     h += '<div id="sect-secteur-result"></div>';
-    h += '<div style="font-size:11.5px;color:var(--gris-2);margin:0 0 9px;line-height:1.5;">Le coll\u00e8ge public de secteur est d\u00e9tect\u00e9 automatiquement (donn\u00e9es officielles). Pour le <strong>lyc\u00e9e</strong> ou pour v\u00e9rifier, ouvrez l\'outil officiel \u2014 l\'adresse est copi\u00e9e, collez-la (Ctrl+V).</div>';
+    h += '<div style="font-size:11.5px;color:var(--gris-2);margin:0 0 9px;line-height:1.5;">Le <strong>collège</strong> de secteur est détecté automatiquement (données officielles). Le <strong>lycée</strong> ne peut pas être calculé automatiquement de façon fiable — ouvrez la carte officielle ci-dessous (les lycées proches sont aussi listés plus bas).</div>';
     if(isHDS||isBoth){
       h += '<a class="sect-open-btn" href="'+hdsUrl+'" target="_blank" rel="noopener" onclick="sectCopy(this)" data-addr="'+addr.replace(/"/g,'&quot;')+'">'
-        + '<span class="sect-open-btn-ico">\uD83C\uDFDB\uFE0F</span>'
-        + '<div style="flex:1;min-width:0;"><div class="sect-open-btn-title">Hauts-de-Seine (92) <span class="sect-clipboard-badge">adresse copi\u00e9e</span></div>'
-        + '<div class="sect-open-btn-sub">Neuilly \u00b7 Levallois \u00b7 Boulogne\u2026</div></div>'
-        + '<span class="sect-open-btn-arrow">\u2192</span></a>';
+        + '<span class="sect-open-btn-ico">🏛️</span>'
+        + '<div style="flex:1;min-width:0;"><div class="sect-open-btn-title">Collège — Hauts-de-Seine (92) <span class="sect-clipboard-badge">adresse copiée</span></div>'
+        + '<div class="sect-open-btn-sub">Carte scolaire · Département 92</div></div>'
+        + '<span class="sect-open-btn-arrow">→</span></a>';
+      h += '<a class="sect-open-btn" href="https://www.ac-versailles.fr/zones-geographiques-des-lycees-publics-92" target="_blank" rel="noopener">'
+        + '<span class="sect-open-btn-ico">🎓</span>'
+        + '<div style="flex:1;min-width:0;"><div class="sect-open-btn-title">Lycées — Hauts-de-Seine (92)</div>'
+        + '<div class="sect-open-btn-sub">Carte scolaire officielle · Rectorat de Versailles</div></div>'
+        + '<span class="sect-open-btn-arrow">→</span></a>';
     }
     if(isParis||isBoth){
       h += '<a class="sect-open-btn" href="'+parisUrl+'" target="_blank" rel="noopener" onclick="sectCopy(this)" data-addr="'+addr.replace(/"/g,'&quot;')+'">'
-        + '<span class="sect-open-btn-ico">\uD83D\uDDFA\uFE0F</span>'
-        + '<div style="flex:1;min-width:0;"><div class="sect-open-btn-title">Paris <span class="sect-clipboard-badge">adresse copi\u00e9e</span></div>'
-        + '<div class="sect-open-btn-sub">Carte scolaire \u2014 Ville de Paris</div></div>'
-        + '<span class="sect-open-btn-arrow">\u2192</span></a>';
+        + '<span class="sect-open-btn-ico">🏛️</span>'
+        + '<div style="flex:1;min-width:0;"><div class="sect-open-btn-title">Collège — Paris <span class="sect-clipboard-badge">adresse copiée</span></div>'
+        + '<div class="sect-open-btn-sub">Carte scolaire · Ville de Paris</div></div>'
+        + '<span class="sect-open-btn-arrow">→</span></a>';
+      h += '<a class="sect-open-btn" href="https://www.ac-paris.fr/affectation-en-seconde-gt-pour-un-eleve-scolarise-dans-un-etablissement-public-a-paris-122617" target="_blank" rel="noopener">'
+        + '<span class="sect-open-btn-ico">🎓</span>'
+        + '<div style="flex:1;min-width:0;"><div class="sect-open-btn-title">Lycées — Paris</div>'
+        + '<div class="sect-open-btn-sub">Affectation 2de (Affelnet) · Académie de Paris</div></div>'
+        + '<span class="sect-open-btn-arrow">→</span></a>';
     }
     h += '</div>';
 
@@ -4480,7 +4490,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     window.__sectLL={lat:lat, lon:lon};
     if(!isHDS && !isParis){ window.__sectCard=null; box.innerHTML=''; return; }
     window.__sectCard={ collegeLbl:'Coll\u00e8ge public de secteur',
-      lyceeLbl: isParis?'Lyc\u00e9e \u2014 affectation par district':'Lyc\u00e9e le plus proche (\u00e0 titre indicatif)',
+      lyceeLbl: isParis?'Lyc\u00e9e \u2014 secteur Affelnet (Paris)':'Lyc\u00e9e de secteur (rectorat)',
       ecoleLbl: isParis?'\u00c9cole \u00e9l\u00e9mentaire publique de secteur':'\u00c9cole publique la plus proche',
       college:null, lycee:null, ecole:null, transport:null };
     sectCardRender();
@@ -4516,35 +4526,33 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
         sectCardRender();
       })();
     }
-    // 3) Lycée public le plus proche (+ école proche pour le 92) via annuaire Éducation nationale
-    (async function(){
-      try{
-        var u='https://data.education.gouv.fr/api/records/1.0/search/?dataset=fr-en-annuaire-education&geofilter.distance='+lat+','+lon+',3000&rows=300';
-        var d=await sectFetchJSON(u, 12000);
-        var recs=(d.records||[]).map(function(rec){ var f=rec.fields||{}; var g=(rec.geometry&&rec.geometry.coordinates)||null;
-          var elat=g?g[1]:f.latitude, elon=g?g[0]:f.longitude;
-          return {name:f.nom_etablissement||f.appellation_officielle||'\u00c9tablissement', type:(f.type_etablissement||'').toLowerCase(), statut:(f.statut_public_prive||''), commune:(f.nom_commune||f.libelle_commune||''), cp:(''+(f.code_postal||'')), dist:(elat&&elon)?sectM(lat,lon,elat,elon):99999}; })
-          .sort(function(a,b){return a.dist-b.dist;});
-        var isPub=function(s){ return /public/i.test(s); };
-        /* On ne franchit JAMAIS la fronti\u00e8re d'acad\u00e9mie : une adresse du 92 ne propose que des lyc\u00e9es du 92,
-           une adresse de Paris que des lyc\u00e9es parisiens (sinon on renvoyait p.ex. Carnot/Paris pour Levallois). */
-        var wantCP = isParis ? '75' : '92';
-        var sameDept=function(r){ return r.cp.indexOf(wantCP)===0; };
-        var lyceeNote = isParis
-          ? "\u00c0 Paris, l'affectation se fait par district (Nord \u00b7 Est \u00b7 Sud \u00b7 Ouest), pas par un lyc\u00e9e de secteur unique. Ouvrez l'outil officiel ci-dessous pour votre district."
-          : "Lyc\u00e9e le plus proche du m\u00eame d\u00e9partement, \u00e0 titre indicatif. Le lyc\u00e9e de secteur exact est fix\u00e9 par le rectorat de Versailles \u2014 outil officiel ci-dessous.";
-        var lyc=recs.find(function(r){ return /lyc/.test(r.type) && isPub(r.statut) && sameDept(r); });
-        if(lyc){ window.__sectCard.lycee={val:sectSmartCase(lyc.name), sub:sectFD(lyc.dist)+(lyc.commune?(' \u00b7 '+sectTcase(lyc.commune)):''), note:lyceeNote}; }
-        else window.__sectCard.lycee={none:(isParis?'Aucun lyc\u00e9e public parisien \u00e0 proximit\u00e9':'Aucun lyc\u00e9e public du 92 \u00e0 proximit\u00e9')+' \u2014 voir l\'outil officiel ci-dessous', note:lyceeNote};
-        if(!isParis){
-          var ec=recs.find(function(r){ return /ecole/.test(r.type) && isPub(r.statut) && /(\u00e9l\u00e9mentaire|elementaire|primaire)/i.test(r.name) && !/maternelle/i.test(r.name); })
+    // 3) Lycée : pas de secteur automatique fiable (Paris = Affelnet multi-secteurs ; 92 = carte du rectorat).
+    //    On énonce la RÈGLE + renvoi à l'outil officiel (bouton) et à la liste des lycées proches (bas de page).
+    if(isParis){
+      window.__sectCard.lycee={ val:'Plusieurs lycées de secteur selon l’adresse', note:"À Paris, l'affectation lycée passe par Affelnet : l'adresse ouvre plusieurs lycées de secteur, pas un lycée unique. Outil officiel : bouton ci-dessous. Lycées proches listés plus bas." };
+    } else {
+      window.__sectCard.lycee={ val:'Défini par le rectorat de Versailles', note:"Dans le 92, le lycée de secteur est fixé par le rectorat (aucun calcul automatique n'est fiable). Carte scolaire officielle : bouton ci-dessous. Lycées proches listés plus bas." };
+    }
+    sectCardRender();
+    // École publique la plus proche pour le 92 (Paris : polygone officiel, déjà traité au bloc 2)
+    if(!isParis){
+      (async function(){
+        try{
+          var u='https://data.education.gouv.fr/api/records/1.0/search/?dataset=fr-en-annuaire-education&geofilter.distance='+lat+','+lon+',3000&rows=300';
+          var d=await sectFetchJSON(u, 12000);
+          var recs=(d.records||[]).map(function(rec){ var f=rec.fields||{}; var g=(rec.geometry&&rec.geometry.coordinates)||null;
+            var elat=g?g[1]:f.latitude, elon=g?g[0]:f.longitude;
+            return {name:f.nom_etablissement||f.appellation_officielle||'Établissement', type:(f.type_etablissement||'').toLowerCase(), statut:(f.statut_public_prive||''), commune:(f.nom_commune||f.libelle_commune||''), dist:(elat&&elon)?sectM(lat,lon,elat,elon):99999}; })
+            .sort(function(a,b){return a.dist-b.dist;});
+          var isPub=function(s){ return /public/i.test(s); };
+          var ec=recs.find(function(r){ return /ecole/.test(r.type) && isPub(r.statut) && /(élémentaire|elementaire|primaire)/i.test(r.name) && !/maternelle/i.test(r.name); })
                 || recs.find(function(r){ return /ecole/.test(r.type) && isPub(r.statut) && !/maternelle/i.test(r.name); });
-          if(ec){ window.__sectCard.ecole={val:sectSmartCase(ec.name), sub:sectFD(ec.dist)+(ec.commune?(' \u00b7 '+sectTcase(ec.commune)):'')}; }
-          else window.__sectCard.ecole={none:'Aucune \u00e9cole publique \u00e0 proximit\u00e9'};
-        }
-      }catch(e){ if(!window.__sectCard.lycee) window.__sectCard.lycee={none:'Indisponible'}; if(!isParis && !window.__sectCard.ecole) window.__sectCard.ecole={none:'Indisponible'}; }
-      sectCardRender();
-    })();
+          if(ec){ window.__sectCard.ecole={val:sectSmartCase(ec.name), sub:sectFD(ec.dist)+(ec.commune?(' · '+sectTcase(ec.commune)):'')}; }
+          else window.__sectCard.ecole={none:'Aucune école publique à proximité'};
+        }catch(e){ if(!window.__sectCard.ecole) window.__sectCard.ecole={none:'Indisponible'}; }
+        sectCardRender();
+      })();
+    }
   };
   function sectSetNearestRail(lat, lon, els){
     if(!window.__sectCard) return;
@@ -4595,7 +4603,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     panel.innerHTML = '<div class="sect-loading">Chargement des \u00e9tablissements\u2026</div>';
     try {
       var url = 'https://data.education.gouv.fr/api/records/1.0/search/?dataset=fr-en-annuaire-education'
-              + '&geofilter.distance='+lat+','+lon+',800&rows=100';
+              + '&geofilter.distance='+lat+','+lon+',3000&rows=300';
       var ctrl=new AbortController(); var timer=setTimeout(function(){ctrl.abort();},12000);
       var r=await fetch(url,{signal:ctrl.signal}); clearTimeout(timer);
       if(!r.ok) throw new Error('HTTP '+r.status);
@@ -4607,8 +4615,8 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
         var dist=(elat&&elon)?sectM(lat,lon,elat,elon):99999;
         return {name:f.nom_etablissement||f.appellation_officielle||'\u00c9tablissement',
                 type:(f.type_etablissement||'').toLowerCase(),
-                statut:(f.statut_public_prive||''), dist:dist};
-      }).filter(function(x){return x.dist<=800;}).sort(function(a,b){return a.dist-b.dist;});
+                statut:(f.statut_public_prive||''), commune:(f.nom_commune||f.libelle_commune||''), dist:dist};
+      }).sort(function(a,b){return a.dist-b.dist;});
       panel.innerHTML = sectSchoolsHtml(recs);
     } catch(e){
       panel.innerHTML = '<div class="sect-section"><div class="sect-sec-title"><span>\uD83C\uDFEB</span> \u00c9tablissements scolaires</div>'
@@ -4618,22 +4626,29 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
   };
 
   function sectSchoolsHtml(recs){
-    if(!recs.length) return '<div class="sect-section"><div class="sect-sec-title"><span>\uD83C\uDFEB</span> \u00c9tablissements scolaires</div><div style="padding:10px;font-size:12px;color:var(--gris-2);">Aucun \u00e9tablissement trouv\u00e9 dans un rayon de 800 m.</div></div>';
     function cat(t){ if(t.indexOf('lyc')>=0)return 'lycee'; if(t.indexOf('coll')>=0)return 'college'; return 'ecole'; }
     var groups={lycee:[],college:[],ecole:[]};
     recs.forEach(function(r){ groups[cat(r.type)].push(r); });
-    var meta={lycee:{ico:'\uD83C\uDF93',label:'Lyc\u00e9es'},college:{ico:'\uD83D\uDCDA',label:'Coll\u00e8ges'},ecole:{ico:'\uD83C\uDFEB',label:'\u00c9coles'}};
+    /* Densité différente : collèges/écoles nombreux → rayon 800 m ; lycées plus rares → on montre les plus proches (rayon large). */
+    groups.college=groups.college.filter(function(r){return r.dist<=800;});
+    groups.ecole=groups.ecole.filter(function(r){return r.dist<=800;});
+    groups.lycee=groups.lycee.filter(function(r){return r.dist<=3000;});
+    if(!groups.lycee.length && !groups.college.length && !groups.ecole.length){
+      return '<div class="sect-section"><div class="sect-sec-title"><span>🏫</span> Établissements scolaires</div><div style="padding:10px;font-size:12px;color:var(--gris-2);">Aucun établissement trouvé à proximité.</div></div>';
+    }
+    var meta={lycee:{ico:'🎓',label:'Lycées',radius:'les plus proches',max:6},college:{ico:'📚',label:'Collèges',radius:'rayon 800m',max:8},ecole:{ico:'🏫',label:'Écoles',radius:'rayon 800m',max:8}};
     var h='';
     ['lycee','college','ecole'].forEach(function(k){
       var arr=groups[k]; if(!arr.length) return;
       h+='<div class="sect-section"><div class="sect-sec-title"><span>'+meta[k].ico+'</span> '+meta[k].label
-        +' <span style="font-size:10px;color:var(--gris-2);font-weight:400;">rayon 800m</span></div>';
-      arr.slice(0,8).forEach(function(s){
+        +' <span style="font-size:10px;color:var(--gris-2);font-weight:400;">'+meta[k].radius+'</span></div>';
+      arr.slice(0,meta[k].max).forEach(function(s){
         var pr=/pr/i.test(s.statut);
-        var badge='<span class="sect-badge '+(pr?'sb-prive':'sb-public')+'">'+(pr?'Priv\u00e9':'Public')+'</span>';
+        var badge='<span class="sect-badge '+(pr?'sb-prive':'sb-public')+'">'+(pr?'Privé':'Public')+'</span>';
+        var comm=s.commune?(' <span style="color:var(--gris-2);font-size:10px;">· '+sectEsc(sectTcase(s.commune))+'</span>'):'';
         h+='<div class="sect-item"><span class="sect-item-icon">'+meta[k].ico+'</span>'
           +'<div style="flex:1;min-width:0;"><div class="sect-item-name" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+sectEsc(s.name)+'</div>'
-          +'<div>'+badge+'</div></div>'
+          +'<div>'+badge+comm+'</div></div>'
           +'<span class="sect-item-dist">'+sectFD(s.dist)+'</span></div>';
       });
       h+='</div>';
@@ -9935,7 +9950,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     startRealtime();
     var ov=document.getElementById('ach-login-overlay'); if(ov) ov.classList.add('ach-hidden');
     var ub=document.getElementById('ach-userbar'); if(ub) ub.style.display='none';
-    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v7.02';
+    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v7.03';
     flag('Synchronis\u00e9');
     // fin de l'init : on autorise la journalisation des actions
     setTimeout(function(){ installInterceptor._init=false; }, 1500);
