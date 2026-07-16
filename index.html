@@ -1551,7 +1551,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     </div>
   </div>
   </div>
-  <div class="logo-ver app-ver">Achille App — v6.45</div>
+  <div class="logo-ver app-ver">Achille App — v7.00</div>
 </aside>
 <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Réduire la barre latérale">‹</button>
 
@@ -3308,6 +3308,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
         <button class="acces-tab on" id="acctab-comptes" onclick="accesTab('comptes')">🔑 Comptes &amp; mots de passe</button>
         <button class="acces-tab" id="acctab-droits" onclick="accesTab('droits')">◈ Droits par rôle</button>
         <button class="acces-tab" id="acctab-data" onclick="accesTab('data')">🗂 Données &amp; historique</button>
+        <button class="acces-tab" id="acctab-evol" onclick="accesTab('evol')">💡 Évolutions</button>
       </div>
       <div id="acces-tab-comptes">
         <div style="display:flex;justify-content:flex-end;margin:4px 0 8px;"><button class="btn btn-terra btn-sm" onclick="accesAddOpen()">+ Ajouter un utilisateur</button></div>
@@ -3349,6 +3350,11 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
         <b>Modification</b> : elle peut consulter, ajouter et modifier.
       </div>
     </div>
+      </div>
+      <div id="acces-tab-evol" style="display:none;">
+        <div style="font-size:13px;color:var(--gris);margin-bottom:16px;max-width:680px;line-height:1.5;">Notez ici toutes les évolutions auxquelles vous pensez pour l'application. Chaque ligne (titre + descriptif) est modifiable directement et supprimable. La liste vous suit sur tous vos appareils.</div>
+        <div style="margin-bottom:16px;"><button class="btn btn-terra btn-sm" onclick="evolAdd()">+ Ajouter une évolution</button></div>
+        <div id="evol-list"></div>
       </div>
     </div>
   </div>
@@ -9268,7 +9274,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     ach_pi_v4:'Post-its', ach_plan_events:'Planning', ach_todos_v1:'To-do',
     ach_prosp_v1:'Prospection', ach_lex_html_v1:'Lexique', ach_lex_proposals:'Lexique (propositions)',
     ach_fin_hist_v3:'Honoraires', ach_fin_ops_v3:'Finances', ach_fin_lines_v1:'Finances',
-    ach_fin_solde_v3:'Finances', ach_encours_v1:'Affaires en cours', ach_audit_v1:'Journal', ach_pige_v1:'Pige', ach_docaff_v1:'Documents par affaire', ach_docs_cfg_v1:'Documents (réglages)', ach_docgen_assets_v1:'Générateur (charte & polices)', ach_rappels_v1:'Rappels', ach_tomb_v2:'(technique) suppressions'
+    ach_fin_solde_v3:'Finances', ach_encours_v1:'Affaires en cours', ach_audit_v1:'Journal', ach_pige_v1:'Pige', ach_docaff_v1:'Documents par affaire', ach_docs_cfg_v1:'Documents (réglages)', ach_docgen_assets_v1:'Générateur (charte & polices)', ach_rappels_v1:'Rappels', ach_evol_v1:'Évolutions', ach_tomb_v2:'(technique) suppressions'
   };
   function labelFor(k){ return LABELS[k] || k; }
 
@@ -9894,7 +9900,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     startRealtime();
     var ov=document.getElementById('ach-login-overlay'); if(ov) ov.classList.add('ach-hidden');
     var ub=document.getElementById('ach-userbar'); if(ub) ub.style.display='none';
-    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v6.45';
+    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v7.00';
     flag('Synchronis\u00e9');
     // fin de l'init : on autorise la journalisation des actions
     setTimeout(function(){ installInterceptor._init=false; }, 1500);
@@ -12448,8 +12454,10 @@ select.pg-chip{padding:6px 10px;}
       if(bd) bd.style.display=isAdm?'':'none';
       var bda=document.getElementById('acctab-data');
       if(bda) bda.style.display=isAdm?'':'none';
+      var bev=document.getElementById('acctab-evol');
+      if(bev) bev.style.display=isAdm?'':'none';
       if(!isAdm){
-        ['acces-tab-droits','acces-tab-data'].forEach(function(tid){
+        ['acces-tab-droits','acces-tab-data','acces-tab-evol'].forEach(function(tid){
           var d=document.getElementById(tid); if(d && d.style.display!=='none'){ if(window.accesTab) accesTab('comptes'); }
         });
       }
@@ -12593,7 +12601,7 @@ select.pg-chip{padding:6px 10px;}
     ov.addEventListener('mousedown',function(e){ if(e.target===ov) ov.remove(); });
   };
   window.accesTab=function(t){
-    var tabs={comptes:'acces-tab-comptes', droits:'acces-tab-droits', data:'acces-tab-data'};
+    var tabs={comptes:'acces-tab-comptes', droits:'acces-tab-droits', data:'acces-tab-data', evol:'acces-tab-evol'};
     Object.keys(tabs).forEach(function(k){
       var pane=document.getElementById(tabs[k]);
       var btn=document.getElementById('acctab-'+k);
@@ -12602,9 +12610,75 @@ select.pg-chip{padding:6px 10px;}
     });
     if(t==='droits'){ try{ if(typeof droitsRender==='function') droitsRender(); }catch(e){} }
     if(t==='data'){ try{ var f=document.getElementById('audit-filter'); if(f) f._filled=false; if(typeof auditRender==='function') auditRender(); }catch(e){} }
+    if(t==='evol'){ try{ if(typeof window.evolRender==='function') window.evolRender(); }catch(e){} }
   };
   var _navA=window.navTo;
-  window.navTo=function(id,el){ if(typeof _navA==='function') _navA(id,el); if(id==='acces'){ try{ accesRender(); }catch(e){} } };
+  window.navTo=function(id,el){ if(typeof _navA==='function') _navA(id,el); if(id==='acces'){ try{ accesRender(); }catch(e){} try{ var ep=document.getElementById('acces-tab-evol'); if(ep && ep.style.display!=='none' && window.evolRender) window.evolRender(); }catch(e){} } };
+})();
+</script>
+
+<!-- ══════════ v7.00 : page « Évolutions » (Droits & Accès) ══════════ -->
+<style>
+.evol-row{display:flex;gap:12px;align-items:flex-start;background:var(--blanc);border:1px solid var(--border,#e5ded3);border-left:3px solid var(--terra);border-radius:10px;padding:12px 14px;margin-bottom:12px;box-shadow:0 1px 5px rgba(0,0,0,.04);}
+.evol-main{flex:1;min-width:0;display:flex;flex-direction:column;gap:8px;}
+.evol-titre{font-family:'Jost',sans-serif;font-size:14px;font-weight:600;color:var(--noir);background:transparent;border:none;border-bottom:1px solid transparent;padding:2px 0;outline:none;width:100%;box-sizing:border-box;}
+.evol-titre:focus{border-bottom-color:var(--terra);}
+.evol-titre::placeholder{color:var(--gris-2);font-weight:400;}
+.evol-desc{font-family:'Jost',sans-serif;font-size:12.5px;color:var(--gris);background:transparent;border:1px solid transparent;border-radius:6px;padding:4px 6px;outline:none;width:100%;box-sizing:border-box;resize:vertical;line-height:1.45;}
+.evol-desc:focus{border-color:var(--beige-2);background:var(--blanc);}
+.evol-desc::placeholder{color:var(--gris-2);}
+.evol-del{flex-shrink:0;background:transparent;border:none;color:var(--gris-2);font-size:15px;cursor:pointer;line-height:1;padding:4px 6px;border-radius:6px;transition:all .15s;}
+.evol-del:hover{background:var(--terra-p);color:var(--rouge);}
+</style>
+<script>
+(function(){
+  var EVOL_KEY='ach_evol_v1';
+  function esc(s){ return (''+(s==null?'':s)).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+  function load(){ try{ var a=JSON.parse(window.localStorage.getItem(EVOL_KEY)||'[]'); return Array.isArray(a)?a:[]; }catch(e){ return []; } }
+  function save(list){ try{ window.localStorage.setItem(EVOL_KEY, JSON.stringify(list)); }catch(e){} }
+  function newId(){ return 'ev-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,6); }
+  function find(list,id){ for(var i=0;i<list.length;i++){ if(list[i].id===id) return list[i]; } return null; }
+  window.evolRender=function(){
+    var box=document.getElementById('evol-list'); if(!box) return;
+    if(!(window.ACH_USER&&ACH_USER.key==='admin')){ box.innerHTML='<div style="color:var(--gris-2);">Réservé à l’administrateur.</div>'; return; }
+    var list=load();
+    list.sort(function(a,b){ return (''+(b.created||'')).localeCompare(''+(a.created||'')); });
+    if(!list.length){ box.innerHTML='<div style="color:var(--gris-2);font-style:italic;padding:14px 4px;">Aucune évolution notée pour l’instant. Cliquez sur « + Ajouter une évolution » pour commencer votre liste.</div>'; return; }
+    box.innerHTML=list.map(function(it){
+      var id=esc(it.id);
+      return '<div class="evol-row" data-id="'+id+'">'
+        +'<div class="evol-main">'
+        +'<input class="evol-titre" type="text" placeholder="Titre de l’évolution" value="'+esc(it.titre)+'" oninput="evolEdit(\''+id+'\',\'titre\',this.value)">'
+        +'<textarea class="evol-desc" placeholder="Descriptif (facultatif)…" rows="2" oninput="evolEdit(\''+id+'\',\'desc\',this.value)">'+esc(it.desc)+'</textarea>'
+        +'</div>'
+        +'<button class="evol-del" title="Supprimer cette évolution" onclick="evolDel(\''+id+'\')">✕</button>'
+        +'</div>';
+    }).join('');
+  };
+  window.evolAdd=function(){
+    if(!(window.ACH_USER&&ACH_USER.key==='admin')) return;
+    var list=load(); var now=new Date().toISOString();
+    list.push({id:newId(), titre:'', desc:'', created:now, updated:now});
+    save(list);
+    window.evolRender();
+    try{ var el=document.querySelector('#evol-list .evol-row .evol-titre'); if(el) el.focus(); }catch(e){}
+    try{ if(window.achLog) achLog('Ajout', EVOL_KEY, 'Nouvelle évolution'); }catch(e){}
+  };
+  window.evolEdit=function(id,field,val){
+    var list=load(); var it=find(list,id); if(!it) return;
+    it[field]=val; it.updated=new Date().toISOString();
+    save(list);
+    /* volontairement PAS de re-render : préserve le curseur pendant la frappe */
+  };
+  window.evolDel=function(id){
+    var list=load(); var it=find(list,id);
+    var label=(it&&it.titre)?it.titre:'';
+    if(!window.confirm('Supprimer cette évolution'+(label?(' « '+label+' »'):'')+' ?')) return;
+    list=list.filter(function(x){ return x.id!==id; });
+    save(list);
+    window.evolRender();
+    try{ if(window.achLog) achLog('Suppression', EVOL_KEY, label||'(sans titre)'); }catch(e){}
+  };
 })();
 </script>
 
@@ -14116,8 +14190,9 @@ window.docsOpenGen = function(k){
 .ec-coord-adr{grid-column:1/-1;}
 .ec-coord-tog.has{background:var(--terra);color:#fff;border-radius:50%;width:17px;height:17px;display:inline-flex;align-items:center;justify-content:center;font-size:12px;padding:0;box-shadow:0 1px 3px rgba(180,115,96,.4);}
 .ec-coord-tog.has:hover{background:var(--noir);color:#fff;}
-.ec-has-coord{cursor:help;border-bottom:1px dotted rgba(180,115,96,.55);}
-.ec-coord-dot{color:var(--terra);margin-left:4px;font-size:13px;line-height:1;}
+.ec-has-coord{cursor:help;}
+.ec-coord-dot{color:var(--terra);margin-left:5px;display:inline-block;vertical-align:-1px;line-height:1;}
+.ec-coord-dot svg{display:block;}
 
 </style>
 <script>
@@ -14130,7 +14205,7 @@ window.ecPersonSpan = function(name, c, cls){
   if(!has) return '<span class="'+cls+'">'+name+'</span>';
   var tip = [c.tel?('📞 '+c.tel):'', c.mail?('✉ '+c.mail):'', c.adr?('📍 '+c.adr):''].filter(Boolean).join('   ·   ');
   tip = tip.replace(/"/g,'&quot;').replace(/</g,'&lt;');
-  return '<span class="'+cls+' ec-has-coord" title="'+tip+'">'+name+'<span class="ec-coord-dot">•</span></span>';
+  return '<span class="'+cls+' ec-has-coord" title="'+tip+'">'+name+'<span class="ec-coord-dot"><svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20 15.5c-1.25 0-2.45-.2-3.57-.57a1 1 0 0 0-1.02.24l-2.2 2.2a15.05 15.05 0 0 1-6.59-6.59l2.2-2.2a1 1 0 0 0 .25-1.02A11.36 11.36 0 0 1 8.5 4a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1c0 9.39 7.61 17 17 17a1 1 0 0 0 1-1v-3.5a1 1 0 0 0-1-1z"/></svg></span></span>';
 };
 window.ecCoordTog = function(fid){
   var wrap = document.getElementById(fid+'-coord'); if(!wrap) return;
