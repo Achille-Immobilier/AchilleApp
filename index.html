@@ -1520,6 +1520,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
   <div class="nav-section" style="margin-top:8px;">
     <div class="nav-lbl">Équipe</div>
     <div class="nav-item" onclick="navTo('planning',this)"><span class="nav-icon">📅</span><span class="nav-item-label">Planning</span><span class="nav-badge" id="badge-tasks" style="display:none;"></span><span class="nav-badge-rap" id="badge-rappels" style="display:none;"></span></div>
+    <div class="nav-item" onclick="navTo('routines',this)"><span class="nav-icon">🔁</span><span class="nav-item-label">Routines &amp; Objectifs</span></div>
     <div class="nav-item" onclick="navTo('postits',this)"><span class="nav-icon">📌</span><span class="nav-item-label">Post-its</span></div>
     <div class="nav-item" onclick="navTo('pige',this)"><span class="nav-icon">🔎</span><span class="nav-item-label">Pige</span><span class="nav-badge-rap" id="badge-pige" style="display:none;"></span></div>
     <div class="nav-item" onclick="navTo('communication',this)"><span class="nav-icon">📣</span><span class="nav-item-label">Communication</span></div>
@@ -1559,7 +1560,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     </div>
   </div>
   </div>
-  <div class="logo-ver app-ver">Achille App — v7.11</div>
+  <div class="logo-ver app-ver">Achille App — v7.12</div>
 </aside>
 <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Réduire la barre latérale">‹</button>
 
@@ -1658,7 +1659,16 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
   <div class="page" id="page-generateur">
   
 </div>
-<div class="page" id="page-documents">
+<div class="page" id="page-routines">
+    <div class="sec-hd"><div><div class="sec-title">Routines <span>&amp; Objectifs</span></div><div class="sec-sub">Tâches récurrentes de chacun &amp; objectifs de période — les routines se réinitialisent automatiquement</div></div></div>
+    <div class="ro-hd-bar"><div id="ro-who-bar" style="display:flex;gap:6px;flex-wrap:wrap;"></div><button class="ro-add" onclick="roAddOpen()">＋ Ajouter</button></div>
+    <div class="ro-cols">
+      <div class="ro-col-rt"><div class="ro-sec-lbl">Routines — se réinitialisent à chaque période</div><div id="ro-routines"></div></div>
+      <div class="ro-col-ob"><div class="ro-sec-lbl">Objectifs — une cible, une période, une progression</div><div id="ro-objectifs"></div></div>
+    </div>
+  </div>
+
+  <div class="page" id="page-documents">
     <div class="docs-page">
       <div class="docs-tabs">
         <button class="docs-tab active" onclick="docsTab('modeles',this)">📁 Documents de l’agence</button>
@@ -3791,6 +3801,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     encours:'Affaires <span>En Cours</span>',
     honoraires:'Honoraires', communication:'<span>Communication</span>',
     pige:'Pige <span>&amp; Veille</span>',
+    routines:'Routines <span>&amp; Objectifs</span>',
     acces:'Gestion des <span>Accès</span>'
   };
   var CTA_MODALS={}; // boutons déplacés dans les sous-barres
@@ -8788,7 +8799,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
 <script>
 (function(){
   var AUDIT_KEY='ach_audit_v1';
-  var LABELS={ach_pi_v4:'Post-its',ach_encours_v1:'Ventes (En cours)',ach_todos_v1:'To-dos',ach_plan_events:'Planning',ach_vt_v4:'Visites',ach_bv_obs:'Bons de visite (observations)',ach_bv_extra:'Bons de visite',ach_bv_pending:'Bons de visite (validation)',ach_bv_notifs:'Notifications',ach_fin_v3:'Finances',ach_prosp_v1:'Prospection',ach_lex_html_v1:'Lexique',ach_lex_proposals:'Lexique (propositions)',ach_pige_v1:'Pige',ach_docaff_v1:'Documents par affaire',ach_docs_cfg_v1:'Documents (réglages)', ach_docgen_assets_v1:'Générateur (charte & polices)', ach_rappels_v1:'Rappels', ach_redac_v1:'Rédaction quotidienne'};
+  var LABELS={ach_pi_v4:'Post-its',ach_encours_v1:'Ventes (En cours)',ach_todos_v1:'To-dos',ach_plan_events:'Planning',ach_vt_v4:'Visites',ach_bv_obs:'Bons de visite (observations)',ach_bv_extra:'Bons de visite',ach_bv_pending:'Bons de visite (validation)',ach_bv_notifs:'Notifications',ach_fin_v3:'Finances',ach_prosp_v1:'Prospection',ach_lex_html_v1:'Lexique',ach_lex_proposals:'Lexique (propositions)',ach_pige_v1:'Pige',ach_docaff_v1:'Documents par affaire',ach_docs_cfg_v1:'Documents (réglages)', ach_docgen_assets_v1:'Générateur (charte & polices)', ach_rappels_v1:'Rappels', ach_redac_v1:'Rédaction quotidienne', ach_routines_v1:'Routines & Objectifs'};
   var _orig=localStorage.setItem.bind(localStorage);
   function curName(){var e=document.getElementById('s-name');return e?e.textContent:'?';}
   function curRole(){var e=document.getElementById('s-role');return e?e.textContent:'';}
@@ -9394,7 +9405,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     ach_pi_v4:'Post-its', ach_plan_events:'Planning', ach_todos_v1:'To-do',
     ach_prosp_v1:'Prospection', ach_lex_html_v1:'Lexique', ach_lex_proposals:'Lexique (propositions)',
     ach_fin_hist_v3:'Honoraires', ach_fin_ops_v3:'Finances', ach_fin_lines_v1:'Finances',
-    ach_fin_solde_v3:'Finances', ach_encours_v1:'Affaires en cours', ach_audit_v1:'Journal', ach_pige_v1:'Pige', ach_docaff_v1:'Documents par affaire', ach_docs_cfg_v1:'Documents (réglages)', ach_docgen_assets_v1:'Générateur (charte & polices)', ach_rappels_v1:'Rappels', ach_evol_v1:'Évolutions', ach_redac_v1:'Rédaction quotidienne', ach_tomb_v2:'(technique) suppressions'
+    ach_fin_solde_v3:'Finances', ach_encours_v1:'Affaires en cours', ach_audit_v1:'Journal', ach_pige_v1:'Pige', ach_docaff_v1:'Documents par affaire', ach_docs_cfg_v1:'Documents (réglages)', ach_docgen_assets_v1:'Générateur (charte & polices)', ach_rappels_v1:'Rappels', ach_evol_v1:'Évolutions', ach_redac_v1:'Rédaction quotidienne', ach_routines_v1:'Routines & Objectifs', ach_tomb_v2:'(technique) suppressions'
   };
   function labelFor(k){ return LABELS[k] || k; }
 
@@ -10030,7 +10041,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     startRealtime();
     var ov=document.getElementById('ach-login-overlay'); if(ov) ov.classList.add('ach-hidden');
     var ub=document.getElementById('ach-userbar'); if(ub) ub.style.display='none';
-    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v7.11';
+    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v7.12';
     flag('Synchronis\u00e9');
     // fin de l'init : on autorise la journalisation des actions
     setTimeout(function(){ installInterceptor._init=false; }, 1500);
@@ -14635,6 +14646,286 @@ textarea.rd-inp{resize:vertical;line-height:1.45;}
   if(window.docsTab){ var _dt=window.docsTab; window.docsTab=function(id,btn){ _dt(id,btn); if(id==='redac') setTimeout(window.redacRender,50); }; }
   if(window.setRole){ var _sr=window.setRole; window.setRole=function(r,btn){ if(typeof _sr==='function') _sr(r,btn); try{ var p=document.getElementById('docs-redac'); if(p && p.classList.contains('active')) window.redacRender(); }catch(e){} }; }
   document.addEventListener('keydown',function(e){ if(e.key==='Escape'){ window.redacEditClose(); window.redacGenClose(); } });
+})();
+</script>
+
+<!-- ══════════ v7.12 : Routines & Objectifs (page dédiée Équipe) ══════════ -->
+<style>
+.ro-hd-bar{display:flex;align-items:center;gap:10px;margin:2px 0 16px;flex-wrap:wrap;}
+.ro-who{font-size:12px;padding:5px 13px;border-radius:20px;border:1px solid var(--border);background:#fff;color:var(--gris);cursor:pointer;font-family:'Jost',sans-serif;}
+.ro-who.on{background:var(--noir);color:#fff;border-color:var(--noir);}
+.ro-add{margin-left:auto;background:var(--terra);color:#fff;border:none;border-radius:8px;padding:8px 15px;font-family:'Jost',sans-serif;font-size:13px;font-weight:500;cursor:pointer;}
+.ro-add:hover{background:var(--terra-l);}
+.ro-cols{display:flex;gap:22px;align-items:flex-start;flex-wrap:wrap;}
+.ro-col-rt{flex:1.4;min-width:480px;}
+.ro-col-ob{flex:1;min-width:340px;}
+.ro-sec-lbl{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--gris-2);font-weight:600;margin:0 0 10px;}
+.ro-group{background:var(--blanc);border:1px solid var(--border);border-radius:12px;margin-bottom:14px;overflow:hidden;box-shadow:0 1px 6px rgba(0,0,0,.04);}
+.ro-group-hd{display:flex;align-items:center;gap:9px;padding:10px 16px;border-bottom:1px solid var(--border);background:linear-gradient(135deg,rgba(76,83,59,.05),rgba(180,115,96,.05));}
+.ro-freq{font-family:'Cormorant Garamond',serif;font-size:17px;font-weight:600;color:var(--noir);}
+.ro-reset{font-size:10.5px;color:var(--gris-2);font-style:italic;}
+.ro-count{margin-left:auto;font-size:11px;color:var(--gris);background:var(--beige);border-radius:12px;padding:2px 10px;white-space:nowrap;}
+.ro-count b{color:var(--vert);}
+.ro-item{display:flex;align-items:center;gap:10px;padding:9px 16px;border-bottom:1px solid rgba(229,222,211,.6);}
+.ro-item:last-child{border-bottom:none;}
+.ro-check{width:19px;height:19px;border-radius:6px;border:1.7px solid var(--terra);flex-shrink:0;cursor:pointer;display:flex;align-items:center;justify-content:center;background:#fff;transition:all .15s;}
+.ro-check.lock{border-color:var(--beige-3);cursor:default;}
+.ro-item.done .ro-check{background:var(--vert);border-color:var(--vert);}
+.ro-item.done .ro-check::after{content:'✓';color:#fff;font-size:12px;font-weight:700;}
+.ro-item.done .ro-text{color:var(--gris-2);text-decoration:line-through;}
+.ro-text{font-size:13.5px;flex:1;min-width:0;color:var(--noir);}
+.ro-owner{font-size:10px;font-weight:600;padding:2px 8px;border-radius:12px;background:var(--beige-2);color:var(--gris);flex-shrink:0;}
+.ro-owner.me{background:var(--kaki-p);color:var(--kaki);}
+.ro-owner.team{background:var(--terra-p);color:var(--terra);}
+.ro-mini{display:none;width:22px;height:22px;border:none;background:none;color:var(--gris-2);cursor:pointer;border-radius:6px;font-size:12px;flex-shrink:0;align-items:center;justify-content:center;padding:0;}
+.ro-mini:hover{color:var(--terra);background:var(--beige);}
+.ro-mini.del:hover{color:var(--rouge);}
+.ro-item:hover .ro-mini,.ro-ob:hover .ro-mini{display:inline-flex;}
+.ro-empty{color:var(--gris-2);font-style:italic;font-size:12.5px;padding:10px 16px;}
+.ro-ob{background:var(--blanc);border:1px solid var(--border);border-radius:12px;padding:14px 16px;margin-bottom:13px;box-shadow:0 1px 6px rgba(0,0,0,.04);border-top:4px solid var(--terra);}
+.ro-ob.perso{border-top-color:var(--kaki);}
+.ro-ob-hd{display:flex;align-items:flex-start;gap:8px;}
+.ro-ob-title{font-size:14.5px;font-weight:600;flex:1;line-height:1.3;color:var(--noir);}
+.ro-ob-per{font-size:10px;color:var(--gris-2);background:var(--beige);border-radius:12px;padding:2px 9px;white-space:nowrap;}
+.ro-ob-meta{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap;align-items:center;}
+.ro-ob-by{font-size:10px;color:var(--gris-2);font-style:italic;}
+.ro-prog{margin-top:11px;}
+.ro-prog-top{display:flex;justify-content:space-between;font-size:11.5px;margin-bottom:5px;align-items:baseline;}
+.ro-prog-n{font-weight:600;color:var(--noir);}
+.ro-prog-n b{font-family:'Cormorant Garamond',serif;font-size:16px;color:var(--terra);}
+.ro-prog-pct{color:var(--gris-2);}
+.ro-done-flag{font-size:11px;color:var(--vert);font-weight:600;}
+.ro-bar{height:9px;background:var(--beige-2);border-radius:6px;overflow:hidden;}
+.ro-fill{height:100%;border-radius:6px;background:linear-gradient(90deg,var(--terra-l),var(--terra));transition:width .25s;}
+.ro-fill.good{background:linear-gradient(90deg,#7a9a6b,var(--vert));}
+.ro-plus-row{margin-top:9px;display:flex;gap:7px;align-items:center;}
+.ro-plus{border:1px solid var(--terra);background:#fff;color:var(--terra);border-radius:7px;font-size:12px;font-weight:600;padding:4px 12px;cursor:pointer;font-family:'Jost',sans-serif;}
+.ro-plus:hover{background:var(--terra-p);}
+.ro-ob-actions{margin-left:auto;display:flex;gap:4px;}
+#ro-freq-row,#ro-obj-rows{display:block;}
+</style>
+
+<div id="ro-edit-ov" class="rd-ov" onclick="if(event.target===this)roEditClose()">
+  <div class="rd-modal">
+    <div class="rd-modal-hd" id="ro-edit-title">Nouvelle routine / objectif</div>
+    <div class="rd-modal-bd">
+      <input type="hidden" id="ro-e-id">
+      <label class="rd-fl">Type</label>
+      <select id="ro-e-kind" class="rd-inp" onchange="roKindToggle()">
+        <option value="routine">🔁 Routine (à refaire à chaque période)</option>
+        <option value="objectif">🎯 Objectif (une cible à atteindre)</option>
+      </select>
+      <label class="rd-fl">Intitulé</label>
+      <input id="ro-e-titre" class="rd-inp" placeholder="Ex. Relever la pige / Mandats signés">
+      <label class="rd-fl">Pour qui ?</label>
+      <select id="ro-e-owner" class="rd-inp"></select>
+      <div id="ro-freq-row">
+        <label class="rd-fl">Fréquence</label>
+        <select id="ro-e-freq" class="rd-inp">
+          <option value="jour">☀️ Tous les jours</option>
+          <option value="semaine">📅 Chaque semaine</option>
+          <option value="mois">🗓️ Chaque mois</option>
+          <option value="trimestre">🌱 Chaque trimestre</option>
+        </select>
+      </div>
+      <div id="ro-obj-rows" style="display:none;">
+        <label class="rd-fl">Cible (nombre à atteindre)</label>
+        <input id="ro-e-target" class="rd-inp" type="number" min="1" placeholder="Ex. 10">
+        <label class="rd-fl">Unité (facultatif)</label>
+        <input id="ro-e-unit" class="rd-inp" placeholder="Ex. mandats, appels, heures…">
+        <label class="rd-fl">Date limite (facultatif)</label>
+        <input id="ro-e-deadline" class="rd-inp" type="date">
+        <label class="rd-fl">Progression actuelle</label>
+        <input id="ro-e-progress" class="rd-inp" type="number" min="0" value="0">
+      </div>
+    </div>
+    <div class="rd-modal-ft"><button class="rd-b" onclick="roEditClose()">Annuler</button><button class="rd-b terra" onclick="roEditSave()">Enregistrer</button></div>
+  </div>
+</div>
+
+<script>
+(function(){
+  var RO_KEY='ach_routines_v1';
+  var FREQS=[
+    {k:'jour',ico:'☀️',lbl:'Tous les jours',reset:'remise à zéro chaque matin'},
+    {k:'semaine',ico:'📅',lbl:'Chaque semaine',reset:'remise à zéro le lundi'},
+    {k:'mois',ico:'🗓️',lbl:'Chaque mois',reset:'remise à zéro le 1ᵉʳ'},
+    {k:'trimestre',ico:'🌱',lbl:'Chaque trimestre',reset:'remise à zéro en janv. · avr. · juil. · oct.'}
+  ];
+  function esc(s){ return (''+(s==null?'':s)).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+  function load(){ try{ var a=JSON.parse(localStorage.getItem(RO_KEY)||'[]'); return Array.isArray(a)?a:[]; }catch(e){ return []; } }
+  function save(a){ try{ localStorage.setItem(RO_KEY, JSON.stringify(a)); }catch(e){} }
+  function newId(){ return 'ro-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,6); }
+  function find(a,id){ for(var i=0;i<a.length;i++) if(a[i].id===id) return a[i]; return null; }
+  function meKey(){ return (window.ACH_USER&&window.ACH_USER.key)||'admin'; }
+  function canAssign(){ var k=meKey(); return k==='admin'||k==='gerant'; }
+  function roleName(k){ if(k==='equipe') return 'Équipe'; try{ return (window.ROLES&&window.ROLES[k]&&window.ROLES[k].name)||k; }catch(e){ return k; } }
+  function pad(n){ return (n<10?'0':'')+n; }
+  function pKey(freq){
+    var d=new Date();
+    if(freq==='jour') return 'J'+d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
+    if(freq==='semaine'){ var m=new Date(d); m.setDate(d.getDate()-((d.getDay()+6)%7)); return 'S'+m.getFullYear()+'-'+pad(m.getMonth()+1)+'-'+pad(m.getDate()); }
+    if(freq==='mois') return 'M'+d.getFullYear()+'-'+pad(d.getMonth()+1);
+    return 'T'+d.getFullYear()+'-Q'+(Math.floor(d.getMonth()/3)+1);
+  }
+  function canTick(it){ return it.owner==='equipe' || it.owner===meKey() || canAssign(); }
+  function canManage(it){ return canAssign() || (it.createdBy===meKey() && it.owner===meKey()); }
+  function daysLeft(dl){ if(!dl) return null; try{ var p=dl.split('-'); var end=new Date(+p[0],+p[1]-1,+p[2]); var n=new Date(); n.setHours(0,0,0,0); return Math.round((end-n)/86400000); }catch(e){ return null; } }
+
+  var _roFilt='me';
+  window.roFilt=function(f,btn){ _roFilt=f; document.querySelectorAll('.ro-who').forEach(function(b){ b.classList.remove('on'); }); if(btn) btn.classList.add('on'); roRenderBody(); };
+
+  function visible(it){
+    if(_roFilt==='me') return it.owner==='equipe' || it.owner===meKey();
+    if(_roFilt==='equipe') return it.owner==='equipe';
+    return it.owner===_roFilt || it.owner==='equipe';
+  }
+  function ownerChip(o){
+    if(o==='equipe') return '<span class="ro-owner team">Équipe</span>';
+    if(o===meKey()) return '<span class="ro-owner me">Moi</span>';
+    return '<span class="ro-owner">'+esc(roleName(o))+'</span>';
+  }
+
+  window.routinesRender=function(){
+    var head=document.getElementById('ro-who-bar'); if(!head) return;
+    var chips='<button class="ro-who'+(_roFilt==='me'?' on':'')+'" onclick="roFilt(\'me\',this)">Moi</button>'
+             +'<button class="ro-who'+(_roFilt==='equipe'?' on':'')+'" onclick="roFilt(\'equipe\',this)">Équipe</button>';
+    if(canAssign()){
+      var R=window.ROLES||{};
+      Object.keys(R).forEach(function(k){ if(k===meKey()) return; chips+='<button class="ro-who'+(_roFilt===k?' on':'')+'" onclick="roFilt(\''+k+'\',this)">'+esc(R[k].name)+'</button>'; });
+    } else if(_roFilt!=='me' && _roFilt!=='equipe'){ _roFilt='me'; chips=chips.replace('class="ro-who"','class="ro-who on"'); }
+    head.innerHTML=chips;
+    roRenderBody();
+  };
+  function roRenderBody(){
+    var list=load();
+    // ROUTINES
+    var rh='';
+    FREQS.forEach(function(f){
+      var items=list.filter(function(x){ return x.kind==='routine' && x.freq===f.k && visible(x); });
+      if(!items.length) return;
+      var key=pKey(f.k);
+      var done=items.filter(function(x){ return x.checks && x.checks[key]; }).length;
+      rh+='<div class="ro-group"><div class="ro-group-hd"><span>'+f.ico+'</span><span class="ro-freq">'+f.lbl+'</span><span class="ro-reset">'+f.reset+'</span><span class="ro-count"><b>'+done+'</b> / '+items.length+' faite'+(items.length>1?'s':'')+'</span></div>';
+      items.forEach(function(it){
+        var isDone=!!(it.checks && it.checks[key]);
+        var tickable=canTick(it);
+        rh+='<div class="ro-item'+(isDone?' done':'')+'">'
+          +'<div class="ro-check'+(tickable?'':' lock')+'"'+(tickable?' onclick="roTick(\''+it.id+'\')"':' title="Réservé à son propriétaire"')+'></div>'
+          +'<div class="ro-text">'+esc(it.titre)+'</div>'
+          +ownerChip(it.owner)
+          +(canManage(it)?'<button class="ro-mini" title="Modifier" onclick="roEditOpen(\''+it.id+'\')">✎</button><button class="ro-mini del" title="Supprimer" onclick="roDel(\''+it.id+'\')">🗑</button>':'')
+          +'</div>';
+      });
+      rh+='</div>';
+    });
+    if(!rh) rh='<div class="ro-group"><div class="ro-empty">Aucune routine pour cette vue. Cliquez sur « ＋ Ajouter » pour créer la première.</div></div>';
+    document.getElementById('ro-routines').innerHTML=rh;
+    // OBJECTIFS
+    var obs=list.filter(function(x){ return x.kind==='objectif' && visible(x); })
+      .sort(function(a,b){ return (a.deadline||'9999')<(b.deadline||'9999')?-1:1; });
+    var oh='';
+    obs.forEach(function(it){
+      var tgt=Math.max(1,+it.target||1), n=Math.max(0,+it.progress||0);
+      var pct=Math.min(100,Math.round(n/tgt*100)), full=n>=tgt;
+      var dl=daysLeft(it.deadline);
+      var per=it.deadline?((dl!==null&&dl>=0&&!full)?('reste '+dl+' j'):('avant le '+it.deadline.split('-').reverse().join('/'))):'';
+      if(dl!==null&&dl<0&&!full) per='échéance dépassée';
+      var by=(it.createdBy && it.createdBy!==it.owner)?('fixé par '+roleName(it.createdBy)):(it.owner===meKey()?'objectif personnel':'');
+      oh+='<div class="ro-ob'+(it.owner!=='equipe'?' perso':'')+'">'
+        +'<div class="ro-ob-hd"><div class="ro-ob-title">'+esc(it.titre)+'</div>'+(per?'<span class="ro-ob-per">'+esc(per)+'</span>':'')
+        +'<div class="ro-ob-actions">'+(canManage(it)?'<button class="ro-mini" title="Modifier" onclick="roEditOpen(\''+it.id+'\')">✎</button><button class="ro-mini del" title="Supprimer" onclick="roDel(\''+it.id+'\')">🗑</button>':'')+'</div></div>'
+        +'<div class="ro-ob-meta">'+ownerChip(it.owner)+(by?'<span class="ro-ob-by">'+esc(by)+'</span>':'')+'</div>'
+        +'<div class="ro-prog"><div class="ro-prog-top"><span class="ro-prog-n"><b>'+n+'</b> / '+tgt+(it.unit?(' '+esc(it.unit)):'')+'</span>'
+        +(full?'<span class="ro-done-flag">✓ Objectif atteint !</span>':'<span class="ro-prog-pct">'+pct+' %</span>')+'</div>'
+        +'<div class="ro-bar"><div class="ro-fill'+(full?' good':'')+'" style="width:'+pct+'%"></div></div></div>'
+        +((canTick(it)&&!full)?'<div class="ro-plus-row"><button class="ro-plus" onclick="roPlus(\''+it.id+'\')">＋1</button><button class="ro-plus" style="border-color:var(--beige-3);color:var(--gris-2);" onclick="roPlus(\''+it.id+'\',-1)">−1</button></div>':'')
+        +'</div>';
+    });
+    if(!oh) oh='<div class="ro-ob"><div class="ro-empty" style="padding:2px 0;">Aucun objectif pour cette vue.</div></div>';
+    document.getElementById('ro-objectifs').innerHTML=oh;
+  }
+
+  window.roTick=function(id){
+    var a=load(), it=find(a,id); if(!it||!canTick(it)) return;
+    var key=pKey(it.freq); it.checks=it.checks||{};
+    if(it.checks[key]) delete it.checks[key]; else it.checks[key]={by:meKey(), t:new Date().toISOString()};
+    it.updated=new Date().toISOString(); save(a); roRenderBody();
+  };
+  window.roPlus=function(id,delta){
+    var a=load(), it=find(a,id); if(!it||!canTick(it)) return;
+    var tgt=Math.max(1,+it.target||1);
+    it.progress=Math.max(0,Math.min(tgt,(+it.progress||0)+(delta||1)));
+    it.updated=new Date().toISOString(); save(a); roRenderBody();
+    try{ if(it.progress>=tgt && window.toast) toast('🎯 Objectif atteint : '+it.titre); }catch(e){}
+  };
+
+  function fillOwnerSel(sel, cur){
+    var me=meKey(), h='';
+    if(canAssign()){
+      var R=window.ROLES||{};
+      Object.keys(R).forEach(function(k){ h+='<option value="'+k+'">'+esc(R[k].name)+(k===me?' (moi)':'')+'</option>'; });
+      h+='<option value="equipe">Équipe (partagé)</option>';
+    } else { h='<option value="'+me+'">'+esc(roleName(me))+' (moi)</option>'; }
+    sel.innerHTML=h; sel.value=cur||me; if(!sel.value) sel.value=me;
+  }
+  window.roKindToggle=function(){
+    var k=document.getElementById('ro-e-kind').value;
+    document.getElementById('ro-freq-row').style.display = k==='routine'?'':'none';
+    document.getElementById('ro-obj-rows').style.display = k==='objectif'?'':'none';
+  };
+  window.roAddOpen=function(){ roOpen(null); };
+  window.roEditOpen=function(id){ var it=find(load(),id); if(!it||!canManage(it)) return; roOpen(it); };
+  function roOpen(it){
+    document.getElementById('ro-e-id').value=it?it.id:'';
+    document.getElementById('ro-e-kind').value=it?it.kind:'routine';
+    document.getElementById('ro-e-titre').value=it?(it.titre||''):'';
+    fillOwnerSel(document.getElementById('ro-e-owner'), it?it.owner:meKey());
+    document.getElementById('ro-e-freq').value=(it&&it.freq)||'jour';
+    document.getElementById('ro-e-target').value=(it&&it.target)||'';
+    document.getElementById('ro-e-unit').value=(it&&it.unit)||'';
+    document.getElementById('ro-e-deadline').value=(it&&it.deadline)||'';
+    document.getElementById('ro-e-progress').value=(it&&it.progress)||0;
+    document.getElementById('ro-edit-title').textContent=it?'Modifier':'Nouvelle routine / objectif';
+    window.roKindToggle();
+    document.getElementById('ro-edit-ov').classList.add('open');
+    setTimeout(function(){ var e=document.getElementById('ro-e-titre'); if(e) e.focus(); },30);
+  }
+  window.roEditClose=function(){ var o=document.getElementById('ro-edit-ov'); if(o) o.classList.remove('open'); };
+  window.roEditSave=function(){
+    var id=document.getElementById('ro-e-id').value;
+    var kind=document.getElementById('ro-e-kind').value;
+    var titre=(document.getElementById('ro-e-titre').value||'').trim();
+    if(!titre){ try{ toast('Indiquez un intitulé'); }catch(e){} return; }
+    var owner=document.getElementById('ro-e-owner').value||meKey();
+    if(!canAssign() && owner!==meKey()) owner=meKey();
+    var now=new Date().toISOString();
+    var a=load();
+    if(id){
+      var it=find(a,id); if(!it||!canManage(it)) return;
+      it.kind=kind; it.titre=titre; it.owner=owner; it.updated=now;
+      if(kind==='routine'){ it.freq=document.getElementById('ro-e-freq').value; }
+      else { it.target=+document.getElementById('ro-e-target').value||1; it.unit=(document.getElementById('ro-e-unit').value||'').trim(); it.deadline=document.getElementById('ro-e-deadline').value||''; it.progress=Math.max(0,+document.getElementById('ro-e-progress').value||0); }
+    } else {
+      var o={id:newId(), kind:kind, titre:titre, owner:owner, createdBy:meKey(), created:now, updated:now};
+      if(kind==='routine'){ o.freq=document.getElementById('ro-e-freq').value; o.checks={}; }
+      else { o.target=+document.getElementById('ro-e-target').value||1; o.unit=(document.getElementById('ro-e-unit').value||'').trim(); o.deadline=document.getElementById('ro-e-deadline').value||''; o.progress=Math.max(0,+document.getElementById('ro-e-progress').value||0); }
+      a.push(o);
+    }
+    save(a); roEditClose(); roRenderBody();
+    try{ if(window.achLog) achLog(id?'modification':'ajout','Routines & Objectifs',titre); }catch(e){}
+  };
+  window.roDel=function(id){
+    var it=find(load(),id); if(!it||!canManage(it)) return;
+    if(!window.confirm('Supprimer « '+(it.titre||'')+' » ?')) return;
+    save(load().filter(function(x){ return x.id!==id; })); roRenderBody();
+    try{ if(window.achLog) achLog('suppression','Routines & Objectifs',it.titre||''); }catch(e){}
+  };
+
+  // navigation + rôle
+  if(window.navTo){ var _nv=window.navTo; window.navTo=function(id,el){ _nv(id,el); if(id==='routines'){ try{ window.routinesRender(); }catch(e){} } }; }
+  if(window.setRole){ var _sr2=window.setRole; window.setRole=function(r,btn){ if(typeof _sr2==='function') _sr2(r,btn); try{ var p=document.querySelector('.page.active'); if(p&&p.id==='page-routines'){ _roFilt='me'; window.routinesRender(); } }catch(e){} }; }
+  document.addEventListener('keydown',function(e){ if(e.key==='Escape') window.roEditClose(); });
 })();
 </script>
 
