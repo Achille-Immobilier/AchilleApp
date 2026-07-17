@@ -1560,7 +1560,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     </div>
   </div>
   </div>
-  <div class="logo-ver app-ver">Achille App — v7.14</div>
+  <div class="logo-ver app-ver">Achille App — v7.15</div>
 </aside>
 <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Réduire la barre latérale">‹</button>
 
@@ -10035,7 +10035,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     startRealtime();
     var ov=document.getElementById('ach-login-overlay'); if(ov) ov.classList.add('ach-hidden');
     var ub=document.getElementById('ach-userbar'); if(ub) ub.style.display='none';
-    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v7.14';
+    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v7.15';
     flag('Synchronis\u00e9');
     // fin de l'init : on autorise la journalisation des actions
     setTimeout(function(){ installInterceptor._init=false; }, 1500);
@@ -13681,7 +13681,7 @@ window.dgGenerer=function(){
 'use strict';
 var RAP_KEY='ach_rappels_v1';
 var RAP_MODS={ pige:{ico:'🔎',nom:'Pige'}, visites:{ico:'🏠',nom:'Visite'}, encours:{ico:'◈',nom:'En cours'},
-               finances:{ico:'💶',nom:'Finances'}, communication:{ico:'📣',nom:'Communication'}, libre:{ico:'🔔',nom:'Rappel'} };
+               finances:{ico:'💶',nom:'Finances'}, communication:{ico:'📣',nom:'Communication'}, routines:{ico:'🔁',nom:'Routine'}, libre:{ico:'🔔',nom:'Rappel'} };
 
 function rEsc(s){ return (''+(s==null?'':s)).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 function todayISO(){ var d=new Date(); return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2); }
@@ -14720,12 +14720,26 @@ textarea.rd-inp{resize:vertical;line-height:1.45;}
       <div class="ro-users-box" id="ro-e-users"></div>
       <div id="ro-freq-row">
         <label class="rd-fl">Fréquence</label>
-        <select id="ro-e-freq" class="rd-inp">
+        <select id="ro-e-freq" class="rd-inp" onchange="roRemToggle()">
           <option value="jour">☀️ Tous les jours (0h00 → 23h59)</option>
           <option value="semaine">📅 Chaque semaine (lundi → dimanche)</option>
           <option value="mois">🗓️ Chaque mois (du 1ᵉʳ au dernier jour)</option>
           <option value="trimestre">🌱 Chaque trimestre (civil)</option>
         </select>
+      </div>
+      <div id="ro-rem-row" style="display:none;">
+        <label class="rd-fl">🔔 Rappel (seulement si pas encore fait)</label>
+        <select id="ro-e-rem-dow" class="rd-inp" style="display:none;">
+          <option value="">Aucun rappel</option>
+          <option value="1">Chaque lundi</option><option value="2">Chaque mardi</option><option value="3">Chaque mercredi</option>
+          <option value="4">Chaque jeudi</option><option value="5">Chaque vendredi</option><option value="6">Chaque samedi</option><option value="7">Chaque dimanche</option>
+        </select>
+        <select id="ro-e-rem-dom" class="rd-inp" style="display:none;"></select>
+        <select id="ro-e-rem-qm" class="rd-inp" style="display:none;margin-top:6px;">
+          <option value="1">au 1ᵉʳ mois du trimestre</option><option value="2">au 2ᵉ mois du trimestre</option><option value="3">au 3ᵉ mois (dernier) du trimestre</option>
+        </select>
+        <input id="ro-e-rem-date" class="rd-inp" type="date" style="display:none;">
+        <div style="font-size:11px;color:var(--gris-2);margin-top:5px;line-height:1.45;">Le rappel apparaît dans le Planning, le Tableau de bord et la pastille du menu — et disparaît dès que la tâche est validée.</div>
       </div>
       <div id="ro-obj-rows" style="display:none;">
         <label class="rd-fl">Cible (nombre à atteindre)</label>
@@ -14870,6 +14884,7 @@ textarea.rd-inp{resize:vertical;line-height:1.45;}
     var key=pKey(it.freq); it.checks=it.checks||{};
     if(it.checks[key]) delete it.checks[key]; else it.checks[key]={by:meKey(), t:new Date().toISOString()};
     it.updated=new Date().toISOString(); save(a); roRenderBody();
+    try{ window.roSyncRappels(); }catch(e){}
   };
   window.roPlus=function(id,delta){
     var a=load(), it=find(a,id); if(!it||!canTick(it)) return;
@@ -14880,6 +14895,7 @@ textarea.rd-inp{resize:vertical;line-height:1.45;}
     if(it.progress<tgt){ delete it.doneBy; delete it.doneAt; }
     it.updated=new Date().toISOString(); save(a); roRenderBody();
     try{ if(it.progress>=tgt && before<tgt && window.toast) toast('🎯 Objectif atteint : '+it.titre); }catch(e){}
+    try{ window.roSyncRappels(); }catch(e){}
   };
 
   function usersBoxHtml(cur){
@@ -14900,6 +14916,22 @@ textarea.rd-inp{resize:vertical;line-height:1.45;}
     var k=document.getElementById('ro-e-kind').value;
     document.getElementById('ro-freq-row').style.display = k==='routine'?'':'none';
     document.getElementById('ro-obj-rows').style.display = k==='objectif'?'':'none';
+    window.roRemToggle();
+  };
+  window.roRemToggle=function(){
+    var kind=document.getElementById('ro-e-kind').value;
+    var freq=document.getElementById('ro-e-freq').value;
+    var row=document.getElementById('ro-rem-row');
+    var dow=document.getElementById('ro-e-rem-dow'), dom=document.getElementById('ro-e-rem-dom'),
+        qm=document.getElementById('ro-e-rem-qm'), dt=document.getElementById('ro-e-rem-date');
+    if(!dom.options.length){ var h='<option value="">Aucun rappel</option>'; for(var i=1;i<=28;i++) h+='<option value="'+i+'">Le '+(i===1?'1ᵉʳ':i)+'</option>'; dom.innerHTML=h; }
+    dow.style.display=dom.style.display=qm.style.display=dt.style.display='none';
+    if(kind==='objectif'){ row.style.display=''; dt.style.display=''; return; }
+    if(freq==='jour'){ row.style.display='none'; return; }
+    row.style.display='';
+    if(freq==='semaine'){ dow.style.display=''; }
+    else if(freq==='mois'){ dom.style.display=''; }
+    else { dom.style.display=''; qm.style.display=''; }
   };
   window.roAddOpen=function(){ roOpen(null); };
   window.roEditOpen=function(id){ var it=find(load(),id); if(!it||!canManage(it)) return; roOpen(it); };
@@ -14916,6 +14948,11 @@ textarea.rd-inp{resize:vertical;line-height:1.45;}
     document.getElementById('ro-e-progress').value=(it&&it.progress)||0;
     document.getElementById('ro-edit-title').textContent=it?'Modifier':'Nouvelle routine / objectif';
     window.roKindToggle();
+    var rm=(it&&it.remind)||{};
+    document.getElementById('ro-e-rem-dow').value=rm.dow||'';
+    document.getElementById('ro-e-rem-dom').value=rm.dom||'';
+    document.getElementById('ro-e-rem-qm').value=rm.qm||'1';
+    document.getElementById('ro-e-rem-date').value=rm.date||'';
     document.getElementById('ro-edit-ov').classList.add('open');
     setTimeout(function(){ var e=document.getElementById('ro-e-titre'); if(e) e.focus(); },30);
   }
@@ -14936,13 +14973,16 @@ textarea.rd-inp{resize:vertical;line-height:1.45;}
       it.kind=kind; it.titre=titre; it.details=details; it.users=users; delete it.owner; it.updated=now;
       if(kind==='routine'){ it.freq=document.getElementById('ro-e-freq').value; }
       else { it.target=+document.getElementById('ro-e-target').value||1; it.unit=(document.getElementById('ro-e-unit').value||'').trim(); it.deadline=document.getElementById('ro-e-deadline').value||''; it.progress=Math.max(0,+document.getElementById('ro-e-progress').value||0); if(it.progress<Math.max(1,+it.target||1)){ delete it.doneBy; delete it.doneAt; } }
+      it.remind=roRemRead(kind, it.freq);
     } else {
       var o={id:newId(), kind:kind, titre:titre, details:details, users:users, createdBy:meKey(), created:now, updated:now};
       if(kind==='routine'){ o.freq=document.getElementById('ro-e-freq').value; o.checks={}; }
       else { o.target=+document.getElementById('ro-e-target').value||1; o.unit=(document.getElementById('ro-e-unit').value||'').trim(); o.deadline=document.getElementById('ro-e-deadline').value||''; o.progress=Math.max(0,+document.getElementById('ro-e-progress').value||0); }
+      o.remind=roRemRead(kind, o.freq);
       a.push(o);
     }
     save(a); roEditClose(); roRenderBody();
+    try{ window.roSyncRappels(); }catch(e){}
     try{ if(window.achLog) achLog(id?'modification':'ajout','Routines & Objectifs',titre); }catch(e){}
   };
   window.roDel=function(id){
@@ -14952,7 +14992,52 @@ textarea.rd-inp{resize:vertical;line-height:1.45;}
     try{ if(window.achLog) achLog('suppression','Routines & Objectifs',it.titre||''); }catch(e){}
   };
 
-  if(window.navTo){ var _nv=window.navTo; window.navTo=function(id,el){ _nv(id,el); if(id==='routines'){ try{ window.routinesRender(); }catch(e){} } }; }
+  function roRemRead(kind, freq){
+    if(kind==='objectif'){ var d=document.getElementById('ro-e-rem-date').value; return d?{date:d}:null; }
+    if(freq==='jour') return null;
+    if(freq==='semaine'){ var w=+document.getElementById('ro-e-rem-dow').value||0; return w?{dow:w}:null; }
+    var dm=+document.getElementById('ro-e-rem-dom').value||0; if(!dm) return null;
+    if(freq==='mois') return {dom:dm};
+    return {dom:dm, qm:+document.getElementById('ro-e-rem-qm').value||1};
+  }
+  function isoOf(d){ return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate()); }
+  /* Date du rappel pour la PÉRIODE COURANTE (ou null) */
+  function roRemDate(it){
+    if(it.kind==='objectif') return (it.remind&&it.remind.date)||null;
+    var r=it.remind||{}; var d=new Date();
+    if(it.freq==='semaine'&&r.dow){ var m=new Date(d); m.setDate(d.getDate()-((d.getDay()+6)%7)); m.setDate(m.getDate()+(r.dow-1)); return isoOf(m); }
+    if(it.freq==='mois'&&r.dom){ var last=new Date(d.getFullYear(),d.getMonth()+1,0).getDate(); return isoOf(new Date(d.getFullYear(),d.getMonth(),Math.min(r.dom,last))); }
+    if(it.freq==='trimestre'&&r.dom){ var qm0=Math.floor(d.getMonth()/3)*3+((r.qm||1)-1); var last2=new Date(d.getFullYear(),qm0+1,0).getDate(); return isoOf(new Date(d.getFullYear(),qm0,Math.min(r.dom,last2))); }
+    return null;
+  }
+  /* Génère/solde les rappels dans le moteur ach_rappels_v1.
+     Id DÉTERMINISTE (routine+période) → tous les postes créent LE MÊME rappel, la fusion cloud dédoublonne. */
+  window.roSyncRappels=function(){
+    try{
+      var list=load(); if(!list.length) return;
+      var today=isoOf(new Date());
+      var raps=null, changed=false;
+      list.forEach(function(it){
+        var rd=roRemDate(it); if(!rd) return;
+        var isDone = it.kind==='routine'
+          ? !!(it.checks && it.checks[pKey(it.freq)])
+          : ((+it.progress||0) >= Math.max(1,+it.target||1));
+        var rapId='rap-ro-'+it.id+'-'+(it.kind==='routine'?pKey(it.freq):'obj');
+        if(raps===null){ try{ raps=JSON.parse(localStorage.getItem('ach_rappels_v1')||'[]')||[]; }catch(e){ raps=[]; } if(!Array.isArray(raps)) raps=[]; }
+        var ex=null; for(var i=0;i<raps.length;i++){ if(raps[i].id===rapId){ ex=raps[i]; break; } }
+        if(!isDone && today>=rd){
+          if(!ex){ raps.push({id:rapId, mod:'routines', refId:it.id, label:'🔁 '+(it.titre||'')+' — à faire', date:rd, note:(it.details||''), done:0, created:new Date().toISOString(), by:it.createdBy||''}); changed=true; }
+        } else if(ex && !ex.done && isDone){ ex.done=1; ex.doneAt=new Date().toISOString(); changed=true; }
+      });
+      if(changed && raps){ localStorage.setItem('ach_rappels_v1', JSON.stringify(raps));
+        try{ if(window.rapDashRender) rapDashRender(); }catch(e){}
+      }
+    }catch(e){}
+  };
+  /* déclencheurs : au chargement (après la synchro), à l'affichage de la page, à chaque validation */
+  setTimeout(window.roSyncRappels, 2500);
+  setInterval(window.roSyncRappels, 10*60*1000);
+  if(window.navTo){ var _nv=window.navTo; window.navTo=function(id,el){ _nv(id,el); if(id==='routines'){ try{ window.routinesRender(); window.roSyncRappels(); }catch(e){} } }; }
   if(window.setRole){ var _sr2=window.setRole; window.setRole=function(r,btn){ if(typeof _sr2==='function') _sr2(r,btn); try{ var p=document.querySelector('.page.active'); if(p&&p.id==='page-routines'){ _roFilt='me'; window.routinesRender(); } }catch(e){} }; }
   document.addEventListener('keydown',function(e){ if(e.key==='Escape') window.roEditClose(); });
 })();
