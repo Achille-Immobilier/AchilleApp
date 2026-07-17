@@ -1560,7 +1560,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     </div>
   </div>
   </div>
-  <div class="logo-ver app-ver">Achille App — v7.18</div>
+  <div class="logo-ver app-ver">Achille App — v7.19</div>
 </aside>
 <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Réduire la barre latérale">‹</button>
 
@@ -1659,9 +1659,15 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
 <div class="page" id="page-routines">
     <div class="sec-hd"><div><div class="sec-title">Routines <span>&amp; Objectifs</span></div><div class="sec-sub">Tâches récurrentes de chacun &amp; objectifs de période — les routines se réinitialisent automatiquement</div></div></div>
     <div class="ro-hd-bar"><div id="ro-who-bar" style="display:flex;gap:6px;flex-wrap:wrap;"></div><button class="ro-add" onclick="roAddOpen()">＋ Ajouter</button></div>
-    <div class="ro-cols">
-      <div class="ro-col-rt"><div class="ro-sec-lbl">Routines — se réinitialisent à chaque période</div><div id="ro-routines"></div></div>
-      <div class="ro-col-ob"><div class="ro-sec-lbl">Objectifs — une cible, une période, une progression</div><div id="ro-objectifs"></div></div>
+    <div class="ro-halves">
+      <div class="ro-half">
+        <div class="ro-half-hd rt"><div class="ro-half-title">🔁 Routines</div><div class="ro-half-sub">tâches récurrentes</div><div class="ro-half-cnt" id="ro-cnt-rt"></div></div>
+        <div class="ro-half-body" id="ro-routines"></div>
+      </div>
+      <div class="ro-half">
+        <div class="ro-half-hd ob"><div class="ro-half-title">🎯 Objectifs</div><div class="ro-half-sub">une cible, une échéance</div><div class="ro-half-cnt" id="ro-cnt-ob"></div></div>
+        <div class="ro-half-body" id="ro-objectifs"></div>
+      </div>
     </div>
   </div>
 
@@ -10119,7 +10125,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     startRealtime();
     var ov=document.getElementById('ach-login-overlay'); if(ov) ov.classList.add('ach-hidden');
     var ub=document.getElementById('ach-userbar'); if(ub) ub.style.display='none';
-    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v7.18';
+    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v7.19';
     flag('Synchronis\u00e9');
     // fin de l'init : on autorise la journalisation des actions
     setTimeout(function(){ installInterceptor._init=false; }, 1500);
@@ -14763,73 +14769,107 @@ textarea.rd-inp{resize:vertical;line-height:1.45;}
 .ro-who.on{background:var(--noir);color:#fff;border-color:var(--noir);}
 .ro-add{margin-left:auto;background:var(--terra);color:#fff;border:none;border-radius:8px;padding:8px 15px;font-family:'Jost',sans-serif;font-size:13px;font-weight:500;cursor:pointer;}
 .ro-add:hover{background:var(--terra-l);}
-.ro-cols{display:flex;gap:22px;align-items:flex-start;flex-wrap:wrap;}
-.ro-col-rt{flex:1.4;min-width:480px;}
-.ro-col-ob{flex:1;min-width:340px;}
-.ro-sec-lbl{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--gris-2);font-weight:600;margin:0 0 10px;}
-.ro-group{background:var(--blanc);border:1px solid var(--border);border-radius:12px;margin-bottom:14px;overflow:hidden;box-shadow:0 1px 6px rgba(0,0,0,.04);}
-.ro-group-hd{display:flex;align-items:center;gap:9px;padding:10px 16px;border-bottom:1px solid var(--border);background:linear-gradient(135deg,rgba(76,83,59,.05),rgba(180,115,96,.05));}
-.ro-freq{font-family:'Cormorant Garamond',serif;font-size:17px;font-weight:600;color:var(--noir);}
-.ro-reset{font-size:10.5px;color:var(--gris-2);font-style:italic;}
-.ro-count{margin-left:auto;font-size:11px;color:var(--gris);background:var(--beige);border-radius:12px;padding:2px 10px;white-space:nowrap;}
-.ro-count b{color:var(--vert);}
-.ro-item{display:flex;align-items:flex-start;gap:10px;padding:10px 16px;border-bottom:1px solid rgba(229,222,211,.6);}
-.ro-item:last-child{border-bottom:none;}
-.ro-check{width:19px;height:19px;border-radius:6px;border:1.7px solid var(--terra);flex-shrink:0;cursor:pointer;display:flex;align-items:center;justify-content:center;background:#fff;transition:all .15s;margin-top:1px;}
-.ro-check.lock{border-color:var(--beige-3);cursor:default;}
-.ro-item.done .ro-check{background:var(--vert);border-color:var(--vert);}
-.ro-item.done .ro-check::after{content:'✓';color:#fff;font-size:12px;font-weight:700;}
-.ro-item.done .ro-text{color:var(--gris-2);text-decoration:line-through;}
-.ro-body{flex:1;min-width:0;}
-.ro-text{font-size:13.5px;color:var(--noir);line-height:1.35;}
-.ro-det{font-size:11.5px;color:var(--gris);line-height:1.45;margin-top:2px;white-space:pre-wrap;overflow:hidden;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;}
-.ro-doneby{font-size:10.5px;color:var(--vert);font-weight:600;margin-top:3px;}
-.ro-badges{display:flex;gap:3px;flex-shrink:0;align-items:center;margin-top:1px;}
-.ro-b{width:22px;height:22px;border-radius:50%;color:#fff;font-size:9px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;letter-spacing:.02em;}
-.ro-mini{display:none;width:22px;height:22px;border:none;background:none;color:var(--gris-2);cursor:pointer;border-radius:6px;font-size:12px;flex-shrink:0;align-items:center;justify-content:center;padding:0;margin-top:1px;}
+/* ══ v7.19 : deux vraies moitiés 50/50 (maquette validée) ══ */
+.ro-halves{display:grid;grid-template-columns:1fr 1fr;gap:0;background:var(--blanc);border:1px solid var(--border);border-radius:14px;overflow:hidden;box-shadow:0 2px 14px rgba(0,0,0,.05);min-height:480px;}
+.ro-half{min-width:0;}
+.ro-half+.ro-half{border-left:1px solid var(--border);}
+@media (max-width:1100px){ .ro-halves{grid-template-columns:1fr;} .ro-half+.ro-half{border-left:none;border-top:1px solid var(--border);} }
+.ro-half-hd{display:flex;align-items:center;gap:9px;padding:12px 18px;border-bottom:1px solid var(--border);}
+.ro-half-hd.rt{background:var(--kaki);}
+.ro-half-hd.ob{background:var(--terra);}
+.ro-half-title{font-family:'Cormorant Garamond',serif;font-size:19px;font-weight:600;color:#fff;flex:1;}
+.ro-half-sub{font-size:10.5px;color:rgba(255,255,255,.75);}
+.ro-half-cnt{background:rgba(255,255,255,.18);color:#fff;font-size:11px;font-weight:600;padding:2px 10px;border-radius:20px;white-space:nowrap;}
+.ro-half-body{padding:13px 15px 18px;}
+/* ── Routines : table avec en-têtes de colonnes ── */
+.ro-cols-hd{display:grid;grid-template-columns:28px 1fr 128px 62px 40px;gap:8px;padding:3px 10px 7px;font-size:9px;letter-spacing:.11em;text-transform:uppercase;color:var(--gris-2);font-weight:600;}
+.ro-cols-hd .c-last{text-align:center;}
+.ro-cols-hd .c-qui{text-align:right;}
+.ro-grp{margin-bottom:12px;border:1px solid var(--border);border-radius:10px;}
+.ro-ghd{display:flex;align-items:center;gap:8px;padding:7px 12px;background:var(--kaki-p);cursor:pointer;user-select:none;border-radius:9px 9px 0 0;}
+.ro-grp.closed .ro-ghd{border-radius:9px;}
+.ro-gcar{font-size:9px;color:var(--kaki);transition:transform .15s;}
+.ro-grp.closed .ro-gcar{transform:rotate(-90deg);}
+.ro-gtt{font-size:11.5px;font-weight:600;color:var(--kaki);letter-spacing:.05em;text-transform:uppercase;}
+.ro-greset{font-size:10px;color:var(--kaki-l);font-style:italic;flex:1;}
+.ro-gn{font-size:10.5px;color:var(--kaki-l);font-weight:600;white-space:nowrap;}
+.ro-gn b{color:var(--vert);}
+.ro-grp.closed .ro-row{display:none;}
+.ro-row{display:grid;grid-template-columns:28px 1fr 128px 62px 40px;gap:8px;align-items:center;padding:8px 10px;border-top:1px solid #efe9df;}
+.ro-row:hover{background:#faf6ef;}
+.ro-check{width:21px;height:21px;border:2px solid var(--beige-3);border-radius:6px;background:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:12px;color:#fff;transition:all .12s;}
+.ro-check.ok{background:var(--vert);border-color:var(--vert);}
+.ro-check.lock{cursor:default;opacity:.55;}
+.ro-tt{font-size:13.5px;min-width:0;color:var(--noir);line-height:1.3;}
+.ro-tinfo{font-size:11px;color:var(--gris);display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.ro-bell{font-size:10px;color:var(--terra);margin-left:5px;white-space:nowrap;}
+.ro-who-cell{display:flex;justify-content:flex-end;}
+.ro-who-cell .ro-b{margin-left:-6px;border:1.5px solid #fff;flex:none;}
+.ro-who-cell .ro-b:first-child{margin-left:0;}
+.ro-b{width:20px;height:20px;border-radius:50%;color:#fff;font-size:8.5px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;letter-spacing:.02em;}
+.ro-acts{display:flex;gap:2px;justify-content:flex-end;}
+.ro-mini{display:none;width:20px;height:20px;border:none;background:none;color:var(--gris-2);cursor:pointer;border-radius:6px;font-size:11px;align-items:center;justify-content:center;padding:0;}
 .ro-mini:hover{color:var(--terra);background:var(--beige);}
 .ro-mini.del:hover{color:var(--rouge);}
-.ro-item:hover .ro-mini,.ro-ob:hover .ro-mini{display:inline-flex;}
-.ro-empty{color:var(--gris-2);font-style:italic;font-size:12.5px;padding:10px 16px;}
-.ro-ob{background:var(--blanc);border:1px solid var(--border);border-radius:12px;padding:14px 16px;margin-bottom:13px;box-shadow:0 1px 6px rgba(0,0,0,.04);border-top:4px solid var(--kaki);}
-.ro-ob-hd{display:flex;align-items:flex-start;gap:8px;}
-.ro-ob-title{font-size:14.5px;font-weight:600;flex:1;line-height:1.3;color:var(--noir);}
-.ro-ob-per{font-size:10px;color:var(--gris-2);background:var(--beige);border-radius:12px;padding:2px 9px;white-space:nowrap;}
-.ro-ob-meta{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap;align-items:center;}
-.ro-ob-by{font-size:10px;color:var(--gris-2);font-style:italic;}
-.ro-prog{margin-top:11px;}
-.ro-prog-top{display:flex;justify-content:space-between;font-size:11.5px;margin-bottom:5px;align-items:baseline;}
-.ro-prog-n{font-weight:600;color:var(--noir);}
-.ro-prog-n b{font-family:'Cormorant Garamond',serif;font-size:16px;color:var(--terra);}
-.ro-prog-pct{color:var(--gris-2);}
-.ro-done-flag{font-size:11px;color:var(--vert);font-weight:600;}
-.ro-bar{height:9px;background:var(--beige-2);border-radius:6px;overflow:hidden;}
-.ro-fill{height:100%;border-radius:6px;background:linear-gradient(90deg,var(--terra-l),var(--terra));transition:width .25s;}
-.ro-fill.good{background:linear-gradient(90deg,#7a9a6b,var(--vert));}
-.ro-plus-row{margin-top:9px;display:flex;gap:7px;align-items:center;}
-.ro-plus{border:1px solid var(--terra);background:#fff;color:var(--terra);border-radius:7px;font-size:12px;font-weight:600;padding:4px 12px;cursor:pointer;font-family:'Jost',sans-serif;}
-.ro-plus:hover{background:var(--terra-p);}
-.ro-ob-actions{margin-left:auto;display:flex;gap:4px;}
+.ro-row:hover .ro-mini,.ro-obc:hover .ro-mini{display:inline-flex;}
+.ro-empty{color:var(--gris-2);font-style:italic;font-size:12.5px;padding:12px 10px;}
+/* ── Pastille « dernière validation » (cliquable → fenêtre Historique) ── */
+.ro-pill{font-size:10.5px;padding:3px 10px;border-radius:20px;background:#f0ece4;color:var(--gris-2);white-space:nowrap;min-width:112px;text-align:center;cursor:pointer;transition:box-shadow .12s;display:inline-block;justify-self:center;}
+.ro-pill:hover{box-shadow:0 0 0 2px var(--beige-2);}
+.ro-pill.hasd{background:#e2efe7;color:var(--vert);font-weight:500;}
+.ro-pill.hasd:hover{box-shadow:0 0 0 2px #bcd9c8;}
+/* ── Fenêtre Historique (au clic sur la pastille) ── */
+.ro-hist-ov{display:none;position:fixed;inset:0;background:rgba(26,26,24,.42);z-index:1200;align-items:center;justify-content:center;}
+.ro-hist-ov.open{display:flex;}
+.ro-hist-card{background:#fff;border-radius:14px;width:410px;max-width:92vw;max-height:72vh;display:flex;flex-direction:column;box-shadow:0 18px 60px rgba(0,0,0,.3);overflow:hidden;}
+.ro-hist-hd{padding:14px 18px 12px;border-bottom:1px solid var(--border);display:flex;align-items:flex-start;gap:10px;}
+.ro-hist-tt{flex:1;min-width:0;}
+.ro-hist-tt b{font-family:'Cormorant Garamond',serif;font-size:17px;font-weight:600;display:block;color:var(--noir);}
+.ro-hist-tt span{font-size:11.5px;color:var(--gris);}
+.ro-hist-close{border:none;background:#f0ece4;color:var(--gris);width:26px;height:26px;border-radius:50%;cursor:pointer;font-size:13px;line-height:1;flex:none;}
+.ro-hist-close:hover{background:var(--beige-2);color:var(--noir);}
+.ro-hist-bd{overflow-y:auto;padding:0 0 12px;}
+.ro-hist-mo{position:sticky;top:0;background:#f6f1e9;font-size:10px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:var(--gris);padding:7px 18px 5px;border-bottom:1px solid #efe9df;display:flex;justify-content:space-between;z-index:2;}
+.ro-hist-mo em{font-style:normal;color:var(--gris-2);font-weight:500;letter-spacing:0;text-transform:none;}
+.ro-hist-li{display:flex;align-items:center;gap:9px;padding:6px 18px;font-size:12.5px;border-bottom:1px solid #f6f2ea;color:var(--noir);}
+.ro-hist-li:last-child{border-bottom:none;}
+.ro-hist-li .h-ok{color:var(--vert);font-size:11px;}
+.ro-hist-li .h-day{width:96px;}
+.ro-hist-li .h-hr{color:var(--gris-2);font-size:11.5px;flex:1;}
+.ro-hist-li .h-who{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--gris);}
+.ro-hist-x{border:none;background:none;color:var(--gris-2);cursor:pointer;font-size:10px;padding:0 3px;border-radius:3px;}
+.ro-hist-x:hover{color:var(--rouge);background:var(--terra-p);}
+/* ── Objectifs : En cours / Atteints ── */
+.ro-obsec{margin-bottom:14px;}
+.ro-obsec-tt{font-size:11px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:var(--terra);padding:2px 2px 7px;display:flex;align-items:center;gap:7px;}
+.ro-obsec-tt .n{background:var(--terra-p);color:var(--terra);font-size:10px;padding:1px 8px;border-radius:20px;}
+.ro-obsec-tt.done{color:var(--vert);}
+.ro-obsec-tt.done .n{background:#e2efe7;color:var(--vert);}
+.ro-obc{border:1px solid var(--border);border-radius:10px;padding:11px 13px;margin-bottom:9px;background:#fff;}
+.ro-obc.won{background:#f6faf7;border-color:#cfe3d6;}
+.ro-obtop{display:flex;align-items:flex-start;gap:9px;margin-bottom:7px;}
+.ro-obtt{font-size:13.5px;font-weight:500;flex:1;min-width:0;color:var(--noir);line-height:1.3;}
+.ro-obtt .ro-tinfo{white-space:pre-wrap;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+.ro-obby{font-size:10px;color:var(--gris-2);font-style:italic;display:block;}
+.ro-obdl{font-size:10px;color:var(--gris-2);white-space:nowrap;}
+.ro-obdl.soon{color:var(--terra);font-weight:600;}
+.ro-obdl.late{color:var(--rouge);font-weight:600;}
+.ro-obbot{display:flex;align-items:center;gap:10px;}
+.ro-obbar{flex:1;height:9px;background:#efe9df;border-radius:20px;overflow:hidden;}
+.ro-obfill{height:100%;background:var(--terra);border-radius:20px;transition:width .25s;}
+.ro-obc.won .ro-obfill{background:var(--vert);}
+.ro-obscore{font-size:12px;font-weight:600;white-space:nowrap;min-width:52px;text-align:right;color:var(--noir);}
+.ro-obplus{height:34px;padding:0 13px;white-space:nowrap;border:none;border-radius:8px;background:var(--terra);color:#fff;font-family:'Jost',sans-serif;font-size:13px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;box-shadow:0 1px 5px rgba(180,115,96,.3);}
+.ro-obplus:hover{background:var(--terra-l);}
+.ro-obminus{height:34px;padding:0 9px;border:1px solid var(--border);border-radius:8px;background:#fff;color:var(--gris-2);font-family:'Jost',sans-serif;font-size:13px;cursor:pointer;}
+.ro-obminus:hover{color:var(--terra);border-color:var(--terra);}
+.ro-obwonby{font-size:11px;color:var(--vert);font-weight:500;white-space:nowrap;}
 /* sélecteur multi-utilisateurs (même langage visuel que les visites) */
 .ro-users-box{border:1px solid var(--border);border-radius:8px;background:#fff;padding:4px 6px;}
 .ro-users-box label{display:flex;align-items:center;gap:8px;font-size:13px;padding:6px 8px;border-radius:6px;cursor:pointer;font-family:'Jost',sans-serif;color:var(--noir);}
 .ro-users-box label:hover{background:var(--beige);}
 .ro-users-box label.lockrow{opacity:.55;cursor:default;}
 .ro-users-box input{cursor:pointer;}
-/* v7.17 : colonne « Dernière validation » façon charges Finances — pastille + historique au survol */
-.ro-hist-wrap{position:relative;flex-shrink:0;align-self:center;}
-.ro-hist-btn{display:flex;align-items:center;gap:4px;font-size:10px;cursor:pointer;padding:3px 8px;border:1px solid var(--border);border-radius:4px;background:var(--beige);color:var(--gris-2);white-space:nowrap;min-width:112px;justify-content:center;transition:all .15s;}
-.ro-hist-btn:hover{border-color:var(--terra);color:var(--terra);}
-.ro-hist-btn.has-date{color:var(--vert);border-color:rgba(46,110,80,.3);background:rgba(46,110,80,.07);}
-.ro-hist-dotc{width:5px;height:5px;border-radius:50%;background:currentColor;flex-shrink:0;}
-.ro-hist-drop{display:none;position:absolute;right:0;top:calc(100% + 3px);z-index:60;background:var(--blanc);border:1px solid var(--border);border-radius:8px;box-shadow:0 8px 26px rgba(0,0,0,.16);min-width:230px;padding:4px 0;}
-.ro-hist-wrap:hover .ro-hist-drop,.ro-hist-drop.open{display:block;}
-.ro-hist-entry{font-size:11px;color:var(--gris);padding:5px 14px;border-bottom:1px solid var(--border);white-space:nowrap;}
-.ro-hist-entry:last-child{border:none;}
-.ro-hist-entry.first{color:var(--terra);font-weight:600;}
-.ro-hist-entry b{color:var(--kaki);font-weight:600;}
-.ro-hist-x{border:none;background:none;color:var(--gris-2);cursor:pointer;font-size:10px;margin-left:7px;padding:0 2px;border-radius:3px;}
-.ro-hist-x:hover{color:var(--rouge);background:var(--terra-p);}
 </style>
 
 <div id="ro-edit-ov" class="rd-ov" onclick="if(event.target===this)roEditClose()">
@@ -14883,6 +14923,17 @@ textarea.rd-inp{resize:vertical;line-height:1.45;}
       </div>
     </div>
     <div class="rd-modal-ft"><button class="rd-b" onclick="roEditClose()">Annuler</button><button class="rd-b terra" onclick="roEditSave()">Enregistrer</button></div>
+  </div>
+</div>
+
+<!-- v7.19 : fenêtre Historique des validations (au clic sur la pastille) -->
+<div class="ro-hist-ov" id="ro-hist-ov" onclick="if(event.target===this)roHistClose()">
+  <div class="ro-hist-card">
+    <div class="ro-hist-hd">
+      <div class="ro-hist-tt"><b id="ro-h-tt"></b><span id="ro-h-sub"></span></div>
+      <button class="ro-hist-close" onclick="roHistClose()">✕</button>
+    </div>
+    <div class="ro-hist-bd" id="ro-h-bd"></div>
   </div>
 </div>
 
@@ -14943,7 +14994,18 @@ textarea.rd-inp{resize:vertical;line-height:1.45;}
     return us.indexOf(_roFilt)>=0;
   }
   function userBadges(it){
-    return '<span class="ro-badges">'+itUsers(it).map(function(k){ var u=uOf(k); return u?'<span class="ro-b" style="background:'+u.col+'" title="'+esc(u.name)+'">'+u.short+'</span>':''; }).join('')+'</span>';
+    return itUsers(it).map(function(k){ var u=uOf(k); return u?'<span class="ro-b" style="background:'+u.col+'" title="'+esc(u.name)+'">'+u.short+'</span>':''; }).join('');
+  }
+  /* v7.19 : groupes repliables (mémorisés pendant la session) */
+  var _roClosed={mois:1,trimestre:1};
+  window.roGrpToggle=function(k){ if(_roClosed[k]) delete _roClosed[k]; else _roClosed[k]=1; roRenderBody(); };
+  function bellTxt(it){
+    var r=it.remind||{}; var DJ=['','lun.','mar.','mer.','jeu.','ven.','sam.','dim.'];
+    if(it.kind==='objectif') return r.date?('🔔 '+r.date.split('-').reverse().slice(0,2).join('/')):'';
+    if(it.freq==='semaine'&&r.dow) return '🔔 '+(DJ[r.dow]||'');
+    if(it.freq==='mois'&&r.dom) return '🔔 le '+r.dom;
+    if(it.freq==='trimestre'&&r.dom) return '🔔 le '+r.dom+' (mois '+(r.qm||1)+')';
+    return '';
   }
 
   window.routinesRender=function(){
@@ -14957,56 +15019,80 @@ textarea.rd-inp{resize:vertical;line-height:1.45;}
   };
   function roRenderBody(){
     var list=load();
-    var rh='';
+    var GT={jour:'Quotidiennes',semaine:'Hebdomadaires',mois:'Mensuelles',trimestre:'Trimestrielles'};
+    var minis=function(it){ return canManage(it)?'<button class="ro-mini" title="Modifier" onclick="roEditOpen(\''+it.id+'\')">✎</button><button class="ro-mini del" title="Supprimer" onclick="roDel(\''+it.id+'\')">🗑</button>':''; };
+    /* ── moitié gauche : routines en table, groupes repliables ── */
+    var rh='<div class="ro-cols-hd"><span></span><span>Tâche</span><span class="c-last">Dernière validation</span><span class="c-qui">Qui</span><span></span></div>';
+    var totAll=0, okAll=0, any=false;
     FREQS.forEach(function(f){
       var items=list.filter(function(x){ return x.kind==='routine' && x.freq===f.k && visible(x); });
       if(!items.length) return;
+      any=true;
       var key=pKey(f.k);
       var done=items.filter(function(x){ return x.checks && x.checks[key]; }).length;
-      rh+='<div class="ro-group"><div class="ro-group-hd"><span>'+f.ico+'</span><span class="ro-freq">'+f.lbl+'</span><span class="ro-reset">'+f.reset+'</span><span class="ro-count"><b>'+done+'</b> / '+items.length+' faite'+(items.length>1?'s':'')+'</span></div>';
+      totAll+=items.length; okAll+=done;
+      rh+='<div class="ro-grp'+(_roClosed[f.k]?' closed':'')+'"><div class="ro-ghd" onclick="roGrpToggle(\''+f.k+'\')"><span class="ro-gcar">▼</span><span class="ro-gtt">'+GT[f.k]+'</span><span class="ro-greset">'+f.reset+'</span><span class="ro-gn"><b>'+done+'</b>/'+items.length+'</span></div>';
       items.forEach(function(it){
         var chk=it.checks && it.checks[key];
         var tickable=canTick(it);
-        var histCell=roHistCell(it);
-        rh+='<div class="ro-item'+(chk?' done':'')+'">'
-          +'<div class="ro-check'+(tickable?'':' lock')+'"'+(tickable?' onclick="roTick(\''+it.id+'\')"':' title="Réservé aux personnes attribuées"')+'></div>'
-          +'<div class="ro-body"><div class="ro-text">'+esc(it.titre)+'</div>'
-          +(it.details?'<div class="ro-det" title="'+esc(it.details)+'">'+esc(it.details)+'</div>':'')
-          +'</div>'
-          +histCell
-          +userBadges(it)
-          +(canManage(it)?'<button class="ro-mini" title="Modifier" onclick="roEditOpen(\''+it.id+'\')">✎</button><button class="ro-mini del" title="Supprimer" onclick="roDel(\''+it.id+'\')">🗑</button>':'')
+        var hh=roHist(it);
+        var pill=hh.length
+          ? '<span class="ro-pill hasd" onclick="roHistShow(\''+it.id+'\')" title="Voir l\'historique complet">✓ '+esc(fmtShort(hh[0].t))+'</span>'
+          : '<span class="ro-pill" onclick="roHistShow(\''+it.id+'\')" title="Voir l\'historique">À faire</span>';
+        var bell=bellTxt(it);
+        rh+='<div class="ro-row">'
+          +'<div class="ro-check'+(chk?' ok':'')+(tickable?'':' lock')+'"'+(tickable?' onclick="roTick(\''+it.id+'\')"':' title="Réservé aux personnes attribuées"')+'>'+(chk?'✓':'')+'</div>'
+          +'<div class="ro-tt">'+esc(it.titre)+(bell?'<span class="ro-bell">'+bell+'</span>':'')
+          +(it.details?'<span class="ro-tinfo" title="'+esc(it.details)+'">'+esc(it.details)+'</span>':'')+'</div>'
+          +pill
+          +'<div class="ro-who-cell">'+userBadges(it)+'</div>'
+          +'<div class="ro-acts">'+minis(it)+'</div>'
           +'</div>';
       });
       rh+='</div>';
     });
-    if(!rh) rh='<div class="ro-group"><div class="ro-empty">Aucune routine pour cette vue. Cliquez sur « ＋ Ajouter » pour créer la première.</div></div>';
+    if(!any) rh+='<div class="ro-empty">Aucune routine pour cette vue. Cliquez sur « ＋ Ajouter » pour créer la première.</div>';
     document.getElementById('ro-routines').innerHTML=rh;
+    var cr=document.getElementById('ro-cnt-rt'); if(cr) cr.textContent=okAll+'/'+totAll+' validée'+(okAll>1?'s':'');
+    /* ── moitié droite : objectifs En cours / Atteints ── */
     var obs=list.filter(function(x){ return x.kind==='objectif' && visible(x); })
       .sort(function(a,b){ return (a.deadline||'9999')<(b.deadline||'9999')?-1:1; });
-    var oh='';
-    obs.forEach(function(it){
+    var run=[], won=[];
+    obs.forEach(function(it){ (((+it.progress||0)>=Math.max(1,+it.target||1))?won:run).push(it); });
+    function obCard(it,full){
       var tgt=Math.max(1,+it.target||1), n=Math.max(0,+it.progress||0);
-      var pct=Math.min(100,Math.round(n/tgt*100)), full=n>=tgt;
+      var pct=Math.min(100,Math.round(n/tgt*100));
       var dl=daysLeft(it.deadline);
-      var per=it.deadline?((dl!==null&&dl>=0&&!full)?('reste '+dl+' j'):('avant le '+it.deadline.split('-').reverse().join('/'))):'';
-      if(dl!==null&&dl<0&&!full) per='échéance dépassée';
+      var dlCls=full?'':(dl!==null&&dl<0?' late':(dl!==null&&dl<=14?' soon':''));
+      var dlTxt=it.deadline?('📅 '+it.deadline.split('-').reverse().join('/')+(!full&&dl!==null?(dl<0?' — dépassée':' · reste '+dl+' j'):'')):'';
       var by=(it.createdBy && itUsers(it).indexOf(it.createdBy)<0)?('fixé par '+uName(it.createdBy)):'';
-      var doneLine='';
-      if(full && it.doneBy){ doneLine='<div class="ro-doneby">✓ Atteint par '+esc(uName(it.doneBy))+' '+esc(fmtWhen(it.doneAt))+'</div>'; }
-      oh+='<div class="ro-ob">'
-        +'<div class="ro-ob-hd"><div class="ro-ob-title">'+esc(it.titre)+'</div>'+(per?'<span class="ro-ob-per">'+esc(per)+'</span>':'')
-        +'<div class="ro-ob-actions">'+(canManage(it)?'<button class="ro-mini" title="Modifier" onclick="roEditOpen(\''+it.id+'\')">✎</button><button class="ro-mini del" title="Supprimer" onclick="roDel(\''+it.id+'\')">🗑</button>':'')+'</div></div>'
-        +(it.details?'<div class="ro-det" title="'+esc(it.details)+'">'+esc(it.details)+'</div>':'')
-        +'<div class="ro-ob-meta">'+userBadges(it)+(by?'<span class="ro-ob-by">'+esc(by)+'</span>':'')+'</div>'
-        +'<div class="ro-prog"><div class="ro-prog-top"><span class="ro-prog-n"><b>'+n+'</b> / '+tgt+(it.unit?(' '+esc(it.unit)):'')+'</span>'
-        +(full?'<span class="ro-done-flag">✓ Objectif atteint !</span>':'<span class="ro-prog-pct">'+pct+' %</span>')+'</div>'
-        +'<div class="ro-bar"><div class="ro-fill'+(full?' good':'')+'" style="width:'+pct+'%"></div></div>'+doneLine+'</div>'
-        +((canTick(it)&&!full)?'<div class="ro-plus-row"><button class="ro-plus" onclick="roPlus(\''+it.id+'\')">＋1</button><button class="ro-plus" style="border-color:var(--beige-3);color:var(--gris-2);" onclick="roPlus(\''+it.id+'\',-1)">−1</button></div>':'')
+      var right=full
+        ? '<span class="ro-obwonby">✓ '+esc(uName(it.doneBy||''))+(it.doneAt?' — '+esc(fmtWhen(it.doneAt)):'')+'</span>'
+          +(canTick(it)?'<button class="ro-obminus" title="Corriger (−1)" onclick="roPlus(\''+it.id+'\',-1)">−1</button>':'')
+        : (canTick(it)?'<button class="ro-obplus" onclick="roPlus(\''+it.id+'\')">+1</button><button class="ro-obminus" title="Corriger (−1)" onclick="roPlus(\''+it.id+'\',-1)">−1</button>':'');
+      return '<div class="ro-obc'+(full?' won':'')+'">'
+        +'<div class="ro-obtop"><div class="ro-obtt">'+esc(it.titre)
+        +(it.details?'<span class="ro-tinfo" title="'+esc(it.details)+'">'+esc(it.details)+'</span>':'')
+        +(by?'<span class="ro-obby">'+esc(by)+'</span>':'')+'</div>'
+        +'<span class="ro-who-cell">'+userBadges(it)+'</span>'
+        +(dlTxt?'<div class="ro-obdl'+dlCls+'">'+esc(dlTxt)+'</div>':'')
+        +'<div class="ro-acts">'+minis(it)+'</div></div>'
+        +'<div class="ro-obbot"><div class="ro-obbar"><div class="ro-obfill" style="width:'+pct+'%"></div></div>'
+        +'<span class="ro-obscore">'+n+'/'+tgt+(it.unit?(' '+esc(it.unit)):'')+'</span>'
+        +right+'</div>'
         +'</div>';
-    });
-    if(!oh) oh='<div class="ro-ob"><div class="ro-empty" style="padding:2px 0;">Aucun objectif pour cette vue.</div></div>';
+    }
+    var oh='<div class="ro-obsec"><div class="ro-obsec-tt">En cours <span class="n">'+run.length+'</span></div>';
+    if(run.length){ run.forEach(function(it){ oh+=obCard(it,false); }); }
+    else oh+='<div class="ro-empty">Aucun objectif en cours pour cette vue.</div>';
+    oh+='</div>';
+    if(won.length){
+      oh+='<div class="ro-obsec"><div class="ro-obsec-tt done">Atteints <span class="n">'+won.length+'</span></div>';
+      won.forEach(function(it){ oh+=obCard(it,true); });
+      oh+='</div>';
+    }
     document.getElementById('ro-objectifs').innerHTML=oh;
+    var co=document.getElementById('ro-cnt-ob'); if(co) co.textContent=run.length+' en cours';
   }
 
   window.roTick=function(id){
@@ -15036,6 +15122,7 @@ textarea.rd-inp{resize:vertical;line-height:1.45;}
     var key=pKey(it.freq);
     if(it.checks && it.checks[key] && it.checks[key].t===t) delete it.checks[key];   /* si c'était la coche de la période en cours, on la décoche */
     it.updated=new Date().toISOString(); save(a); roRenderBody();
+    try{ var ov=document.getElementById('ro-hist-ov'); if(ov&&ov.classList.contains('open')) roHistShow(id); }catch(e){}   /* v7.19 : rafraîchir la fenêtre ouverte */
     try{ window.roSyncRappels(); }catch(e){}
   };
   window.roPlus=function(id,delta){
@@ -15204,30 +15291,36 @@ textarea.rd-inp{resize:vertical;line-height:1.45;}
     var J=['Dim.','Lun.','Mar.','Mer.','Jeu.','Ven.','Sam.'];
     return J[d.getDay()]+' '+pad(d.getDate())+'/'+pad(d.getMonth()+1)+' · '+pad(d.getHours())+'h'+pad(d.getMinutes());
   }catch(e){ return ''; } }
-  /* pastille « Dernière validation » + historique au survol (même esprit que les charges Finances) */
-  function roHistCell(it){
+  /* v7.19 : fenêtre Historique — sobre, groupée par mois, taille fixe + défilement (maquette validée) */
+  window.roHistShow=function(id){
+    var it=find(load(),id); if(!it) return;
     var hh=roHist(it);
-    var pill = hh.length
-      ? '<span class="ro-hist-btn has-date" title="Dernière validation — survolez pour l\'historique"><span class="ro-hist-dotc"></span>'+esc(fmtShort(hh[0].t))+'</span>'
-      : '<span class="ro-hist-btn" title="Jamais validée pour l\'instant">—</span>';
-    var drop = hh.length
-      ? hh.slice(0,8).map(function(h,i){
-          var canX = canAssign() || h.by===meKey();
-          return '<div class="ro-hist-entry'+(i===0?' first':'')+'">'+(i===0?'✓ ':'')+esc(fmtFull(h.t))+' — <b>'+esc(uName(h.by))+'</b>'
-            +(canX?'<button class="ro-hist-x" title="Retirer cette validation du journal" onclick="roHistDel(\''+it.id+'\',\''+esc(h.t)+'\',event)">✕</button>':'')
-            +'</div>'; }).join('')
-        + (hh.length>8?'<div class="ro-hist-entry" style="font-style:italic;color:var(--gris-2);">… et '+(hh.length-8)+' de plus</div>':'')
-      : '<div class="ro-hist-entry" style="font-style:italic;color:var(--gris-2);">Pas encore validée</div>';
-    return '<div class="ro-hist-wrap" onclick="this.querySelector(\'.ro-hist-drop\').classList.toggle(\'open\')">'+pill+'<div class="ro-hist-drop">'+drop+'</div></div>';
-  }
-  function fmtFull(iso){ try{ var d=new Date(iso);
-    var J=['Dimanche','Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi'];
+    var FL={jour:'quotidienne',semaine:'hebdomadaire',mois:'mensuelle',trimestre:'trimestrielle'};
+    document.getElementById('ro-h-tt').textContent=it.titre||'';
+    document.getElementById('ro-h-sub').textContent='Routine '+(FL[it.freq]||'')+' — '+hh.length+' validation'+(hh.length>1?'s':'')+' au total';
+    var J=['Dim','Lun','Mar','Mer','Jeu','Ven','Sam'];
     var M=['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
-    return J[d.getDay()]+' '+d.getDate()+' '+M[d.getMonth()]+' à '+pad(d.getHours())+'h'+pad(d.getMinutes());
-  }catch(e){ return ''; } }
+    var moCount={};
+    hh.forEach(function(e){ var d=new Date(e.t); var k=M[d.getMonth()]+' '+d.getFullYear(); moCount[k]=(moCount[k]||0)+1; });
+    var h='', lastMo='';
+    hh.forEach(function(e){
+      var d=new Date(e.t); var k=M[d.getMonth()]+' '+d.getFullYear();
+      if(k!==lastMo){ h+='<div class="ro-hist-mo">'+k+'<em>'+moCount[k]+' validation'+(moCount[k]>1?'s':'')+'</em></div>'; lastMo=k; }
+      var u=uOf(e.by);
+      var canX=canAssign()||e.by===meKey();
+      h+='<div class="ro-hist-li"><span class="h-ok">✓</span><span class="h-day">'+J[d.getDay()]+' '+pad(d.getDate())+'/'+pad(d.getMonth()+1)+'</span><span class="h-hr">'+pad(d.getHours())+':'+pad(d.getMinutes())+'</span><span class="h-who">'+(u?'<span class="ro-b" style="background:'+u.col+'">'+u.short+'</span>':'')+esc(uName(e.by))+'</span>'
+        +(canX?'<button class="ro-hist-x" title="Retirer cette validation du journal" onclick="roHistDel(\''+it.id+'\',\''+esc(e.t)+'\',event)">✕</button>':'')
+        +'</div>';
+    });
+    if(!h) h='<div class="ro-empty" style="padding:14px 18px;">Pas encore de validation — cochez la case de la ligne pour enregistrer la première.</div>';
+    document.getElementById('ro-h-bd').innerHTML=h;
+    document.getElementById('ro-h-bd').scrollTop=0;
+    document.getElementById('ro-hist-ov').classList.add('open');
+  };
+  window.roHistClose=function(){ var o=document.getElementById('ro-hist-ov'); if(o) o.classList.remove('open'); };
   if(window.navTo){ var _nv=window.navTo; window.navTo=function(id,el){ _nv(id,el); if(id==='routines'){ try{ window.routinesRender(); window.roSyncRappels(); }catch(e){} } }; }
   if(window.setRole){ var _sr2=window.setRole; window.setRole=function(r,btn){ if(typeof _sr2==='function') _sr2(r,btn); try{ var p=document.querySelector('.page.active'); if(p&&p.id==='page-routines'){ _roFilt='me'; window.routinesRender(); } }catch(e){} }; }
-  document.addEventListener('keydown',function(e){ if(e.key==='Escape') window.roEditClose(); });
+  document.addEventListener('keydown',function(e){ if(e.key==='Escape'){ window.roEditClose(); window.roHistClose(); } });
 })();
 </script>
 
