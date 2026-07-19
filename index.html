@@ -449,7 +449,7 @@ body.sb-collapsed .sidebar::-webkit-scrollbar{width:3px;}
 .comm-hist-meta{font-size:12.5px;color:var(--gris);font-family:'Jost',sans-serif;}
 .comm-add{background:var(--terra);color:#fff;border:none;border-radius:8px;padding:9px 16px;font-size:13.5px;font-weight:600;font-family:'Jost',sans-serif;cursor:pointer;white-space:nowrap;}
 .comm-add:hover{background:var(--terra-l);}
-.comm-body{flex:1;overflow:auto;padding:16px 22px;}
+.comm-body{flex:1;overflow:auto;padding:16px 8px;}   /* v7.29 : marges latérales réduites — le tableau prend la largeur */
 .comm-panel{display:none;}
 .comm-panel.active{display:block;}
 .comm-hint{font-size:12px;color:var(--gris-2);font-family:'Jost',sans-serif;margin-bottom:10px;line-height:1.5;}
@@ -465,7 +465,10 @@ body.sb-collapsed .sidebar::-webkit-scrollbar{width:3px;}
 .comm-in:focus{border-color:var(--terra);background:#fff;}
 .comm-num{width:56px;text-align:right;-moz-appearance:textfield;}
 .comm-num::-webkit-outer-spin-button,.comm-num::-webkit-inner-spin-button{-webkit-appearance:none;margin:0;}
-.comm-date{font-weight:600;color-scheme:light;}
+.comm-date{font-weight:600;color-scheme:light;width:124px;}   /* v7.29 : largeur serrée — l'icône calendrier colle à la date (et reste cliquable) */
+.comm-date::-webkit-calendar-picker-indicator{margin-left:2px;padding:2px;cursor:pointer;}
+/* v7.29 : la page Communication récupère une partie des marges du contenu */
+#page-communication{margin-left:-14px;margin-right:-14px;}
 .comm-m2{display:inline-flex;align-items:center;gap:3px;}
 .comm-m2 i{font-style:normal;font-size:12px;color:var(--gris-2);}
 .comm-reseau,.comm-pub{min-height:32px;display:flex;align-items:center;gap:4px;flex-wrap:wrap;cursor:pointer;padding:4px 6px;border-radius:6px;transition:background .12s;}
@@ -1572,7 +1575,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     </div>
   </div>
   </div>
-  <div class="logo-ver app-ver">Achille App — v7.28</div>
+  <div class="logo-ver app-ver">Achille App — v7.29</div>
 </aside>
 <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Réduire la barre latérale">‹</button>
 
@@ -9115,6 +9118,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
 (function(){
   var POSTS_KEY='ach_comm_posts_v1', COUR_KEY='ach_comm_cour_v1';
   var STAFF=['Laurent Sellem','Marine Attias','Marine Zoretic','Liloé Pichat','Marketing'];
+  var STAFF_INI={'Laurent Sellem':'LS','Marine Attias':'MA','Marine Zoretic':'MZ','Liloé Pichat':'LP','Marketing':'MKT'};   /* v7.29 : initiales dans la colonne Auteur */
   var RESEAUX=['Facebook','Instagram','TikTok','LinkedIn','Youtube'];
   var RES_SHORT={Facebook:'FB',Instagram:'IG',TikTok:'TT',LinkedIn:'IN',Youtube:'YT'};
   var RES_COL={Facebook:'#1877F2',Instagram:'#C13584',TikTok:'#111',LinkedIn:'#0A66C2',Youtube:'#FF0000'};
@@ -9297,21 +9301,21 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
       +(extra||'')+' onchange="commField(this)"></td>';
   }
   function cellAddr(tbl,id,val){
-    return '<td style="min-width:210px"><input data-table="'+tbl+'" data-id="'+id+'" data-field="adresse" class="comm-in" value="'+esc(val)+'" placeholder="Adresse…" autocomplete="off" oninput="commAC(this)" onchange="commField(this)"></td>';
+    return '<td style="min-width:190px"><input data-table="'+tbl+'" data-id="'+id+'" data-field="adresse" class="comm-in" value="'+esc(val)+'" placeholder="Adresse…" autocomplete="off" oninput="commAC(this)" onchange="commField(this)"></td>';
   }
   function cellDate(tbl,id,val){
-    return '<td style="min-width:148px"><input data-table="'+tbl+'" data-id="'+id+'" data-field="date" type="date" class="comm-in comm-date" value="'+esc(val)+'" style="color:'+dateColor(val)+'" onchange="commField(this)"></td>';
+    return '<td style="min-width:126px"><input data-table="'+tbl+'" data-id="'+id+'" data-field="date" type="date" class="comm-in comm-date" value="'+esc(val)+'" style="color:'+dateColor(val)+'" onchange="commField(this)"></td>';
   }
   function postRow(o){
-    var sup='<td style="min-width:96px"><span class="comm-m2"><input data-table="posts" data-id="'+o.id+'" data-field="superficie" type="number" class="comm-in comm-num" value="'+esc(o.superficie)+'" onchange="commField(this)"><i>m²</i></span></td>';
-    var res='<td style="min-width:128px"><div class="comm-reseau" onclick="commReseauOpen(this,\''+o.id+'\')">'+reseauBadges(o.reseaux)+'</div></td>';
-    var aut='<td style="min-width:120px"><select data-table="posts" data-id="'+o.id+'" data-field="auteur" class="comm-in" onchange="commField(this)"><option value=""></option>'
-      +STAFF.map(function(s){return '<option'+(o.auteur===s?' selected':'')+'>'+s+'</option>';}).join('')+'</select></td>';
-    var pub='<td style="min-width:92px"><div class="comm-pub" onclick="commPubToggle(this,\''+o.id+'\')">'+pubBadge(o.pub)+'</div></td>';
-    var stat='<td style="min-width:130px"><input data-table="posts" data-id="'+o.id+'" data-field="statut" class="comm-in" list="comm-statuts" value="'+esc(o.statut)+'" onchange="commField(this)"></td>';
+    var sup='<td style="min-width:84px"><span class="comm-m2"><input data-table="posts" data-id="'+o.id+'" data-field="superficie" type="number" class="comm-in comm-num" value="'+esc(o.superficie)+'" onchange="commField(this)"><i>m²</i></span></td>';
+    var res='<td style="min-width:118px"><div class="comm-reseau" onclick="commReseauOpen(this,\''+o.id+'\')">'+reseauBadges(o.reseaux)+'</div></td>';
+    var aut='<td style="min-width:64px"><select data-table="posts" data-id="'+o.id+'" data-field="auteur" class="comm-in" title="'+esc(o.auteur||'Auteur')+'" onchange="commField(this)"><option value=""></option>'
+      +STAFF.map(function(s){return '<option value="'+esc(s)+'"'+(o.auteur===s?' selected':'')+'>'+(STAFF_INI[s]||s)+'</option>';}).join('')+'</select></td>';
+    var pub='<td style="min-width:70px"><div class="comm-pub" onclick="commPubToggle(this,\''+o.id+'\')">'+pubBadge(o.pub)+'</div></td>';
+    var stat='<td style="min-width:112px"><input data-table="posts" data-id="'+o.id+'" data-field="statut" class="comm-in" list="comm-statuts" value="'+esc(o.statut)+'" onchange="commField(this)"></td>';
     var del='<td style="white-space:nowrap;"><button class="comm-repost" onclick="commRepost(\''+o.id+'\')" title="Republier ce bien à la date du jour">↻</button><button class="comm-del" onclick="commDel(\'posts\',\''+o.id+'\')" title="Supprimer la ligne">✕</button></td>';
-    return '<tr>'+refCell(o)+cellAddr('posts',o.id,o.adresse)+cellIn('posts',o.id,'ville',o.ville,'',120)
-      +sup+cellIn('posts',o.id,'chambres',o.chambres,'number',66)+cellIn('posts',o.id,'clients',o.clients,'',120)
+    return '<tr>'+refCell(o)+cellAddr('posts',o.id,o.adresse)+cellIn('posts',o.id,'ville',o.ville,'',106)
+      +sup+cellIn('posts',o.id,'chambres',o.chambres,'number',46,' style="width:40px"')+cellIn('posts',o.id,'clients',o.clients,'',104)
       +cellDate('posts',o.id,o.date)+res+aut+pub+stat+del+'</tr>';
   }
   function courRow(o){
@@ -10227,7 +10231,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     startRealtime();
     var ov=document.getElementById('ach-login-overlay'); if(ov) ov.classList.add('ach-hidden');
     var ub=document.getElementById('ach-userbar'); if(ub) ub.style.display='none';
-    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v7.28';
+    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v7.29';
     flag('Synchronis\u00e9');
     // fin de l'init : on autorise la journalisation des actions
     setTimeout(function(){ installInterceptor._init=false; }, 1500);
