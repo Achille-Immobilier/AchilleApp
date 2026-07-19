@@ -423,8 +423,15 @@ body.sb-collapsed .sidebar::-webkit-scrollbar{width:3px;}
 .comm-refcell .comm-in{flex:1;min-width:0;}
 .comm-refbadge{flex-shrink:0;display:inline-flex;align-items:center;height:18px;padding:0 6px;border-radius:9px;background:var(--terra-p,#f0d9d0);color:var(--terra);font-size:10.5px;font-weight:700;font-family:'Jost',sans-serif;cursor:pointer;transition:all .15s;}
 .comm-refbadge:hover{background:var(--terra);color:#fff;}
-.comm-alerts{margin:0 0 12px;padding:11px 14px;background:#fff7ed;border:1px solid #f3d4b3;border-radius:10px;}
-.comm-alert-hd{font-family:'Jost',sans-serif;font-size:13px;font-weight:600;color:#b4520f;margin-bottom:8px;}
+.comm-alerts{margin:0 0 12px;}
+/* v7.21 : bandeau compact à dérouler (même système que les Rappels du jour) */
+.comm-strip{display:flex;align-items:center;gap:10px;background:#fff7ed;border:1px solid #f3d4b3;border-radius:10px;padding:8px 14px;font-size:13px;color:var(--noir);cursor:pointer;transition:border-color .15s;}
+.comm-strip:hover{border-color:#b4520f;}
+.comm-strip .rs-ico{font-size:15px;flex:none;}
+.comm-strip .rs-txt{flex:1;min-width:0;}
+.comm-strip .rs-n{color:#b4520f;font-weight:600;}
+.comm-strip .rs-go{font-size:12px;color:#b4520f;font-weight:600;white-space:nowrap;flex:none;}
+.comm-alert-panel{margin-top:8px;padding:11px 14px;background:#fff7ed;border:1px solid #f3d4b3;border-radius:10px;}
 .comm-alert-chips{display:flex;flex-wrap:wrap;gap:7px;}
 .comm-alert-chip{display:inline-flex;align-items:center;gap:6px;background:#fff;border:1px solid #f3d4b3;border-radius:7px;padding:5px 10px;font-size:12.5px;font-family:'Jost',sans-serif;color:var(--noir);cursor:pointer;transition:all .15s;}
 .comm-alert-chip:hover{border-color:var(--terra);box-shadow:0 2px 8px rgba(180,115,96,.18);}
@@ -1565,7 +1572,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     </div>
   </div>
   </div>
-  <div class="logo-ver app-ver">Achille App — v7.20</div>
+  <div class="logo-ver app-ver">Achille App — v7.21</div>
 </aside>
 <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Réduire la barre latérale">‹</button>
 
@@ -2370,7 +2377,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
         <button class="comm-tab active" id="comm-tab-posts" onclick="commSwitch('posts')">📱 Posts réseaux</button>
         <button class="comm-tab" id="comm-tab-cour" onclick="commSwitch('courriers')">✉️ Courriers distribués</button>
       </div>
-      <input id="comm-search" class="comm-search" type="text" placeholder="\U0001F50E Rechercher (réf, adresse, ville…)" oninput="commSearch(this.value)" autocomplete="off">
+      <input id="comm-search" class="comm-search" type="text" placeholder="🔎 Rechercher (réf, adresse, ville…)" oninput="commSearch(this.value)" autocomplete="off">
       <div style="flex:1;"></div>
       <span class="comm-count" id="comm-count"></span>
       <button class="comm-add" onclick="commAdd()">＋ Ajouter une ligne</button>
@@ -8973,10 +8980,24 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
       body.innerHTML='<tr><td colspan="3" style="text-align:center;color:#999;padding:18px;">Chargement\u2026</td></tr>';
       window.achFetchHistory(400).then(function(data){
         if(data){
-          paint(data.map(function(h){
+          /* v7.21 : r\u00e8gle d'affichage c\u00f4t\u00e9 APPLICATION (ind\u00e9pendante de la base) :
+             admin/g\u00e9rant = toute l'\u00e9quipe ; autres = uniquement leurs propres actions. */
+          var me=window.ACH_USER||{}, isChief=(me.key==='admin'||me.key==='gerant');
+          var rows=data;
+          if(!isChief && me.name) rows=rows.filter(function(h){ return normU(h.user_name||'')===normU(me.name); });
+          /* D\u00e9tection : admin/g\u00e9rant + journal fourni mais UN SEUL auteur \u2192 r\u00e8gles Supabase \u00e0 corriger */
+          var warn='';
+          if(isChief && rows.length>=8){
+            var auth={}; rows.forEach(function(h){ auth[h.user_id||h.user_name||'?']=1; });
+            if(Object.keys(auth).length===1){
+              warn='<tr><td colspan="3" style="padding:10px 13px;background:#fdf3e7;color:#8a5a1e;font-size:12px;line-height:1.55;border-radius:6px;">\u26a0\ufe0f Le journal ne contient que les actions d\'un seul utilisateur. Les r\u00e8gles de s\u00e9curit\u00e9 de la base (Supabase, table \u00ab history \u00bb) emp\u00eachent probablement d\'enregistrer ou de lire les actions des autres membres. Appliquez une fois le correctif fourni (fichier CORRECTIF_HISTORIQUE_SUPABASE.sql) dans Supabase \u2192 SQL Editor.</td></tr>';
+            }
+          }
+          paint(rows.map(function(h){
             var lbl=(h.entity||'')+(h.details?(' \u2014 '+h.details):'');
             return { u:h.user_name||'?', a:lbl||(h.action||''), t:new Date(h.created_at).getTime() };
           }));
+          if(warn) body.innerHTML=warn+body.innerHTML;
         } else { paint(localRows()); }   /* hors-ligne */
       }, function(){ paint(localRows()); });
     } else { paint(localRows()); }
@@ -9439,8 +9460,20 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     commAlerts.sort(function(a,b){ return b.days-a.days || a.count-b.count; });
     if(!commAlerts.length){ host.style.display='none'; host.innerHTML=''; return; }
     host.style.display='';
-    host.innerHTML='<div class="comm-alert-hd">\u26A0\uFE0F \u00c0 re-poster ('+commAlerts.length+')</div><div class="comm-alert-chips">'+commAlerts.map(function(a,i){ return '<span class="comm-alert-chip" onclick="commFocusRef('+i+')" title="Filtrer sur cette r\u00e9f\u00e9rence">'+esc(a.ref)+' <em>'+a.reasons.join(' \u00b7 ')+'</em></span>'; }).join('')+'</div>';
+    /* v7.21 : bandeau compact d'une ligne, \u00e0 d\u00e9rouler (m\u00eame syst\u00e8me que les Rappels du jour) */
+    var oldest=commAlerts[0];
+    var det=(oldest&&oldest.days<99999)?(' \u00b7 la plus ancienne : post\u00e9e il y a '+oldest.days+' j'):'';
+    var strip='<div class="comm-strip" onclick="commAlertsToggle()" title="'+(_commAlertsOpen?'Replier':'Voir le d\u00e9tail')+'">'
+      +'<span class="rs-ico">\u26A0\uFE0F</span>'
+      +'<span class="rs-txt">\u00c0 re-poster \u2014 <span class="rs-n">'+commAlerts.length+' r\u00e9f\u00e9rence'+(commAlerts.length>1?'s':'')+'</span>'+det+'</span>'
+      +'<span class="rs-go">'+(_commAlertsOpen?'Replier \u25b4':'Voir \u25be')+'</span></div>';
+    var panel=_commAlertsOpen
+      ? '<div class="comm-alert-panel"><div class="comm-alert-chips">'+commAlerts.map(function(a,i){ return '<span class="comm-alert-chip" onclick="commFocusRef('+i+')" title="Filtrer sur cette r\u00e9f\u00e9rence">'+esc(a.ref)+' <em>'+a.reasons.join(' \u00b7 ')+'</em></span>'; }).join('')+'</div></div>'
+      : '';
+    host.innerHTML=strip+panel;
   }
+  var _commAlertsOpen=false;
+  window.commAlertsToggle=function(){ _commAlertsOpen=!_commAlertsOpen; commRenderAlerts(); };
   window.commSearch=function(v){ commQuery=v||''; commRenderPosts(); commRenderCour(); };
   window.commSetSort=function(tbl,field){
     var s=commSort[tbl]; if(!s) return;
@@ -10020,8 +10053,21 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     m.classList.add('show');
     db.from('history').select('*').order('created_at',{ascending:false}).limit(300).then(function(res){
       if(res.error||!res.data||!res.data.length){ body.innerHTML='<div class="ach-hist-empty">Aucune action enregistr\u00e9e pour le moment.</div>'; return; }
+      var rows=res.data;
+      /* v7.21 : la r\u00e8gle d'affichage ne d\u00e9pend plus de la base \u2014 filtre C\u00d4T\u00c9 APPLICATION.
+         Admin/g\u00e9rant : tout ; autres : uniquement leurs propres actions. */
+      if(!all) rows=rows.filter(function(h){ return h.user_id===ME.id || (h.user_email&&h.user_email===ME.email); });
       var html='';
-      res.data.forEach(function(h){
+      /* D\u00e9tection : si un admin/g\u00e9rant ne voit qu'UN SEUL auteur malgr\u00e9 un journal fourni,
+         c'est que les r\u00e8gles de s\u00e9curit\u00e9 Supabase bloquent les autres \u2192 avertir clairement. */
+      if(all && rows.length>=8){
+        var auth={}; rows.forEach(function(h){ auth[h.user_id||h.user_name||'?']=1; });
+        if(Object.keys(auth).length===1){
+          html+='<div style="margin:0 0 10px;padding:10px 13px;background:#fdf3e7;border:1px solid #e8c9a0;border-radius:8px;font-size:12px;color:#8a5a1e;line-height:1.55;">\u26a0\ufe0f Le journal ne contient que les actions d\'un seul utilisateur. Les r\u00e8gles de s\u00e9curit\u00e9 de la base (Supabase, table \u00ab history \u00bb) emp\u00eachent probablement d\'enregistrer ou de lire les actions des autres membres. Appliquez une fois le correctif fourni (fichier CORRECTIF_HISTORIQUE_SUPABASE.sql) dans Supabase \u2192 SQL Editor.</div>';
+        }
+      }
+      if(!rows.length){ body.innerHTML='<div class="ach-hist-empty">Aucune action enregistr\u00e9e pour le moment.</div>'; return; }
+      rows.forEach(function(h){
         html+='<div class="ach-hist-row">'+
           '<span class="ach-hist-when">'+fmtWhen(h.created_at)+'</span>'+
           '<span class="ach-hist-who">'+(h.user_name||'')+'</span>'+
@@ -10135,7 +10181,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     startRealtime();
     var ov=document.getElementById('ach-login-overlay'); if(ov) ov.classList.add('ach-hidden');
     var ub=document.getElementById('ach-userbar'); if(ub) ub.style.display='none';
-    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v7.20';
+    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v7.21';
     flag('Synchronis\u00e9');
     // fin de l'init : on autorise la journalisation des actions
     setTimeout(function(){ installInterceptor._init=false; }, 1500);
