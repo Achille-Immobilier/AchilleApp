@@ -1572,7 +1572,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     </div>
   </div>
   </div>
-  <div class="logo-ver app-ver">Achille App — v7.21</div>
+  <div class="logo-ver app-ver">Achille App — v7.22</div>
 </aside>
 <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Réduire la barre latérale">‹</button>
 
@@ -1661,6 +1661,20 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     <div id="pg-folders"></div>
     <div id="pige-list"></div>
     <div id="pg-pager"></div>
+  </div>
+
+  <!-- v7.22 : choix du motif d'archivage d'une fiche de pige -->
+  <div class="pga-ov" id="pga-ov" onclick="if(event.target===this)pigeArchClose()">
+    <div class="pga-card">
+      <div class="pga-h">Archiver « <span id="pga-tt"></span> »</div>
+      <div class="pga-sub">La fiche quitte le stock actif mais garde tout : journal, téléphone, liens, photos. Choisissez le motif :</div>
+      <div class="pga-opt" onclick="pigeArchDo('mandat')"><span>🎉</span> Mandat signé <small>bien rentré à l'agence</small></div>
+      <div class="pga-opt" onclick="pigeArchDo('refus')"><span>✕</span> Refus <small>le vendeur ne souhaite pas</small></div>
+      <div class="pga-opt" onclick="pigeArchDo('confrere')"><span>🏢</span> Vendue par un confrère <small>bien sorti du marché</small></div>
+      <div class="pga-opt" onclick="pigeArchDo('disparue')"><span>👻</span> Annonce disparue <small>retirée des sites</small></div>
+      <div class="pga-opt" onclick="pigeArchDo('autre')"><span>📦</span> Autre <small>avec note libre</small></div>
+      <button class="pga-cancel" onclick="pigeArchClose()">Annuler</button>
+    </div>
   </div>
 
   <div class="page" id="page-reporting">
@@ -10181,7 +10195,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     startRealtime();
     var ov=document.getElementById('ach-login-overlay'); if(ov) ov.classList.add('ach-hidden');
     var ub=document.getElementById('ach-userbar'); if(ub) ub.style.display='none';
-    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v7.21';
+    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v7.22';
     flag('Synchronis\u00e9');
     // fin de l'init : on autorise la journalisation des actions
     setTimeout(function(){ installInterceptor._init=false; }, 1500);
@@ -11287,6 +11301,7 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
           <div class="form-group" style="flex:1.6;"><label class="form-label">Suivi</label><select class="form-select" id="pg-suivi" onchange="pigeSuiviChanged()"><option value="">—</option><option value="pdr">PDR</option><option value="msg">Message laissé</option><option value="mandat">Mandat → Apimo</option><option value="visite">Accord de visite → Apimo</option><option value="relance">Bon contact à relancer</option><option value="refus-rel">Refus à relancer</option><option value="refus">Refus catégorique</option></select></div>
           <div class="form-group"><label class="form-label">Date du suivi</label><input type="date" class="form-input" id="pg-suivi-date"></div>
         </div>
+        <div id="pg-suivi-auto"></div>
         <div id="pg-temp-line" style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--gris);margin:5px 2px 8px;"><span id="pg-temp-txt">🌡 —</span><button type="button" style="margin-left:auto;border:1px solid var(--beige-2);background:#fff;color:var(--gris);font-size:11px;padding:3px 10px;border-radius:8px;font-family:'Jost',sans-serif;cursor:pointer;flex:none;" onclick="rapTempReset()" title="Annonce republiée ou nouveau cycle de prospection : la température repart de zéro (pris en compte à l'enregistrement de la fiche)">↺ Repartir d'aujourd'hui</button></div>
         <div id="pg-com-bloc">
       <div class="form-label" style="margin-top:10px;">Suivi &amp; commentaires</div>
@@ -11319,7 +11334,7 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
   var PG_STATUTS=[
     {k:'chaud',   label:'Chaud',    col:'#a03222', ico:'🔥'},
     {k:'encours', label:'En cours', col:'#2e6e50', ico:'⏳'},
-    {k:'offline', label:'Offline',  col:'#4a4a48', ico:'🌙'},
+    {k:'offline', label:'En veille',  col:'#4a4a48', ico:'🌙'},   /* v7.22 : renommé (ex-Offline) — dossier en pause, à surveiller */
     {k:'termine', label:'Terminé',  col:'#1a1a18', ico:'<span style="color:#ff5f4e;font-weight:700;">✕</span>'}
   ];
   function pgStatutDef(k){ for(var i=0;i<PG_STATUTS.length;i++){ if(PG_STATUTS[i].k===k) return PG_STATUTS[i]; } return PG_STATUTS[1]; }
@@ -11398,11 +11413,103 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
   };
   window.pigeDossPick=function(val){ pgDossier=val; pgPage=1; pigeRender(); };
 
-  /* Barre de dossiers avec compteurs */
+  /* ══ v7.22 : archivage des fiches (sortie du stock actif SANS suppression) ══ */
+  var PG_MOTIFS={mandat:['🎉','Mandat signé'],refus:['✕','Refus'],confrere:['🏢','Vendue par un confrère'],disparue:['👻','Annonce disparue'],autre:['📦','Autre']};
+  var _pgArchPend=null;
+  function pgPad2(n){ return (n<10?'0':'')+n; }
+  window.pigeArchAsk=function(id,ev){
+    if(ev) ev.stopPropagation();
+    var r=load().filter(function(x){return x.id===id;})[0]; if(!r) return;
+    _pgArchPend=id;
+    document.getElementById('pga-tt').textContent=r.adresse||r.titre||'cette fiche';
+    document.getElementById('pga-ov').classList.add('open');
+  };
+  window.pigeArchClose=function(){ var o=document.getElementById('pga-ov'); if(o) o.classList.remove('open'); _pgArchPend=null; };
+  window.pigeArchDo=function(m){
+    var id=_pgArchPend; if(!id) return;
+    var note='';
+    if(m==='autre'){ note=(prompt('Motif (facultatif) :')||'').trim(); }
+    var a=load(), r=a.filter(function(x){return x.id===id;})[0]; if(!r){ pigeArchClose(); return; }
+    r.arch={m:m, d:new Date().toISOString(), by:(window.ACH_USER&&ACH_USER.key)||'admin'};
+    if(note) r.arch.note=note;
+    r.updated=new Date().toISOString(); save(a);
+    pigeArchClose(); pigeRender();
+    if(window.toast) toast('📦 Fiche archivée — '+PG_MOTIFS[m][1]);
+    try{ if(window.achLog) achLog('modification','Pige','archivage ('+PG_MOTIFS[m][1]+') : '+(r.adresse||r.titre||'')); }catch(e){}
+  };
+  window.pigeReactivate=function(id,ev){
+    if(ev) ev.stopPropagation();
+    var a=load(), r=a.filter(function(x){return x.id===id;})[0]; if(!r||!r.arch) return;
+    delete r.arch; r.updated=new Date().toISOString(); save(a);
+    pigeRender();
+    if(window.toast) toast('↩ Fiche réactivée — de retour dans le stock actif');
+    try{ if(window.achLog) achLog('modification','Pige','réactivation : '+(r.adresse||r.titre||'')); }catch(e){}
+  };
+  /* Archiver depuis la fiche ouverte (proposition automatique) : on ENREGISTRE d'abord, puis on archive */
+  window.pigeArchFromFiche=function(m){
+    var id=document.getElementById('pg-edit-id').value; if(!id) return;
+    window.pigeSave();
+    var mo=document.getElementById('modal-pige');
+    if(mo && mo.classList.contains('open')) return;   /* l'enregistrement a échoué (champ manquant) : on n'archive pas */
+    var a=load(), r=a.filter(function(x){return x.id===id;})[0]; if(!r) return;
+    r.arch={m:m, d:new Date().toISOString(), by:(window.ACH_USER&&ACH_USER.key)||'admin'};
+    r.updated=new Date().toISOString(); save(a); pigeRender();
+    if(window.toast) toast('📦 Fiche archivée — '+PG_MOTIFS[m][1]);
+    try{ if(window.achLog) achLog('modification','Pige','archivage ('+PG_MOTIFS[m][1]+') : '+(r.adresse||r.titre||'')); }catch(e){}
+  };
+  /* Bandeau automatique dans la fiche, sous le menu Suivi */
+  window.pigeSuiviAutoRefresh=function(){
+    var box=document.getElementById('pg-suivi-auto'); if(!box) return;
+    var id=document.getElementById('pg-edit-id').value||'';
+    var sv=document.getElementById('pg-suivi').value||'';
+    var r=id? load().filter(function(x){return x.id===id;})[0] : null;
+    if(r && r.arch){
+      var mm=PG_MOTIFS[r.arch.m]||PG_MOTIFS.autre;
+      box.innerHTML='<div class="pg-auto ga">📦 Fiche <b>archivée</b> ('+mm[1]+') le '+dstr(r.arch.d)+'.<button type="button" class="pg-auto-b" onclick="pigeReactivate(\''+id+'\');pigeSuiviAutoRefresh()">↩ Réactiver</button></div>';
+      return;
+    }
+    if((sv==='mandat'||sv==='refus') && id){
+      var mo=(sv==='mandat')?'mandat':'refus';
+      box.innerHTML='<div class="pg-auto ga">📦 <b>Ce dossier semble terminé.</b>&nbsp;Archiver la fiche avec le motif « '+PG_MOTIFS[mo][1]+' » ?<button type="button" class="pg-auto-b" onclick="pigeArchFromFiche(\''+mo+'\')">Archiver</button></div>';
+    } else if(sv==='relance'||sv==='refus-rel'){
+      var prev=document.getElementById('pg-rap2-date');
+      var val=(prev&&prev.value)||'';
+      if(!val){ var d=new Date(); d.setDate(d.getDate()+7); val=d.getFullYear()+'-'+pgPad2(d.getMonth()+1)+'-'+pgPad2(d.getDate()); }
+      box.innerHTML='<div class="pg-auto ra">🔔 <b>Rappel automatique :</b>&nbsp;« Relancer ce vendeur » sera créé dans la cloche pour le&nbsp;<input type="date" id="pg-rap2-date" value="'+val+'"><span class="pg-auto-hint">(modifiable — créé à l\'enregistrement de la fiche)</span></div>';
+    } else { box.innerHTML=''; }
+  };
+  /* À l'enregistrement : crée/met à jour le rappel de relance (id déterministe → dédoublonné par la synchro),
+     ou le solde si le suivi n'est plus « à relancer ». */
+  function pigeRelanceRappel(fid, sv){
+    if(!fid) return;
+    var rapId='rap-pg-relance-'+fid;
+    var raps; try{ raps=JSON.parse(localStorage.getItem('ach_rappels_v1')||'[]')||[]; }catch(e){ raps=[]; }
+    if(!Array.isArray(raps)) raps=[];
+    var ex=null; for(var i=0;i<raps.length;i++){ if(raps[i].id===rapId){ ex=raps[i]; break; } }
+    if(sv==='relance'||sv==='refus-rel'){
+      var de=document.getElementById('pg-rap2-date');
+      var d=(de&&de.value)||'';
+      if(!d){ var t=new Date(); t.setDate(t.getDate()+7); d=t.getFullYear()+'-'+pgPad2(t.getMonth()+1)+'-'+pgPad2(t.getDate()); }
+      var r=load().filter(function(x){return x.id===fid;})[0]||{};
+      var label='📞 Relancer '+(r.vendeur||r.adresse||'ce vendeur');
+      if(ex){ ex.date=d; ex.label=label; ex.done=0; delete ex.doneAt; }
+      else raps.push({id:rapId, mod:'pige', refId:fid, label:label, date:d, note:(sv==='refus-rel'?'Refus à relancer':'Bon contact à relancer'), done:0, created:new Date().toISOString(), by:(window.ACH_USER&&ACH_USER.key)||''});
+      localStorage.setItem('ach_rappels_v1', JSON.stringify(raps));
+      try{ if(window.rapRefreshAll) rapRefreshAll(); }catch(e){}
+    } else if(ex && !ex.done){
+      ex.done=1; ex.doneAt=new Date().toISOString();
+      localStorage.setItem('ach_rappels_v1', JSON.stringify(raps));
+      try{ if(window.rapRefreshAll) rapRefreshAll(); }catch(e){}
+    }
+  }
+
+  /* Barre de dossiers avec compteurs — v7.22 : « Tous » = fiches ACTIVES ; tiroir « 📦 Archivées » à droite */
   function renderFolderBar(all){
     var bar=document.getElementById('pg-folders'); if(!bar) return;
-    var cnt={tous:all.length, chaud:0, encours:0, offline:0, termine:0};
-    all.forEach(function(r){ var s=pgStatutOf(r); cnt[s]=(cnt[s]||0)+1; });
+    var act=all.filter(function(r){ return !r.arch; });
+    var nArch=all.length-act.length;
+    var cnt={tous:act.length, chaud:0, encours:0, offline:0, termine:0};
+    act.forEach(function(r){ var s=pgStatutOf(r); cnt[s]=(cnt[s]||0)+1; });
     var doss=dossLoad();
     function dot(col){ return '<span class="pg-fold-dot" style="background:'+col+';"></span>'; }
     var onTous=(pgDossier==='tous');
@@ -11413,7 +11520,7 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
         +dot(s.col)+' '+s.label+' <b>'+(cnt[s.k]||0)+'</b></button>';
     });
     doss.forEach(function(d){
-      var c=all.filter(function(r){return r.dossier===d.id;}).length;
+      var c=act.filter(function(r){return r.dossier===d.id;}).length;
       var on=(pgDossier==='d:'+d.id);
       html+='<button class="pg-fold pg-fold-cust'+(on?' on':'')+'" onclick="pigeDossPick(\'d:'+d.id+'\')">'
         +dot('#b8b2a6')+' '+esc(d.nom)+' <b>'+c+'</b>'
@@ -11421,6 +11528,7 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
         +'</button>';
     });
     if(pgIsManager()) html+='<button class="pg-fold pg-fold-add" onclick="pigeDossNew()">＋ Dossier</button>';
+    html+='<button class="pg-fold pg-fold-archdrawer'+(pgDossier==='arch'?' on':'')+'" onclick="pigeDossPick(\'arch\')" title="Fiches sorties du stock actif — tout est conservé">📦 Archivées <b>'+nArch+'</b></button>';
     bar.innerHTML=html;
   }
 
@@ -11768,13 +11876,22 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
     }); }
     if(pgFilt.villes.length){ a=a.filter(function(r){ return pgFilt.villes.indexOf(villeOf(r))>=0; }); }
     renderFolderBar(a);
-    if(pgDossier!=='tous'){
-      if(pgDossier.indexOf('d:')===0){ var _did=pgDossier.slice(2); a=a.filter(function(r){ return r.dossier===_did; }); }
-      else { a=a.filter(function(r){ return pgStatutOf(r)===pgDossier; }); }
+    /* v7.22 : « Tous » et les statuts ne montrent que les fiches ACTIVES ; le tiroir « arch » montre les archivées */
+    var inArch=(pgDossier==='arch');
+    if(inArch){ a=a.filter(function(r){ return r.arch; }); }
+    else {
+      a=a.filter(function(r){ return !r.arch; });
+      if(pgDossier!=='tous'){
+        if(pgDossier.indexOf('d:')===0){ var _did=pgDossier.slice(2); a=a.filter(function(r){ return r.dossier===_did; }); }
+        else { a=a.filter(function(r){ return pgStatutOf(r)===pgDossier; }); }
+      }
     }
-    var total=load().length, shown=a.length;
+    var total=load().filter(function(r){ return inArch? !!r.arch : !r.arch; }).length, shown=a.length;
     var cntEl=document.getElementById('pg-count');
-    if(cntEl){ cntEl.textContent = (shown===total)? (total+' bien'+(total>1?'s':'')+' en pige') : (shown+' bien'+(shown>1?'s':'')+' sur '+total); }
+    if(cntEl){
+      if(inArch) cntEl.textContent=shown+' fiche'+(shown>1?'s':'')+' archivée'+(shown>1?'s':'');
+      else cntEl.textContent = (shown===total)? (total+' bien'+(total>1?'s':'')+' en pige') : (shown+' bien'+(shown>1?'s':'')+' sur '+total);
+    }
     function pm2(r){ return (r.prix&&num(r.surface))? r.prix/num(r.surface) : 0; }
     var dir=sortDir;
     if(sortMode==='prix') a.sort(function(x,y){ return ((x.prix||0)-(y.prix||0))*dir; });
@@ -11790,6 +11907,21 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
       var s=SRC[r.src]||SRC.autre;
       var _st=pgStatutDef(pgStatutOf(r));
       var ph=r.photo?'<div class="pg-ph"><img src="'+r.photo+'"></div>':'<div class="pg-ph pg-ph-empty">🏠</div>';
+      /* v7.22 : rendu spécifique des fiches archivées */
+      if(r.arch){
+        var _mm=PG_MOTIFS[r.arch.m]||PG_MOTIFS.autre;
+        var _vd=[r.vendeur?('👤 '+esc(r.vendeur)):'', r.tel?('📞 '+esc(r.tel)):''].filter(Boolean).join(' · ');
+        var _tt=r.adresse? esc(r.adresse) : esc(r.titre||'(sans adresse)');
+        return '<div class="pg-fiche pg-arch" style="border-left:4px solid #c9c2b6;" onclick="pigeEdit(\''+r.id+'\')">'+ph
+          +'<div class="pg-main"><div class="pg-top"><span class="pg-motif '+r.arch.m+'">'+_mm[0]+' '+_mm[1]+'</span><span class="pg-date">archivée le '+dstr(r.arch.d)+'</span>'+(r.arch.note?'<span class="pg-date">— '+esc(r.arch.note)+'</span>':'')+'</div>'
+          +'<div class="pg-titre">📍 '+_tt+(r.ville?' <span class="pg-titre-ville">· '+esc(r.ville)+'</span>':'')+'</div>'
+          +(m2line(r)?'<div class="pg-carac">'+m2line(r)+'</div>':'')
+          +(_vd?'<div class="pg-vend">'+_vd+'</div>':'')
+          +'<div class="pg-carac" style="color:var(--gris-2);font-size:11px;">journal, téléphone et photos conservés</div></div>'
+          +'<div class="pg-obs"></div><div class="pg-side"><div class="pg-prix" style="color:var(--gris);">'+fmtP(r.prix)+'</div>'
+          +'<div class="pg-actions"><button class="pg-mini" onclick="event.stopPropagation();pigeEdit(\''+r.id+'\')">👁 Consulter</button>'
+          +'<button class="pg-mini pg-mini-react" onclick="pigeReactivate(\''+r.id+'\',event)">↩ Réactiver</button></div></div></div>';
+      }
       var ub=r.user?'<span class="pg-ub" style="background:'+(UCOL[r.user]||'#777')+'22;color:'+(UCOL[r.user]||'#777')+';border:1px solid '+(UCOL[r.user]||'#777')+'55;" title="'+esc(roleName(r.user))+'">'+esc((function(){var R=window.ROLES&&ROLES[r.user];if(!R)return r.user;var p=(R.name||'').split(' ');return p[0]+(p[1]?' '+p[1].charAt(0)+'.':'');})())+'</span>':'<span class="pg-ub pg-ub-none">non attribuée</span>';
       var vend=[r.vendeur?('👤 '+esc(r.vendeur)):'', r.tel?('📞 '+esc(r.tel)):''].filter(Boolean).join(' · ');
       var nc=(r.notes||[]).length;
@@ -11807,7 +11939,7 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
         +'</div>'+(nc?pgObsPreview(r,nc):'<div class="pg-obs"></div>')+'<div class="pg-side"><div class="pg-prix">'+fmtP(r.prix)+'</div>'
         +(pm2v?'<div class="pg-pm2">'+pm2v+'</div>':'')
         +ub
-        +'<div class="pg-actions">'+srcLinkBtns(r)+((function(){var fl=pigeFipacLink(r);return fl?'<button class="pg-mini pg-mini-fipac" onclick="event.stopPropagation();window.open(\''+esc(fl)+'\',\'_blank\')">Fipac</button>':'';})())+'<button class="pg-mini" onclick="event.stopPropagation();pigeEdit(\''+r.id+'\')">✎ Modifier</button></div></div></div>';
+        +'<div class="pg-actions">'+srcLinkBtns(r)+((function(){var fl=pigeFipacLink(r);return fl?'<button class="pg-mini pg-mini-fipac" onclick="event.stopPropagation();window.open(\''+esc(fl)+'\',\'_blank\')">Fipac</button>':'';})())+'<button class="pg-mini" onclick="event.stopPropagation();pigeEdit(\''+r.id+'\')">✎ Modifier</button><button class="pg-mini pg-mini-arch" title="Sortir du stock actif sans rien perdre" onclick="pigeArchAsk(\''+r.id+'\',event)">⤵ Archiver</button></div></div></div>';
     }).join('');
     renderPager(_totalShown);
   };
@@ -11827,6 +11959,7 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
     var sv=document.getElementById('pg-suivi'), dt=document.getElementById('pg-suivi-date');
     if(!sv||!dt) return;
     if(sv.value){ dt.value=today(); } else { dt.value=''; }
+    try{ window.pigeSuiviAutoRefresh(); }catch(e){}   /* v7.22 : bandeau automatique (archivage / rappel) */
   };
 
   var TXT=['pg-adresse','pg-prix','pg-surface','pg-pieces','pg-chambres','pg-etage','pg-annee','pg-descriptif','pg-vendeur','pg-tel','pg-com-input','pg-prixm2','pg-suivi-date'];
@@ -11836,6 +11969,7 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
     CBX.forEach(function(id){ var e=document.getElementById(id); if(e) e.value='0'; });
     document.getElementById('pg-dpe').value='';
     document.getElementById('pg-suivi').value='';
+    try{ var _sa=document.getElementById('pg-suivi-auto'); if(_sa) _sa.innerHTML=''; }catch(e){}
     document.getElementById('pg-user').value='';
     document.getElementById('pg-edit-id').value='';
     document.getElementById('pg-new-url').value=url||'';
@@ -11902,6 +12036,7 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
     if(window.achLockSet) achLockSet(id);
     window._pgSnap=r.updated||r.created||'';
     pigeStatutPickRender(r.statut||'encours'); pigeDossSelectFill(r.dossier||'');
+    try{ window.pigeSuiviAutoRefresh(); }catch(e){}   /* v7.22 : bandeau archivage/rappel selon le suivi */
     openModal('modal-pige');
   };
   function pgComRenderNew(){
@@ -12025,6 +12160,7 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
       window._pgNewComs=[]; a.push(obj);
       if(window.pgReadMark) pgReadMark(obj.id);   /* v6.32 : pas de « Nouveau » pour son créateur */ }
     save(a);
+    try{ pigeRelanceRappel(id||obj.id, suivi); }catch(e){}   /* v7.22 : rappel auto sur les suivis « à relancer » */
     if(id && window.achLockClear) achLockClear(id);
     closeModal('modal-pige'); pigeRender();
     if(window.toast) toast(id?'Fiche mise à jour ✓':'Fiche de pige créée ✓');
@@ -12642,6 +12778,35 @@ select.pg-chip{padding:6px 10px;}
 .acces-tab.on{color:var(--noir,#1a1a18);font-weight:600;border-bottom-color:var(--terra,#b4552d);}
 .pg-folders{display:flex;flex-wrap:wrap;gap:5px;margin:2px 0 0;align-items:flex-end;border-bottom:2px solid var(--border,#e5ded3);padding:0 4px;}
 .pg-fold{display:inline-flex;align-items:center;gap:6px;background:var(--beige,#f3ede2);border:1px solid var(--border,#e5ded3);border-bottom:3px solid var(--border,#e5ded3);color:var(--gris,#6b6b63);border-radius:9px 9px 0 0;padding:7px 14px 6px;font-family:'Jost',sans-serif;font-size:12.5px;cursor:pointer;transition:all .15s;margin-bottom:-2px;}
+/* v7.22 : tiroir Archivées + fiches archivées + modale motif + bandeaux automatiques dans la fiche */
+.pg-fold-archdrawer{margin-left:auto;border-style:dashed;color:var(--gris-2);}
+.pg-fold-archdrawer.on{background:#6d675f;border-color:#6d675f;border-style:solid;color:#fff;}
+.pg-fold-archdrawer.on b{color:#fff;}
+.pg-fiche.pg-arch{background:#f4f1ec;opacity:.93;}
+.pg-motif{font-size:10px;font-weight:600;padding:1px 9px;border-radius:12px;white-space:nowrap;}
+.pg-motif.mandat{background:#e2efe7;color:var(--vert);}
+.pg-motif.refus{background:#f6e3df;color:var(--rouge);}
+.pg-motif.confrere{background:#e3e9ee;color:#5b8aa6;}
+.pg-motif.disparue,.pg-motif.autre{background:#eceae5;color:var(--gris);}
+.pg-mini-arch:hover{border-color:#6d675f;color:#6d675f;background:#f0ede8;}
+.pg-mini-react{border-color:rgba(46,110,80,.45);color:var(--vert);}
+.pga-ov{display:none;position:fixed;inset:0;background:rgba(26,26,24,.42);z-index:1200;align-items:center;justify-content:center;}
+.pga-ov.open{display:flex;}
+.pga-card{background:#fff;border-radius:14px;width:400px;max-width:92vw;padding:20px 22px;box-shadow:0 18px 60px rgba(0,0,0,.3);}
+.pga-h{font-family:'Cormorant Garamond',serif;font-size:19px;font-weight:600;margin-bottom:4px;color:var(--noir);}
+.pga-sub{font-size:12px;color:var(--gris);margin-bottom:13px;line-height:1.5;}
+.pga-opt{display:flex;align-items:center;gap:10px;border:1px solid var(--border);border-radius:9px;padding:9px 13px;font-size:13px;cursor:pointer;margin-bottom:7px;color:var(--noir);}
+.pga-opt:hover{border-color:var(--terra);background:#fdf9f5;}
+.pga-opt small{color:var(--gris-2);font-size:11px;margin-left:auto;}
+.pga-cancel{margin-top:5px;width:100%;border:none;background:#f0ece4;color:var(--gris);border-radius:8px;padding:8px;font-family:'Jost',sans-serif;font-size:12.5px;cursor:pointer;}
+.pga-cancel:hover{background:var(--beige-2);}
+.pg-auto{display:flex;align-items:center;gap:8px;border-radius:9px;padding:9px 13px;font-size:12.5px;line-height:1.5;margin:2px 0 8px;flex-wrap:wrap;}
+.pg-auto.ga{background:#f0ede8;border:1px solid #d5cfc4;color:#5a544b;}
+.pg-auto.ra{background:var(--terra-p);border:1px solid #e5c4b8;color:#8a4a38;}
+.pg-auto-b{margin-left:auto;flex:none;border:none;border-radius:7px;padding:6px 13px;font-family:'Jost',sans-serif;font-size:12px;font-weight:600;cursor:pointer;color:#fff;background:#6d675f;}
+.pg-auto.ra .pg-auto-b{background:var(--terra);}
+.pg-auto input[type=date]{font-family:'Jost',sans-serif;font-size:12px;padding:4px 8px;border:1px solid #e5c4b8;border-radius:7px;background:#fff;}
+.pg-auto-hint{font-size:11px;color:#b47360;}
 .pg-fold:hover{background:#fff;color:var(--noir,#1a1a18);}
 .pg-fold.on{background:#fff;color:var(--noir,#1a1a18);font-weight:600;box-shadow:0 -3px 8px rgba(0,0,0,.05);}
 .pg-fold b{font-weight:600;opacity:.8;}
@@ -14407,7 +14572,7 @@ window.pgReadBadge=function(){
   var b=document.getElementById('badge-pige'); if(!b) return;
   var reg=regGet(); if(!reg){ b.style.display='none'; return; }
   var n=0;
-  pigeAll().forEach(function(r){ if(r&&r.id&&!reg[r.id]) n++; });
+  pigeAll().forEach(function(r){ if(r&&r.id&&!r.arch&&!reg[r.id]) n++; });   /* v7.22 : les archivées ne comptent pas */
   b.textContent=n>0?n:''; b.style.display=n>0?'inline-flex':'none';
 };
 
