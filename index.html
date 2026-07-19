@@ -1572,7 +1572,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     </div>
   </div>
   </div>
-  <div class="logo-ver app-ver">Achille App — v7.23</div>
+  <div class="logo-ver app-ver">Achille App — v7.24</div>
 </aside>
 <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Réduire la barre latérale">‹</button>
 
@@ -1674,6 +1674,31 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
       <div class="pga-opt" onclick="pigeArchDo('disparue')"><span>👻</span> Annonce disparue <small>retirée des sites</small></div>
       <div class="pga-opt" onclick="pigeArchDo('autre')"><span>📦</span> Autre <small>avec note libre</small></div>
       <button class="pga-cancel" onclick="pigeArchClose()">Annuler</button>
+    </div>
+  </div>
+
+  <!-- v7.24 : création / modification d'un dossier (avec règle automatique facultative) -->
+  <div class="pga-ov" id="pgd-ov" onclick="if(event.target===this)pigeDossClose()">
+    <div class="pga-card">
+      <div class="pga-h" id="pgd-titre">Nouveau dossier</div>
+      <div class="pga-sub">Un dossier peut être rempli à la main (pastille à cocher dans chaque fiche) ou <b>automatiquement</b> grâce à une règle sur le prix au m².</div>
+      <label class="pgd-lbl">Nom du dossier</label>
+      <input class="pgd-inp" id="pgd-nom" placeholder="Ex. Biens d'exception">
+      <label class="pgd-lbl">Règle automatique (facultatif)</label>
+      <select class="pgd-inp" id="pgd-op" onchange="pgdOpToggle()">
+        <option value="">Aucune — je range les fiches à la main</option>
+        <option value="gte">⚡ Prix au m² SUPÉRIEUR ou égal à…</option>
+        <option value="lte">⚡ Prix au m² INFÉRIEUR ou égal à…</option>
+      </select>
+      <div id="pgd-val-row" style="display:none;">
+        <label class="pgd-lbl">Seuil (€ / m²)</label>
+        <input class="pgd-inp" id="pgd-val" inputmode="numeric" placeholder="Ex. 15 000">
+        <div style="font-size:11px;color:var(--gris-2);line-height:1.5;margin-top:2px;">Toute fiche dont le prix au m² respecte la règle entre dans le dossier <b>toute seule</b> — et en sort si son prix change. Plus rien à cocher.</div>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:13px;">
+        <button class="pga-cancel" style="margin-top:0;" onclick="pigeDossClose()">Annuler</button>
+        <button class="pgd-save" onclick="pigeDossSave()">Enregistrer</button>
+      </div>
     </div>
   </div>
 
@@ -10195,7 +10220,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     startRealtime();
     var ov=document.getElementById('ach-login-overlay'); if(ov) ov.classList.add('ach-hidden');
     var ub=document.getElementById('ach-userbar'); if(ub) ub.style.display='none';
-    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v7.23';
+    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v7.24';
     flag('Synchronis\u00e9');
     // fin de l'init : on autorise la journalisation des actions
     setTimeout(function(){ installInterceptor._init=false; }, 1500);
@@ -11332,12 +11357,12 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
   /* ============ CLASSEMENT PIGE : statuts-couleurs + dossiers + pagination (v5.12) ============ */
   var DOSS_K='ach_pige_dossiers_v1';           /* dossiers personnalisés (synchronisé) */
   var STATUT_MIG='ach_pige_statutmig_v1';      /* marqueur migration one-shot (local) */
-  /* v7.23 : label = singulier (une fiche) ; pl = pluriel (onglets de la barre de dossiers) */
+  /* v7.23 : label = singulier (une fiche) ; pl = pluriel (onglets de la barre de dossiers)
+     v7.24 : statut « Terminé » SUPPRIMÉ (doublon des Archives) — les anciennes fiches Terminé sont archivées automatiquement */
   var PG_STATUTS=[
     {k:'chaud',   label:'Chaud',    pl:'Chauds',    col:'#a03222', ico:'🔥'},
     {k:'encours', label:'En cours', pl:'En cours',  col:'#2e6e50', ico:'⏳'},
-    {k:'offline', label:'En veille', pl:'En veille', col:'#4a4a48', ico:'🌙'},   /* v7.22 : renommé (ex-Offline) — dossier en pause, à surveiller */
-    {k:'termine', label:'Terminé',  pl:'Terminés',  col:'#1a1a18', ico:'<span style="color:#ff5f4e;font-weight:700;">✕</span>'}
+    {k:'offline', label:'En veille', pl:'En veille', col:'#4a4a48', ico:'🌙'}   /* v7.22 : renommé (ex-Offline) — dossier en pause, à surveiller */
   ];
   function pgStatutDef(k){ for(var i=0;i<PG_STATUTS.length;i++){ if(PG_STATUTS[i].k===k) return PG_STATUTS[i]; } return PG_STATUTS[1]; }
   function pgStatutOf(r){ return (r&&r.statut)||'encours'; }
@@ -11358,6 +11383,30 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
       if(ch) save(a);
       localStorage.setItem(STATUT_MIG,'1');
     }catch(e){}
+  }
+  /* v7.24 : le statut « Terminé » disparaît — les fiches concernées partent aux ARCHIVES (motif Autre), rien n'est perdu.
+     Sans marqueur one-shot : la condition (statut terminé + pas encore archivée) devient simplement fausse après passage. */
+  function pigeTermineMigrate(){
+    try{
+      var a=load(), ch=false;
+      a.forEach(function(r){
+        if(r.statut==='termine' && !r.arch){
+          r.arch={m:'autre', d:new Date().toISOString(), by:(window.ACH_USER&&ACH_USER.key)||'admin', note:'Ancien statut Terminé'};
+          r.statut='encours'; r.updated=new Date().toISOString(); ch=true;
+        } else if(r.statut==='termine'){ r.statut='encours'; r.updated=new Date().toISOString(); ch=true; }
+      });
+      if(ch) save(a);
+    }catch(e){}
+  }
+  /* v7.24 : appartenance à un dossier — manuelle (coche) OU automatique (règle prix/m²) */
+  function dossMatch(r, d){
+    if(d && d.rule && d.rule.f==='pm2'){
+      var s=num(r.surface), p=+r.prix||0;
+      if(!(p>0&&s>0)) return false;
+      var pm2=p/s;
+      return d.rule.op==='lte' ? (pm2<=d.rule.val) : (pm2>=d.rule.val);
+    }
+    return r.dossier===(d&&d.id);
   }
 
   /* Changer le statut (=dossier) d'une fiche */
@@ -11390,18 +11439,46 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
     if(m && !m.contains(e.target)){ m.remove(); document.removeEventListener('click', pgStatutOutside, true); }
   }
 
-  /* Dossiers personnalisés — création / renommage / suppression (Gérant/Admin) */
+  /* Dossiers personnalisés — création / modification via petite fenêtre (Gérant/Admin)
+     v7.24 : un dossier peut être AUTOMATIQUE (règle prix/m²) — les fiches y entrent toutes seules */
+  var _pgdEdit=null;
+  function pgdOpen(o){
+    _pgdEdit=o&&o.id?o.id:null;
+    document.getElementById('pgd-titre').textContent=_pgdEdit?'Modifier le dossier':'Nouveau dossier';
+    document.getElementById('pgd-nom').value=(o&&o.nom)||'';
+    var r=(o&&o.rule)||null;
+    document.getElementById('pgd-op').value=r?(r.op==='lte'?'lte':'gte'):'';
+    document.getElementById('pgd-val').value=r?r.val:'';
+    pgdOpToggle();
+    document.getElementById('pgd-ov').classList.add('open');
+    setTimeout(function(){ var e=document.getElementById('pgd-nom'); if(e) e.focus(); },30);
+  }
+  window.pgdOpToggle=function(){
+    var op=document.getElementById('pgd-op').value;
+    document.getElementById('pgd-val-row').style.display=op?'':'none';
+  };
+  window.pigeDossClose=function(){ var o=document.getElementById('pgd-ov'); if(o) o.classList.remove('open'); _pgdEdit=null; };
+  window.pigeDossSave=function(){
+    var nom=(document.getElementById('pgd-nom').value||'').trim();
+    if(!nom){ if(window.toast) toast('Donnez un nom au dossier'); return; }
+    var op=document.getElementById('pgd-op').value;
+    var val=parseFloat((document.getElementById('pgd-val').value||'').replace(/[^\d.,]/g,'').replace(',','.'))||0;
+    var rule=(op && val>0)? {f:'pm2', op:op, val:val} : null;
+    var d=dossLoad();
+    if(_pgdEdit){ var o=d.filter(function(x){return x.id===_pgdEdit;})[0]; if(o){ o.nom=nom; if(rule) o.rule=rule; else delete o.rule; } }
+    else d.push({id:'dg-'+Date.now()+'-'+Math.floor(Math.random()*1000), nom:nom, rule:rule||undefined});
+    dossSave(d); pigeDossClose(); pigeRender();
+    if(window.toast) toast(rule?('⚡ Dossier automatique enregistré — prix/m² '+(rule.op==='lte'?'≤':'≥')+' '+fmtN(rule.val)+' €'):'Dossier enregistré ✓');
+  };
   window.pigeDossNew=function(){
     if(!pgIsManager()){ if(window.toast) toast('Réservé au gérant / admin'); return; }
-    var nom=prompt('Nom du nouveau dossier :'); if(!nom) return; nom=(''+nom).trim(); if(!nom) return;
-    var d=dossLoad(); d.push({id:'dg-'+Date.now()+'-'+Math.floor(Math.random()*1000), nom:nom}); dossSave(d);
-    pigeRender();
+    pgdOpen(null);
   };
   window.pigeDossRename=function(did, ev){
     if(ev) ev.stopPropagation();
     if(!pgIsManager()){ if(window.toast) toast('Réservé au gérant / admin'); return; }
-    var d=dossLoad(); var o=d.filter(function(x){return x.id===did;})[0]; if(!o) return;
-    var nom=prompt('Renommer le dossier :', o.nom); if(!nom) return; o.nom=(''+nom).trim(); dossSave(d); pigeRender();
+    var o=dossLoad().filter(function(x){return x.id===did;})[0]; if(!o) return;
+    pgdOpen(o);
   };
   window.pigeDossDelete=function(did, ev){
     if(ev) ev.stopPropagation();
@@ -11510,7 +11587,7 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
     var bar=document.getElementById('pg-folders'); if(!bar) return;
     var act=all.filter(function(r){ return !r.arch; });
     var nArch=all.length-act.length;
-    var cnt={tous:act.length, chaud:0, encours:0, offline:0, termine:0};
+    var cnt={tous:act.length, chaud:0, encours:0, offline:0};
     act.forEach(function(r){ var s=pgStatutOf(r); cnt[s]=(cnt[s]||0)+1; });
     var doss=dossLoad();
     function dot(col){ return '<span class="pg-fold-dot" style="background:'+col+';"></span>'; }
@@ -11522,11 +11599,11 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
         +dot(s.col)+' '+(s.pl||s.label)+' <b>'+(cnt[s.k]||0)+'</b></button>';
     });
     doss.forEach(function(d){
-      var c=act.filter(function(r){return r.dossier===d.id;}).length;
+      var c=act.filter(function(r){return dossMatch(r,d);}).length;
       var on=(pgDossier==='d:'+d.id);
-      html+='<button class="pg-fold pg-fold-cust'+(on?' on':'')+'" onclick="pigeDossPick(\'d:'+d.id+'\')">'
-        +dot('#b8b2a6')+' '+esc(d.nom)+' <b>'+c+'</b>'
-        +(pgIsManager()?'<span class="pg-fold-x" title="Renommer" onclick="pigeDossRename(\''+d.id+'\',event)">✎</span><span class="pg-fold-x" title="Supprimer" onclick="pigeDossDelete(\''+d.id+'\',event)">×</span>':'')
+      html+='<button class="pg-fold pg-fold-cust'+(on?' on':'')+'" onclick="pigeDossPick(\'d:'+d.id+'\')" '+(d.rule?'title="Dossier automatique : prix/m² '+(d.rule.op==='lte'?'≤':'≥')+' '+fmtN(d.rule.val)+' €"':'')+'>'
+        +(d.rule?'⚡':dot('#b8b2a6'))+' '+esc(d.nom)+' <b>'+c+'</b>'
+        +(pgIsManager()?'<span class="pg-fold-x" title="Modifier" onclick="pigeDossRename(\''+d.id+'\',event)">✎</span><span class="pg-fold-x" title="Supprimer" onclick="pigeDossDelete(\''+d.id+'\',event)">×</span>':'')
         +'</button>';
     });
     if(pgIsManager()) html+='<button class="pg-fold pg-fold-add" onclick="pigeDossNew()">＋ Dossier</button>';
@@ -11568,17 +11645,29 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
     }).join('');
     var hid=document.getElementById('pg-statut'); if(hid) hid.value=cur;
   }
-  /* v7.23 : dossiers personnalisés en pastilles visibles (plus de menu déroulant) */
-  window.pigeDossSet=function(id){ pigeDossSelectFill(id); };
+  /* v7.23 : dossiers personnalisés en pastilles visibles — v7.24 : « Dossier supp. », coche/décoche,
+     et les dossiers AUTOMATIQUES (⚡ règle prix/m²) s'affichent à titre d'information (non cliquables) */
+  window.pigeDossSet=function(id){
+    var hid=document.getElementById('pg-dossier');
+    var cur=hid?hid.value:'';
+    pigeDossSelectFill(cur===id?'':id);   /* re-cliquer la pastille cochée = décocher */
+  };
   function pigeDossSelectFill(cur){
     cur=cur||'';
     var hid=document.getElementById('pg-dossier'); if(hid) hid.value=cur;
     var box=document.getElementById('pg-doss-pick'); if(!box) return;
     var d=dossLoad();
     if(!d.length){ box.innerHTML=''; return; }   /* pas de dossiers créés = rien */
-    box.innerHTML='<span class="pg-doss-lbl">Dossier</span>'
-      +'<span class="pg-dchip'+(!cur?' on':'')+'" onclick="pigeDossSet(\'\')" title="Aucun dossier">—</span>'
-      +d.map(function(o){ return '<span class="pg-dchip'+(o.id===cur?' on':'')+'" onclick="pigeDossSet(\''+o.id+'\')">📁 '+esc(o.nom)+'</span>'; }).join('');
+    var fid=(document.getElementById('pg-edit-id')||{}).value||'';
+    var r=fid? load().filter(function(x){return x.id===fid;})[0] : null;
+    box.innerHTML='<span class="pg-doss-lbl">Dossier supp.</span>'
+      +d.map(function(o){
+        if(o.rule){
+          var inn=r? dossMatch(r,o) : false;
+          return '<span class="pg-dchip auto'+(inn?' on':'')+'" title="Dossier automatique (prix/m² '+(o.rule.op==='lte'?'≤':'≥')+' '+fmtN(o.rule.val)+' €) — la fiche y entre ou en sort toute seule">⚡ '+esc(o.nom)+(inn?' ✓':'')+'</span>';
+        }
+        return '<span class="pg-dchip'+(o.id===cur?' on':'')+'" onclick="pigeDossSet(\''+o.id+'\')" title="Cliquez pour ranger la fiche dans ce dossier (re-cliquez pour l\'en sortir)">📁 '+esc(o.nom)+'</span>';
+      }).join('');
   }
 
   function esc(s){ return (''+(s||'')).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
@@ -11859,6 +11948,7 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
   window.pigeRender=function(){
     var box=document.getElementById('pige-list'); if(!box) return;
     pigeStatutMigrate();
+    pigeTermineMigrate();   /* v7.24 : anciennes fiches Terminé → archives */
     renderFilterChips();
     try{
       var nf=(pgFilt.sites.length?1:0)+(pgFilt.users.length?1:0);
@@ -11884,11 +11974,16 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
     renderFolderBar(a);
     /* v7.22 : « Tous » et les statuts ne montrent que les fiches ACTIVES ; le tiroir « arch » montre les archivées */
     var inArch=(pgDossier==='arch');
+    if(pgDossier==='termine') pgDossier='tous';   /* v7.24 : le statut Terminé n'existe plus */
     if(inArch){ a=a.filter(function(r){ return r.arch; }); }
     else {
       a=a.filter(function(r){ return !r.arch; });
       if(pgDossier!=='tous'){
-        if(pgDossier.indexOf('d:')===0){ var _did=pgDossier.slice(2); a=a.filter(function(r){ return r.dossier===_did; }); }
+        if(pgDossier.indexOf('d:')===0){
+          var _did=pgDossier.slice(2);
+          var _dd=dossLoad().filter(function(x){return x.id===_did;})[0];
+          a=_dd? a.filter(function(r){ return dossMatch(r,_dd); }) : [];
+        }
         else { a=a.filter(function(r){ return pgStatutOf(r)===pgDossier; }); }
       }
     }
@@ -12834,6 +12929,16 @@ select.pg-chip{padding:6px 10px;}
 .pg-dchip{display:inline-flex;align-items:center;gap:5px;border:1.5px solid var(--border);background:#fff;color:var(--gris);border-radius:20px;padding:4px 13px;font-size:12px;font-family:'Jost',sans-serif;cursor:pointer;transition:all .12s;user-select:none;white-space:nowrap;}
 .pg-dchip:hover{border-color:var(--gris-2);color:var(--noir);}
 .pg-dchip.on{background:var(--kaki);border-color:var(--kaki);color:#fff;font-weight:600;}
+/* v7.24 : dossiers automatiques (⚡) — informatifs dans la fiche, non cliquables */
+.pg-dchip.auto{cursor:default;border-style:dashed;}
+.pg-dchip.auto:hover{border-color:var(--border);color:var(--gris);}
+.pg-dchip.auto.on{background:#b0883b;border-color:#b0883b;border-style:solid;color:#fff;}
+.pg-dchip.auto.on:hover{color:#fff;}
+/* v7.24 : fenêtre dossier */
+.pgd-lbl{display:block;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--gris-2);font-weight:600;margin:10px 0 4px;}
+.pgd-inp{width:100%;box-sizing:border-box;font-family:'Jost',sans-serif;font-size:13px;padding:8px 11px;border:1px solid var(--beige-3);border-radius:8px;background:#fff;color:var(--noir);}
+.pgd-save{flex:1;border:none;background:var(--terra);color:#fff;border-radius:8px;padding:8px;font-family:'Jost',sans-serif;font-size:12.5px;font-weight:600;cursor:pointer;}
+.pgd-save:hover{background:var(--terra-l);}
 .pg-statut-lbl{font-family:'Jost',sans-serif;font-size:12.5px;color:var(--gris,#6b6b63);letter-spacing:.03em;margin-left:2px;white-space:nowrap;}
 .pg-fold-dot{display:inline-block;width:10px;height:10px;border-radius:50%;flex:none;box-shadow:0 0 0 1px rgba(0,0,0,.08);}
 
