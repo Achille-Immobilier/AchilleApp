@@ -1572,7 +1572,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     </div>
   </div>
   </div>
-  <div class="logo-ver app-ver">Achille App — v7.24</div>
+  <div class="logo-ver app-ver">Achille App — v7.25</div>
 </aside>
 <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Réduire la barre latérale">‹</button>
 
@@ -1687,14 +1687,24 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
       <label class="pgd-lbl">Règle automatique (facultatif)</label>
       <select class="pgd-inp" id="pgd-op" onchange="pgdOpToggle()">
         <option value="">Aucune — je range les fiches à la main</option>
-        <option value="gte">⚡ Prix au m² SUPÉRIEUR ou égal à…</option>
-        <option value="lte">⚡ Prix au m² INFÉRIEUR ou égal à…</option>
+        <option value="pm2:gte">⚡ Prix au m² supérieur ou égal à…</option>
+        <option value="pm2:lte">⚡ Prix au m² inférieur ou égal à…</option>
+        <option value="prix:gte">⚡ Prix total supérieur ou égal à…</option>
+        <option value="prix:lte">⚡ Prix total inférieur ou égal à…</option>
+        <option value="surface:gte">⚡ Surface supérieure ou égale à…</option>
+        <option value="surface:lte">⚡ Surface inférieure ou égale à…</option>
+        <option value="pieces">⚡ Nombre de pièces au moins égal à…</option>
+        <option value="ville">⚡ Ville / arrondissement contient…</option>
+        <option value="dpe_fg">⚡ DPE F ou G (passoire énergétique)</option>
+        <option value="age">⚡ En pige depuis plus de… jours</option>
+        <option value="nosuivi">⚡ Jamais contactée (aucun suivi)</option>
+        <option value="nouser">⚡ Non attribuée à un membre</option>
       </select>
       <div id="pgd-val-row" style="display:none;">
-        <label class="pgd-lbl">Seuil (€ / m²)</label>
-        <input class="pgd-inp" id="pgd-val" inputmode="numeric" placeholder="Ex. 15 000">
-        <div style="font-size:11px;color:var(--gris-2);line-height:1.5;margin-top:2px;">Toute fiche dont le prix au m² respecte la règle entre dans le dossier <b>toute seule</b> — et en sort si son prix change. Plus rien à cocher.</div>
+        <label class="pgd-lbl" id="pgd-val-lbl">Seuil</label>
+        <input class="pgd-inp" id="pgd-val" placeholder="">
       </div>
+      <div id="pgd-hint" style="display:none;font-size:11px;color:var(--gris-2);line-height:1.5;margin-top:6px;">Toute fiche qui respecte la règle entre dans le dossier <b>toute seule</b> — et en sort si elle ne la respecte plus. Plus rien à cocher.</div>
       <div style="display:flex;gap:8px;margin-top:13px;">
         <button class="pga-cancel" style="margin-top:0;" onclick="pigeDossClose()">Annuler</button>
         <button class="pgd-save" onclick="pigeDossSave()">Enregistrer</button>
@@ -10220,7 +10230,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     startRealtime();
     var ov=document.getElementById('ach-login-overlay'); if(ov) ov.classList.add('ach-hidden');
     var ub=document.getElementById('ach-userbar'); if(ub) ub.style.display='none';
-    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v7.24';
+    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v7.25';
     flag('Synchronis\u00e9');
     // fin de l'init : on autorise la journalisation des actions
     setTimeout(function(){ installInterceptor._init=false; }, 1500);
@@ -11398,15 +11408,37 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
       if(ch) save(a);
     }catch(e){}
   }
-  /* v7.24 : appartenance à un dossier — manuelle (coche) OU automatique (règle prix/m²) */
+  /* v7.24 : appartenance à un dossier — manuelle (coche) OU automatique (règle)
+     v7.25 : catalogue de règles étoffé — prix/m², prix, surface, pièces, ville, DPE, ancienneté, sans suivi, non attribuée */
   function dossMatch(r, d){
-    if(d && d.rule && d.rule.f==='pm2'){
-      var s=num(r.surface), p=+r.prix||0;
-      if(!(p>0&&s>0)) return false;
-      var pm2=p/s;
-      return d.rule.op==='lte' ? (pm2<=d.rule.val) : (pm2>=d.rule.val);
-    }
-    return r.dossier===(d&&d.id);
+    var ru=d&&d.rule;
+    if(!ru) return r.dossier===(d&&d.id);
+    var f=ru.f, op=ru.op, val=ru.val;
+    if(f==='pm2'){ var s=num(r.surface), p=+r.prix||0; if(!(p>0&&s>0)) return false; var v=p/s; return op==='lte'?(v<=val):(v>=val); }
+    if(f==='prix'){ var p2=+r.prix||0; if(!p2) return false; return op==='lte'?(p2<=val):(p2>=val); }
+    if(f==='surface'){ var s2=num(r.surface); if(!s2) return false; return op==='lte'?(s2<=val):(s2>=val); }
+    if(f==='pieces'){ var pc=parseInt(r.pieces,10)||0; if(!pc) return false; return pc>=val; }
+    if(f==='ville'){ var q=(''+(val||'')).toLowerCase().trim(); if(!q) return false; return (''+(r.ville||'')).toLowerCase().indexOf(q)>=0; }
+    if(f==='dpe_fg'){ var dp=(''+(r.dpe||'')).toUpperCase(); return dp==='F'||dp==='G'; }
+    if(f==='age'){ if(!r.created) return false; var days=Math.floor((Date.now()-new Date(r.created).getTime())/86400000); return days>=val; }
+    if(f==='nosuivi'){ return !r.suivi; }
+    if(f==='nouser'){ return !r.user; }
+    return false;
+  }
+  /* description lisible d'une règle (info-bulles, toasts) */
+  function ruleDesc(ru){
+    if(!ru) return '';
+    var sym=(ru.op==='lte')?'≤':'≥';
+    if(ru.f==='pm2') return 'prix/m² '+sym+' '+fmtN(ru.val)+' €';
+    if(ru.f==='prix') return 'prix '+sym+' '+fmtN(ru.val)+' €';
+    if(ru.f==='surface') return 'surface '+sym+' '+ru.val+' m²';
+    if(ru.f==='pieces') return ru.val+' pièces ou plus';
+    if(ru.f==='ville') return 'ville contient « '+ru.val+' »';
+    if(ru.f==='dpe_fg') return 'DPE F ou G (passoire énergétique)';
+    if(ru.f==='age') return 'en pige depuis '+ru.val+' jours ou plus';
+    if(ru.f==='nosuivi') return 'jamais contactée (aucun suivi)';
+    if(ru.f==='nouser') return 'non attribuée à un membre';
+    return '';
   }
 
   /* Changer le statut (=dossier) d'une fiche */
@@ -11442,33 +11474,63 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
   /* Dossiers personnalisés — création / modification via petite fenêtre (Gérant/Admin)
      v7.24 : un dossier peut être AUTOMATIQUE (règle prix/m²) — les fiches y entrent toutes seules */
   var _pgdEdit=null;
+  /* v7.25 : les règles qui demandent un seuil / un texte, avec le libellé et l'exemple du champ */
+  var PGD_VAL={'pm2:gte':['Seuil (€ / m²)','Ex. 15 000'],'pm2:lte':['Seuil (€ / m²)','Ex. 12 000'],
+    'prix:gte':['Seuil (€)','Ex. 2 000 000'],'prix:lte':['Seuil (€)','Ex. 800 000'],
+    'surface:gte':['Seuil (m²)','Ex. 100'],'surface:lte':['Seuil (m²)','Ex. 40'],
+    'pieces':['Nombre de pièces minimum','Ex. 4'],'ville':['Texte à chercher dans la ville','Ex. Neuilly'],
+    'age':['Nombre de jours','Ex. 30']};
+  function pgdSelOf(r){
+    if(!r) return '';
+    if(r.f==='pm2'||r.f==='prix'||r.f==='surface') return r.f+':'+(r.op==='lte'?'lte':'gte');
+    return r.f;   /* pieces / ville / dpe_fg / age / nosuivi / nouser */
+  }
   function pgdOpen(o){
     _pgdEdit=o&&o.id?o.id:null;
     document.getElementById('pgd-titre').textContent=_pgdEdit?'Modifier le dossier':'Nouveau dossier';
     document.getElementById('pgd-nom').value=(o&&o.nom)||'';
     var r=(o&&o.rule)||null;
-    document.getElementById('pgd-op').value=r?(r.op==='lte'?'lte':'gte'):'';
-    document.getElementById('pgd-val').value=r?r.val:'';
+    document.getElementById('pgd-op').value=pgdSelOf(r);
+    document.getElementById('pgd-val').value=(r&&r.val!=null)?r.val:'';
     pgdOpToggle();
     document.getElementById('pgd-ov').classList.add('open');
     setTimeout(function(){ var e=document.getElementById('pgd-nom'); if(e) e.focus(); },30);
   }
   window.pgdOpToggle=function(){
-    var op=document.getElementById('pgd-op').value;
-    document.getElementById('pgd-val-row').style.display=op?'':'none';
+    var sel=document.getElementById('pgd-op').value;
+    var needVal=!!PGD_VAL[sel];
+    document.getElementById('pgd-val-row').style.display=needVal?'':'none';
+    document.getElementById('pgd-hint').style.display=sel?'':'none';
+    if(needVal){
+      document.getElementById('pgd-val-lbl').textContent=PGD_VAL[sel][0];
+      document.getElementById('pgd-val').placeholder=PGD_VAL[sel][1];
+    }
   };
   window.pigeDossClose=function(){ var o=document.getElementById('pgd-ov'); if(o) o.classList.remove('open'); _pgdEdit=null; };
   window.pigeDossSave=function(){
     var nom=(document.getElementById('pgd-nom').value||'').trim();
     if(!nom){ if(window.toast) toast('Donnez un nom au dossier'); return; }
-    var op=document.getElementById('pgd-op').value;
-    var val=parseFloat((document.getElementById('pgd-val').value||'').replace(/[^\d.,]/g,'').replace(',','.'))||0;
-    var rule=(op && val>0)? {f:'pm2', op:op, val:val} : null;
+    var sel=document.getElementById('pgd-op').value;
+    var rule=null;
+    if(sel){
+      var raw=(document.getElementById('pgd-val').value||'').trim();
+      if(sel==='ville'){
+        if(!raw){ if(window.toast) toast('Indiquez le texte à chercher dans la ville'); return; }
+        rule={f:'ville', val:raw};
+      } else if(sel==='dpe_fg'||sel==='nosuivi'||sel==='nouser'){
+        rule={f:sel};
+      } else {
+        var vnum=parseFloat(raw.replace(/[^\d.,]/g,'').replace(',','.'))||0;
+        if(!(vnum>0)){ if(window.toast) toast('Indiquez un seuil valide'); return; }
+        var parts=sel.split(':');
+        rule=(parts.length===2)? {f:parts[0], op:parts[1], val:vnum} : {f:sel, val:vnum};
+      }
+    }
     var d=dossLoad();
     if(_pgdEdit){ var o=d.filter(function(x){return x.id===_pgdEdit;})[0]; if(o){ o.nom=nom; if(rule) o.rule=rule; else delete o.rule; } }
     else d.push({id:'dg-'+Date.now()+'-'+Math.floor(Math.random()*1000), nom:nom, rule:rule||undefined});
     dossSave(d); pigeDossClose(); pigeRender();
-    if(window.toast) toast(rule?('⚡ Dossier automatique enregistré — prix/m² '+(rule.op==='lte'?'≤':'≥')+' '+fmtN(rule.val)+' €'):'Dossier enregistré ✓');
+    if(window.toast) toast(rule?('⚡ Dossier automatique — '+ruleDesc(rule)):'Dossier enregistré ✓');
   };
   window.pigeDossNew=function(){
     if(!pgIsManager()){ if(window.toast) toast('Réservé au gérant / admin'); return; }
@@ -11601,7 +11663,7 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
     doss.forEach(function(d){
       var c=act.filter(function(r){return dossMatch(r,d);}).length;
       var on=(pgDossier==='d:'+d.id);
-      html+='<button class="pg-fold pg-fold-cust'+(on?' on':'')+'" onclick="pigeDossPick(\'d:'+d.id+'\')" '+(d.rule?'title="Dossier automatique : prix/m² '+(d.rule.op==='lte'?'≤':'≥')+' '+fmtN(d.rule.val)+' €"':'')+'>'
+      html+='<button class="pg-fold pg-fold-cust'+(on?' on':'')+'" onclick="pigeDossPick(\'d:'+d.id+'\')" '+(d.rule?'title="Dossier automatique : '+esc(ruleDesc(d.rule))+'"':'')+'>'
         +(d.rule?'⚡':dot('#b8b2a6'))+' '+esc(d.nom)+' <b>'+c+'</b>'
         +(pgIsManager()?'<span class="pg-fold-x" title="Modifier" onclick="pigeDossRename(\''+d.id+'\',event)">✎</span><span class="pg-fold-x" title="Supprimer" onclick="pigeDossDelete(\''+d.id+'\',event)">×</span>':'')
         +'</button>';
@@ -11632,25 +11694,37 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
     var a=document.getElementById('pg-filters-arrow'); if(a) a.textContent=open?'▾':'▴';
   };
   window.pigePageGo=function(n){ pgPage=n; pigeRender(); var b=document.getElementById('pige-list'); if(b) b.scrollIntoView({behavior:'smooth',block:'start'}); };
-  /* v7.23 : pastilles de statut AVEC libellés — la sélection = pastille remplie de sa couleur */
-  window.pigeStatutSet=function(k){ pigeStatutPickRender(k); };
+  /* v7.25 : UNE pastille montrant le statut ACTUEL — clic = petit menu pour changer (comme sur les cartes de la liste) */
+  window.pigeStatutSet=function(k){ pigeStatutPickRender(k); var m=document.getElementById('pg-statut-menu'); if(m) m.remove(); };
   function pigeStatutPickRender(cur){
     var box=document.getElementById('pg-statut-pick'); if(!box) return;
     cur=cur||'encours';
-    box.innerHTML=PG_STATUTS.map(function(s){
-      var on=(s.k===cur);
-      return '<span class="pg-spill'+(on?' on':'')+'" data-k="'+s.k+'" onclick="pigeStatutSet(\''+s.k+'\')"'
-        +(on?' style="background:'+s.col+';border-color:'+s.col+';"':'')
-        +'><span class="dot" style="background:'+(on?'#fff':s.col)+';"></span>'+s.label+'</span>';
-    }).join('');
+    var s=pgStatutDef(cur);
+    box.innerHTML='<span class="pg-spill on" style="background:'+s.col+';border-color:'+s.col+';" onclick="pigeStatutFormMenu(event)" title="Statut de la fiche — cliquez pour changer">'
+      +'<span class="dot" style="background:#fff;"></span>'+s.label+' <span class="car">▾</span></span>';
     var hid=document.getElementById('pg-statut'); if(hid) hid.value=cur;
   }
-  /* v7.23 : dossiers personnalisés en pastilles visibles — v7.24 : « Dossier supp. », coche/décoche,
-     et les dossiers AUTOMATIQUES (⚡ règle prix/m²) s'affichent à titre d'information (non cliquables) */
+  window.pigeStatutFormMenu=function(ev){
+    ev.stopPropagation();
+    var old=document.getElementById('pg-statut-menu'); if(old){ old.remove(); return; }
+    var cur=(document.getElementById('pg-statut')||{}).value||'encours';
+    var m=document.createElement('div'); m.id='pg-statut-menu'; m.className='pg-statut-menu';
+    m.innerHTML=PG_STATUTS.map(function(s){
+      return '<div class="pg-statut-opt'+(s.k===cur?' on':'')+'" onclick="pigeStatutSet(\''+s.k+'\')">'
+        +'<span class="pg-dot" style="background:'+s.col+';"></span>'+s.label+'</div>';
+    }).join('');
+    document.body.appendChild(m);
+    var r=ev.target.closest('.pg-spill').getBoundingClientRect();
+    m.style.left=Math.min(r.left, window.innerWidth-190)+'px';
+    m.style.top=(r.bottom+4)+'px';
+    setTimeout(function(){ document.addEventListener('click', pgStatutOutside, true); },0);
+  };
+  /* v7.25 : l'en-tête n'affiche QUE les dossiers auxquels la fiche appartient.
+     Manuel = badge avec ✕ pour l'en sortir ; automatique (⚡) = badge d'information ;
+     ＋ Ranger dans un dossier = petit menu des dossiers manuels disponibles. */
   window.pigeDossSet=function(id){
-    var hid=document.getElementById('pg-dossier');
-    var cur=hid?hid.value:'';
-    pigeDossSelectFill(cur===id?'':id);   /* re-cliquer la pastille cochée = décocher */
+    pigeDossSelectFill(id||'');
+    var m=document.getElementById('pg-doss-menu'); if(m) m.remove();
   };
   function pigeDossSelectFill(cur){
     cur=cur||'';
@@ -11660,14 +11734,37 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
     if(!d.length){ box.innerHTML=''; return; }   /* pas de dossiers créés = rien */
     var fid=(document.getElementById('pg-edit-id')||{}).value||'';
     var r=fid? load().filter(function(x){return x.id===fid;})[0] : null;
-    box.innerHTML='<span class="pg-doss-lbl">Dossier supp.</span>'
-      +d.map(function(o){
-        if(o.rule){
-          var inn=r? dossMatch(r,o) : false;
-          return '<span class="pg-dchip auto'+(inn?' on':'')+'" title="Dossier automatique (prix/m² '+(o.rule.op==='lte'?'≤':'≥')+' '+fmtN(o.rule.val)+' €) — la fiche y entre ou en sort toute seule">⚡ '+esc(o.nom)+(inn?' ✓':'')+'</span>';
-        }
-        return '<span class="pg-dchip'+(o.id===cur?' on':'')+'" onclick="pigeDossSet(\''+o.id+'\')" title="Cliquez pour ranger la fiche dans ce dossier (re-cliquez pour l\'en sortir)">📁 '+esc(o.nom)+'</span>';
-      }).join('');
+    var h='';
+    d.forEach(function(o){
+      if(o.rule){
+        if(r && dossMatch(r,o)) h+='<span class="pg-dchip auto on" title="Dossier automatique ('+esc(ruleDesc(o.rule))+') — la fiche y entre et en sort toute seule">⚡ '+esc(o.nom)+'</span>';
+      } else if(o.id===cur){
+        h+='<span class="pg-dchip on" title="La fiche est rangée dans ce dossier">📁 '+esc(o.nom)+'<span class="x" title="Sortir la fiche de ce dossier" onclick="pigeDossSet(\'\')">✕</span></span>';
+      }
+    });
+    var manualLeft=d.filter(function(o){ return !o.rule && o.id!==cur; });
+    if(manualLeft.length) h+='<span class="pg-dchip add" onclick="pigeDossAddMenu(event)" title="Ranger la fiche dans un dossier">＋ Dossier</span>';
+    box.innerHTML=h;
+  }
+  window.pigeDossAddMenu=function(ev){
+    ev.stopPropagation();
+    var old=document.getElementById('pg-doss-menu'); if(old){ old.remove(); return; }
+    var cur=(document.getElementById('pg-dossier')||{}).value||'';
+    var opts=dossLoad().filter(function(o){ return !o.rule && o.id!==cur; });
+    if(!opts.length) return;
+    var m=document.createElement('div'); m.id='pg-doss-menu'; m.className='pg-statut-menu';
+    m.innerHTML=opts.map(function(o){
+      return '<div class="pg-statut-opt" onclick="pigeDossSet(\''+o.id+'\')">📁 '+esc(o.nom)+'</div>';
+    }).join('');
+    document.body.appendChild(m);
+    var r=ev.target.getBoundingClientRect();
+    m.style.left=Math.min(r.left, window.innerWidth-190)+'px';
+    m.style.top=(r.bottom+4)+'px';
+    setTimeout(function(){ document.addEventListener('click', pgDossOutside, true); },0);
+  };
+  function pgDossOutside(e){
+    var m=document.getElementById('pg-doss-menu');
+    if(m && !m.contains(e.target)){ m.remove(); document.removeEventListener('click', pgDossOutside, true); }
   }
 
   function esc(s){ return (''+(s||'')).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
@@ -12934,6 +13031,12 @@ select.pg-chip{padding:6px 10px;}
 .pg-dchip.auto:hover{border-color:var(--border);color:var(--gris);}
 .pg-dchip.auto.on{background:#b0883b;border-color:#b0883b;border-style:solid;color:#fff;}
 .pg-dchip.auto.on:hover{color:#fff;}
+/* v7.25 : en-tête épuré — ✕ pour sortir d'un dossier, ＋ pour en choisir un, caret du statut */
+.pg-dchip .x{margin-left:4px;cursor:pointer;font-size:10px;opacity:.75;padding:0 2px;}
+.pg-dchip .x:hover{opacity:1;}
+.pg-dchip.add{border-style:dashed;color:var(--gris-2);}
+.pg-dchip.add:hover{border-color:var(--terra);color:var(--terra);}
+.pg-spill .car{font-size:9px;opacity:.85;margin-left:2px;}
 /* v7.24 : fenêtre dossier */
 .pgd-lbl{display:block;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--gris-2);font-weight:600;margin:10px 0 4px;}
 .pgd-inp{width:100%;box-sizing:border-box;font-family:'Jost',sans-serif;font-size:13px;padding:8px 11px;border:1px solid var(--beige-3);border-radius:8px;background:#fff;color:var(--noir);}
