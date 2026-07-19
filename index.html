@@ -1572,7 +1572,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     </div>
   </div>
   </div>
-  <div class="logo-ver app-ver">Achille App — v7.22</div>
+  <div class="logo-ver app-ver">Achille App — v7.23</div>
 </aside>
 <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Réduire la barre latérale">‹</button>
 
@@ -10195,7 +10195,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     startRealtime();
     var ov=document.getElementById('ach-login-overlay'); if(ov) ov.classList.add('ach-hidden');
     var ub=document.getElementById('ach-userbar'); if(ub) ub.style.display='none';
-    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v7.22';
+    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v7.23';
     flag('Synchronis\u00e9');
     // fin de l'init : on autorise la journalisation des actions
     setTimeout(function(){ installInterceptor._init=false; }, 1500);
@@ -11240,9 +11240,10 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
     <button class="modal-close" onclick="closeModal('modal-pige')">x</button>
     <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
       <div class="modal-title" id="pg-modal-title" style="margin-bottom:0;">Fiche de pige</div>
-      <div id="pg-statut-pick" class="pg-statut-mini" title="Statut (couleur = dossier)"></div>
-      <select class="form-select" id="pg-dossier" style="width:auto;min-width:0;padding:4px 26px 4px 9px;font-size:12px;" title="Dossier personnalisé"><option value="">📁 —</option></select>
+      <div id="pg-statut-pick" class="pg-statut-pills" title="Statut de la fiche — cliquez pour changer"></div>
+      <div id="pg-doss-pick" class="pg-doss-pick"></div>
       <input type="hidden" id="pg-statut" value="encours">
+      <input type="hidden" id="pg-dossier" value="">
     </div>
     <input type="hidden" id="pg-edit-id"><input type="hidden" id="pg-tempref"><input type="hidden" id="pg-created"><input type="hidden" id="pg-new-url"><input type="hidden" id="pg-new-src">
     <div id="pg-srcline" style="font-size:12px;color:var(--gris);margin-bottom:8px;"></div>
@@ -11331,11 +11332,12 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
   /* ============ CLASSEMENT PIGE : statuts-couleurs + dossiers + pagination (v5.12) ============ */
   var DOSS_K='ach_pige_dossiers_v1';           /* dossiers personnalisés (synchronisé) */
   var STATUT_MIG='ach_pige_statutmig_v1';      /* marqueur migration one-shot (local) */
+  /* v7.23 : label = singulier (une fiche) ; pl = pluriel (onglets de la barre de dossiers) */
   var PG_STATUTS=[
-    {k:'chaud',   label:'Chaud',    col:'#a03222', ico:'🔥'},
-    {k:'encours', label:'En cours', col:'#2e6e50', ico:'⏳'},
-    {k:'offline', label:'En veille',  col:'#4a4a48', ico:'🌙'},   /* v7.22 : renommé (ex-Offline) — dossier en pause, à surveiller */
-    {k:'termine', label:'Terminé',  col:'#1a1a18', ico:'<span style="color:#ff5f4e;font-weight:700;">✕</span>'}
+    {k:'chaud',   label:'Chaud',    pl:'Chauds',    col:'#a03222', ico:'🔥'},
+    {k:'encours', label:'En cours', pl:'En cours',  col:'#2e6e50', ico:'⏳'},
+    {k:'offline', label:'En veille', pl:'En veille', col:'#4a4a48', ico:'🌙'},   /* v7.22 : renommé (ex-Offline) — dossier en pause, à surveiller */
+    {k:'termine', label:'Terminé',  pl:'Terminés',  col:'#1a1a18', ico:'<span style="color:#ff5f4e;font-weight:700;">✕</span>'}
   ];
   function pgStatutDef(k){ for(var i=0;i<PG_STATUTS.length;i++){ if(PG_STATUTS[i].k===k) return PG_STATUTS[i]; } return PG_STATUTS[1]; }
   function pgStatutOf(r){ return (r&&r.statut)||'encours'; }
@@ -11517,7 +11519,7 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
     PG_STATUTS.forEach(function(s){
       var on=(pgDossier===s.k);
       html+='<button class="pg-fold'+(on?' on':'')+'" style="border-bottom:3px solid '+s.col+';'+(on?'background:'+s.col+'14;color:'+s.col+';':'')+'" onclick="pigeDossPick(\''+s.k+'\')">'
-        +dot(s.col)+' '+s.label+' <b>'+(cnt[s.k]||0)+'</b></button>';
+        +dot(s.col)+' '+(s.pl||s.label)+' <b>'+(cnt[s.k]||0)+'</b></button>';
     });
     doss.forEach(function(d){
       var c=act.filter(function(r){return r.dossier===d.id;}).length;
@@ -11553,26 +11555,30 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
     var a=document.getElementById('pg-filters-arrow'); if(a) a.textContent=open?'▾':'▴';
   };
   window.pigePageGo=function(n){ pgPage=n; pigeRender(); var b=document.getElementById('pige-list'); if(b) b.scrollIntoView({behavior:'smooth',block:'start'}); };
-  window.pigeStatutSet=function(k){
-    var hid=document.getElementById('pg-statut'); if(hid) hid.value=k;
-    var box=document.getElementById('pg-statut-pick'); if(!box) return;
-    [].slice.call(box.children).forEach(function(el){ if(el.classList.contains('opt')) el.classList.toggle('on', el.getAttribute('data-k')===k); });
-    var lbl=document.getElementById('pg-statut-lbl'); if(lbl) lbl.textContent=pgStatutDef(k).label;
-  };
+  /* v7.23 : pastilles de statut AVEC libellés — la sélection = pastille remplie de sa couleur */
+  window.pigeStatutSet=function(k){ pigeStatutPickRender(k); };
   function pigeStatutPickRender(cur){
     var box=document.getElementById('pg-statut-pick'); if(!box) return;
     cur=cur||'encours';
     box.innerHTML=PG_STATUTS.map(function(s){
-      return '<span class="opt'+(s.k===cur?' on':'')+'" data-k="'+s.k+'" title="'+s.label+'" onclick="pigeStatutSet(\''+s.k+'\')" style="background:'+s.col+';">'+s.ico+'</span>';
-    }).join('')+'<span class="pg-statut-lbl" id="pg-statut-lbl">'+pgStatutDef(cur).label+'</span>';
+      var on=(s.k===cur);
+      return '<span class="pg-spill'+(on?' on':'')+'" data-k="'+s.k+'" onclick="pigeStatutSet(\''+s.k+'\')"'
+        +(on?' style="background:'+s.col+';border-color:'+s.col+';"':'')
+        +'><span class="dot" style="background:'+(on?'#fff':s.col)+';"></span>'+s.label+'</span>';
+    }).join('');
     var hid=document.getElementById('pg-statut'); if(hid) hid.value=cur;
   }
+  /* v7.23 : dossiers personnalisés en pastilles visibles (plus de menu déroulant) */
+  window.pigeDossSet=function(id){ pigeDossSelectFill(id); };
   function pigeDossSelectFill(cur){
-    var sel=document.getElementById('pg-dossier'); if(!sel) return;
+    cur=cur||'';
+    var hid=document.getElementById('pg-dossier'); if(hid) hid.value=cur;
+    var box=document.getElementById('pg-doss-pick'); if(!box) return;
     var d=dossLoad();
-    sel.style.display=d.length?'':'none';   /* pas de dossiers créés = pas de menu */
-    sel.innerHTML='<option value="">📁 —</option>'+d.map(function(o){ return '<option value="'+o.id+'"'+(o.id===cur?' selected':'')+'>📁 '+esc(o.nom)+'</option>'; }).join('');
-    sel.value=cur||'';
+    if(!d.length){ box.innerHTML=''; return; }   /* pas de dossiers créés = rien */
+    box.innerHTML='<span class="pg-doss-lbl">Dossier</span>'
+      +'<span class="pg-dchip'+(!cur?' on':'')+'" onclick="pigeDossSet(\'\')" title="Aucun dossier">—</span>'
+      +d.map(function(o){ return '<span class="pg-dchip'+(o.id===cur?' on':'')+'" onclick="pigeDossSet(\''+o.id+'\')">📁 '+esc(o.nom)+'</span>'; }).join('');
   }
 
   function esc(s){ return (''+(s||'')).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
@@ -12816,10 +12822,18 @@ select.pg-chip{padding:6px 10px;}
 .pg-fold-x{margin-left:2px;opacity:.5;padding:0 2px;border-radius:4px;font-size:12px;}
 .pg-fold-x:hover{opacity:1;background:rgba(0,0,0,.08);}
 .pg-dot{display:inline-block;width:10px;height:10px;border-radius:50%;flex:none;}
-.pg-statut-mini{display:inline-flex;align-items:center;gap:7px;}
-.pg-statut-mini .opt{width:21px;height:21px;border-radius:50%;cursor:pointer;border:2px solid rgba(255,255,255,.9);box-shadow:0 0 0 1px rgba(0,0,0,.15);transition:transform .12s;display:inline-flex;align-items:center;justify-content:center;font-size:10px;line-height:1;user-select:none;}
-.pg-statut-mini .opt:hover{transform:scale(1.15);}
-.pg-statut-mini .opt.on{box-shadow:0 0 0 2.5px var(--terra,#b4552d);transform:scale(1.1);}
+/* v7.23 : statut de la fiche = pastilles AVEC libellés (fini les petites icônes cryptiques) */
+.pg-statut-pills{display:inline-flex;gap:6px;flex-wrap:wrap;align-items:center;}
+.pg-spill{display:inline-flex;align-items:center;gap:7px;border:1.5px solid var(--border);background:#fff;color:var(--gris);border-radius:20px;padding:4px 13px;font-size:12px;font-family:'Jost',sans-serif;cursor:pointer;transition:all .12s;user-select:none;white-space:nowrap;}
+.pg-spill .dot{width:8px;height:8px;border-radius:50%;flex:none;}
+.pg-spill:hover{border-color:var(--gris-2);color:var(--noir);}
+.pg-spill.on{color:#fff;font-weight:600;}
+/* v7.23 : dossiers personnalisés = pastilles visibles (fini le menu déroulant) */
+.pg-doss-pick{display:inline-flex;gap:6px;align-items:center;flex-wrap:wrap;}
+.pg-doss-lbl{font-size:11px;color:var(--gris-2);letter-spacing:.05em;text-transform:uppercase;}
+.pg-dchip{display:inline-flex;align-items:center;gap:5px;border:1.5px solid var(--border);background:#fff;color:var(--gris);border-radius:20px;padding:4px 13px;font-size:12px;font-family:'Jost',sans-serif;cursor:pointer;transition:all .12s;user-select:none;white-space:nowrap;}
+.pg-dchip:hover{border-color:var(--gris-2);color:var(--noir);}
+.pg-dchip.on{background:var(--kaki);border-color:var(--kaki);color:#fff;font-weight:600;}
 .pg-statut-lbl{font-family:'Jost',sans-serif;font-size:12.5px;color:var(--gris,#6b6b63);letter-spacing:.03em;margin-left:2px;white-space:nowrap;}
 .pg-fold-dot{display:inline-block;width:10px;height:10px;border-radius:50%;flex:none;box-shadow:0 0 0 1px rgba(0,0,0,.08);}
 
