@@ -1579,7 +1579,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     </div>
   </div>
   </div>
-  <div class="logo-ver app-ver">Achille App — v7.30</div>
+  <div class="logo-ver app-ver">Achille App — v7.31</div>
 </aside>
 <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Réduire la barre latérale">‹</button>
 
@@ -2429,6 +2429,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
       <div class="comm-tabs">
         <button class="comm-tab active" id="comm-tab-posts" onclick="commSwitch('posts')">📱 Posts réseaux</button>
         <button class="comm-tab" id="comm-tab-cour" onclick="commSwitch('courriers')">✉️ Courriers distribués</button>
+        <button class="comm-tab" id="comm-tab-avenir" onclick="commSwitch('avenir')">🗓 Posts à venir</button>
       </div>
       <input id="comm-search" class="comm-search" type="text" placeholder="🔎 Rechercher (réf, adresse, ville…)" oninput="commSearch(this.value)" autocomplete="off">
       <div style="flex:1;"></div>
@@ -2456,6 +2457,17 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
             <tbody id="comm-cour-body"></tbody>
           </table>
         </div>
+      </div>
+      <!-- v7.31 : Posts à venir — perspectives de communication (validés + idées) -->
+      <div class="comm-panel" id="comm-panel-avenir">
+        <div class="cav-addbar">
+          <input class="cav-inp" id="cav-titre" placeholder="Nouvelle idée de post… (titre court)" onkeydown="if(event.key==='Enter')cavAdd()">
+          <select class="cav-sel" id="cav-theme"></select>
+          <select class="cav-sel" id="cav-statut"><option value="idee">💡 Idée / proposition</option><option value="valide">✅ Validé — à faire</option></select>
+          <button class="cav-addbtn" onclick="cavAdd()">＋ Ajouter</button>
+        </div>
+        <div class="cav-sec"><div class="cav-sec-tt ok">✅ Validés — à mettre en place <span class="n" id="cav-n-val"></span></div><div id="cav-list-valide"></div></div>
+        <div class="cav-sec"><div class="cav-sec-tt">💡 Idées &amp; propositions <span class="n" id="cav-n-idee"></span></div><div id="cav-list-idee"></div></div>
       </div>
     </div>
   </div>
@@ -10233,7 +10245,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     startRealtime();
     var ov=document.getElementById('ach-login-overlay'); if(ov) ov.classList.add('ach-hidden');
     var ub=document.getElementById('ach-userbar'); if(ub) ub.style.display='none';
-    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v7.30';
+    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v7.31';
     flag('Synchronis\u00e9');
     // fin de l'init : on autorise la journalisation des actions
     setTimeout(function(){ installInterceptor._init=false; }, 1500);
@@ -15828,5 +15840,168 @@ textarea.rd-inp{resize:vertical;line-height:1.45;}
     <div class="rd-modal-ft"><button class="rd-b" onclick="piArchClose()">Fermer</button></div>
   </div>
 </div>
+
+<!-- ══════════ v7.31 : Communication — Posts à venir (perspectives, validés + idées) ══════════ -->
+<style>
+.cav-addbar{display:flex;gap:8px;margin:2px 0 14px;flex-wrap:wrap;align-items:center;}
+.cav-inp{flex:1;min-width:220px;font-family:'Jost',sans-serif;font-size:13px;padding:8px 12px;border:1px solid var(--beige-3);border-radius:8px;background:#fff;color:var(--noir);}
+.cav-sel{font-family:'Jost',sans-serif;font-size:12.5px;padding:8px 10px;border:1px solid var(--beige-3);border-radius:8px;background:#fff;color:var(--noir);}
+.cav-addbtn{border:none;background:var(--terra);color:#fff;border-radius:8px;padding:8px 15px;font-family:'Jost',sans-serif;font-size:12.5px;font-weight:600;cursor:pointer;}
+.cav-addbtn:hover{background:var(--terra-l);}
+.cav-sec{margin-bottom:16px;background:#fff;border:1px solid var(--border);border-radius:10px;overflow:hidden;}
+.cav-sec-tt{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--gris);padding:9px 14px;background:#f6f1e9;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;}
+.cav-sec-tt.ok{color:var(--vert);}
+.cav-sec-tt .n{background:var(--beige);border-radius:12px;padding:1px 9px;font-size:10.5px;color:var(--gris);}
+.cav-row{display:flex;align-items:center;gap:9px;padding:7px 14px;border-bottom:1px solid #f3eee6;}
+.cav-row:last-child{border-bottom:none;}
+.cav-row:hover{background:#faf7f2;}
+.cav-th{font-size:10px;font-weight:600;padding:2px 9px;border-radius:12px;white-space:nowrap;flex:none;}
+.cav-tt{flex:1;min-width:0;border:1px solid transparent;background:transparent;border-radius:6px;padding:5px 7px;font-size:13px;font-family:'Jost',sans-serif;color:var(--noir);}
+.cav-tt:focus{border-color:var(--beige-3);background:#fff;outline:none;}
+.cav-res{font-size:10.5px;color:var(--gris-2);white-space:nowrap;flex:none;}
+.cav-by{width:20px;height:20px;border-radius:50%;color:#fff;font-size:8.5px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;flex:none;}
+.cav-act{border:1px solid var(--border);background:#fff;color:var(--gris);border-radius:7px;font-size:11px;padding:4px 9px;cursor:pointer;font-family:'Jost',sans-serif;flex:none;white-space:nowrap;}
+.cav-act:hover{border-color:var(--terra);color:var(--terra);}
+.cav-act.ok:hover{border-color:var(--vert);color:var(--vert);}
+.cav-act.del{padding:4px 7px;}
+.cav-act.del:hover{border-color:var(--rouge);color:var(--rouge);}
+.cav-empty{padding:12px 14px;font-size:12.5px;color:var(--gris-2);font-style:italic;}
+</style>
+<script>
+(function(){
+  var KEY='ach_comm_avenir_v1';
+  var THEMES={
+    visite:['🎥','Visite virtuelle','#5b8aa6'],
+    infoimmo:['📊','Info Immo','#2e6e50'],
+    astuce:['💡','Astuces','#b0883b'],
+    achille:['🏛','Info Achille','#b47360'],
+    humour:['😄','Humour','#7a5c9e'],
+    temoignage:['⭐','Témoignage','#9a7b4f'],
+    vielocale:['🌿','Vie locale','#6b7a5e'],
+    bien:['✨','Nouveau bien','#a03222'],
+    sondage:['🗳','Sondage','#4a4a48']
+  };
+  var INI_COL={LS:'#6b7a5e',MA:'#c77b58',MZ:'#5b8aa6',LP:'#b0883b'};
+  function esc(s){ return (''+(s==null?'':s)).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+  function load(){ try{ var a=JSON.parse(localStorage.getItem(KEY)||'[]'); return Array.isArray(a)?a:[]; }catch(e){ return []; } }
+  function save(a){ try{ localStorage.setItem(KEY, JSON.stringify(a)); }catch(e){} }
+  function meIni(){ return (window.ACH_USER&&ACH_USER.initials)||'LS'; }
+  /* ── Pré-remplissage : extrait des documents fournis par Laurent (campagne 2025 + idées LinkedIn).
+        Ids et horodatages FIXES → chaque poste sème la même chose, la synchro dédoublonne. ── */
+  var T0='2026-07-20T08:00:00.000Z';
+  function seedItem(id,st,th,titre,res){ return {id:'cav-'+id, st:st, th:th, titre:titre, res:res||'', by:'LS', created:T0, updated:T0}; }
+  var SEED=[
+    seedItem('v01','valide','achille','Notre histoire — un frère et une sœur, une agence de famille','LinkedIn · Facebook'),
+    seedItem('v02','valide','vielocale','Notre terrain de jeu quotidien — le territoire en images','Instagram · TikTok'),
+    seedItem('v03','valide','infoimmo','Le saviez-vous ? Neuilly, une des adresses les plus recherchées d\u2019IDF','Facebook'),
+    seedItem('v04','valide','bien','Le coup de cœur — ce bien qui nous a arrêtés dès la porte','Instagram'),
+    seedItem('v05','valide','astuce','3 choses que personne ne vous dit sur l\u2019achat à Neuilly','Reels · TikTok'),
+    seedItem('v06','valide','sondage','Sondage : votre critère n°1 pour un bien d\u2019exception ?','Stories'),
+    seedItem('v07','valide','infoimmo','Analyse : le marché haut de gamme Neuilly / 16e en ce moment','LinkedIn'),
+    seedItem('v08','valide','humour','Les 4 types de clients qu\u2019on rencontre à l\u2019agence','TikTok'),
+    seedItem('v09','valide','temoignage','VENDU — une belle histoire qui se termine','Facebook · Instagram'),
+    seedItem('v10','valide','infoimmo','1 M€ : ce qu\u2019on a à Neuilly… et ailleurs en France','Reels'),
+    seedItem('v11','valide','temoignage','Témoignage M. & Mme B. — acquéreurs à Neuilly','LinkedIn'),
+    seedItem('v12','valide','achille','Une journée d\u2019agent immobilier, version non filtrée','TikTok'),
+    seedItem('v13','valide','astuce','3 erreurs quand on vend son appartement soi-même','TikTok'),
+    seedItem('v14','valide','achille','La semaine en images — récap Stories du samedi','Stories'),
+    seedItem('i01','idee','achille','Les coulisses d\u2019une vente — celle qui a failli ne jamais se faire','LinkedIn'),
+    seedItem('i02','idee','astuce','L\u2019erreur des vendeurs : confondre prix affichés et prix réellement vendus','LinkedIn'),
+    seedItem('i03','idee','infoimmo','Biens à rénover : les bonnes affaires que personne ne regarde (30-80 m²)','LinkedIn'),
+    seedItem('i04','idee','visite','Première visite virtuelle guidée d\u2019un bien en exclusivité','')
+  ];
+  function seed(){ if(load().length) return; save(SEED); }
+  var _q='';
+  function match(o){
+    if(!_q) return true;
+    var t=(THEMES[o.th]||['','',''])[1];
+    return ((o.titre||'')+' '+(o.res||'')+' '+t).toLowerCase().indexOf(_q.toLowerCase())>=0;
+  }
+  window.cavRender=function(){
+    var vb=document.getElementById('cav-list-valide'); if(!vb) return;
+    var a=load();
+    function rows(st){
+      var list=a.filter(function(o){ return o.st===st && match(o); });
+      if(!list.length) return {n:0, h:'<div class="cav-empty">'+(st==='valide'?'Aucun post validé pour le moment.':'Aucune idée pour le moment — chacun peut en proposer avec le champ ci-dessus.')+'</div>'};
+      /* groupés par thème pour la lisibilité */
+      list.sort(function(x,y){ return (x.th||'').localeCompare(y.th||'') || (''+x.created).localeCompare(''+y.created); });
+      return {n:list.length, h:list.map(function(o){
+        var T=THEMES[o.th]||['📌',o.th||'—','#7a7570'];
+        return '<div class="cav-row">'
+          +'<span class="cav-th" style="background:'+T[2]+'18;color:'+T[2]+';border:1px solid '+T[2]+'44;">'+T[0]+' '+T[1]+'</span>'
+          +'<input class="cav-tt" value="'+esc(o.titre)+'" onchange="cavEdit(\''+o.id+'\',this.value)" title="Cliquez pour modifier le titre">'
+          +(o.res?'<span class="cav-res">'+esc(o.res)+'</span>':'')
+          +'<span class="cav-by" style="background:'+(INI_COL[o.by]||'#7a7570')+';" title="Proposé par '+esc(o.by)+'">'+esc(o.by)+'</span>'
+          +(st==='idee'
+            ? '<button class="cav-act ok" onclick="cavStatut(\''+o.id+'\',\'valide\')" title="Valider : à mettre en place">✔ Valider</button>'
+            : '<button class="cav-act" onclick="cavStatut(\''+o.id+'\',\'idee\')" title="Repasser au stade d\u2019idée">↩ Idée</button>')
+          +'<button class="cav-act del" onclick="cavDel(\''+o.id+'\')" title="Supprimer">✕</button>'
+          +'</div>';
+      }).join('')};
+    }
+    var rv=rows('valide'), ri=rows('idee');
+    vb.innerHTML=rv.h;
+    document.getElementById('cav-list-idee').innerHTML=ri.h;
+    document.getElementById('cav-n-val').textContent=rv.n;
+    document.getElementById('cav-n-idee').textContent=ri.n;
+    return rv.n+ri.n;
+  };
+  window.cavAdd=function(){
+    var t=(document.getElementById('cav-titre').value||'').trim();
+    if(!t){ if(window.toast) toast('Écrivez d\u2019abord le titre du post'); return; }
+    var a=load();
+    a.push({id:'cav-'+Date.now().toString(36)+Math.floor(Math.random()*1000), st:document.getElementById('cav-statut').value||'idee',
+      th:document.getElementById('cav-theme').value||'astuce', titre:t, res:'', by:meIni(),
+      created:new Date().toISOString(), updated:new Date().toISOString()});
+    save(a);
+    document.getElementById('cav-titre').value='';
+    cavRender(); cavCount();
+    try{ if(window.achLog) achLog('ajout','Posts à venir',t); }catch(e){}
+  };
+  window.cavEdit=function(id,val){
+    var a=load(), o=a.filter(function(x){return x.id===id;})[0]; if(!o) return;
+    o.titre=(val||'').trim(); o.updated=new Date().toISOString(); save(a);
+  };
+  window.cavStatut=function(id,st){
+    var a=load(), o=a.filter(function(x){return x.id===id;})[0]; if(!o) return;
+    o.st=st; o.updated=new Date().toISOString(); save(a); cavRender();
+    if(window.toast) toast(st==='valide'?'✔ Validé — à mettre en place':'↩ Repassé en idée');
+  };
+  window.cavDel=function(id){
+    var o=load().filter(function(x){return x.id===id;})[0]; if(!o) return;
+    if(!confirm('Supprimer « '+(o.titre||'')+' » ?')) return;
+    save(load().filter(function(x){return x.id!==id;})); cavRender(); cavCount();
+    try{ if(window.achLog) achLog('suppression','Posts à venir',o.titre||''); }catch(e){}
+  };
+  function cavCount(){
+    if(window._commTabCur!=='avenir') return;
+    var el=document.getElementById('comm-count'); if(!el) return;
+    var n=load().length;
+    el.textContent=n+' post'+(n>1?'s':'')+' à venir';
+  }
+  /* thèmes dans le sélecteur d\u2019ajout */
+  (function(){ var s=document.getElementById('cav-theme');
+    if(s) s.innerHTML=Object.keys(THEMES).map(function(k){ return '<option value="'+k+'">'+THEMES[k][0]+' '+THEMES[k][1]+'</option>'; }).join('');
+  })();
+  /* intégration : onglet + recherche + bouton Ajouter */
+  window._commTabCur='posts';
+  if(window.commSwitch){ var _cs=window.commSwitch; window.commSwitch=function(tab){
+    _cs(tab==='avenir'?'posts':tab);   /* l\u2019original ne connaît pas avenir : on le neutralise puis on pose notre état */
+    window._commTabCur=tab;
+    var tp=document.getElementById('comm-tab-posts'), tc=document.getElementById('comm-tab-cour'), ta=document.getElementById('comm-tab-avenir');
+    var pp=document.getElementById('comm-panel-posts'), pc=document.getElementById('comm-panel-courriers'), pa=document.getElementById('comm-panel-avenir');
+    if(ta){ ta.classList.toggle('active', tab==='avenir'); }
+    if(tab==='avenir'){
+      if(tp) tp.classList.remove('active'); if(tc) tc.classList.remove('active');
+      if(pp) pp.classList.remove('active'); if(pc) pc.classList.remove('active');
+      if(pa) pa.classList.add('active');
+      seed(); cavRender(); cavCount();
+    } else { if(pa) pa.classList.remove('active'); }
+  }; }
+  if(window.commSearch){ var _cq=window.commSearch; window.commSearch=function(v){ _cq(v); _q=v||''; if(window._commTabCur==='avenir'){ cavRender(); } }; }
+  if(window.commAdd){ var _ca=window.commAdd; window.commAdd=function(){ if(window._commTabCur==='avenir'){ var e=document.getElementById('cav-titre'); if(e) e.focus(); return; } _ca(); }; }
+  seed();
+})();
+</script>
 </body>
 </html>
