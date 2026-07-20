@@ -1584,7 +1584,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     </div>
   </div>
   </div>
-  <div class="logo-ver app-ver">Achille App — v7.36</div>
+  <div class="logo-ver app-ver">Achille App — v7.38</div>
 </aside>
 <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Réduire la barre latérale">‹</button>
 
@@ -2645,7 +2645,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
         <label>Titre</label>
         <input type="text" id="plan-ev-title" placeholder="Ex : Visite — 34 sq. du Roule">
         <label>Type</label>
-        <select id="plan-ev-type" onchange="planToggleVisiteurField()"><option value="visite">🏠 Visite</option><option value="estimation">📋 Estimation / RDV vendeur</option><option value="reunion">👥 Réunion interne</option><option value="notaire">⚖️ Acte notarié</option><option value="relance">📞 Relance téléphonique</option><option value="perso">🔒 Personnel (privé)</option><option value="direction" id="plan-ev-type-dir">🏛 Direction (Laurent + Marine A.)</option></select>
+        <select id="plan-ev-type" onchange="planToggleVisiteurField()"><option value="visite">🏠 Visite</option><option value="estimation">📋 Estimation / RDV vendeur</option><option value="reunion">👥 Réunion interne</option><option value="notaire">⚖️ Acte notarié</option><option value="relance">📞 Relance téléphonique</option><option value="perso">🔒 Personnel</option></select>
         <div id="plan-visiteur-row" style="display:none;"><label>Nom du visiteur</label><input type="text" id="plan-ev-visiteur" placeholder="Ex : M. Dupont Jean"><label>Adresse du bien</label><input type="text" id="plan-ev-adresse" placeholder="Ex : 12 avenue Charles de Gaulle"></div>
         <div class="plan-modal-row">
           <div><label>Date</label><input type="date" id="plan-ev-date"></div>
@@ -2657,6 +2657,11 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
         </div>
         <label>Participants</label>
         <div class="plan-user-checks" id="plan-user-checks"></div>
+        <!-- v7.38 : confidentialité par COCHES (indépendante du type) -->
+        <div id="plan-conf-row" style="display:flex;gap:18px;flex-wrap:wrap;margin:2px 0 10px;">
+          <label style="display:flex;align-items:center;gap:6px;cursor:pointer;"><input type="checkbox" id="plan-ev-prive" style="width:auto;margin:0;" onchange="planConfExclusive('prive')">🔒 Privé <span style="font-size:11px;color:var(--gris-2);">— visible uniquement par les participants</span></label>
+          <label id="plan-dir-wrap" style="display:flex;align-items:center;gap:6px;cursor:pointer;"><input type="checkbox" id="plan-ev-direction" style="width:auto;margin:0;" onchange="planConfExclusive('direction')">🏛 Direction <span style="font-size:11px;color:var(--gris-2);">— visible par Laurent + Marine A.</span></label>
+        </div>
         <label>Notes</label>
         <textarea id="plan-ev-notes" rows="2" placeholder="Infos complémentaires…"></textarea>
       </div>
@@ -5826,7 +5831,6 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     notaire:    {label:'Acte notarié',   icon:'⚖️', cls:'et-notaire'},
     relance:    {label:'Relance',        icon:'📞', cls:'et-relance'},
     perso:      {label:'Personnel',      icon:'🔒', cls:'et-perso'},
-    direction:  {label:'Direction',      icon:'🏛', cls:'et-direction'},   /* v7.36 : visible Laurent + Marine A. uniquement */
   };
 
   var planView   = 'week';   // 'week' | 'month'
@@ -5875,9 +5879,21 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
      planVisib(ev) → 'full' | 'masked'. planCanSeeEvent ne gère plus que le filtre des pastilles utilisateurs. */
   function planVisib(ev){
     var cu=planCurrentUser(), users=ev.users||[];
-    if(ev.type==='direction') return (cu==='admin'||cu==='gerant')?'full':'masked';
-    if(ev.type==='perso') return (users.indexOf(cu)>=0 || (ev.createdBy&&ev.createdBy===cu))?'full':'masked';
+    if(ev.direction || ev.type==='direction') return (cu==='admin'||cu==='gerant')?'full':'masked';
+    if(ev.prive || (ev.prive===undefined && ev.type==='perso')) return (users.indexOf(cu)>=0 || (ev.createdBy&&ev.createdBy===cu))?'full':'masked';
     return 'full';
+  }
+  /* v7.38 : migration douce — anciens événements « Personnel » = privés par défaut (confidentialité conservée) ;
+     éventuels événements typés « direction » (v7.36-37) → coche Direction + type Réunion. Idempotent. */
+  function planPrivMigrate(){
+    try{
+      var evs=planGetEvents(), ch=false;
+      evs.forEach(function(e){
+        if(e.type==='direction'){ e.type='reunion'; e.direction=true; ch=true; }
+        if(e.prive===undefined && e.type==='perso'){ e.prive=true; ch=true; }
+      });
+      if(ch) planSaveEvents(evs);
+    }catch(e){}
   }
   window.planPrivateInfo=function(ev){ if(ev&&ev.stopPropagation) ev.stopPropagation(); try{ toast('🔒 Rendez-vous privé'); }catch(e){} };
   function planCanSeeEvent(ev){
@@ -6032,6 +6048,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
   }
 
   function planRender(){
+    planPrivMigrate();
     planRenderLabel();
     document.getElementById('plan-cal').style.display = (planView==='list') ? 'none' : '';
     var pl = document.getElementById('plan-list');
@@ -6051,8 +6068,8 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
       return (a.date+' '+(a.heure||'00:00')).localeCompare(b.date+' '+(b.heure||'00:00'));
     });
     if(!evs.length){ el.innerHTML='<div style="text-align:center;padding:40px;color:var(--gris-2);font-family:Jost,sans-serif;font-size:14px;">Aucun événement</div>'; return; }
-    var TYPE_COLORS = {visite:'#4CAF50',estimation:'var(--terra)',reunion:'#2196F3',notaire:'#9C27B0',relance:'var(--kaki)',perso:'#FF9800',direction:'#4a3f5e'};
-    var TYPE_ICONS = {visite:'🏠',estimation:'📋',reunion:'👥',notaire:'⚖️',relance:'📞',perso:'🔒',direction:'🏛'};
+    var TYPE_COLORS = {visite:'#4CAF50',estimation:'var(--terra)',reunion:'#2196F3',notaire:'#9C27B0',relance:'var(--kaki)',perso:'#FF9800'};
+    var TYPE_ICONS = {visite:'🏠',estimation:'📋',reunion:'👥',notaire:'⚖️',relance:'📞',perso:'🔒'};
     var STAT_MAP = {
       'confirmee':  {label:'Confirmée',    cls:'stat-confirmee'},
       'a-confirmer':{label:'À confirmer',  cls:'stat-attente'},
@@ -6108,16 +6125,21 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     if(cb){ cb.checked=true; if(cb.onchange) cb.onchange(); else cb.dispatchEvent(new Event('change')); }
   };
   // ── QUICK ADD ──
-  /* v7.36 : l'option « Direction » du sélecteur n'est proposée qu'à Laurent et Marine A. */
-  function planDirOptRefresh(){
-    var o=document.getElementById('plan-ev-type-dir'); if(!o) return;
+  /* v7.38 : la coche « Direction » n'est proposée qu'à Laurent et Marine A. (masquée par display, pas d'option DOM) */
+  function planConfRefresh(){
+    var w=document.getElementById('plan-dir-wrap'); if(!w) return;
     var cu=planCurrentUser();
-    o.hidden=!(cu==='admin'||cu==='gerant');
-    o.disabled=o.hidden;
+    w.style.display=(cu==='admin'||cu==='gerant')?'flex':'none';
   }
+  window.planConfExclusive=function(which){
+    var p=document.getElementById('plan-ev-prive'), d=document.getElementById('plan-ev-direction');
+    if(!p||!d) return;
+    if(which==='prive' && p.checked) d.checked=false;
+    if(which==='direction' && d.checked) p.checked=false;
+  };
   window.planQuickAdd=function(date,hour){
     planEditId=null;
-    planDirOptRefresh();
+    planConfRefresh();
     document.getElementById('plan-ev-id').value='';
     document.getElementById('plan-ev-title').value='';
     document.getElementById('plan-ev-type').value='visite';
@@ -6129,6 +6151,8 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     document.getElementById('plan-ev-notes').value='';
     var vf=document.getElementById('plan-ev-visiteur'); if(vf) vf.value='';
     var af=document.getElementById('plan-ev-adresse'); if(af) af.value='';
+    var pc=document.getElementById('plan-ev-prive'); if(pc) pc.checked=false;
+    var dc=document.getElementById('plan-ev-direction'); if(dc) dc.checked=false;
     planToggleVisiteurField();
     document.getElementById('plan-modal-del').style.display='none';
     document.getElementById('plan-modal-title').textContent='Nouvel événement';
@@ -6149,7 +6173,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     if(!ev) return;
     if(planVisib(ev)==='masked'){ window.planPrivateInfo(); return; }   /* v7.36 */
     planEditId=id;
-    planDirOptRefresh();
+    planConfRefresh();
     document.getElementById('plan-ev-id').value=id;
     document.getElementById('plan-ev-title').value=ev.title||'';
     document.getElementById('plan-ev-type').value=ev.type||'visite';
@@ -6160,6 +6184,8 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     document.getElementById('plan-ev-notes').value=ev.notes||'';
     var vf=document.getElementById('plan-ev-visiteur'); if(vf) vf.value=ev.visiteur||'';
     var af=document.getElementById('plan-ev-adresse'); if(af) af.value=ev.adresse||'';
+    var pc=document.getElementById('plan-ev-prive'); if(pc) pc.checked=!!(ev.prive || (ev.prive===undefined && ev.type==='perso'));
+    var dc=document.getElementById('plan-ev-direction'); if(dc) dc.checked=!!ev.direction;
     planToggleVisiteurField();
     document.getElementById('plan-modal-del').style.display='';
     document.getElementById('plan-modal-title').textContent='Modifier l\'événement';
@@ -6197,6 +6223,8 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
       createdBy: planCurrentUser(),
       visiteur: evVisiteur,
       adresse: evAdresse,
+      prive: !!(document.getElementById('plan-ev-prive')||{}).checked,
+      direction: !!(document.getElementById('plan-ev-direction')||{}).checked,
     };
     var evs=planGetEvents();
     if(planEditId){ var idx=evs.findIndex(function(e){return e.id===planEditId;}); if(idx>-1) evs[idx]=ev; else evs.push(ev); }
@@ -10291,7 +10319,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     startRealtime();
     var ov=document.getElementById('ach-login-overlay'); if(ov) ov.classList.add('ach-hidden');
     var ub=document.getElementById('ach-userbar'); if(ub) ub.style.display='none';
-    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v7.36';
+    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v7.38';
     flag('Synchronis\u00e9');
     // fin de l'init : on autorise la journalisation des actions
     setTimeout(function(){ installInterceptor._init=false; }, 1500);
