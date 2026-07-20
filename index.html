@@ -1579,7 +1579,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     </div>
   </div>
   </div>
-  <div class="logo-ver app-ver">Achille App — v7.31</div>
+  <div class="logo-ver app-ver">Achille App — v7.32</div>
 </aside>
 <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Réduire la barre latérale">‹</button>
 
@@ -10245,7 +10245,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     startRealtime();
     var ov=document.getElementById('ach-login-overlay'); if(ov) ov.classList.add('ach-hidden');
     var ub=document.getElementById('ach-userbar'); if(ub) ub.style.display='none';
-    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v7.31';
+    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v7.32';
     flag('Synchronis\u00e9');
     // fin de l'init : on autorise la journalisation des actions
     setTimeout(function(){ installInterceptor._init=false; }, 1500);
@@ -15866,6 +15866,16 @@ textarea.rd-inp{resize:vertical;line-height:1.45;}
 .cav-act.del{padding:4px 7px;}
 .cav-act.del:hover{border-color:var(--rouge);color:var(--rouge);}
 .cav-empty{padding:12px 14px;font-size:12.5px;color:var(--gris-2);font-style:italic;}
+/* v7.32 : texte complet depliable */
+.cav-car{border:none;background:none;color:var(--gris-2);cursor:pointer;font-size:11px;padding:2px 4px;flex:none;width:20px;}
+.cav-car:hover{color:var(--terra);}
+.cav-car.has{color:var(--terra);}
+.cav-body{padding:4px 14px 12px 43px;border-bottom:1px solid #f3eee6;background:#fbf8f3;}
+.cav-txt{width:100%;box-sizing:border-box;min-height:150px;resize:vertical;font-family:'Jost',sans-serif;font-size:12.5px;line-height:1.6;padding:10px 12px;border:1px solid var(--beige-3);border-radius:8px;background:#fff;color:var(--noir);}
+.cav-body-bar{display:flex;gap:8px;margin-top:6px;align-items:center;}
+.cav-copy{border:1px solid var(--border);background:#fff;color:var(--gris);border-radius:7px;font-size:11px;padding:4px 11px;cursor:pointer;font-family:'Jost',sans-serif;}
+.cav-copy:hover{border-color:var(--terra);color:var(--terra);}
+.cav-body-hint{font-size:10.5px;color:var(--gris-2);}
 </style>
 <script>
 (function(){
@@ -15889,7 +15899,27 @@ textarea.rd-inp{resize:vertical;line-height:1.45;}
   /* ── Pré-remplissage : extrait des documents fournis par Laurent (campagne 2025 + idées LinkedIn).
         Ids et horodatages FIXES → chaque poste sème la même chose, la synchro dédoublonne. ── */
   var T0='2026-07-20T08:00:00.000Z';
-  function seedItem(id,st,th,titre,res){ return {id:'cav-'+id, st:st, th:th, titre:titre, res:res||'', by:'LS', created:T0, updated:T0}; }
+  var TEXTES={
+    'v01':'Achille Immobilier, c’est avant tout une histoire de famille — un frère et une sœur réunis par la même passion et une conviction profonde : trouver le bon bien, c’est d’abord trouver la bonne écoute.\n\nDepuis notre ouverture à Neuilly-sur-Seine, nous accompagnons des particuliers et des investisseurs exigeants dans les 16e et 17e arrondissements et à Levallois-Perret. Notre approche est simple : prendre le temps. Comprendre votre projet, vos contraintes, vos envies, ce que vous ne dites pas encore mais que vous ressentez déjà.\n\nPas de précipitation, pas de compromis — juste le bien qui vous ressemble, dans le quartier qui vous correspond. Bienvenue chez Achille. 🏛️',
+    'v02':'Notre terrain de jeu quotidien. Certains appellent ça le bureau, nous on appelle ça le privilège. 🌿\n\nDes avenues bordées de platanes, des façades haussmanniennes qui racontent des histoires, des appartements où la lumière entre comme nulle part ailleurs.\n\nChaque matin, on se dit qu’on a vraiment de la chance d’exercer notre métier ici. Et chaque soir, quand on remet des clés à des clients qui rayonnent, on sait pourquoi on le fait.\n\nNeuilly-sur-Seine, Paris 16e, 17e, Levallois — notre territoire, dans ses moindres recoins.\n\n#AchilleImmobilier #NeuillySurSeine #AgenceImmobiliere #Paris16',
+    'v03':'Le saviez-vous ? Neuilly-sur-Seine est l’une des adresses les plus recherchées d’Île-de-France — et pourtant, chaque bien y a sa propre personnalité, son caractère, son histoire.\n\nUn rez-de-jardin caché derrière une grille discrète, un dernier étage avec vue sur Paris, un appartement familial aux volumes généreux qui n’attend que vous.\n\nC’est précisément ce qui rend notre métier passionnant : ici, il n’y a pas deux biens identiques, et pas deux clients identiques non plus. C’est pourquoi nous prenons le temps d’écouter avant de proposer.\n\nVous cherchez à acheter, vendre ou investir dans le secteur ? On adore les bonnes conversations ☕ — contactez-nous.',
+    'v04':'Certains appartements ont ce quelque chose d’indéfinissable. Une luminosité particulière, des proportions qui font souffler, une atmosphère qu’on ressent dès le seuil. 🗝️\n\nCelui-là, il nous a arrêtés dès la porte.\n\n[X pièces · X m² · Quartier · Point fort : vue, terrasse, parquet d’époque…]\n\nCe type de bien ne reste jamais longtemps disponible — et pour cause. Si vous souhaitez le visiter, écrivez-nous en message privé, nous vous répondons dans la journée.\n\n#Neuilly #Immobilier #Paris16 #AchilleImmobilier',
+    'v05':'3 choses que personne ne vous dit vraiment sur l’achat immobilier à Neuilly — et qu’on vous dit, nous, parce que vous méritez la vérité.\n\n1 — Les meilleurs biens ne sont jamais sur les sites grand public. Ils circulent en off-market, entre agents et clients de confiance.\n\n2 — Négocier seul face à un vendeur ? Ça peut sembler séduisant. En pratique, ça peut coûter très cher.\n\n3 — Le vrai luxe à Neuilly, ce n’est pas le marbre ni les dorures. C’est le calme, la qualité de vie. Et ça ne s’improvise pas.\n\nOn est là pour ça. 👋 #ConseilImmo #Neuilly #AchilleImmobilier',
+    'v06':'🗳️ Sondage du week-end — parce qu’on aime vous connaître un peu mieux !\n\nVotre critère numéro 1 pour un bien d’exception, c’est quoi ?\n\n☀️ La lumière — un appartement qui baigne dans la lumière naturelle toute la journée\n📐 Les volumes — des pièces généreuses, des hauteurs sous plafond qui font respirer\n📍 L’emplacement — l’adresse parfaite, à pied de tout, dans le bon quartier\n🌿 Un extérieur — terrasse, balcon ou jardin, ce petit coin de ciel qui change tout\n\nRépondez — on est curieux, et vos réponses nous aident à mieux vous servir !',
+    'v07':'Ce qu’on observe en ce moment sur le marché haut de gamme à Neuilly et dans le 16e — et qu’il nous semble utile de partager avec vous.\n\nLes acquéreurs sont aujourd’hui plus sélectifs qu’il y a deux ans, mais leurs décisions sont plus rapides dès qu’un bien correspond vraiment à leurs attentes et est présenté avec soin.\n\nLa demande pour les appartements familiaux avec extérieur reste extrêmement soutenue. Les biens nécessitant des travaux trouvent preneur, mais avec des décotes plus marquées.\n\nLe off-market représente une part significative des transactions dans notre secteur — c’est notre réseau qui fait la différence.\n\nVous souhaitez notre analyse complète pour votre projet ? Écrivez-nous.',
+    'v08':'Les 4 types de clients qu’on rencontre à l’agence — avec beaucoup d’affection pour chacun d’eux. 😄\n\n1 — Celui qui sait exactement ce qu’il veut… jusqu’à ce qu’il visite et réalise que ses critères ont complètement changé. On adore ce moment.\n\n2 — Celui qui vient « juste pour se faire une idée » — et qui signe une offre le lendemain matin. L’effet coup de foudre, ça existe vraiment.\n\n3 — Les parents qui cherchent pour leur enfant et tombent eux-mêmes amoureux du bien. Scène attendrissante garantie.\n\n4 — L’investisseur qui pose 47 questions pointues. On adore le n°4. Et vous, vous êtes quel profil ? 😊',
+    'v09':'Et voilà, une belle histoire qui se termine… et une autre qui commence. 🤝\n\nCe magnifique appartement a trouvé ses heureux propriétaires, et nous ne pouvions pas être plus heureux pour eux.\n\nChaque vente est une aventure humaine — des échanges, des visites, parfois des hésitations, et ce moment unique où tout s’aligne et où l’on sent que c’est le bon.\n\nUn grand merci à nos clients pour leur confiance, leur bonne humeur tout au long du processus. À bientôt pour la prochaine belle histoire. 🗝️\n\n📸 [Photo du bien avec bandeau VENDU]\n#Vendu #AchilleImmobilier #NeuillySurSeine',
+    'v10':'Ce que vous obtenez pour 1 million d’euros… à Neuilly versus ailleurs en France. 👀\n\nÀ Neuilly : un bel appartement de 3 à 4 pièces, en immeuble de standing, à deux pas des commerces, dans l’une des villes les plus sécurisées d’Île-de-France.\n\nÀ Lyon ou Bordeaux : une belle maison avec jardin dans un quartier prisé.\nSur la Côte d’Azur : un appartement avec vue mer en résidence haut de gamme.\nEn Normandie : un domaine avec plusieurs hectares et maison de maître.\n\nChaque choix a sa logique. Mais si votre vie est à Paris et que vous aimez Neuilly… le choix est vite fait. 😉\n#Immobilier #Neuilly #PrixImmo #AchilleImmobilier',
+    'v11':'« Ils nous ont accompagnés avec une patience et une disponibilité rares. Jamais nous ne nous sommes sentis pressés ou incompris. En trois semaines à peine, nous avions signé pour un appartement qui correspond exactement à ce que nous cherchions depuis plus d’un an. »\n— M. & Mme B., acquéreurs à Neuilly-sur-Seine.\n\nCe type de retour, c’est notre plus belle récompense — bien au-delà de la transaction elle-même.\n\nCe qui nous tient à cœur chez Achille Immobilier, c’est que vous repartiez non seulement avec le bon bien, mais avec le souvenir d’une expérience agréable, humaine, sans stress. 🏡',
+    'v12':'Une journée dans la vie d’un agent immobilier à Neuilly — version non filtrée. ☀️\n\n8h : café, dossiers, mails. On prépare les visites dans les moindres détails.\n10h : première visite. Le client hésite. On prend le temps de lui montrer ce qu’il n’avait pas vu.\n13h : négociation téléphonique. Intense. On défend les intérêts de notre client avec méthode.\n15h : signature d’un nouveau mandat. Une belle mission qui commence.\n17h : contre-visite avec un couple très intéressé. On sent que ça va se faire.\n18h30 : on remet les clés. Sourires, photos, mots émus.\n\nCe moment-là, on ne s’en lasse jamais. 🗝️\n#Immobilier #Neuilly #AchilleImmobilier',
+    'v13':'3 erreurs classiques quand on vend son appartement soi-même — et comment les éviter. 😬\n\n1 — Surestimer le prix parce qu’on y est émotionnellement attaché. C’est humain. Mais un bien surévalué reste sur le marché et finit souvent par se vendre moins cher qu’il n’aurait dû.\n\n2 — Négliger la présentation du bien. Des photos prises avec un téléphone dans une pièce en désordre, et la moitié des acheteurs potentiels sont perdus avant d’avoir appelé.\n\n3 — Négocier face à face, sans filet. Quand on est dans l’émotion, on manque de recul. Et le recul, dans une négociation, ça vaut de l’argent.\n\nUn bon agent, c’est justement là pour tout ça. 💪\n#ConseilImmo #AchilleImmobilier #VenteImmo',
+    'v14':'📸 La semaine en images — un petit récap avant le week-end.\n\n[Story 1] : Le bien de la semaine — photo + description en 2 lignes.\n[Story 2] : Le conseil de la semaine — une astuce pratique en une phrase.\n[Story 3] : Le moment de la semaine — une anecdote de coulisses, légère et authentique.\n[Story 4] : La question du week-end — pour engager la communauté et créer de l’interaction.\n\nSimple, rapide à produire, et très efficace pour maintenir le lien avec l’audience chaque samedi. 🌿',
+    'i01':'Compromis signé hier pour un appartement à Neuilly. Mais cette vente a failli ne jamais se faire.\n\nL’acheteur voulait renégocier 80 000 € après le diagnostic. Le vendeur refusait catégoriquement. Pendant quelques jours, tout semblait bloqué.\n\nFinalement, en reprenant calmement chaque point du dossier et en trouvant un terrain d’entente, nous avons réussi à rapprocher les positions.\n\nRésultat :\n✔ vendeur satisfait\n✔ acheteur rassuré\n✔ transaction sécurisée\n\nL’immobilier est souvent une question d’écoute et d’équilibre.\n\nEt vous, pensez-vous qu’il faut toujours renégocier après les diagnostics ?',
+    'i02':'L’erreur que je vois le plus souvent chez les vendeurs à Neuilly.\n\nIls regardent les prix affichés sur les annonces… et pensent que c’est le prix auquel les biens se vendent.\n\nEn réalité :\n• certains biens restent des mois sur le marché\n• d’autres se négocient fortement\n• et seuls quelques biens se vendent au prix.\n\nLe bon prix se trouve dans les transactions réelles, pas dans les vitrines.\n\nC’est souvent la différence entre :\n— vendre en 3 semaines\n— ou rester 6 mois sur le marché.\n\nVous pensez que le marché immobilier de Neuilly est actuellement plutôt favorable aux vendeurs ou aux acheteurs ?',
+    'i03':'Pourquoi certains appartements à Neuilly peuvent être de très bonnes affaires… alors que personne n’en veut au départ.\n\nBeaucoup d’acheteurs cherchent du clé en main. Résultat : les appartements à rénover font parfois peur.\n\nPourtant, ce sont souvent ceux qui offrent :\n✔ le meilleur prix d’achat\n✔ la possibilité de créer un bien sur mesure\n✔ une vraie création de valeur\n\nNous avons actuellement plusieurs appartements entre 30 et 80 m² à rénover dans différents quartiers de Neuilly. Pour certains profils d’acheteurs, ce sont de très beaux projets.\n\n📩 Je peux envoyer les informations en message privé.\n\nVous seriez prêt à acheter un appartement avec travaux ou uniquement du clé en main ?',
+    'i04':'Visite virtuelle guidée d’un bien en exclusivité — à tourner lors d’une prochaine exclusivité.\n\nFormat proposé : vidéo verticale de 60 à 90 secondes, pièce par pièce, avec commentaire sur les points forts (lumière, volumes, prestations). Diffusion : Reels Instagram + TikTok, épinglée en Story à la une.\n\n[Bien à définir]'
+  };
+  function seedItem(id,st,th,titre,res){ return {id:'cav-'+id, st:st, th:th, titre:titre, res:res||'', texte:TEXTES[id]||'', by:'LS', created:T0, updated:T0}; }
   var SEED=[
     seedItem('v01','valide','achille','Notre histoire — un frère et une sœur, une agence de famille','LinkedIn · Facebook'),
     seedItem('v02','valide','vielocale','Notre terrain de jeu quotidien — le territoire en images','Instagram · TikTok'),
@@ -15910,12 +15940,19 @@ textarea.rd-inp{resize:vertical;line-height:1.45;}
     seedItem('i03','idee','infoimmo','Biens à rénover : les bonnes affaires que personne ne regarde (30-80 m²)','LinkedIn'),
     seedItem('i04','idee','visite','Première visite virtuelle guidée d\u2019un bien en exclusivité','')
   ];
-  function seed(){ if(load().length) return; save(SEED); }
+  function seed(){
+    var a=load();
+    if(!a.length){ save(SEED); return; }
+    /* v7.32 : enrichissement one-shot — les items semés en v7.31 reçoivent leur texte complet (sans écraser une saisie) */
+    var ch=false;
+    a.forEach(function(o){ var k=(o.id||'').replace('cav-',''); if(!o.texte && TEXTES[k]){ o.texte=TEXTES[k]; o.updated=new Date().toISOString(); ch=true; } });
+    if(ch) save(a);
+  }
   var _q='';
   function match(o){
     if(!_q) return true;
     var t=(THEMES[o.th]||['','',''])[1];
-    return ((o.titre||'')+' '+(o.res||'')+' '+t).toLowerCase().indexOf(_q.toLowerCase())>=0;
+    return ((o.titre||'')+' '+(o.res||'')+' '+(o.texte||'')+' '+t).toLowerCase().indexOf(_q.toLowerCase())>=0;
   }
   window.cavRender=function(){
     var vb=document.getElementById('cav-list-valide'); if(!vb) return;
@@ -15927,7 +15964,9 @@ textarea.rd-inp{resize:vertical;line-height:1.45;}
       list.sort(function(x,y){ return (x.th||'').localeCompare(y.th||'') || (''+x.created).localeCompare(''+y.created); });
       return {n:list.length, h:list.map(function(o){
         var T=THEMES[o.th]||['📌',o.th||'—','#7a7570'];
-        return '<div class="cav-row">'
+        var open=!!_open[o.id];
+        var h='<div class="cav-row">'
+          +'<button class="cav-car'+(o.texte?' has':'')+'" onclick="cavToggle(\''+o.id+'\')" title="'+(o.texte?'Voir / modifier le texte complet du post':'Ajouter le texte complet du post')+'">'+(open?'▾':'▸')+'</button>'
           +'<span class="cav-th" style="background:'+T[2]+'18;color:'+T[2]+';border:1px solid '+T[2]+'44;">'+T[0]+' '+T[1]+'</span>'
           +'<input class="cav-tt" value="'+esc(o.titre)+'" onchange="cavEdit(\''+o.id+'\',this.value)" title="Cliquez pour modifier le titre">'
           +(o.res?'<span class="cav-res">'+esc(o.res)+'</span>':'')
@@ -15937,6 +15976,12 @@ textarea.rd-inp{resize:vertical;line-height:1.45;}
             : '<button class="cav-act" onclick="cavStatut(\''+o.id+'\',\'idee\')" title="Repasser au stade d\u2019idée">↩ Idée</button>')
           +'<button class="cav-act del" onclick="cavDel(\''+o.id+'\')" title="Supprimer">✕</button>'
           +'</div>';
+        if(open){
+          h+='<div class="cav-body"><textarea class="cav-txt" placeholder="Écrivez ici le texte complet du post…" onchange="cavTexte(\''+o.id+'\',this.value)">'+esc(o.texte||'')+'</textarea>'
+            +'<div class="cav-body-bar"><button class="cav-copy" onclick="cavCopy(\''+o.id+'\',this)">📋 Copier le texte</button>'
+            +'<span class="cav-body-hint">Modifiez librement — enregistré dès que vous cliquez ailleurs.</span></div></div>';
+        }
+        return h;
       }).join('')};
     }
     var rv=rows('valide'), ri=rows('idee');
@@ -15945,6 +15990,19 @@ textarea.rd-inp{resize:vertical;line-height:1.45;}
     document.getElementById('cav-n-val').textContent=rv.n;
     document.getElementById('cav-n-idee').textContent=ri.n;
     return rv.n+ri.n;
+  };
+  var _open={};
+  window.cavToggle=function(id){ _open[id]=!_open[id]; cavRender(); };
+  window.cavTexte=function(id,val){
+    var a=load(), o=a.filter(function(x){return x.id===id;})[0]; if(!o) return;
+    o.texte=val||''; o.updated=new Date().toISOString(); save(a);
+    cavRender();   /* met à jour l'indicateur ▸ orange */
+  };
+  window.cavCopy=function(id,btn){
+    var o=load().filter(function(x){return x.id===id;})[0]; if(!o||!o.texte) return;
+    function ok(){ if(btn){ var t=btn.textContent; btn.textContent='Copié ✓'; setTimeout(function(){ btn.textContent=t; },1400); } }
+    function fb(){ try{ var ta=document.createElement('textarea'); ta.value=o.texte; ta.style.position='fixed'; ta.style.left='-9999px'; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta); ok(); }catch(e){} }
+    try{ if(navigator.clipboard&&navigator.clipboard.writeText){ navigator.clipboard.writeText(o.texte).then(ok,fb); } else fb(); }catch(e){ fb(); }
   };
   window.cavAdd=function(){
     var t=(document.getElementById('cav-titre').value||'').trim();
