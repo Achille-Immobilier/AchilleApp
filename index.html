@@ -1579,7 +1579,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     </div>
   </div>
   </div>
-  <div class="logo-ver app-ver">Achille App — v7.34</div>
+  <div class="logo-ver app-ver">Achille App — v7.35</div>
 </aside>
 <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Réduire la barre latérale">‹</button>
 
@@ -1713,6 +1713,19 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
         <button class="pga-cancel" style="margin-top:0;" onclick="pigeDossClose()">Annuler</button>
         <button class="pgd-save" onclick="pigeDossSave()">Enregistrer</button>
       </div>
+    </div>
+  </div>
+
+  <!-- v7.35 : fusion de deux fiches (même bien rentré en double) -->
+  <div class="pga-ov" id="pgm-ov" onclick="if(event.target===this)pigeMergeClose()">
+    <div class="pga-card" style="width:520px;">
+      <div class="pga-h">Fusionner « <span id="pgm-tt"></span> »</div>
+      <div class="pga-sub">La fiche <b>la plus ancienne</b> est conservée et complétée avec les informations de l'autre (commentaires, liens et photos réunis) ; la fiche en double est supprimée. Choisissez la fiche qui concerne le <b>même bien</b> :</div>
+      <div id="pgm-cands" style="max-height:260px;overflow-y:auto;margin-bottom:10px;"></div>
+      <label class="pgd-lbl">Ou cherchez n'importe quelle autre fiche</label>
+      <input class="pgd-inp" id="pgm-search" placeholder="Adresse, vendeur, téléphone…" oninput="pigeMergeSearch()">
+      <div id="pgm-results" style="max-height:170px;overflow-y:auto;margin-top:6px;"></div>
+      <button class="pga-cancel" onclick="pigeMergeClose()">Annuler</button>
     </div>
   </div>
 
@@ -10245,7 +10258,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     startRealtime();
     var ov=document.getElementById('ach-login-overlay'); if(ov) ov.classList.add('ach-hidden');
     var ub=document.getElementById('ach-userbar'); if(ub) ub.style.display='none';
-    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v7.34';
+    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v7.35';
     flag('Synchronis\u00e9');
     // fin de l'init : on autorise la journalisation des actions
     setTimeout(function(){ installInterceptor._init=false; }, 1500);
@@ -11365,6 +11378,7 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
     
     <div class="modal-actions" style="margin-top:16px;">
       <button class="btn btn-ghost btn-sm" id="pg-del-btn" style="color:var(--rouge);margin-right:auto;" onclick="pigeDelete()">Supprimer</button>
+      <button class="btn btn-ghost btn-sm" id="pg-merge-btn" style="display:none;color:#5a4a75;margin-right:auto;" onclick="pigeMergeOpen()">🔀 Fusionner…</button>
       <button class="btn btn-outline" onclick="pigeCancel()">Annuler</button>
       <button class="btn btn-sm" type="button" id="pg-rap-btn" style="display:none;border:1px solid var(--terra);color:var(--terra);background:#fff;margin-right:auto;" onclick="rapFicheBtnClick()">🔔 Ajouter un rappel</button><button class="btn btn-terra" onclick="pigeSave()">Enregistrer la fiche</button>
     </div>
@@ -11864,6 +11878,45 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
   window.pigeAdrHide=function(){ var l=document.getElementById('pg-ac-list'); if(l) l.style.display='none'; };
   /* ----- Détection de doublon (adresse / lien / téléphone) ----- */
   function pgNorm(s){ return (s==null?'':''+s).trim().toLowerCase().replace(/\s+/g,' '); }
+  /* v7.35 : normalisation d'ADRESSE renforcée pour la détection de doublons
+     (accents, ponctuation, abréviations av/bd/rue/pl/st, bis/ter) */
+  function pgNormAddr(s){
+    s=(s==null?'':''+s).toLowerCase();
+    try{ s=s.normalize('NFD').replace(/[\u0300-\u036f]/g,''); }catch(e){}
+    s=' '+s.replace(/[',.;:()\-\/]/g,' ')+' ';
+    s=s.replace(/ (avenue|av) /g,' av ').replace(/ (boulevard|bld|bd) /g,' bd ')
+       .replace(/ (rue|r) /g,' rue ').replace(/ (place|pl) /g,' pl ')
+       .replace(/ (allee|all) /g,' all ').replace(/ (saint|st) /g,' st ')
+       .replace(/ (bis|ter) /g,' ');
+    return s.replace(/\s+/g,' ').trim();
+  }
+  /* v7.35 : détection de doublons PARTAGÉE (alerte de saisie, garde-fou à l'enregistrement, candidats à la fusion) */
+  function pgDupCandidates(vals, excludeId){
+    var out=[];
+    load().forEach(function(r){
+      if(r.id===excludeId) return;
+      var why=[];
+      if(vals.adr && vals.adr.length>5 && pgNormAddr(r.adresse)===vals.adr) why.push('même adresse');
+      if(vals.tel && pgTelKey(r.tel)===vals.tel) why.push('même téléphone');
+      if(vals.prix>0 && vals.surf>0 && NUMV(r.prix)===vals.prix && NUMV(r.surface)===vals.surf) why.push('même prix + surface');
+      var rurls=pigeSources(r).map(function(l){return pgNormUrl(l.url);}); if(r.fipac) rurls.push(pgNormUrl(r.fipac));
+      (vals.urls||[]).forEach(function(u){ if(pgUrlSignif(u) && rurls.indexOf(u)>=0 && why.indexOf('même lien')<0) why.push('même lien'); });
+      if(why.length) out.push({r:r, why:why});
+    });
+    out.sort(function(a,b){ return b.why.length-a.why.length; });
+    return out;
+  }
+  function pgFormVals(){
+    var urls=[]; document.querySelectorAll('#pg-links .pg-link-url').forEach(function(i){ if(i.value.trim()) urls.push(pgNormUrl(i.value)); });
+    var fp=(document.getElementById('pg-fipac')||{}).value; if(fp&&fp.trim()) urls.push(pgNormUrl(fp));
+    return {
+      adr:pgNormAddr((document.getElementById('pg-adresse')||{}).value),
+      tel:pgTelKey((document.getElementById('pg-tel')||{}).value),
+      urls:urls,
+      prix:window.NUMV?NUMV((document.getElementById('pg-prix')||{}).value):0,
+      surf:window.NUMV?NUMV((document.getElementById('pg-surface')||{}).value):0
+    };
+  }
   function pgNormUrl(u){
     var s=pgNorm(u).replace(/^https?:\/\/(www\.|m\.)?/,'').replace(/#.*$/,'');
     var q=s.indexOf('?');
@@ -11915,6 +11968,75 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
   };
   var _pgMultiClosed={};
   window.pgMultiToggle=function(k){ _pgMultiClosed[k]=!_pgMultiClosed[k]; pigeRender(); };
+  /* ══ v7.35 : FUSION de deux fiches du même bien ══ */
+  function pgMergeRow(c){
+    var r=c.r;
+    var meta=[r.ville||'', r.prix?fmtP(r.prix):'', r.arch?'archivée':''].filter(Boolean).join(' · ');
+    return '<div class="pgm-row"><div class="m"><b>'+esc(r.adresse||r.titre||'(sans adresse)')+'</b><span>'+esc(meta)+'</span></div>'
+      +(c.why&&c.why.length?'<span class="pgm-why">'+c.why.join(', ')+'</span>':'')
+      +'<button class="pgm-go" onclick="pigeMergeGo(\''+r.id+'\')">Fusionner</button></div>';
+  }
+  window.pigeMergeOpen=function(){
+    var id=(document.getElementById('pg-edit-id')||{}).value; if(!id) return;
+    var me=load().filter(function(x){return x.id===id;})[0]; if(!me) return;
+    document.getElementById('pgm-tt').textContent=me.adresse||me.titre||'cette fiche';
+    var urls=pigeSources(me).map(function(l){return pgNormUrl(l.url);}); if(me.fipac) urls.push(pgNormUrl(me.fipac));
+    var cand=pgDupCandidates({adr:pgNormAddr(me.adresse), tel:pgTelKey(me.tel), urls:urls, prix:NUMV(me.prix), surf:NUMV(me.surface)}, id);
+    document.getElementById('pgm-cands').innerHTML=cand.length? cand.slice(0,8).map(pgMergeRow).join('')
+      : '<div style="font-size:12px;color:var(--gris-2);padding:6px 2px;">Aucun doublon évident détecté — utilisez la recherche ci-dessous.</div>';
+    document.getElementById('pgm-search').value=''; document.getElementById('pgm-results').innerHTML='';
+    document.getElementById('pgm-ov').classList.add('open');
+  };
+  window.pigeMergeClose=function(){ var o=document.getElementById('pgm-ov'); if(o) o.classList.remove('open'); };
+  window.pigeMergeSearch=function(){
+    var id=(document.getElementById('pg-edit-id')||{}).value||'';
+    var q=pgNorm((document.getElementById('pgm-search')||{}).value);
+    var box=document.getElementById('pgm-results'); if(!box) return;
+    if(!q || q.length<2){ box.innerHTML=''; return; }
+    var hits=load().filter(function(r){
+      if(r.id===id) return false;
+      return ([r.adresse,r.ville,r.vendeur,r.tel,r.titre].join(' ')).toLowerCase().indexOf(q)>=0;
+    }).slice(0,8);
+    box.innerHTML=hits.map(function(r){ return pgMergeRow({r:r, why:[]}); }).join('') || '<div style="font-size:12px;color:var(--gris-2);padding:6px 2px;">Aucune fiche trouvée.</div>';
+  };
+  window.pigeMergeGo=function(otherId){
+    var id=(document.getElementById('pg-edit-id')||{}).value; if(!id||!otherId||id===otherId) return;
+    var all=load();
+    var A=all.filter(function(x){return x.id===id;})[0], B=all.filter(function(x){return x.id===otherId;})[0];
+    if(!A||!B) return;
+    var older=((A.created||'')<=(B.created||''))?A:B, other=(older===A)?B:A;
+    if(!confirm('Fusionner ces 2 fiches ?\n\n• CONSERVÉE (la plus ancienne) : '+(older.adresse||older.titre||'?')+' — créée le '+dstr(older.created)+'\n• SUPPRIMÉE après fusion : '+(other.adresse||other.titre||'?')+'\n\nCommentaires, liens, photos et informations des deux fiches sont réunis sur la fiche conservée.')) return;
+    /* champs : la conservée garde ses valeurs, les vides sont complétés */
+    ['adresse','titre','ville','prix','surface','pieces','chambres','etage','annee','dpe','descriptif','vendeur','tel','user','dossier','tempRef','photo','plan'].forEach(function(f){
+      if((older[f]==null||older[f]==='')&&other[f]!=null&&other[f]!=='') older[f]=other[f];
+    });
+    ['cave','parking','balcon','terrasse','jardin'].forEach(function(f){ older[f]=Math.max(parseInt(older[f]||0,10)||0, parseInt(other[f]||0,10)||0); });
+    /* liens : union dédoublonnée */
+    var seen={}, links=[];
+    pigeSources(older).concat(pigeSources(other)).forEach(function(l){ if(!l.url) return; var k=pgNormUrl(l.url); if(seen[k]) return; seen[k]=1; links.push({src:l.src||'manuel',url:l.url}); });
+    older.links=links.filter(function(l){return (l.src||'')!=='fipac';});
+    if(!older.fipac){ var fl=pigeFipacLink(other); if(fl) older.fipac=fl; }
+    older.src=(older.links[0]&&older.links[0].src)||older.src||'manuel';
+    older.url=(older.links[0]&&older.links[0].url)||'';
+    /* journal : tous les commentaires, dans l'ordre chronologique */
+    older.notes=(older.notes||[]).concat(other.notes||[]).sort(function(x,y){ return (''+x.t).localeCompare(''+y.t); });
+    /* statut : Chaud gagne ; suivi : le plus récent ; active si l'une des deux est active */
+    if(other.statut==='chaud') older.statut='chaud';
+    if((other.suiviDate||'')>(older.suiviDate||'')){ older.suivi=other.suivi; older.suiviDate=other.suiviDate; }
+    if(older.arch && !other.arch) delete older.arch;
+    older.updated=new Date().toISOString();
+    save(all.filter(function(x){return x.id!==other.id;}));
+    /* solder le rappel de relance de la fiche supprimée */
+    try{
+      var raps=JSON.parse(localStorage.getItem('ach_rappels_v1')||'[]')||[]; var ch=false;
+      raps.forEach(function(rp){ if(rp.id==='rap-pg-relance-'+other.id && !rp.done){ rp.done=1; rp.doneAt=new Date().toISOString(); ch=true; } });
+      if(ch){ localStorage.setItem('ach_rappels_v1', JSON.stringify(raps)); if(window.rapRefreshAll) rapRefreshAll(); }
+    }catch(e){}
+    pigeMergeClose(); closeModal('modal-pige'); pigeRender();
+    if(window.toast) toast('🔀 Fiches fusionnées — « '+(older.adresse||'')+' » conservée et complétée');
+    try{ if(window.achLog) achLog('modification','Pige','fusion de fiches : '+(older.adresse||'')+' ← '+(other.adresse||'')); }catch(e){}
+    setTimeout(function(){ try{ pigeEdit(older.id); }catch(e){} }, 150);
+  };
   /* bandeau « numéro déjà connu » dans la fiche */
   window.pigeProWarn=function(){
     var w=document.getElementById('pg-pro-warn'); if(!w) return;
@@ -11934,25 +12056,13 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
   window.pigeDupCheck=function(){
     var warn=document.getElementById('pg-dup-warn'); if(!warn) return;
     var id=(document.getElementById('pg-edit-id')||{}).value||'';
-    var adr=pgNorm((document.getElementById('pg-adresse')||{}).value);
-    var tel=pgNormTel((document.getElementById('pg-tel')||{}).value);
-    var urls=[]; document.querySelectorAll('#pg-links .pg-link-url').forEach(function(i){ if(i.value.trim()) urls.push(pgNormUrl(i.value)); });
-    var fp=(document.getElementById('pg-fipac')||{}).value; if(fp&&fp.trim()) urls.push(pgNormUrl(fp));
-    var prix=window.NUMV?NUMV((document.getElementById('pg-prix')||{}).value):0;
-    var surf=window.NUMV?NUMV((document.getElementById('pg-surface')||{}).value):0;
-    if(!adr && !tel && !urls.length && !(prix>0&&surf>0)){ warn.style.display='none'; return; }
-    var reasons=[];
-    load().forEach(function(r){
-      if(r.id===id) return;
-      if(adr && adr.length>4 && pgNorm(r.adresse)===adr) reasons.push('la même adresse');
-      if(tel && tel.length>=6 && pgNormTel(r.tel)===tel) reasons.push('le même téléphone');
-      if(prix>0 && surf>0 && NUMV(r.prix)===prix && NUMV(r.surface)===surf) reasons.push('le même couple prix + surface');
-      var rurls=pigeSources(r).map(function(l){return pgNormUrl(l.url);}); if(r.fipac) rurls.push(pgNormUrl(r.fipac));
-      urls.forEach(function(u){ if(pgUrlSignif(u) && rurls.indexOf(u)>=0) reasons.push('un lien identique'); });
-    });
-    reasons=reasons.filter(function(x,i){return reasons.indexOf(x)===i;});
-    if(!reasons.length){ warn.style.display='none'; return; }
-    warn.innerHTML='⚠️ <b>Doublon possible</b> — '+reasons.join(', ')+' que sur une autre fiche. Vérifiez qu’il ne s’agit pas du même bien avant de créer une 2ᵉ fiche.';
+    var v=pgFormVals();
+    if(!v.adr && !v.tel && !v.urls.length && !(v.prix>0&&v.surf>0)){ warn.style.display='none'; return; }
+    var cand=pgDupCandidates(v, id);
+    if(!cand.length){ warn.style.display='none'; return; }
+    var reasons=[]; cand.forEach(function(c){ c.why.forEach(function(w){ if(reasons.indexOf(w)<0) reasons.push(w); }); });
+    var adrs=cand.slice(0,3).map(function(c){ return '« '+esc(c.r.adresse||c.r.titre||'(sans adresse)')+' »'; }).join(', ');
+    warn.innerHTML='⚠️ <b>Doublon possible</b> — '+reasons.join(', ')+' que sur '+adrs+(cand.length>3?'…':'')+'. Vérifiez qu’il ne s’agit pas du même bien avant de créer une 2ᵉ fiche.';
     warn.style.display='block';
   };
   /* v7.34 : le bandeau pro se met à jour avec les mêmes saisies */
@@ -12297,6 +12407,7 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
     var fp=document.getElementById('pg-fipac'); if(fp) fp.value=isFipacUrl? url : '';
     var dw=document.getElementById('pg-dup-warn'); if(dw) dw.style.display='none';
     var pw=document.getElementById('pg-pro-warn'); if(pw) pw.style.display='none';
+    var mb=document.getElementById('pg-merge-btn'); if(mb) mb.style.display='none';   /* v7.35 : pas de fusion sur une fiche non enregistrée */
     _photo=''; _plan=''; pgPhotoShow(); pgPlanShow();
     document.getElementById('pg-modal-title').textContent='Nouvelle fiche de pige';
     var s=SRC[src||'manuel'];
@@ -12348,6 +12459,7 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
     document.getElementById('pg-com-bloc').style.display='';
     pgComRender(r);
     document.getElementById('pg-del-btn').style.display=canDel()?'':'none';
+    var _mb2=document.getElementById('pg-merge-btn'); if(_mb2) _mb2.style.display=canDel()?'':'none';   /* v7.35 */
     var lw=document.getElementById('pg-lock-warn');
     if(lw){ var lk=(window.achLockCheck?achLockCheck(id):null);
       if(lk){ lw.innerHTML=achLockWarnHtml(lk); lw.style.display='block'; } else lw.style.display='none'; }
@@ -12463,6 +12575,16 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
     obj.links=links;
     obj.src=(links[0]&&links[0].src)||'manuel';       /* source principale = 1er lien (pour tri/filtre) */
     obj.url=(links[0]&&links[0].url)||'';
+    /* v7.35 : garde-fou à la CRÉATION — confirmation explicite si doublon probable */
+    if(!id){
+      try{
+        var _dc=pgDupCandidates(pgFormVals(), '');
+        if(_dc.length){
+          var _lst=_dc.slice(0,3).map(function(c){ return '• '+(c.r.adresse||c.r.titre||'(sans adresse)')+' — '+c.why.join(', '); }).join('\n');
+          if(!confirm('⚠️ DOUBLON PROBABLE\n\nCette fiche ressemble à :\n'+_lst+'\n\nCréer quand même une nouvelle fiche ?\n(Annuler pour vérifier — vous pourrez aussi fusionner des fiches en double.)')) return;
+        }
+      }catch(e){}
+    }
     var a=load();
     if(id){ var r=a.filter(function(x){return x.id===id;})[0];
       if(r){
@@ -12521,6 +12643,7 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
     var adr=(t.match(/\b(?:rue|avenue|av\.|boulevard|bd|place|allée|chemin|impasse|quai|villa|square)\s+[A-Za-zÀ-ÿ'’\- ]{2,40}/i)||[])[0];
     if(adr) setIf('pg-adresse', adr.trim());
     pigeCalcM2();
+    try{ window.pigeDupCheck(); }catch(e){}   /* v7.35 : l'extraction auto déclenche AUSSI l'alerte doublon + pro */
     if(window.toast) toast(found?('✨ '+found+' information'+(found>1?'s':'')+' extraite'+(found>1?'s':'')+' — vérifiez et complétez'):'Aucune information reconnue dans ce texte');
   };
 
@@ -13132,6 +13255,14 @@ select.pg-chip{padding:6px 10px;}
 #pige-list{margin-top:14px;}
 .pg-fold-cust{border-style:dashed;}
 .pg-fold-add{border-style:dashed;color:var(--vert,#2e6e50);}
+/* v7.35 : fusion de fiches */
+.pgm-row{display:flex;align-items:center;gap:9px;border:1px solid var(--border);border-radius:9px;padding:8px 12px;margin-bottom:7px;font-size:12.5px;}
+.pgm-row .m{flex:1;min-width:0;}
+.pgm-row .m b{display:block;font-size:13px;}
+.pgm-row .m span{color:var(--gris-2);font-size:11px;}
+.pgm-why{font-size:10px;font-weight:600;color:#8a5a1e;background:#fdf3e7;border:1px solid #e8c9a0;border-radius:10px;padding:1px 8px;white-space:nowrap;}
+.pgm-go{border:none;background:#5a4a75;color:#fff;border-radius:7px;font-size:11.5px;font-weight:600;padding:6px 12px;cursor:pointer;font-family:'Jost',sans-serif;flex:none;}
+.pgm-go:hover{background:#6d5a8c;}
 /* v7.34 : multi-annonces (même numéro sur plusieurs fiches) */
 .pg-fold-multi{margin-left:auto;color:#5a4a75;}
 .pg-fold-multi.on{background:#5a4a75;border-color:#5a4a75;color:#fff;}
