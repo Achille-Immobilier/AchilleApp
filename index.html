@@ -1579,7 +1579,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     </div>
   </div>
   </div>
-  <div class="logo-ver app-ver">Achille App — v7.33</div>
+  <div class="logo-ver app-ver">Achille App — v7.34</div>
 </aside>
 <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Réduire la barre latérale">‹</button>
 
@@ -10245,7 +10245,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     startRealtime();
     var ov=document.getElementById('ach-login-overlay'); if(ov) ov.classList.add('ach-hidden');
     var ub=document.getElementById('ach-userbar'); if(ub) ub.style.display='none';
-    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v7.33';
+    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v7.34';
     flag('Synchronis\u00e9');
     // fin de l'init : on autorise la journalisation des actions
     setTimeout(function(){ installInterceptor._init=false; }, 1500);
@@ -11310,6 +11310,7 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
         </div>
         <div class="form-group fg-fipac"><label class="form-label">Lien Fipac (optionnel)</label><input class="form-input" id="pg-fipac" oninput="pigeDupCheck()" placeholder="https://www.fipac.fr/…"></div>
         <div id="pg-dup-warn" style="display:none;background:#fdf3e7;border:1px solid #e8c9a0;color:#8a5a1e;border-radius:8px;padding:9px 13px;font-size:12.5px;margin-bottom:11px;line-height:1.5;"></div>
+        <div id="pg-pro-warn" style="display:none;background:#efe9f5;border:1px solid #cdbede;color:#5a4a75;border-radius:8px;padding:9px 13px;font-size:12.5px;margin-bottom:11px;line-height:1.5;"></div>
         <div class="form-row">
           <div class="form-group fg-prix"><label class="form-label">Prix (€)</label><input class="form-input js-thousands" inputmode="decimal" id="pg-prix" placeholder="1 250 000" oninput="pigeCalcM2();pigeDupCheck()"></div>
           <div class="form-group fg-surface"><label class="form-label">Surface (m²)</label><input class="form-input" inputmode="decimal" id="pg-surface" placeholder="92" oninput="pigeCalcM2();pigeDupCheck()"></div>
@@ -11684,6 +11685,10 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
         +'</button>';
     });
     if(pgIsManager()) html+='<button class="pg-fold pg-fold-add" onclick="pigeDossNew()">＋ Dossier</button>';
+    /* v7.34 : tiroir Multi-annonces — visible seulement si au moins un numéro multiple existe */
+    var _ixF=pgTelIndex(), _nMF=0, _nNumF=0;
+    Object.keys(_ixF).forEach(function(k){ if(_ixF[k].length>1){ _nNumF++; _nMF+=_ixF[k].length; } });
+    if(_nNumF) html+='<button class="pg-fold pg-fold-archdrawer pg-fold-multi'+(pgDossier==='multi'?' on':'')+'" onclick="pigeDossPick(\'multi\')" title="Fiches partageant un même numéro de téléphone — probablement des professionnels ('+_nNumF+' numéro'+(_nNumF>1?'s':'')+')">🕵 Multi-annonces <b>'+_nMF+'</b></button>';
     html+='<button class="pg-fold pg-fold-archdrawer'+(pgDossier==='arch'?' on':'')+'" onclick="pigeDossPick(\'arch\')" title="Fiches sorties du stock actif — tout est conservé">📦 Archivées <b>'+nArch+'</b></button>';
     bar.innerHTML=html;
   }
@@ -11872,6 +11877,60 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
   /* une URL réduite au seul domaine est trop générique pour signaler un doublon */
   function pgUrlSignif(u){ return !!u && (u.indexOf('/')>=0 || u.indexOf('?')>=0); }
   function pgNormTel(t){ return (t==null?'':''+t).replace(/\D/g,''); }
+  /* ══ v7.34 : détection multi-annonces par téléphone ══ */
+  function pgTelKey(t){
+    var d=(''+(t==null?'':t)).replace(/\D/g,'');
+    if(d.slice(0,4)==='0033' && d.length===13) d='0'+d.slice(4);
+    else if(d.slice(0,2)==='33' && d.length===11) d='0'+d.slice(2);
+    return d.length>=9 ? d : '';
+  }
+  function pgTelFmtKey(k){ return k.replace(/(\d{2})(?=\d)/g,'$1 ').trim(); }
+  function pgTelIndex(){
+    var ix={};
+    load().forEach(function(r){ var k=pgTelKey(r.tel); if(k){ (ix[k]=ix[k]||[]).push(r); } });
+    return ix;
+  }
+  /* numéros marqués « PRO » (mémorisés, synchronisés) */
+  var PRO_K='ach_pige_pros_v1';
+  function proLoad(){ try{ var a=JSON.parse(localStorage.getItem(PRO_K)||'[]'); return Array.isArray(a)?a:[]; }catch(e){ return []; } }
+  function proSave(a){ try{ localStorage.setItem(PRO_K, JSON.stringify(a)); }catch(e){} }
+  function proOf(k){ return proLoad().filter(function(p){ return p.tel===k; })[0]||null; }
+  window.pigeProMark=function(k,ev){
+    if(ev) ev.stopPropagation();
+    var nom=(prompt('Nom du professionnel / de l\u2019agence (facultatif) :')||'').trim();
+    var a=proLoad();
+    if(!a.some(function(p){return p.tel===k;})){
+      a.push({id:'pro-'+k, tel:k, nom:nom, by:(window.ACH_USER&&ACH_USER.key)||'admin', created:new Date().toISOString(), updated:new Date().toISOString()});
+      proSave(a);
+    }
+    pigeRender();
+    if(window.toast) toast('🕵 Numéro marqué PRO'+(nom?' — '+nom:''));
+    try{ if(window.achLog) achLog('modification','Pige','numéro marqué PRO : '+pgTelFmtKey(k)+(nom?' ('+nom+')':'')); }catch(e){}
+  };
+  window.pigeProUnmark=function(k,ev){
+    if(ev) ev.stopPropagation();
+    if(!confirm('Retirer le marquage PRO de ce numéro ?')) return;
+    proSave(proLoad().filter(function(p){ return p.tel!==k; }));
+    pigeRender();
+  };
+  var _pgMultiClosed={};
+  window.pgMultiToggle=function(k){ _pgMultiClosed[k]=!_pgMultiClosed[k]; pigeRender(); };
+  /* bandeau « numéro déjà connu » dans la fiche */
+  window.pigeProWarn=function(){
+    var w=document.getElementById('pg-pro-warn'); if(!w) return;
+    var id=(document.getElementById('pg-edit-id')||{}).value||'';
+    var k=pgTelKey((document.getElementById('pg-tel')||{}).value);
+    if(!k){ w.style.display='none'; return; }
+    var others=load().filter(function(r){ return r.id!==id && pgTelKey(r.tel)===k; });
+    if(!others.length){ w.style.display='none'; return; }
+    var pro=proOf(k);
+    var adrs=others.slice(0,4).map(function(r){ return esc(r.adresse||r.titre||'(sans adresse)')+(r.arch?' (archivée)':''); }).join(' · ');
+    w.innerHTML='👥 <b>Ce numéro figure déjà sur '+others.length+' autre'+(others.length>1?'s':'')+' fiche'+(others.length>1?'s':'')+'</b> — probablement un professionnel'
+      +(pro?' <span class="pg-probadge">PRO'+(pro.nom?' · '+esc(pro.nom):'')+'</span>':'')
+      +' : '+adrs+(others.length>4?' …':'')
+      +' — <a href="#" onclick="closeModal(\'modal-pige\');pigeDossPick(\'multi\');return false;">voir le groupe</a>';
+    w.style.display='block';
+  };
   window.pigeDupCheck=function(){
     var warn=document.getElementById('pg-dup-warn'); if(!warn) return;
     var id=(document.getElementById('pg-edit-id')||{}).value||'';
@@ -11896,6 +11955,8 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
     warn.innerHTML='⚠️ <b>Doublon possible</b> — '+reasons.join(', ')+' que sur une autre fiche. Vérifiez qu’il ne s’agit pas du même bien avant de créer une 2ᵉ fiche.';
     warn.style.display='block';
   };
+  /* v7.34 : le bandeau pro se met à jour avec les mêmes saisies */
+  (function(){ var _dc=window.pigeDupCheck; window.pigeDupCheck=function(){ _dc(); try{ pigeProWarn(); }catch(e){} }; })();
   var UCOL={admin:'#4c533b',gerant:'#6b7453',collaborateur:'#b47360',alternant:'#b0883b'};
   var SUIVI={pdr:['PDR','#7a7570'],msg:['Message laissé','#5b8aa6'],mandat:['Mandat → Apimo','#2e6e50'],visite:['Accord de visite → Apimo','#2e6e50'],relance:['Bon contact à relancer','#b0883b'],'refus-rel':['Refus à relancer','#b0883b'],refus:['Refus catégorique','#a03222']};
   function srcOf(u){ u=(u||'').toLowerCase(); if(!u) return 'manuel';
@@ -12085,12 +12146,17 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
     if(pgFilt.villes.length){ a=a.filter(function(r){ return pgFilt.villes.indexOf(villeOf(r))>=0; }); }
     renderFolderBar(a);
     /* v7.22 : « Tous » et les statuts ne montrent que les fiches ACTIVES ; le tiroir « arch » montre les archivées */
+    var telIx=pgTelIndex();   /* v7.34 : index téléphone → fiches (toutes, archivées comprises) */
+    function telMulti(r){ var k=pgTelKey(r.tel); return k && telIx[k] && telIx[k].length>1; }
+    var inMulti=(pgDossier==='multi');
+    if(inMulti && !load().some(telMulti)){ pgDossier='tous'; inMulti=false; }   /* plus aucun multi → retour à Tous */
     var inArch=(pgDossier==='arch');
     if(pgDossier==='termine') pgDossier='tous';   /* v7.24 : le statut Terminé n'existe plus */
     /* v7.27 : une RECHERCHE depuis « Tous » remonte AUSSI les fiches archivées (affichées directement,
        avec leur style grisé + badge de motif — classées après les actives) */
     var withArch=(!!q && pgDossier==='tous');
     if(inArch){ a=a.filter(function(r){ return r.arch; }); }
+    else if(inMulti){ a=a.filter(telMulti); }   /* v7.34 : la vue multi montre actives ET archivées du groupe */
     else {
       if(!withArch) a=a.filter(function(r){ return !r.arch; });
       if(pgDossier!=='tous'){
@@ -12105,7 +12171,11 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
     var total=load().filter(function(r){ return inArch? !!r.arch : !r.arch; }).length, shown=a.length;
     var cntEl=document.getElementById('pg-count');
     if(cntEl){
-      if(inArch) cntEl.textContent=shown+' fiche'+(shown>1?'s':'')+' archivée'+(shown>1?'s':'');
+      if(inMulti){
+        var _nn={}; a.forEach(function(r){ _nn[pgTelKey(r.tel)]=1; });
+        cntEl.textContent=shown+' fiche'+(shown>1?'s':'')+' · '+Object.keys(_nn).length+' numéro'+(Object.keys(_nn).length>1?'s':'')+' multi';
+      }
+      else if(inArch) cntEl.textContent=shown+' fiche'+(shown>1?'s':'')+' archivée'+(shown>1?'s':'');
       else if(withArch){
         var _nA=a.filter(function(r){return r.arch;}).length;
         cntEl.textContent=shown+' résultat'+(shown>1?'s':'')+(_nA?(' (dont '+_nA+' archivé'+(_nA>1?'s':'')+')'):'');
@@ -12124,14 +12194,16 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
     var _totalShown=a.length, _pages=Math.max(1,Math.ceil(_totalShown/PG_PER));
     if(pgPage>_pages) pgPage=_pages; if(pgPage<1) pgPage=1;
     var _slice=a.slice((pgPage-1)*PG_PER, pgPage*PG_PER);
-    box.innerHTML=_slice.map(function(r){
+    function pgCard(r){
       var s=SRC[r.src]||SRC.autre;
       var _st=pgStatutDef(pgStatutOf(r));
       var ph=r.photo?'<div class="pg-ph"><img src="'+r.photo+'"></div>':'<div class="pg-ph pg-ph-empty">🏠</div>';
       /* v7.22 : rendu spécifique des fiches archivées */
       if(r.arch){
         var _mm=PG_MOTIFS[r.arch.m]||PG_MOTIFS.autre;
-        var _vd=[r.vendeur?('👤 '+esc(r.vendeur)):'', r.tel?('📞 '+esc(r.tel)):''].filter(Boolean).join(' · ');
+        var _amk=pgTelKey(r.tel), _amN=(_amk&&telIx[_amk])?telIx[_amk].length:0;
+        var _amb=(_amN>1)?(' <span class="pg-multi" title="Ce numéro figure sur '+_amN+' fiches" onclick="event.stopPropagation();pigeDossPick(\'multi\')">👥 ×'+_amN+'</span>'):'';
+        var _vd=[r.vendeur?('👤 '+esc(r.vendeur)):'', r.tel?('📞 '+esc(r.tel)+_amb):''].filter(Boolean).join(' · ');
         var _tt=r.adresse? esc(r.adresse) : esc(r.titre||'(sans adresse)');
         return '<div class="pg-fiche pg-arch" style="border-left:4px solid #c9c2b6;" onclick="pigeEdit(\''+r.id+'\')">'+ph
           +'<div class="pg-main"><div class="pg-top"><span class="pg-motif '+r.arch.m+'">'+_mm[0]+' '+_mm[1]+'</span><span class="pg-date">archivée le '+dstr(r.arch.d)+'</span>'+(r.arch.note?'<span class="pg-date">— '+esc(r.arch.note)+'</span>':'')+'</div>'
@@ -12144,7 +12216,9 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
           +'<button class="pg-mini pg-mini-react" onclick="pigeReactivate(\''+r.id+'\',event)">↩ Réactiver</button></div></div></div>';
       }
       var ub=r.user?'<span class="pg-ub" style="background:'+(UCOL[r.user]||'#777')+'22;color:'+(UCOL[r.user]||'#777')+';border:1px solid '+(UCOL[r.user]||'#777')+'55;" title="'+esc(roleName(r.user))+'">'+esc((function(){var R=window.ROLES&&ROLES[r.user];if(!R)return r.user;var p=(R.name||'').split(' ');return p[0]+(p[1]?' '+p[1].charAt(0)+'.':'');})())+'</span>':'<span class="pg-ub pg-ub-none">non attribuée</span>';
-      var vend=[r.vendeur?('👤 '+esc(r.vendeur)):'', r.tel?('📞 '+esc(r.tel)):''].filter(Boolean).join(' · ');
+      var _mk=pgTelKey(r.tel), _mN=(_mk&&telIx[_mk])?telIx[_mk].length:0, _pro=(_mN>1)?proOf(_mk):null;
+      var _mb=(_mN>1)?(' <span class="pg-multi" title="Ce numéro figure sur '+_mN+' fiches — cliquez pour voir le groupe" onclick="event.stopPropagation();pigeDossPick(\'multi\')">👥 ×'+_mN+'</span>'+(_pro?'<span class="pg-probadge" title="'+esc(_pro.nom||'Professionnel')+'">PRO</span>':'')):'';
+      var vend=[r.vendeur?('👤 '+esc(r.vendeur)):'', r.tel?('📞 '+esc(r.tel)+_mb):''].filter(Boolean).join(' · ');
       var nc=(r.notes||[]).length;
       var titre=r.adresse? esc(r.adresse) : esc(r.titre||'(sans adresse)');
       var ml=m2line(r);
@@ -12161,7 +12235,29 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
         +(pm2v?'<div class="pg-pm2">'+pm2v+'</div>':'')
         +ub
         +'<div class="pg-actions">'+srcLinkBtns(r)+((function(){var fl=pigeFipacLink(r);return fl?'<button class="pg-mini pg-mini-fipac" onclick="event.stopPropagation();window.open(\''+esc(fl)+'\',\'_blank\')">Fipac</button>':'';})())+'<button class="pg-mini" onclick="event.stopPropagation();pigeEdit(\''+r.id+'\')">✎ Modifier</button><button class="pg-mini pg-mini-arch" title="Sortir du stock actif sans rien perdre" onclick="pigeArchAsk(\''+r.id+'\',event)">⤵ Archiver</button></div></div></div>';
-    }).join('');
+    }
+    if(inMulti){
+      /* v7.34 : vue groupée par numéro — un groupe repliable par téléphone, plus gros suspects d'abord */
+      var grp={}; a.forEach(function(r){ var k=pgTelKey(r.tel); (grp[k]=grp[k]||[]).push(r); });
+      var keys=Object.keys(grp).sort(function(x,y){ return (telIx[y]||[]).length-(telIx[x]||[]).length; });
+      box.innerHTML=keys.map(function(k){
+        var g=grp[k], closed=!!_pgMultiClosed[k], pro=proOf(k);
+        var vends=[]; (telIx[k]||[]).forEach(function(r){ if(r.vendeur && vends.indexOf(r.vendeur)<0) vends.push(r.vendeur); });
+        return '<div class="pg-mgrp'+(closed?' closed':'')+'"><div class="pg-mgrp-hd" onclick="pgMultiToggle(\''+k+'\')">'
+          +'<span class="pg-mgrp-car">▼</span>'
+          +'<span class="pg-mgrp-tel">📞 '+pgTelFmtKey(k)+'</span>'
+          +'<span class="pg-mgrp-n">'+(telIx[k]||[]).length+' fiches</span>'
+          +(vends.length?'<span class="pg-mgrp-vend">👤 '+esc(vends.join(' · '))+'</span>':'')
+          +'<span class="pg-mgrp-sp"></span>'
+          +(pro
+            ? '<span class="pg-probadge big">PRO'+(pro.nom?' · '+esc(pro.nom):'')+'</span><button class="pg-mini" onclick="pigeProUnmark(\''+k+'\',event)" title="Retirer le marquage">✕</button>'
+            : '<button class="pg-mini" onclick="pigeProMark(\''+k+'\',event)" title="Mémoriser ce numéro comme professionnel">☆ Marquer PRO</button>')
+          +'</div>'+(closed?'':'<div class="pg-mgrp-body">'+g.map(pgCard).join('')+'</div>')+'</div>';
+      }).join('') || '<div style="color:var(--gris-2);font-size:13.5px;padding:24px 6px;">Aucune fiche ne correspond dans les multi-annonces.</div>';
+      renderPager(0);
+      return;
+    }
+    box.innerHTML=_slice.map(pgCard).join('');
     renderPager(_totalShown);
   };
 
@@ -12200,6 +12296,7 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
     pigeLinksRender((url && !isFipacUrl)? [{src:src||srcOf(url), url:url}] : []);
     var fp=document.getElementById('pg-fipac'); if(fp) fp.value=isFipacUrl? url : '';
     var dw=document.getElementById('pg-dup-warn'); if(dw) dw.style.display='none';
+    var pw=document.getElementById('pg-pro-warn'); if(pw) pw.style.display='none';
     _photo=''; _plan=''; pgPhotoShow(); pgPlanShow();
     document.getElementById('pg-modal-title').textContent='Nouvelle fiche de pige';
     var s=SRC[src||'manuel'];
@@ -12258,6 +12355,7 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
     window._pgSnap=r.updated||r.created||'';
     pigeStatutPickRender(r.statut||'encours'); pigeDossSelectFill(r.dossier||'');
     try{ window.pigeSuiviAutoRefresh(); }catch(e){}   /* v7.22 : bandeau archivage/rappel selon le suivi */
+    try{ window.pigeProWarn(); }catch(e){}             /* v7.34 : numéro déjà connu → bandeau pro */
     openModal('modal-pige');
   };
   function pgComRenderNew(){
@@ -13034,6 +13132,25 @@ select.pg-chip{padding:6px 10px;}
 #pige-list{margin-top:14px;}
 .pg-fold-cust{border-style:dashed;}
 .pg-fold-add{border-style:dashed;color:var(--vert,#2e6e50);}
+/* v7.34 : multi-annonces (même numéro sur plusieurs fiches) */
+.pg-fold-multi{margin-left:auto;color:#5a4a75;}
+.pg-fold-multi.on{background:#5a4a75;border-color:#5a4a75;color:#fff;}
+.pg-multi{display:inline-flex;align-items:center;background:#efe9f5;color:#5a4a75;border:1px solid #cdbede;border-radius:12px;font-size:10px;font-weight:700;padding:0 7px;cursor:pointer;margin-left:2px;}
+.pg-multi:hover{background:#5a4a75;color:#fff;}
+.pg-probadge{display:inline-flex;align-items:center;background:#5a4a75;color:#fff;border-radius:11px;font-size:9px;font-weight:700;padding:1px 7px;margin-left:4px;letter-spacing:.05em;}
+.pg-probadge.big{font-size:10.5px;padding:2px 10px;}
+.pg-mgrp{margin-bottom:14px;border:1px solid #cdbede;border-radius:12px;background:#fbfaf7;}
+.pg-mgrp-hd{display:flex;align-items:center;gap:10px;padding:9px 15px;background:#efe9f5;border-radius:11px 11px 0 0;cursor:pointer;user-select:none;flex-wrap:wrap;}
+.pg-mgrp.closed .pg-mgrp-hd{border-radius:11px;}
+.pg-mgrp-car{font-size:9px;color:#5a4a75;transition:transform .15s;}
+.pg-mgrp.closed .pg-mgrp-car{transform:rotate(-90deg);}
+.pg-mgrp-tel{font-size:14px;font-weight:600;color:#5a4a75;}
+.pg-mgrp-n{background:#5a4a75;color:#fff;font-size:10.5px;font-weight:600;padding:1px 9px;border-radius:12px;}
+.pg-mgrp-vend{font-size:11.5px;color:var(--gris);}
+.pg-mgrp-sp{flex:1;}
+.pg-mgrp-hd .pg-mini{display:inline-flex;}
+.pg-mgrp-body{padding:10px 12px 4px;}
+.pg-mgrp-body .pg-fiche{box-shadow:none;}
 /* v7.28 : dossiers créés / ＋ Dossier / Archivées plus COMPACTS que les onglets de statut
    (les statuts restent l'information principale de la ligne) */
 .pg-fold-cust,.pg-fold-add,.pg-fold-archdrawer{font-size:11px;padding:5px 10px 4px;gap:4px;align-self:center;}
