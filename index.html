@@ -599,10 +599,13 @@ body.sb-collapsed .sidebar::-webkit-scrollbar{width:3px;}
 .week-allday-cell{border-right:1px solid var(--border);padding:3px 4px;cursor:pointer;} .week-allday-cell:hover{background:rgba(180,115,96,.05);}
 .week-time-grid{display:grid;grid-template-columns:52px repeat(7,1fr);}
 .week-time-col{border-right:1px solid var(--border);}
-.week-time-label{height:48px;display:flex;align-items:flex-start;justify-content:flex-end;padding:2px 6px 0;font-size:10px;color:var(--gris-2);font-family:'Jost',sans-serif;border-bottom:1px solid rgba(76,83,59,.06);}
+.week-time-label{height:48px;display:flex;align-items:flex-start;justify-content:flex-end;padding:2px 6px 0;font-size:10px;color:var(--gris-2);font-family:'Jost',sans-serif;border-bottom:1px solid rgba(76,83,59,.16);}
 .week-day-col{border-right:1px solid var(--border);position:relative;}
-.week-hour-slot{height:48px;border-bottom:1px solid rgba(76,83,59,.06);}
-.week-half-slot{height:24px;cursor:pointer;transition:background .15s;} .week-half-slot:first-child{border-bottom:1px dashed rgba(76,83,59,.09);} .week-half-slot:hover{background:rgba(180,115,96,.07);}
+.week-hour-slot{height:48px;border-bottom:1px solid rgba(76,83,59,.16);}
+/* v7.42 : lecture des heures facilitée — une heure sur deux légèrement teintée (8h, 10h, 12h…),
+   trait PLEIN un peu plus marqué à chaque heure pleine, trait POINTILLÉ discret à la demie */
+.week-hour-slot:nth-child(odd),.week-time-label:nth-child(odd){background:rgba(76,83,59,.05);}
+.week-half-slot{height:24px;cursor:pointer;transition:background .15s;} .week-half-slot:first-child{border-bottom:1px dashed rgba(76,83,59,.13);} .week-half-slot:hover{background:rgba(180,115,96,.07);}
 
 /* ── MONTH VIEW ── */
 .month-grid{display:flex;flex-direction:column;height:100%;}
@@ -1590,7 +1593,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     </div>
   </div>
   </div>
-  <div class="logo-ver app-ver">Achille App — v7.41</div>
+  <div class="logo-ver app-ver">Achille App — v7.42</div>
 </aside>
 <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Réduire la barre latérale">‹</button>
 
@@ -10342,7 +10345,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     startRealtime();
     var ov=document.getElementById('ach-login-overlay'); if(ov) ov.classList.add('ach-hidden');
     var ub=document.getElementById('ach-userbar'); if(ub) ub.style.display='none';
-    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v7.41';
+    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v7.42';
     flag('Synchronis\u00e9');
     // fin de l'init : on autorise la journalisation des actions
     setTimeout(function(){ installInterceptor._init=false; }, 1500);
