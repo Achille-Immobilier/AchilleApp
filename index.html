@@ -1470,6 +1470,11 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
 /* En cours — intervenants & répartition */
 .ec-rep-sec{border-top:1px solid var(--beige);padding-top:14px;margin-top:6px;}
 .ec-rep-title{font-size:14px;color:var(--terra);font-weight:600;margin-bottom:10px;}
+/* v7.44 : flèche de dépliage commune (répartition honoraires, Rédaction quotidienne) — volontairement plus grande */
+.ach-car{display:inline-block;width:22px;font-size:16px;line-height:1;color:var(--terra);cursor:pointer;border:none;background:none;padding:0 2px 0 0;vertical-align:-1px;}
+.rd-car{flex:none;margin-top:1px;}
+.rd-full{font-size:13px;color:#2c2a26;line-height:1.55;white-space:pre-wrap;margin-top:4px;}
+.rd-full-objet{font-weight:600;margin-bottom:4px;}
 .ec-rep-sub{font-size:12px;letter-spacing:.04em;text-transform:uppercase;color:var(--gris-2);margin:10px 0 6px;}
 .ec-tag-agence{display:inline-block;background:var(--kaki);color:#fff;border-radius:14px;padding:3px 11px;font-size:13px;}
 .ec-user-chk{display:inline-flex;align-items:center;gap:6px;background:var(--blanc);border:1px solid var(--beige);border-radius:14px;padding:3px 11px;font-size:13.5px;cursor:pointer;}
@@ -1598,7 +1603,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     </div>
   </div>
   </div>
-  <div class="logo-ver app-ver">Achille App — v7.43</div>
+  <div class="logo-ver app-ver">Achille App — v7.44</div>
 </aside>
 <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Réduire la barre latérale">‹</button>
 
@@ -5973,7 +5978,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     var hdr='<div class="week-grid"><div class="week-header"><div class="week-header-time"></div>';
     days.forEach(function(d){
       var num='<div class="week-day-num'+(planIsToday(d)?' today':'')+'">'+d.getDate()+'</div>';
-      hdr+='<div class="week-header-day"><div class="week-day-name">'+['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'][d.getDay()===0?6:d.getDay()-1]+'</div>'+num+'</div>';
+      hdr+='<div class="week-header-day"><div class="week-day-name">'+['Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi','Dimanche'][d.getDay()===0?6:d.getDay()-1]+'</div>'+num+'</div>';  /* v7.44 : jours en entier */
     });
     hdr+='</div>';
 
@@ -6044,7 +6049,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     for(var d=1;d<=last.getDate();d++) cells.push({d:new Date(y,m,d),other:false});
     while(cells.length%7!==0) cells.push({d:planAddDays(last,cells.length-startDow-last.getDate()),other:true});
 
-    var DOWS=['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'];
+    var DOWS=['Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi','Dimanche'];  /* v7.44 : jours en entier */
     var h='<div class="month-grid"><div class="month-header">';
     DOWS.forEach(function(dw){ h+='<div class="month-dow">'+dw+'</div>'; });
     h+='</div><div class="month-body">';
@@ -7952,6 +7957,8 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     /* v7.43 : frais de vente — montant officiel enregistré OU estimation auto */
     var _fi=document.getElementById('ecf-frais');
     if(_fi){ if(+row.frais>0){ _fi.dataset.manual='1'; _fi.value=window.numFmtStr(''+row.frais); } else { _fi.dataset.manual='0'; _fi.value=''; } }
+    /* v7.44 : l'encart répartition ne s'ouvre tout seul que s'il est rempli */
+    window.ecRepSet(!!((row.users&&row.users.length) || row.interAg || (row.apporteurs&&row.apporteurs.length) || (row.userParts&&Object.keys(row.userParts).length)));
     ecCalcHon();
     document.getElementById('ec-modal').dataset.editId = id;
     var _db=document.getElementById('ec-del-btn'); if(_db) _db.style.display='';
@@ -8001,6 +8008,17 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
   window.ecFraisBlur = function(){
     var inp=document.getElementById('ecf-frais'); if(!inp) return;
     if((inp.value||'').trim()===''){ inp.dataset.manual='0'; window.ecFraisRefresh(); }
+  };
+  /* ── v7.44 : encart « Intervenants & répartition » repliable ──
+     Ouvert automatiquement SEULEMENT s'il contient des données ; sinon replié, flèche ▸ pour le déplier. */
+  window.ecRepSet = function(open){
+    var b=document.getElementById('ecf-rep-body'), c=document.getElementById('ecf-rep-car');
+    if(b) b.style.display=open?'':'none';
+    if(c) c.textContent=open?'▾':'▸';
+  };
+  window.ecRepToggle = function(){
+    var b=document.getElementById('ecf-rep-body');
+    window.ecRepSet(b && b.style.display==='none');
   };
   // ── Répartition des honoraires (déductions sur TTC) ──
   window.ecRepCalc = function(){
@@ -8158,6 +8176,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     ['ecf-ia-nom','ecf-ia-val','ecf-ap1-nom','ecf-ap1-val','ecf-ap2-nom','ecf-ap2-val','ecf-part-collaborateur-val','ecf-part-alternant-val'].forEach(function(id){var e=document.getElementById(id); if(e) e.value='';});
     ['ecf-ia-type','ecf-ap1-type','ecf-ap2-type','ecf-part-collaborateur-type','ecf-part-alternant-type'].forEach(function(id){var e=document.getElementById(id); if(e) e.value='eur';});
     var _fiN=document.getElementById('ecf-frais'); if(_fiN){ _fiN.dataset.manual='0'; _fiN.value=''; }  /* v7.43 */
+    window.ecRepSet(false);  /* v7.44 : nouvelle vente → encart répartition replié */
     ecCalcHon();
     document.getElementById('ec-modal').dataset.editId='';
     var db=document.getElementById('ec-del-btn'); if(db) db.style.display='none';
@@ -9029,8 +9048,9 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
           <textarea class="ec-modal-input" id="ecf-comment" rows="3" placeholder="Notes, points d'attention, suivi…" style="resize:vertical;min-height:62px;font-family:'Jost',sans-serif;line-height:1.4;"></textarea>
         </div>
         <div class="ec-modal-full ec-rep-sec">
-          <div class="ec-rep-title">Intervenants & répartition des honoraires</div>
-
+          <!-- v7.44 : encart repliable — ouvert automatiquement seulement s'il est rempli -->
+          <div class="ec-rep-title" onclick="ecRepToggle()" style="cursor:pointer;user-select:none;"><span class="ach-car" id="ecf-rep-car">▸</span>Intervenants &amp; répartition des honoraires</div>
+          <div id="ecf-rep-body" style="display:none;">
           <div class="ec-rep-sub">Intervenants</div>
           <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;">
             <span class="ec-tag-agence">Achille Immobilier (Marine Attias + Laurent)</span>
@@ -9071,6 +9091,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
             <span class="net">Encaissé agence (notaire) : <b id="ecf-rep-net">—</b> TTC <span style="color:var(--gris);">(<span id="ecf-rep-netht">—</span> HT)</span></span>
             <span>Primes &amp; apporteurs versés : <b id="ecf-rep-prime">—</b></span>
           </div>
+          </div><!-- /ecf-rep-body -->
         </div>
       </div>
       <div class="ec-modal-actions">
@@ -10396,7 +10417,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     startRealtime();
     var ov=document.getElementById('ach-login-overlay'); if(ov) ov.classList.add('ach-hidden');
     var ub=document.getElementById('ach-userbar'); if(ub) ub.style.display='none';
-    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v7.43';
+    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v7.44';
     flag('Synchronis\u00e9');
     // fin de l'init : on autorise la journalisation des actions
     setTimeout(function(){ installInterceptor._init=false; }, 1500);
@@ -15592,9 +15613,14 @@ textarea.rd-inp{resize:vertical;line-height:1.45;}
       if(!items.length){ h+='<div class="rd-empty">Aucun modèle pour l’instant.'+(manage?' Cliquez sur « + Ajouter un modèle ».':'')+'</div>'; }
       else items.forEach(function(t){
         var preview = (canal==='mail' && t.objet) ? t.objet : ((t.corps||'').split('\n')[0]||'(vide)');
-        h+='<div class="rd-row"><div class="rd-row-main">'
+        /* v7.44 : contenu complet dépliable à la flèche (comme « Posts à venir ») */
+        var open=!!(window._rdOpen&&window._rdOpen[t.id]);
+        h+='<div class="rd-row"><span class="ach-car rd-car" onclick="redacToggle(\''+t.id+'\')" title="'+(open?'Replier':'Voir le message complet')+'">'+(open?'▾':'▸')+'</span><div class="rd-row-main">'
           +'<div class="rd-row-titre">'+esc(t.titre||'(sans titre)')+'</div>'
-          +'<div class="rd-row-prev">'+esc(preview)+'</div></div>'
+          +(open
+            ? '<div class="rd-full">'+((canal==='mail'&&t.objet)?'<div class="rd-full-objet">Objet : '+esc(t.objet)+'</div>':'')+esc(t.corps||'')+'</div>'
+            : '<div class="rd-row-prev">'+esc(preview)+'</div>')
+          +'</div>'
           +'<div class="rd-row-actions">'
           +'<button class="rd-btn" onclick="redacGenOpen(\''+t.id+'\')">⚡ Générer</button>'
           +(manage?'<button class="rd-ic" title="Modifier" onclick="redacEditOpen(\''+t.id+'\')">✎</button><button class="rd-ic del" title="Supprimer" onclick="redacDel(\''+t.id+'\')">🗑</button>':'')
@@ -15604,6 +15630,8 @@ textarea.rd-inp{resize:vertical;line-height:1.45;}
     }
     box.innerHTML = section('mail','✉️','Mails') + section('sms','💬','SMS / WhatsApp');
   };
+  window._rdOpen=window._rdOpen||{};
+  window.redacToggle=function(id){ window._rdOpen[id]=!window._rdOpen[id]; window.redacRender(); };  /* v7.44 */
 
   function openEdit(id){
     var t = id ? find(load(),id) : null;
@@ -16306,7 +16334,7 @@ textarea.rd-inp{resize:vertical;line-height:1.45;}
 .cav-act.del:hover{border-color:var(--rouge);color:var(--rouge);}
 .cav-empty{padding:12px 14px;font-size:12.5px;color:var(--gris-2);font-style:italic;}
 /* v7.32 : texte complet depliable */
-.cav-car{border:none;background:none;color:var(--gris-2);cursor:pointer;font-size:11px;padding:2px 4px;flex:none;width:20px;}
+.cav-car{border:none;background:none;color:var(--gris-2);cursor:pointer;font-size:15px;padding:2px 4px;flex:none;width:24px;}  /* v7.44 : flèche agrandie (demande Laurent) */
 .cav-car:hover{color:var(--terra);}
 .cav-car.has{color:var(--terra);}
 .cav-body{padding:4px 14px 12px 43px;border-bottom:1px solid #f3eee6;background:#fbf8f3;}
