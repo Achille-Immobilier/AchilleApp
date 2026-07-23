@@ -1610,7 +1610,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     </div>
   </div>
   </div>
-  <div class="logo-ver app-ver">Achille App — v8.05</div>
+  <div class="logo-ver app-ver">Achille App — v8.06</div>
 </aside>
 <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Réduire la barre latérale">‹</button>
 
@@ -1787,7 +1787,6 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     <div class="docs-page">
       <div class="docs-tabs">
         <button class="docs-tab active" onclick="docsTab('modeles',this)">📁 Documents de l’agence</button>
-        <button class="docs-tab" onclick="docsTab('affaires',this)">📂 Documents par affaire</button>
         <button class="docs-tab" onclick="docsTab('redac',this)">✍️ Rédaction quot.</button>
       </div>
       <div class="docs-body">
@@ -7812,6 +7811,13 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
       /* v7.45 : le crayon ouvre la fiche MODIFIABLE ; stopPropagation pour ne pas déclencher la vue lecture seule de la ligne */
       return '<button class="ec-edit-btn" title="Modifier la fiche" onclick="event.stopPropagation();ecOpenModal('+id+')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>';
     };
+    /* v8.06 : icône dossier par ligne → ouvre les documents de CETTE affaire (clé ec-<id>). Visible pour tous (consultation) ; l'ajout/suppression dans le dossier reste réservé admin/direction. */
+    var foldBtnHtml = function(id) {
+      var dc = (window.achDaCount ? achDaCount('ec-'+id) : {n:0,miss:false});
+      var badge = dc.n ? '<span class="ec-fold-cnt'+(dc.miss?' warn':'')+'">'+dc.n+'</span>' : '';
+      var ttl = dc.n ? ('Dossier de l\'affaire — '+dc.n+' document'+(dc.n>1?'s':'')+(dc.miss?', pièce(s) manquante(s)':'')) : 'Dossier de l\'affaire — aucun document';
+      return '<button class="ec-fold-btn" title="'+ttl+'" onclick="event.stopPropagation();if(window.ecOpenDossier)ecOpenDossier('+id+')">\uD83D\uDCC1'+badge+'</button>';
+    };
     var lockSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>';
     var rowHtml = function(r, extra) {
       var _m = ecMoney(r);
@@ -7822,9 +7828,9 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
       var cls = 'ec-row' + (extra||'');
       var _st = ecStatus(r);
       var acteCell;
-      if(_st==='nonabouti') acteCell = '<div class="ec-date-none">—<div class="ec-badge nonabouti">✕ Non aboutie</div></div>';
-      else if(r.acte) acteCell = '<div class="ec-date">'+ecDF(r.acte)+((_st==='passee')?'<div class="ec-badge signe">✓ Signé</div>':'')+'</div>';
-      else acteCell = '<div class="ec-date-none">—</div>';
+      if(_st==='nonabouti') acteCell = '<div class="ec-date-none ec-acte">—<div class="ec-badge nonabouti">✕ Non aboutie</div></div>';
+      else if(r.acte) acteCell = '<div class="ec-date ec-acte">'+ecDF(r.acte)+((_st==='passee')?'<div class="ec-badge signe">✓ Signé</div>':'')+'</div>';
+      else acteCell = '<div class="ec-date-none ec-acte">—</div>';
       return '<div class="'+cls+'" data-id="'+r.id+'" onclick="ecOpenView('+r.id+')" title="Cliquez pour consulter la fiche" style="cursor:pointer;">'
         +'<div><div class="ec-addr">'+r.addr+'</div><div class="ec-sub">'+ecDF(r.promesse)+'</div>'+ecWhoLine(r)+(r.comment?'<div class="ec-comment">\uD83D\uDCAC '+r.comment.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')+'</div>':'')+'</div>'
         +'<div class="ec-party">'+ecPersonSpan(r.vendeur,r.coordVend,'ec-name')+ecPersonSpan(r.notVendeur,r.coordNotV,'ec-notaire')+'</div>'
@@ -7836,6 +7842,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
         +(r.cs  ? '<div class="ec-date">'+ecDF(r.cs)+'</div>'  : '<div class="ec-date-none">—</div>')
         +(r.exp ? '<div class="ec-date">'+ecDF(r.exp)+'</div>' : '<div class="ec-date-none">—</div>')
         +acteCell
+        +foldBtnHtml(r.id)
         +editBtnHtml(r.id)
         +'</div>';
     };
@@ -10508,7 +10515,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     startRealtime();
     var ov=document.getElementById('ach-login-overlay'); if(ov) ov.classList.add('ach-hidden');
     var ub=document.getElementById('ach-userbar'); if(ub) ub.style.display='none';
-    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v8.05';
+    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v8.06';
     flag('Synchronis\u00e9');
     // fin de l'init : on autorise la journalisation des actions
     setTimeout(function(){ installInterceptor._init=false; }, 1500);
@@ -10942,7 +10949,41 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
   function daSave(o){ try{ localStorage.setItem(DA_KEY,JSON.stringify(o)); }catch(e){} }
   var ST_LBL={ok:'Reçu',att:'En cours',miss:'Manquant'};
 
+  /* v8.06 — DOSSIER DE DOCUMENTS PAR VENTE (rapatriement de « Documents par affaire » dans Ventes/En cours) */
+  window.achDaCount=function(key){ try{ var d=(daLoad().docs[key]||[]); return { n:d.length, miss:d.some(function(x){return x.st==='miss';}) }; }catch(e){ return {n:0,miss:false}; } };
+  window.ecDossRender=function(){
+    var key=window._ecDossKey; if(!key) return;
+    var body=document.getElementById('ec-doss-body'); if(!body) return;
+    var o=daLoad(), docs=o.docs[key]||[], adm=isPriv();
+    var out='';
+    if(adm){ out+='<div class="ec-doss-tools"><button class="btn btn-terra btn-sm" onclick="docaffAddDoc(\''+key+'\')">＋ Ajouter un document</button></div>'; }
+    if(!docs.length){
+      out+='<div class="ec-doss-empty">Aucun document pour cette affaire'+(adm?' — cliquez sur « ＋ Ajouter un document » pour commencer.':'.')+'</div>';
+    }
+    docs.forEach(function(d){
+      out+='<div class="doc-item"><span class="doc-icon">📄</span><div style="flex:1;min-width:0;">'
+        +'<div class="doc-name">'+esc(d.nom)+'</div>'
+        +(d.note?'<div class="doc-meta">'+esc(d.note)+'</div>':'')
+        +'</div><div class="doc-actions">'
+        +(d.dockey? fileTileFor({name:d.fname||d.nom,type:d.ftype||''}, d.dockey) : '')
+        +(adm?'<button class="doc-mini-btn" title="Modifier" onclick="docaffEditDoc(\''+key+'\',\''+d.id+'\')">✎</button>'
+          +'<button class="doc-mini-btn del" title="Supprimer" onclick="docaffDelDoc(\''+key+'\',\''+d.id+'\')">🗑</button>':'')
+        +'<span class="doc-status '+d.st+(adm?' clickable" title="Cliquer pour changer le statut" onclick="docaffCycle(\''+key+'\',\''+d.id+'\')':'"')+'">'+ST_LBL[d.st]+'</span>'
+        +'</div></div>';
+    });
+    body.innerHTML=out;
+  };
+  window.ecOpenDossier=function(id){
+    window._ecDossKey='ec-'+id;
+    var label='';
+    try{ var L=window.ecListForDocs?ecListForDocs():[]; var f=L.filter(function(x){return (''+x.id)===(''+id);})[0]; label=f?f.addr:''; }catch(e){}
+    var t=document.getElementById('ec-doss-title'); if(t) t.textContent=label||('Affaire '+id);
+    window.ecDossRender();
+    if(window.openModal) openModal('ec-doss-modal');
+  };
+
   window.docaffRender=function(){
+    try{ var _dm=document.getElementById('ec-doss-modal'); if(window._ecDossKey && _dm && _dm.classList.contains('open')){ window.ecDossRender(); if(window.ecRenderPage) window.ecRenderPage(); } }catch(e){}
     var addBtn=document.getElementById('docaff-add-aff-btn'); if(addBtn) addBtn.style.display=isPriv()?'':'none';
     var box=document.getElementById('docaff-list'); if(!box) return;
     var o=daLoad(), adm=isPriv();
@@ -13199,6 +13240,14 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
       <button class="btn btn-terra" onclick="docaffSaveDoc()">Enregistrer</button></div>
   </div>
 </div>
+<div class="modal-overlay" id="ec-doss-modal" onmousedown="this._d=(event.target===this)" onclick="if(event.target===this&&this._d)closeModal('ec-doss-modal');this._d=false;">
+   <div class="modal" style="max-width:660px;">
+     <button class="modal-close" onclick="closeModal('ec-doss-modal')">x</button>
+     <div class="ec-doss-head"><span class="ec-doss-ico">📁</span><div><div class="ec-doss-h">Dossier de l’affaire</div><div class="ec-doss-sub" id="ec-doss-title"></div></div></div>
+     <div id="ec-doss-body" style="margin-top:6px;"></div>
+     <div class="ec-doss-foot">Fichier joint : 4 Mo maximum, déposé sur le cloud de l’agence. Ajout, modification et suppression réservés à l’administrateur et à la direction.</div>
+   </div>
+ </div>
 <div class="modal-overlay" id="modal-doc" onmousedown="this._d=(event.target===this)" onclick="if(event.target===this&&this._d)closeModal('modal-doc');this._d=false;">
   <div class="modal" style="max-width:540px;">
     <button class="modal-close" onclick="closeModal('modal-doc')">x</button>
@@ -15566,6 +15615,20 @@ window.r3FlashToDetail=function(){
 .pg-com-pencil{float:right;background:none;border:1px solid var(--beige-2);border-radius:7px;padding:1px 8px;font-size:11px;color:var(--gris);cursor:pointer;}
 .pg-com-pencil:hover{color:var(--terra);border-color:var(--terra);}
 .pg-com-del{float:right;margin-left:5px;background:none;border:1px solid var(--beige-2);border-radius:7px;padding:1px 8px;font-size:11px;color:var(--gris);cursor:pointer;}
+/* v8.06 : icône dossier dans les lignes Ventes/En cours + modal dossier */
+.ec-fold-btn{position:absolute;right:8px;top:50%;transform:translateY(-50%);width:26px;height:26px;background:rgba(255,255,255,.92);border:1px solid var(--terra-p);border-radius:6px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;line-height:1;transition:all .13s;z-index:2;}
+.ec-fold-btn:hover{background:var(--terra-p);border-color:var(--terra);}
+.ec-fold-cnt{position:absolute;top:-6px;right:-6px;background:var(--terra);color:#fff;font-size:9px;font-weight:600;min-width:15px;height:15px;border-radius:8px;display:flex;align-items:center;justify-content:center;padding:0 3px;font-family:'Jost',sans-serif;}
+.ec-fold-cnt.warn{background:var(--rouge);}
+.ec-edit-btn{right:40px;}
+.ec-acte{padding-right:40px;}
+.ec-doss-head{display:flex;align-items:center;gap:12px;margin:2px 0 4px;}
+.ec-doss-ico{font-size:24px;}
+.ec-doss-h{font-family:'Cormorant Garamond',serif;font-size:22px;color:var(--noir);line-height:1.1;}
+.ec-doss-sub{font-size:12px;color:var(--gris);margin-top:2px;}
+.ec-doss-tools{margin:4px 0 12px;}
+.ec-doss-empty{font-size:13px;color:var(--gris-2);font-style:italic;padding:14px 4px;}
+.ec-doss-foot{font-size:11px;color:var(--gris-2);font-style:italic;margin-top:12px;line-height:1.5;border-top:1px solid var(--border);padding-top:10px;}
 .pg-com-del:hover{color:#c0392b;border-color:#c0392b;}
 .pg-com-editing{background:rgba(180,115,96,.06);border-radius:8px;padding:8px;}
 .pg-com-edit-row{display:flex;gap:8px;margin:6px 0;}
