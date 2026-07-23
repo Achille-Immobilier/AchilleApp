@@ -1610,7 +1610,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     </div>
   </div>
   </div>
-  <div class="logo-ver app-ver">Achille App — v8.07</div>
+  <div class="logo-ver app-ver">Achille App — v8.08</div>
 </aside>
 <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Réduire la barre latérale">‹</button>
 
@@ -10514,7 +10514,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     startRealtime();
     var ov=document.getElementById('ach-login-overlay'); if(ov) ov.classList.add('ach-hidden');
     var ub=document.getElementById('ach-userbar'); if(ub) ub.style.display='none';
-    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v8.07';
+    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v8.08';
     flag('Synchronis\u00e9');
     // fin de l'init : on autorise la journalisation des actions
     setTimeout(function(){ installInterceptor._init=false; }, 1500);
@@ -12204,7 +12204,7 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
   };
   window.pigeAdrHide=function(){ var l=document.getElementById('pg-ac-list'); if(l) l.style.display='none'; };
   /* ----- Détection de doublon (adresse / lien / téléphone) ----- */
-  function pgNorm(s){ return (s==null?'':''+s).trim().toLowerCase().replace(/\s+/g,' '); }
+  function pgNorm(s){ var x=(s==null?'':''+s).trim().toLowerCase().replace(/\s+/g,' '); try{ x=x.normalize('NFD').replace(/[\u0300-\u036f]/g,''); }catch(e){} return x; }   /* v8.08 : + pliage des accents */
   /* v7.35 : normalisation d'ADRESSE renforcée pour la détection de doublons
      (accents, ponctuation, abréviations av/bd/rue/pl/st, bis/ter) */
   function pgNormAddr(s){
@@ -12320,11 +12320,15 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
   window.pigeMergeSearch=function(){
     var id=(document.getElementById('pg-edit-id')||{}).value||'';
     var q=pgNorm((document.getElementById('pgm-search')||{}).value);
+    var qd=q.replace(/\D/g,'');
     var box=document.getElementById('pgm-results'); if(!box) return;
     if(!q || q.length<2){ box.innerHTML=''; return; }
     var hits=load().filter(function(r){
       if(r.id===id) return false;
-      return ([r.adresse,r.ville,r.vendeur,r.tel,r.titre].join(' ')).toLowerCase().indexOf(q)>=0;
+      var hay=pgNorm([r.adresse,r.ville,r.vendeur,r.tel,r.titre].join(' '));
+      if(hay.indexOf(q)>=0) return true;
+      if(qd.length>=3 && (pgTelKey(r.tel).indexOf(qd)>=0 || (''+(r.prix||'')).indexOf(qd)>=0)) return true;
+      return false;
     }).slice(0,8);
     box.innerHTML=hits.map(function(r){ return pgMergeRow({r:r, why:[]}); }).join('') || '<div style="font-size:12px;color:var(--gris-2);padding:6px 2px;">Aucune fiche trouvée.</div>';
   };
@@ -12613,9 +12617,12 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
     }catch(e){}
     var a=load().slice();
     var q=pgNorm((document.getElementById('pg-search')||{}).value);
+    var qd=q.replace(/\D/g,'');   /* v8.08 : chiffres seuls (tél/prix sans espaces) */
     if(q){ a=a.filter(function(r){
-      var hay=[r.adresse,r.ville,r.vendeur,r.tel,r.descriptif,r.titre].concat(pigeSources(r).map(function(l){return l.url;})).concat([r.fipac]).join(' ').toLowerCase();
-      return hay.indexOf(q)>=0;
+      var hay=pgNorm([r.adresse,r.ville,r.vendeur,r.tel,r.descriptif,r.titre].concat(pigeSources(r).map(function(l){return l.url;})).concat([r.fipac]).join(' '));
+      if(hay.indexOf(q)>=0) return true;
+      if(qd.length>=3 && (pgTelKey(r.tel).indexOf(qd)>=0 || (''+(r.prix||'')).indexOf(qd)>=0)) return true;   /* tél OU prix, espaces ignorés */
+      return false;
     }); }
     if(pgFilt.sites.length){ a=a.filter(function(r){
       return pgFilt.sites.some(function(f){
@@ -14353,7 +14360,7 @@ var DOCGEN_TEMPLATES = {
       { t:'h', v:'Estimation de votre bien' },
       { t:'p', k:'intro_estim', rows:3, def:"À la suite de l’analyse approfondie de votre bien, j’ai le plaisir de vous transmettre notre avis de valeur, établi selon les caractéristiques du logement, de son emplacement, de son état général, ainsi que d’une étude des transactions et de la demande actuelle sur votre secteur. Votre bien présente de réels atouts, tant par sa situation que par ses prestations, ce qui lui permet de se positionner favorablement sur le marché actuel. Sur cette base, notre estimation se situe dans les fourchettes suivantes :" },
       { t:'fourchette', k:'f_basse', l:'Fourchette basse', prix:'882 000 €', def:"La fourchette basse correspond à un prix permettant une vente rapide, dans un délai court, en tenant compte d’une négociation limitée. Elle se situe autour de" },
-      { t:'fourchette', k:'f_mediane', l:'Fourchette médiane', prix:'950 000 €', def:"La fourchette médiane représente le prix de marché cohérent aujourd’hui, équilibrant attractivité pour les acquéreurs et valorisation optimale de votre bien. Elle se situe autour de" },
+      { t:'fourchette', k:'f_mediane', l:'Fourchette médiane', prix:'950 000 €', opt:'f_mediane_on', optLabel:'Afficher la fourchette médiane (décochez pour n’avoir que 2 fourchettes : basse et haute)', def:"La fourchette médiane représente le prix de marché cohérent aujourd’hui, équilibrant attractivité pour les acquéreurs et valorisation optimale de votre bien. Elle se situe autour de" },
       { t:'fourchette', k:'f_haute', l:'Fourchette haute', prix:'1 015 000 €', def:"La fourchette haute correspond à un prix ambitieux, envisageable dans un contexte de délai plus long, sous réserve d’un positionnement et d’une présentation irréprochables. Elle se situe autour de" },
       { t:'p', k:'conclusion', rows:3, def:"Cette fourchette correspond à un positionnement cohérent avec le marché actuel et devrait permettre une vente dans des délais raisonnables, sous réserve des évolutions des conditions du marché et du profil des potentiels acquéreurs. Le choix du prix de mise en vente dépendra de votre stratégie, de votre calendrier et de vos priorités. Notre rôle sera ensuite de vous accompagner afin d’adapter ce positionnement au fil des retours du marché, tout en défendant au mieux la valeur de votre bien." },
       { t:'h', v:'Cadre et limites de cette estimation' },
@@ -14365,7 +14372,7 @@ var DOCGEN_TEMPLATES = {
 
   estimation_locative: {
     nom: "Avis de Valeur Locative", icone: "🔑", sub: "Estimation du loyer — location nue ou meublée",
-    banner: true, titre: "Avis de Valeur Locative",
+    banner: true, titre: "Avis de Valeur Locative", compact: true,
     blocks: [
       { t:'meta', rows: [
         { l:'Date', k:'date', def:'__DATE__' },
@@ -14539,6 +14546,7 @@ async function docgenPdf(docKey, data, assets){
   var terra = PD.rgb(TERRA[0],TERRA[1],TERRA[2]);
   var noir  = PD.rgb(NOIR[0],NOIR[1],NOIR[2]);
   var gris  = PD.rgb(GRIS[0],GRIS[1],GRIS[2]);
+  var BS = (T&&T.compact)?11:12, HS = (T&&T.compact)?15:17;   /* v8.08 : tailles réduites en mode compact (tenir sur 1 page) */
 
   /* Dimensions relevées dans les modèles Word (EMU→pt) :
      bandeau 104.1×46.7 pt aligné à droite sur TOUTES les pages,
@@ -14561,7 +14569,7 @@ async function docgenPdf(docKey, data, assets){
   function addPage(first){
     page=pdf.addPage([PW,PH]); footer(page);
     if(T.banner){
-      page.drawImage(banner,{x:PW-49.5-104.1, y:PH-21.3-46.7, width:104.1, height:46.7});
+      page.drawImage(banner,{x:PW-49.5-104.1, y:PH-13-46.7, width:104.1, height:46.7});   /* v8.08 : logo légèrement remonté pour dégager le titre */
     }
     if(WM){ page.drawImage(WM,{x:(PW-340)/2, y:(PH-340)/2-30, width:340, height:340, opacity:0.10}); }
     y=PH-72;
@@ -14584,7 +14592,7 @@ async function docgenPdf(docKey, data, assets){
   }
   function para(text, opts){
     opts=opts||{};
-    var font=opts.font||belleza, size=opts.size||12, lh=opts.lh||size*1.42, color=opts.color||noir;
+    var font=opts.font||belleza, size=opts.size||BS, lh=opts.lh||size*1.42, color=opts.color||noir;
     var width=opts.width||CW, x=opts.x||ML;
     var lines=wrap(text,font,size,width);
     lines.forEach(function(ln,i){
@@ -14607,7 +14615,7 @@ async function docgenPdf(docKey, data, assets){
     });
   }
   function sp(h){ need(h); y-=h; }
-  function heading(txt){ sp(10); need(34); para(txt,{font:kenoky,size:17,color:terra,lh:22}); sp(3); }
+  function heading(txt){ sp(T.compact?7:10); need(HS+13); para(txt,{font:kenoky,size:HS,color:terra,lh:HS+5}); sp(T.compact?2:3); }
   function label_val(l,v){ 
     need(19);
     page.drawText(l+' :',{x:ML,y:y-12,size:12,font:kenoky,color:noir});
@@ -14628,10 +14636,28 @@ async function docgenPdf(docKey, data, assets){
     else if(b.t==='p'){ if(g(b.k).trim()) para(g(b.k),{justify:true}); else { sp(2); need(16); hline(ML, ML+CW, y-8); sp(22); } sp(4); }
     else if(b.t==='mention'){ sp(6); para(b.v,{size:11.5}); sp(4); }
     else if(b.t==='fourchette'){
-      need(20);
-      para(b.l+' — '+(g(b.k+'_prix')||'… €'),{font:kenoky,size:12,color:terra,lh:16});
-      var ftxt=(g(b.k+'_txt')||b.def)+' '+(g(b.k+'_prix')||'… €')+'.';
-      para(ftxt,{justify:true}); sp(6);
+      if(b.opt && g(b.opt)!=='1') return;   /* v8.08 : fourchette optionnelle décochée → non affichée */
+      sp(2); need(20);
+      para(b.l,{font:kenoky,size:12,color:terra,lh:16});   /* v8.08 : titre = libellé seul (montant retiré ici) */
+      var fbase=(g(b.k+'_txt')||b.def), famt=(g(b.k+'_prix')||'… €');
+      var flines=wrap(fbase, belleza, BS, CW);
+      flines.forEach(function(ln,i){
+        need(BS*1.42);
+        var last=(i===flines.length-1);
+        if(!last && ln.indexOf(' ')>0){
+          var ws=ln.split(' '), tw=0; ws.forEach(function(w){tw+=belleza.widthOfTextAtSize(w,BS);});
+          var gp=(CW-tw)/(ws.length-1);
+          if(gp<BS*1.6){ var cx=ML; ws.forEach(function(w){ page.drawText(w,{x:cx,y:y-BS,size:BS,font:belleza,color:noir}); cx+=belleza.widthOfTextAtSize(w,BS)+gp; }); }
+          else page.drawText(ln,{x:ML,y:y-BS,size:BS,font:belleza,color:noir});
+          y-=BS*1.42;
+        } else {
+          page.drawText(ln,{x:ML,y:y-BS,size:BS,font:belleza,color:noir});   /* v8.08 : montant en gras+couleur (kenoky/terra) à la fin de la phrase */
+          var lw=belleza.widthOfTextAtSize(ln,BS), spw=belleza.widthOfTextAtSize(' ',BS), amw=kenoky.widthOfTextAtSize(famt+'.',BS);
+          if(ML+lw+spw+amw<=ML+CW){ page.drawText(famt+'.',{x:ML+lw+spw,y:y-BS,size:BS,font:kenoky,color:terra}); y-=BS*1.42; }
+          else { y-=BS*1.42; need(BS*1.42); page.drawText(famt+'.',{x:ML,y:y-BS,size:BS,font:kenoky,color:terra}); y-=BS*1.42; }
+        }
+      });
+      sp(6);
     }
     else if(b.t==='loyer'){
       sp(4); need(46);
@@ -14963,7 +14989,7 @@ window.dgOpenForm=function(key){
     if(b.t==='meta'||b.t==='lettre_entete'){ b.rows.forEach(function(r){ h+='<div class="dg-frow">'+dgLab(r.l)+dgFI(r.k,r.def)+'</div>'; }); }
     else if(b.t==='h'){ h+='<div class="dg-fh">'+b.v+'</div>'; }
     else if(b.t==='p'){ h+='<div class="dg-frow">'+dgFA(b.k,b.def,b.rows)+'<div class="dg-hint">Texte proposé — adaptez librement. Laissez vide pour une ligne à remplir à la main.</div></div>'; }
-    else if(b.t==='fourchette'){ h+='<div class="dg-fh2">'+b.l+'</div><div class="dg-frow">'+dgLab('Prix')+dgFI(b.k+'_prix',b.prix)+'</div><div class="dg-frow">'+dgFA(b.k+'_txt',b.def,2)+'</div>'; }
+    else if(b.t==='fourchette'){ var _chk=b.opt?('<div class="dg-frow dg-check-row"><label><input type="checkbox" id="f-'+b.opt+'" checked onchange="this.closest(\'.dg-frow\').nextElementSibling&&0"> '+(b.optLabel||'Inclure cette fourchette')+'</label></div>'):''; h+=_chk+'<div class="dg-fh2">'+b.l+'</div><div class="dg-frow">'+dgLab('Prix')+dgFI(b.k+'_prix',b.prix)+'</div><div class="dg-frow">'+dgFA(b.k+'_txt',b.def,2)+'</div>'; }
     else if(b.t==='loyer'){ h+='<div class="dg-frow">'+dgLab(b.l1)+dgFI(b.k,b.def)+'</div>'; }
     else if(b.t==='kv'){ h+='<div class="dg-kv2">'; b.rows.forEach(function(r){ h+='<div class="dg-frow">'+dgLab(r.l)+dgFI(r.k,r.def||'')+'</div>'; }); h+='</div>'; }
     else if(b.t==='phrase_bien'||b.t==='phrase_prix'||b.t==='phrase_validite'){ Object.keys(b.ks).forEach(function(k){ h+='<div class="dg-frow">'+dgLab(b.ks[k])+dgFI(k,'')+'</div>'; }); }
