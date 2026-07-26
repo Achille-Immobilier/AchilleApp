@@ -1611,7 +1611,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     </div>
   </div>
   </div>
-  <div class="logo-ver app-ver">Achille App — v8.15</div>
+  <div class="logo-ver app-ver">Achille App — v8.16</div>
 </aside>
 <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Réduire la barre latérale">‹</button>
 
@@ -2404,16 +2404,13 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
           </div>
         </div>
 
-        <!-- 2 · Points appréciés -->
+        <!-- 2 · Ce qui a plu / ce qui a freiné — une seule liste, 2 sens (v8.16) -->
         <div class="crf-sec">
-          <div class="crf-lb">Points appréciés <span class="crf-opt">— cliquez pour cocher</span></div>
-          <div class="crf-chips" id="cr-pos-chips"></div>
-        </div>
-
-        <!-- 3 · Freins / objections -->
-        <div class="crf-sec">
-          <div class="crf-lb">Freins &amp; objections <span class="crf-opt">— cliquez pour cocher</span></div>
-          <div class="crf-chips" id="cr-neg-chips"></div>
+          <div class="crf-lb">Ce qui a plu <span class="crf-opt">/</span> ce qui a freiné
+            <span class="crf-opt">— 1<sup>er</sup> clic = a plu <b class="crf-sg crf-sg-p">＋</b> · 2<sup>e</sup> clic = a freiné <b class="crf-sg crf-sg-n">－</b> · 3<sup>e</sup> clic annule</span>
+          </div>
+          <div class="crf-chips" id="cr-crit-chips"></div>
+          <div class="crf-recap" id="cr-crit-recap"></div>
         </div>
 
         <!-- 4 · Le visiteur & son projet -->
@@ -8718,8 +8715,11 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
   var crFilling = false;        /* true pendant le remplissage du formulaire : pas d'enregistrement */
   var crLogged = false;         /* une seule ligne d'historique par ouverture */
 
-  var CR_POS = ['Luminosité','Volumes','Plan / distribution','Vue dégagée','Calme','Étage','Cachet / charme','État général','Cuisine','Salle de bains','Rangements','Balcon / extérieur','Quartier','Commerces / écoles','Transports','Copropriété','Cave / parking','Prix cohérent'];
-  var CR_NEG = ['Prix trop élevé','Vis-à-vis','Bruit','Sans ascenseur','Travaux à prévoir','Surface insuffisante','Nombre de chambres','Pas d’extérieur','Cuisine à refaire','Salle de bains à refaire','DPE','Charges élevées','Travaux de copropriété','Manque de lumière','Plan mal distribué','Quartier','Humidité','Pas de parking','Disponibilité trop tardive'];
+  /* v8.16 — UNE seule liste de critères ; chaque critère se coche « a plu » (+) OU « a freiné » (−).
+     Le format enregistré ne change pas : on continue d'écrire deux tableaux o.pos et o.neg. */
+  var CR_CRIT = ['Prix','Luminosité','Volumes / surface','Plan / distribution','Nombre de chambres','Étage','Ascenseur','Vue','Vis-à-vis','Bruit / calme','État général','Travaux à prévoir','Cachet / charme','Cuisine','Salle de bains','Rangements','Balcon / extérieur','Exposition','Humidité','DPE / énergie','Charges','Copropriété','Cave / parking','Quartier','Commerces / écoles','Transports','Disponibilité'];
+  /* Reprise des anciens libellés (v8.14/v8.15) vers la liste unifiée — aucun compte rendu déjà saisi n'est perdu */
+  var CR_ALIAS = {'Prix cohérent':'Prix','Prix trop élevé':'Prix','Volumes':'Volumes / surface','Surface insuffisante':'Volumes / surface','Vue dégagée':'Vue','Calme':'Bruit / calme','Bruit':'Bruit / calme','Sans ascenseur':'Ascenseur','Manque de lumière':'Luminosité','Plan mal distribué':'Plan / distribution','Pas d’extérieur':'Balcon / extérieur','Cuisine à refaire':'Cuisine','Salle de bains à refaire':'Salle de bains','DPE':'DPE / énergie','Charges élevées':'Charges','Travaux de copropriété':'Copropriété','Pas de parking':'Cave / parking','Disponibilité trop tardive':'Disponibilité'};
   var CR_SUITE = ['2e visite à prévoir','Retour attendu','Offre annoncée','Relance à faire','Documents à envoyer','Contre-visite avec un proche','Réflexion en cours','Sans suite'];
 
   var CR_SEL = ['fin','projet','dec','delai','prealable','duree'];
@@ -8763,23 +8763,77 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     }).join('');
   }
   function crBuildChips(){
-    var p = document.getElementById('cr-pos-chips');
-    if(p && !p._built){ p.innerHTML = crChipsHtml(CR_POS,'pos','pos'); p._built = 1; }
-    var n = document.getElementById('cr-neg-chips');
-    if(n && !n._built){ n.innerHTML = crChipsHtml(CR_NEG,'neg','neg'); n._built = 1; }
+    var c = document.getElementById('cr-crit-chips');
+    if(c && !c._built){
+      c.innerHTML = CR_CRIT.map(function(v){
+        var esc = v.replace(/"/g,'&quot;');
+        return '<button type="button" class="crf-chip crf-tri" data-g="crit" data-v="'+esc+'" onclick="crChip3(this)" title="1 clic : a plu — 2 clics : a freiné — 3 clics : annule">'+v+'</button>';
+      }).join('');
+      c._built = 1;
+    }
     var s = document.getElementById('cr-suite-chips');
     if(s && !s._built){ s.innerHTML = crChipsHtml(CR_SUITE,'suite',''); s._built = 1; }
   }
+  /* pastille à 2 états (Suite à donner) */
   window.crChip = function(btn){
     btn.classList.toggle('on');
     crTouch();
   };
+  /* pastille à 3 états (critères) : neutre → a plu (+) → a freiné (−) → neutre */
+  window.crChip3 = function(btn){
+    if(btn.classList.contains('p')){ btn.classList.remove('p'); btn.classList.add('n'); }
+    else if(btn.classList.contains('n')){ btn.classList.remove('n'); }
+    else { btn.classList.add('p'); }
+    crCritRecap();
+    crTouch();
+  };
+  /* petit récapitulatif sous les pastilles (compte des 2 sens) */
+  function crCritRecap(){
+    var el = document.getElementById('cr-crit-recap'); if(!el) return;
+    var np = document.querySelectorAll('#cr-crit-chips .crf-chip.p').length;
+    var nn = document.querySelectorAll('#cr-crit-chips .crf-chip.n').length;
+    if(!np && !nn){ el.innerHTML = ''; return; }
+    var t = [];
+    if(np) t.push('<b class="crf-sg crf-sg-p">＋</b> '+np+' point'+(np>1?'s':'')+' apprécié'+(np>1?'s':''));
+    if(nn) t.push('<b class="crf-sg crf-sg-n">－</b> '+nn+' frein'+(nn>1?'s':''));
+    el.innerHTML = t.join(' &nbsp;·&nbsp; ');
+  }
+  /* Un critère inconnu (ancien libellé non prévu) est ajouté à la volée : on ne perd jamais une saisie */
+  function crCritChip(label){
+    var box = document.getElementById('cr-crit-chips'); if(!box) return null;
+    var b = box.querySelector('.crf-chip[data-v="'+(''+label).replace(/"/g,'&quot;')+'"]');
+    if(b) return b;
+    b = document.createElement('button');
+    b.type = 'button'; b.className = 'crf-chip crf-tri';
+    b.setAttribute('data-g','crit'); b.setAttribute('data-v', label);
+    b.setAttribute('onclick','crChip3(this)');
+    b.textContent = label;
+    box.appendChild(b);
+    return b;
+  }
   function crChipVals(group){
     var out = [];
+    if(group === 'pos' || group === 'neg'){
+      var sel = '#cr-crit-chips .crf-chip.' + (group === 'pos' ? 'p' : 'n');
+      document.querySelectorAll(sel).forEach(function(b){ out.push(b.getAttribute('data-v')); });
+      return out;
+    }
     document.querySelectorAll('.crf-chip[data-g="'+group+'"].on').forEach(function(b){
       out.push(b.getAttribute('data-v'));
     });
     return out;
+  }
+  /* Remise à zéro + application des 2 sens sur la liste unifiée */
+  function crCritSet(pos, neg){
+    document.querySelectorAll('#cr-crit-chips .crf-chip').forEach(function(b){ b.classList.remove('p','n','on'); });
+    [[pos||[], 'p'], [neg||[], 'n']].forEach(function(pair){
+      pair[0].forEach(function(v){
+        var lbl = CR_ALIAS[v] || v;
+        var b = crCritChip(lbl);
+        if(b){ b.classList.remove('p','n'); b.classList.add(pair[1]); }
+      });
+    });
+    crCritRecap();
   }
   function crChipSet(group, vals){
     vals = vals || [];
@@ -8819,7 +8873,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
       else b.classList.remove('on');
     });
 
-    crChipSet('pos', o.pos); crChipSet('neg', o.neg); crChipSet('suite', o.suite);
+    crCritSet(o.pos, o.neg); crChipSet('suite', o.suite);
 
     CR_SEL.concat(CR_TXT).forEach(function(f){
       var el = document.getElementById('cr-'+f);
@@ -10616,7 +10670,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     startRealtime();
     var ov=document.getElementById('ach-login-overlay'); if(ov) ov.classList.add('ach-hidden');
     var ub=document.getElementById('ach-userbar'); if(ub) ub.style.display='none';
-    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v8.15';
+    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v8.16';
     flag('Synchronis\u00e9');
     // fin de l'init : on autorise la journalisation des actions
     setTimeout(function(){ installInterceptor._init=false; }, 1500);
@@ -13499,8 +13553,16 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
 .crf-chip{padding:4px 10px;border-radius:20px;border:1px solid var(--border);background:var(--blanc);font-size:12px;font-family:'Jost',sans-serif;line-height:1.5;color:var(--gris);cursor:pointer;transition:all .12s;}
 .crf-chip:hover{border-color:var(--terra);color:var(--terra);}
 .crf-chip.on{background:var(--terra);border-color:var(--terra);color:var(--blanc);}
-.crf-chip.pos.on{background:var(--vert);border-color:var(--vert);}
-.crf-chip.neg.on{background:var(--rouge);border-color:var(--rouge);}
+/* v8.16 — pastilles à 3 états : neutre / a plu (vert +) / a freiné (rouge −) */
+.crf-chip.crf-tri.p{background:var(--vert);border-color:var(--vert);color:var(--blanc);}
+.crf-chip.crf-tri.n{background:var(--rouge);border-color:var(--rouge);color:var(--blanc);}
+.crf-chip.crf-tri.p:hover,.crf-chip.crf-tri.n:hover{color:var(--blanc);filter:brightness(1.08);}
+.crf-chip.crf-tri.p::before{content:'\FF0B';margin-right:4px;font-weight:600;}
+.crf-chip.crf-tri.n::before{content:'\FF0D';margin-right:4px;font-weight:600;}
+.crf-sg{font-weight:700;}
+.crf-sg-p{color:var(--vert);}
+.crf-sg-n{color:var(--rouge);}
+.crf-recap{margin-top:7px;font-size:11.5px;color:var(--gris);}
 .crf-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px;}
 .crf-f label{display:block;font-size:11px;color:var(--gris);margin-bottom:3px;}
 .crf-in,.crf-sel,.crf-ta{width:100%;padding:7px 9px;border:1.5px solid var(--border);border-radius:7px;font-family:'Jost',sans-serif;font-size:13px;background:var(--blanc);color:var(--noir);outline:none;box-sizing:border-box;}
