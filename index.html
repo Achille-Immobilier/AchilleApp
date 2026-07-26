@@ -1611,7 +1611,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     </div>
   </div>
   </div>
-  <div class="logo-ver app-ver">Achille App — v8.13</div>
+  <div class="logo-ver app-ver">Achille App — v8.14</div>
 </aside>
 <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Réduire la barre latérale">‹</button>
 
@@ -2366,6 +2366,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
                 <th style="padding:10px 14px;text-align:left;font-weight:500;width:130px;">Accompagnateur</th>
                 <th style="padding:10px 14px;text-align:left;font-weight:500;">Formalisation</th>
                 <th style="padding:10px 14px;text-align:left;font-weight:500;">Observations</th>
+                <th style="padding:10px 8px;text-align:center;font-weight:500;width:48px;">CR</th>
                 <th style="padding:10px 8px;width:40px;"></th>
               </tr>
             </thead>
@@ -2375,86 +2376,163 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
       </div>
     </div>
 
-    <!-- PANNEAU COMPTE RENDU -->
-    <div id="cr-panel" style="position:fixed;top:0;right:-520px;width:500px;height:100vh;background:var(--blanc);box-shadow:-4px 0 32px rgba(0,0,0,.15);z-index:800;display:flex;flex-direction:column;transition:right .3s cubic-bezier(.4,0,.2,1);font-family:'Jost',sans-serif;">
+    <!-- PANNEAU COMPTE RENDU DE VISITE (v8.14) -->
+    <div id="cr-panel" style="position:fixed;top:0;right:-620px;width:560px;max-width:96vw;height:100vh;background:var(--blanc);box-shadow:-4px 0 32px rgba(0,0,0,.15);z-index:800;display:flex;flex-direction:column;transition:right .3s cubic-bezier(.4,0,.2,1);font-family:'Jost',sans-serif;">
       <!-- Header -->
-      <div style="background:var(--noir);padding:18px 22px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
+      <div style="background:var(--noir);padding:16px 20px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
         <div>
           <div style="font-family:'Cormorant Garamond',serif;font-size:20px;color:var(--blanc);">Compte rendu <span style="color:var(--terra-l);">de visite</span></div>
           <div style="font-size:12px;color:var(--gris-2);margin-top:2px;" id="cr-subtitle">—</div>
         </div>
-        <button onclick="crClose()" style="background:rgba(255,255,255,.1);border:none;border-radius:8px;width:32px;height:32px;cursor:pointer;color:var(--blanc);font-size:16px;display:flex;align-items:center;justify-content:center;">✕</button>
+        <button onclick="crClose()" style="background:rgba(255,255,255,.1);border:none;border-radius:8px;width:32px;height:32px;cursor:pointer;color:var(--blanc);font-size:16px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">✕</button>
       </div>
 
-      <!-- Formulaire complémentaire -->
-      <div style="padding:18px 22px;border-bottom:1px solid var(--border);flex-shrink:0;background:var(--beige);">
-        <div style="font-size:11px;font-weight:600;color:var(--gris);letter-spacing:.1em;text-transform:uppercase;margin-bottom:12px;">Informations complémentaires</div>
-        <div style="display:grid;gap:10px;">
-          <div>
-            <label style="font-size:12px;color:var(--gris);display:block;margin-bottom:4px;">Réaction du visiteur</label>
-            <div style="display:flex;gap:6px;flex-wrap:wrap;" id="cr-reaction-btns">
-              <button onclick="crReaction(this,'Très intéressé(e)')" style="padding:5px 12px;border-radius:20px;border:1px solid var(--border);background:var(--blanc);font-size:12px;font-family:'Jost',sans-serif;cursor:pointer;color:var(--gris);">🔥 Très intéressé(e)</button>
-              <button onclick="crReaction(this,'Intéressé(e) mais hésitant(e)')" style="padding:5px 12px;border-radius:20px;border:1px solid var(--border);background:var(--blanc);font-size:12px;font-family:'Jost',sans-serif;cursor:pointer;color:var(--gris);">🤔 Hésitant(e)</button>
-              <button onclick="crReaction(this,'En réflexion')" style="padding:5px 12px;border-radius:20px;border:1px solid var(--border);background:var(--blanc);font-size:12px;font-family:'Jost',sans-serif;cursor:pointer;color:var(--gris);">⏳ En réflexion</button>
-              <button onclick="crReaction(this,'Sans suite')" style="padding:5px 12px;border-radius:20px;border:1px solid var(--border);background:var(--blanc);font-size:12px;font-family:'Jost',sans-serif;cursor:pointer;color:var(--gris);">👋 Sans suite</button>
-              <button onclick="crReaction(this,'Offre à venir')" style="padding:5px 12px;border-radius:20px;border:1px solid var(--border);background:var(--blanc);font-size:12px;font-family:'Jost',sans-serif;cursor:pointer;color:var(--gris);">💰 Offre à venir</button>
-            </div>
-          </div>
-          <div>
-            <label style="font-size:12px;color:var(--gris);display:block;margin-bottom:4px;">Points relevés pendant la visite <span style="color:var(--gris-2);">(optionnel)</span></label>
-            <textarea id="cr-points" rows="2" placeholder="Ex : a apprécié la luminosité, interrogé sur les charges de copro, souhaite revoir avec conjoint…" style="width:100%;padding:8px 10px;border:1.5px solid var(--border);border-radius:7px;font-family:'Jost',sans-serif;font-size:13px;background:var(--blanc);color:var(--noir);outline:none;resize:none;box-sizing:border-box;" oninput="crGenerate()"></textarea>
-          </div>
-          <div>
-            <label style="font-size:12px;color:var(--gris);display:block;margin-bottom:4px;">Suite prévue <span style="color:var(--gris-2);">(optionnel)</span></label>
-            <input id="cr-suite" type="text" placeholder="Ex : 2e visite envisagée, retour attendu cette semaine…" style="width:100%;padding:8px 10px;border:1.5px solid var(--border);border-radius:7px;font-family:'Jost',sans-serif;font-size:13px;background:var(--blanc);color:var(--noir);outline:none;" oninput="crGenerate()">
+      <!-- Corps : formulaire rapide -->
+      <div style="flex:1;overflow-y:auto;padding:15px 20px 18px;">
+
+        <div class="crf-hint">Tout est optionnel : cochez ce qui vous sert, laissez le reste vide. L'enregistrement est automatique.</div>
+
+        <!-- 1 · Ressenti -->
+        <div class="crf-sec">
+          <div class="crf-lb">Ressenti du visiteur</div>
+          <div class="crf-chips" id="cr-reaction-btns">
+            <button type="button" class="crf-chip" data-r="Très intéressé(e)" onclick="crReaction(this,'Très intéressé(e)')">🔥 Très intéressé(e)</button>
+            <button type="button" class="crf-chip" data-r="Intéressé(e) mais hésitant(e)" onclick="crReaction(this,'Intéressé(e) mais hésitant(e)')">🤔 Hésitant(e)</button>
+            <button type="button" class="crf-chip" data-r="En réflexion" onclick="crReaction(this,'En réflexion')">⏳ En réflexion</button>
+            <button type="button" class="crf-chip" data-r="Sans suite" onclick="crReaction(this,'Sans suite')">👋 Sans suite</button>
+            <button type="button" class="crf-chip" data-r="Offre à venir" onclick="crReaction(this,'Offre à venir')">💰 Offre à venir</button>
           </div>
         </div>
+
+        <!-- 2 · Points appréciés -->
+        <div class="crf-sec">
+          <div class="crf-lb">Points appréciés <span class="crf-opt">— cliquez pour cocher</span></div>
+          <div class="crf-chips" id="cr-pos-chips"></div>
+        </div>
+
+        <!-- 3 · Freins / objections -->
+        <div class="crf-sec">
+          <div class="crf-lb">Freins &amp; objections <span class="crf-opt">— cliquez pour cocher</span></div>
+          <div class="crf-chips" id="cr-neg-chips"></div>
+        </div>
+
+        <!-- 4 · Le visiteur & son projet -->
+        <div class="crf-sec">
+          <div class="crf-lb">Le visiteur &amp; son projet</div>
+          <div class="crf-grid">
+            <div class="crf-f"><label>Financement</label>
+              <select class="crf-sel" id="cr-fin" onchange="crTouch()"><option value="">—</option><option>Comptant</option><option>Prêt accordé</option><option>Accord de principe</option><option>Simulation en cours</option><option>À valider (courtier)</option><option>Non abordé</option></select>
+            </div>
+            <div class="crf-f"><label>Type de projet</label>
+              <select class="crf-sel" id="cr-projet" onchange="crTouch()"><option value="">—</option><option>Résidence principale</option><option>Résidence secondaire</option><option>Investissement locatif</option><option>Pied-à-terre</option><option>Achat familial</option></select>
+            </div>
+            <div class="crf-f"><label>Décideurs présents</label>
+              <select class="crf-sel" id="cr-dec" onchange="crTouch()"><option value="">—</option><option>Tous présents</option><option>Conjoint absent</option><option>Décision à plusieurs</option><option>Visite pour un tiers</option></select>
+            </div>
+            <div class="crf-f"><label>Délai d'achat</label>
+              <select class="crf-sel" id="cr-delai" onchange="crTouch()"><option value="">—</option><option>Immédiat</option><option>Moins de 3 mois</option><option>3 à 6 mois</option><option>Plus de 6 mois</option><option>Non défini</option></select>
+            </div>
+            <div class="crf-f"><label>Vente préalable d'un bien</label>
+              <select class="crf-sel" id="cr-prealable" onchange="crTouch()"><option value="">—</option><option>Non, sans condition</option><option>Oui, bien en vente</option><option>Oui, bien sous compromis</option><option>Oui, pas encore en vente</option><option>Locataire (préavis)</option></select>
+            </div>
+            <div class="crf-f"><label>Budget évoqué</label>
+              <input class="crf-in js-thousands" id="cr-budget" type="text" placeholder="Ex : 1 250 000" oninput="crTouch()">
+            </div>
+            <div class="crf-f"><label>Durée de la visite</label>
+              <select class="crf-sel" id="cr-duree" onchange="crTouch()"><option value="">—</option><option>Moins de 15 min</option><option>15 à 30 min</option><option>30 à 45 min</option><option>Plus de 45 min</option></select>
+            </div>
+            <div class="crf-f"><label>Personnes présentes</label>
+              <input class="crf-in" id="cr-pers" type="text" placeholder="Ex : couple + 1 enfant" oninput="crTouch()">
+            </div>
+          </div>
+        </div>
+
+        <!-- 5 · Ce qu'a dit le visiteur -->
+        <div class="crf-sec">
+          <div class="crf-lb">Ce qu'a dit le visiteur <span class="crf-opt">— transmissible au vendeur</span></div>
+          <textarea class="crf-ta" id="cr-points" rows="3" placeholder="Ex : très séduit par la lumière du séjour, s'interroge sur les charges et sur le ravalement voté, souhaite revenir avec son conjoint…" oninput="crTouch()"></textarea>
+        </div>
+
+        <!-- 6 · Suite à donner -->
+        <div class="crf-sec">
+          <div class="crf-lb">Suite à donner</div>
+          <div class="crf-chips" id="cr-suite-chips" style="margin-bottom:9px;"></div>
+          <div class="crf-grid">
+            <div class="crf-f"><label>Relance prévue le</label>
+              <input class="crf-in" id="cr-relance" type="date" onchange="crTouch()">
+            </div>
+            <div class="crf-f"><label>Précision sur la suite</label>
+              <input class="crf-in" id="cr-suite2" type="text" placeholder="Ex : 2e visite samedi, retour attendu avant vendredi…" oninput="crTouch()">
+            </div>
+          </div>
+        </div>
+
+        <!-- 7 · Notes internes -->
+        <div class="crf-sec">
+          <div class="crf-lb">Notes internes <span class="crf-opt">— jamais transmises au vendeur</span></div>
+          <textarea class="crf-ta" id="cr-notes" rows="3" placeholder="Ex : acquéreur pressé, pourrait monter à 1 300 000 ; à rappeler avant l'offre du visiteur n°142 ; méfiance sur son financement…" oninput="crTouch()"></textarea>
+        </div>
+
+        <!-- 8 · OPTIONNEL : message au vendeur -->
+        <div class="crf-opt-blk">
+          <div class="crf-opt-hd" id="cr-msg-hd" onclick="crToggleMsg()">
+            <span id="cr-msg-arrow">▸</span><span>✉️ Rédiger un message pour le vendeur</span>
+            <span style="margin-left:auto;font-size:11.5px;color:var(--gris-2);font-weight:400;">optionnel</span>
+          </div>
+          <div class="crf-opt-bd" id="cr-msg-bd">
+
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:13px;">
+              <span style="font-size:12px;color:var(--gris);">Signé par :</span>
+              <select id="cr-agent" onchange="crGenerate()" style="padding:5px 10px;border:1px solid var(--border);border-radius:6px;font-family:'Jost',sans-serif;font-size:13px;background:var(--blanc);color:var(--noir);outline:none;">
+                <option value="Laurent Sellem">Laurent Sellem</option>
+                <option value="Marine Attias">Marine Attias</option>
+                <option value="Liloé Pichat">Liloé Pichat</option>
+              </select>
+              <button type="button" class="crf-btn" style="margin-left:auto;padding:5px 11px;font-size:12px;" onclick="crGenerate()">↻ Régénérer</button>
+            </div>
+
+            <!-- Version SMS/WhatsApp -->
+            <div style="margin-bottom:14px;">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:7px;">
+                <div style="display:flex;align-items:center;gap:6px;">
+                  <span style="font-size:15px;">📱</span>
+                  <span style="font-size:11px;font-weight:600;color:var(--gris);letter-spacing:.08em;text-transform:uppercase;">SMS / WhatsApp</span>
+                  <span style="font-size:11px;color:var(--gris-2);" id="cr-sms-len">0 car.</span>
+                </div>
+                <button type="button" onclick="crCopy('sms')" id="cr-copy-sms" style="padding:5px 12px;border:1px solid var(--terra);border-radius:6px;background:transparent;color:var(--terra);font-family:'Jost',sans-serif;font-size:12px;cursor:pointer;transition:all .2s;">Copier</button>
+              </div>
+              <textarea id="cr-sms" rows="5" style="width:100%;padding:11px;border:1.5px solid var(--border);border-radius:8px;font-family:'Jost',sans-serif;font-size:13px;background:var(--blanc);color:var(--noir);outline:none;resize:vertical;box-sizing:border-box;line-height:1.6;" oninput="document.getElementById('cr-sms-len').textContent=this.value.length+' car.'"></textarea>
+            </div>
+
+            <!-- Version Email -->
+            <div>
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:7px;">
+                <div style="display:flex;align-items:center;gap:6px;">
+                  <span style="font-size:15px;">✉️</span>
+                  <span style="font-size:11px;font-weight:600;color:var(--gris);letter-spacing:.08em;text-transform:uppercase;">Email</span>
+                </div>
+                <div style="display:flex;gap:6px;">
+                  <button type="button" onclick="crCopy('subject')" style="padding:5px 12px;border:1px solid var(--border);border-radius:6px;background:transparent;color:var(--gris);font-family:'Jost',sans-serif;font-size:12px;cursor:pointer;">Copier objet</button>
+                  <button type="button" onclick="crCopy('email')" id="cr-copy-email" style="padding:5px 12px;border:1px solid var(--terra);border-radius:6px;background:transparent;color:var(--terra);font-family:'Jost',sans-serif;font-size:12px;cursor:pointer;">Copier corps</button>
+                </div>
+              </div>
+              <div style="background:var(--blanc);border:1px solid var(--border);border-radius:8px 8px 0 0;padding:8px 12px;font-size:12px;color:var(--gris);">
+                <span style="color:var(--gris-2);">Objet :</span> <span id="cr-email-subject" style="color:var(--noir);font-weight:500;">—</span>
+              </div>
+              <textarea id="cr-email" rows="12" style="width:100%;padding:11px;border:1.5px solid var(--border);border-top:none;border-radius:0 0 8px 8px;font-family:'Jost',sans-serif;font-size:13px;background:var(--blanc);color:var(--noir);outline:none;resize:vertical;box-sizing:border-box;line-height:1.7;"></textarea>
+            </div>
+
+          </div>
+        </div>
+
       </div>
 
-      <!-- Versions générées -->
-      <div style="flex:1;overflow-y:auto;padding:18px 22px;">
-
-        <!-- Sélecteur agent -->
-        <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">
-          <span style="font-size:12px;color:var(--gris);">Signé par :</span>
-          <select id="cr-agent" onchange="crGenerate()" style="padding:5px 10px;border:1px solid var(--border);border-radius:6px;font-family:'Jost',sans-serif;font-size:13px;background:var(--beige);color:var(--noir);outline:none;">
-            <option value="Laurent Sellem">Laurent Sellem</option>
-            <option value="Marine Attias">Marine Attias</option>
-            <option value="Liloé Pichat">Liloé Pichat</option>
-          </select>
-        </div>
-
-        <!-- Version SMS/WhatsApp -->
-        <div style="margin-bottom:16px;">
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
-            <div style="display:flex;align-items:center;gap:6px;">
-              <span style="font-size:15px;">📱</span>
-              <span style="font-size:12px;font-weight:600;color:var(--gris);letter-spacing:.08em;text-transform:uppercase;">SMS / WhatsApp</span>
-              <span style="font-size:11px;color:var(--gris-2);" id="cr-sms-len">0 car.</span>
-            </div>
-            <button onclick="crCopy('sms')" id="cr-copy-sms" style="padding:5px 12px;border:1px solid var(--terra);border-radius:6px;background:transparent;color:var(--terra);font-family:'Jost',sans-serif;font-size:12px;cursor:pointer;transition:all .2s;">Copier</button>
-          </div>
-          <textarea id="cr-sms" rows="5" readonly style="width:100%;padding:12px;border:1.5px solid var(--border);border-radius:8px;font-family:'Jost',sans-serif;font-size:13px;background:var(--beige);color:var(--noir);outline:none;resize:none;box-sizing:border-box;line-height:1.6;" oninput="document.getElementById('cr-sms-len').textContent=this.value.length+' car.'"></textarea>
-        </div>
-
-        <!-- Version Email -->
-        <div>
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
-            <div style="display:flex;align-items:center;gap:6px;">
-              <span style="font-size:15px;">✉️</span>
-              <span style="font-size:12px;font-weight:600;color:var(--gris);letter-spacing:.08em;text-transform:uppercase;">Email</span>
-            </div>
-            <div style="display:flex;gap:6px;">
-              <button onclick="crCopy('subject')" style="padding:5px 12px;border:1px solid var(--border);border-radius:6px;background:transparent;color:var(--gris);font-family:'Jost',sans-serif;font-size:12px;cursor:pointer;">Copier objet</button>
-              <button onclick="crCopy('email')" id="cr-copy-email" style="padding:5px 12px;border:1px solid var(--terra);border-radius:6px;background:transparent;color:var(--terra);font-family:'Jost',sans-serif;font-size:12px;cursor:pointer;">Copier corps</button>
-            </div>
-          </div>
-          <div style="background:var(--beige);border:1px solid var(--border);border-radius:8px 8px 0 0;padding:8px 12px;font-size:12px;color:var(--gris);">
-            <span style="color:var(--gris-2);">Objet :</span> <span id="cr-email-subject" style="color:var(--noir);font-weight:500;">—</span>
-          </div>
-          <textarea id="cr-email" rows="12" readonly style="width:100%;padding:12px;border:1.5px solid var(--border);border-top:none;border-radius:0 0 8px 8px;font-family:'Jost',sans-serif;font-size:13px;background:var(--blanc);color:var(--noir);outline:none;resize:none;box-sizing:border-box;line-height:1.7;"></textarea>
-        </div>
-
+      <!-- Pied : état + actions -->
+      <div class="crf-foot">
+        <span class="crf-status" id="cr-status">Nouveau compte rendu</span>
+        <button type="button" class="crf-btn" id="cr-del-btn" onclick="crDelete()" style="display:none;color:var(--rouge);border-color:var(--rouge-p);">Supprimer</button>
+        <button type="button" class="crf-btn" onclick="crCopy('full')">Copier le CR</button>
+        <button type="button" class="crf-btn crf-main" onclick="crSaveClose()">Enregistrer</button>
       </div>
     </div>
     <!-- Overlay pour fermer -->
@@ -6309,7 +6387,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
         '<td style="padding:9px 14px;color:var(--gris);">'+hl(b.a)+'</td>'+
         '<td style="padding:6px 10px;"><div class="bv-acc-cell" onclick="bvAccOpen('+b.n+',this)" title="Cliquer pour modifier les accompagnateurs">'+window.bvAccBadges(b.accomp)+'</div></td>'+
         '<td style="padding:9px 14px;"><input type="text" value="'+b.obs.replace(/"/g,'&quot;')+'" placeholder="—" data-n="'+b.n+'" onchange="bvUpdateObs(this)" style="width:100%;border:none;background:transparent;font-family:\'Jost\',sans-serif;font-size:13px;color:var(--gris);outline:none;cursor:text;" onfocus="this.style.background=\'var(--blanc)\';this.style.border=\'1px solid var(--terra-l)\';this.style.borderRadius=\'4px\';" onblur="this.style.background=\'transparent\';this.style.border=\'none\';"></td>'+
-        '<td style="padding:9px 8px;text-align:center;white-space:nowrap;"><button onclick="crOpen('+b.n+')" title="Générer un compte rendu" style="padding:4px 8px;border:1px solid var(--terra);border-radius:6px;background:transparent;color:var(--terra);font-size:12px;font-family:\'Jost\',sans-serif;cursor:pointer;white-space:nowrap;transition:all .15s;" onmouseover="this.style.background=\'var(--terra)\';this.style.color=\'var(--blanc)\'" onmouseout="this.style.background=\'transparent\';this.style.color=\'var(--terra)\'">CR</button>'+(cu==='admin'?' <button onclick="bvEditOpen('+b.n+')" title="Modifier ce bon" style="padding:4px 7px;border:1px solid var(--kaki-l);border-radius:6px;background:transparent;color:var(--kaki);font-size:12px;font-family:\'Jost\',sans-serif;cursor:pointer;transition:all .15s;" onmouseover="this.style.background=\'var(--kaki)\';this.style.color=\'var(--blanc)\'" onmouseout="this.style.background=\'transparent\';this.style.color=\'var(--kaki)\'">✏️</button>':'')+'</td>';
+        '<td style="padding:9px 8px;text-align:center;white-space:nowrap;"><button class="bv-cr-btn'+((window.crHas&&window.crHas('bv'+b.n))?' done':'')+'" onclick="crOpen('+b.n+')" title="'+((window.crHas&&window.crHas('bv'+b.n))?'Compte rendu enregistré — ouvrir':'Compte rendu de visite')+'" style="padding:4px 8px;border:1px solid var(--terra);border-radius:6px;background:transparent;color:var(--terra);font-size:12px;font-family:\'Jost\',sans-serif;cursor:pointer;white-space:nowrap;transition:all .15s;">'+((window.crHas&&window.crHas('bv'+b.n))?'CR ✓':'CR')+'</button>'+(cu==='admin'?' <button onclick="bvEditOpen('+b.n+')" title="Modifier ce bon" style="padding:4px 7px;border:1px solid var(--kaki-l);border-radius:6px;background:transparent;color:var(--kaki);font-size:12px;font-family:\'Jost\',sans-serif;cursor:pointer;transition:all .15s;" onmouseover="this.style.background=\'var(--kaki)\';this.style.color=\'var(--blanc)\'" onmouseout="this.style.background=\'transparent\';this.style.color=\'var(--kaki)\'">✏️</button>':'')+'</td>';
       tbody.appendChild(tr);
     });
   }
@@ -8325,6 +8403,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
   function vsbToday(){ var d=new Date(),m=(''+(d.getMonth()+1)),j=(''+d.getDate()); if(m.length<2)m='0'+m; if(j.length<2)j='0'+j; return d.getFullYear()+'-'+m+'-'+j; }
   function vsbVisibleList(){ return (window.bvVisible?window.bvVisible(VSB):VSB); }
   window.vsbAdd=function(){ if(window.achCan && !window.achCan('visites','create')) return; VSB.unshift({id:'v'+Date.now()+Math.floor(Math.random()*1000), d:vsbToday(), v:'', a:'', accomp:[], formalisation:'', obs:''}); vsbSave(); vsbRender(); };
+  window.vsbGet=function(id){ for(var i=0;i<VSB.length;i++){ if(VSB[i] && VSB[i].id===id) return VSB[i]; } return null; };   /* v8.14 : accès au compte rendu de visite */
   window.vsbField=function(el){ var id=el.getAttribute('data-id'), f=el.getAttribute('data-f'); var o=VSB.find(function(x){return x.id===id;}); if(!o) return; o[f]=el.value; vsbSave(); };
   window.vsbDelete=function(id){ if(window.achCan && !window.achCan('visites','modify')) return; VSB=VSB.filter(function(x){return x.id!==id;}); vsbSave(); vsbRender(); };
   window.vsbAccOpen=function(id, cell){ if(window.achCan && !window.achCan('visites','modify')) return; var o=VSB.find(function(x){return x.id===id;}); if(!o) return; if(!o.accomp) o.accomp=[]; bvAccPop(function(){return o.accomp;}, function(a){o.accomp=a;}, cell, function(a){ vsbSave(); cell.innerHTML=window.bvAccBadges(a); }); };
@@ -8338,6 +8417,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     var ro=canMod?'':'readonly';
     var inStyle="width:100%;border:1px solid transparent;background:transparent;border-radius:5px;padding:6px 7px;font-size:14px;font-family:'Jost',sans-serif;color:var(--noir);outline:none;box-sizing:border-box;";
     tb.innerHTML=list.map(function(o){
+      var crOn=!!(window.crHas && window.crHas('vsb:'+o.id));
       function inp(f,ph,type){ return '<input '+(type?'type="'+type+'" ':'')+'value="'+(''+(o[f]||'')).replace(/"/g,'&quot;')+'" data-id="'+o.id+'" data-f="'+f+'" onchange="vsbField(this)" '+ro+' placeholder="'+(ph||'')+'" style="'+inStyle+(canMod?'':'cursor:default;')+'" '+(canMod?'onmouseover="this.style.borderColor=\'var(--border)\'" onmouseout="this.style.borderColor=\'transparent\'"':'')+'>'; }
       return '<tr style="border-bottom:1px solid rgba(0,0,0,.05);">'
         +'<td style="padding:6px 10px;width:135px;">'+inp('d','','date')+'</td>'
@@ -8346,9 +8426,10 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
         +'<td style="padding:6px 10px;width:130px;"><div class="bv-acc-cell" '+(canMod?'onclick="vsbAccOpen(\''+o.id+'\',this)"':'style="pointer-events:none;"')+'>'+window.bvAccBadges(o.accomp)+'</div></td>'
         +'<td style="padding:6px 10px;">'+inp('formalisation','\u2014')+'</td>'
         +'<td style="padding:6px 10px;">'+inp('obs','\u2014')+'</td>'
+        +'<td style="padding:6px 8px;text-align:center;">'+(canCre?'<button class="bv-cr-btn'+(crOn?' done':'')+'" onclick="crOpenVsb(\''+o.id+'\')" title="'+(crOn?'Compte rendu enregistré — ouvrir':'Compte rendu de visite')+'" style="padding:4px 8px;border:1px solid var(--terra);border-radius:6px;background:transparent;color:var(--terra);font-size:12px;font-family:\'Jost\',sans-serif;cursor:pointer;white-space:nowrap;">'+(crOn?'CR \u2713':'CR')+'</button>':'')+'</td>'
         +'<td style="padding:6px 8px;text-align:center;">'+(canMod?'<button onclick="vsbDelete(\''+o.id+'\')" title="Supprimer" style="border:none;background:transparent;color:var(--rouge);font-size:16px;cursor:pointer;">\u00d7</button>':'')+'</td>'
         +'</tr>';
-    }).join('') || '<tr><td colspan="7" style="padding:24px;text-align:center;color:var(--gris-2);">Aucune visite sans bon. Cliquez sur \u00ab + Visite sans bon \u00bb pour en ajouter.</td></tr>';
+    }).join('') || '<tr><td colspan="8" style="padding:24px;text-align:center;color:var(--gris-2);">Aucune visite sans bon. Cliquez sur \u00ab + Visite sans bon \u00bb pour en ajouter.</td></tr>';
     var ab=document.getElementById('vsb-add-btn'); if(ab) ab.style.display=canCre?'':'none';
   };
   window.bvShowView=function(which){
@@ -8623,13 +8704,153 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
   })();
 
   // ══════════════════════════════════════════════
-  // COMPTE RENDU DE VISITE
+  // COMPTE RENDU DE VISITE (v8.14)
+  // Écrit structuré, enregistré et partagé avec l'équipe (clé ach_bv_cr_v1).
+  // Le message au vendeur (SMS / email) reste une OPTION, replié par défaut.
   // ══════════════════════════════════════════════
 
-  var crCurrentBon = null;
+  var CR_KEY = 'ach_bv_cr_v1';
+  var crCurrentBon = null;      /* bon de visite courant (null pour une visite sans bon) */
+  var crRef = '';               /* 'bv146' | 'vsb:v1712345678' */
+  var crMeta = {};              /* {n,v,a,d} — visiteur / adresse / date affichés */
   var crCurrentReaction = '';
+  var crSaveTimer = null;
+  var crFilling = false;        /* true pendant le remplissage du formulaire : pas d'enregistrement */
+  var crLogged = false;         /* une seule ligne d'historique par ouverture */
 
-  window.crOpen = function(n) {
+  var CR_POS = ['Luminosité','Volumes','Plan / distribution','Vue dégagée','Calme','Étage','Cachet / charme','État général','Cuisine','Salle de bains','Rangements','Balcon / extérieur','Quartier','Commerces / écoles','Transports','Copropriété','Cave / parking','Prix cohérent'];
+  var CR_NEG = ['Prix trop élevé','Vis-à-vis','Bruit','Sans ascenseur','Travaux à prévoir','Surface insuffisante','Nombre de chambres','Pas d’extérieur','Cuisine à refaire','Salle de bains à refaire','DPE','Charges élevées','Travaux de copropriété','Manque de lumière','Plan mal distribué','Quartier','Humidité','Pas de parking','Disponibilité trop tardive'];
+  var CR_SUITE = ['2e visite à prévoir','Retour attendu','Offre annoncée','Relance à faire','Documents à envoyer','Contre-visite avec un proche','Réflexion en cours','Sans suite'];
+
+  var CR_SEL = ['fin','projet','dec','delai','prealable','duree'];
+  var CR_TXT = ['budget','pers','points','suite2','notes','relance'];
+
+  /* Suppression d'un compte rendu : administrateur uniquement (même règle qu'en Pige, v8.05) */
+  function crIsAdmin(){
+    if((window.ACH_USER||{}).key === 'admin') return true;
+    /* repli : session non encore initialisée (hors ligne) — on lit le rôle affiché */
+    try{ var e=document.getElementById('s-role'); return !!(e && e.textContent.indexOf('Admin')>=0); }catch(x){ return false; }
+  }
+
+  /* ---------- Mémoire ---------- */
+  function crList(){
+    try{ var a = JSON.parse(localStorage.getItem(CR_KEY)||'[]'); return Array.isArray(a)?a:[]; }
+    catch(e){ return []; }
+  }
+  function crWrite(list){ try{ localStorage.setItem(CR_KEY, JSON.stringify(list)); }catch(e){} }
+  window.crGet = function(ref){
+    var id = 'cr:'+ref, l = crList();
+    for(var i=0;i<l.length;i++){ if(l[i] && l[i].id===id) return l[i]; }
+    return null;
+  };
+  /* Un CR « existe » dès qu'il contient au moins une information */
+  window.crHas = function(ref){ var o = window.crGet(ref); return !!(o && o.filled); };
+
+  function crCount(o){
+    if(!o) return 0;
+    var n = 0;
+    if(o.reaction) n++;
+    n += (o.pos||[]).length + (o.neg||[]).length + (o.suite||[]).length;
+    CR_SEL.concat(CR_TXT).forEach(function(f){ if((''+(o[f]||'')).trim()) n++; });
+    return n;
+  }
+
+  /* ---------- Pastilles (chips) ---------- */
+  function crChipsHtml(list, group, cls){
+    return list.map(function(v){
+      var esc = v.replace(/"/g,'&quot;');
+      return '<button type="button" class="crf-chip '+cls+'" data-g="'+group+'" data-v="'+esc+'" onclick="crChip(this)">'+v+'</button>';
+    }).join('');
+  }
+  function crBuildChips(){
+    var p = document.getElementById('cr-pos-chips');
+    if(p && !p._built){ p.innerHTML = crChipsHtml(CR_POS,'pos','pos'); p._built = 1; }
+    var n = document.getElementById('cr-neg-chips');
+    if(n && !n._built){ n.innerHTML = crChipsHtml(CR_NEG,'neg','neg'); n._built = 1; }
+    var s = document.getElementById('cr-suite-chips');
+    if(s && !s._built){ s.innerHTML = crChipsHtml(CR_SUITE,'suite',''); s._built = 1; }
+  }
+  window.crChip = function(btn){
+    btn.classList.toggle('on');
+    crTouch();
+  };
+  function crChipVals(group){
+    var out = [];
+    document.querySelectorAll('.crf-chip[data-g="'+group+'"].on').forEach(function(b){
+      out.push(b.getAttribute('data-v'));
+    });
+    return out;
+  }
+  function crChipSet(group, vals){
+    vals = vals || [];
+    document.querySelectorAll('.crf-chip[data-g="'+group+'"]').forEach(function(b){
+      if(vals.indexOf(b.getAttribute('data-v'))>=0) b.classList.add('on');
+      else b.classList.remove('on');
+    });
+  }
+
+  /* ---------- Ouverture ---------- */
+  function crFmtDate(d){
+    var s = ''+(d||'');
+    var m = s.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    return m ? (m[3]+'/'+m[2]+'/'+m[1]) : s;
+  }
+  function crOpenRef(ref, meta){
+    crBuildChips();
+    crRef = ref;
+    crMeta = meta || {};
+    crLogged = false;
+    crFilling = true;
+
+    var sub = [];
+    if(crMeta.n) sub.push('N°'+crMeta.n);
+    if(crMeta.v) sub.push(crMeta.v);
+    if(crMeta.a) sub.push(crMeta.a);
+    if(crMeta.d) sub.push(crFmtDate(crMeta.d));
+    var se = document.getElementById('cr-subtitle');
+    if(se) se.textContent = sub.length ? sub.join(' · ') : 'Visite';
+
+    var o = window.crGet(ref) || {};
+
+    /* Ressenti */
+    crCurrentReaction = o.reaction || '';
+    document.querySelectorAll('#cr-reaction-btns button').forEach(function(b){
+      if(crCurrentReaction && b.getAttribute('data-r')===crCurrentReaction) b.classList.add('on');
+      else b.classList.remove('on');
+    });
+
+    crChipSet('pos', o.pos); crChipSet('neg', o.neg); crChipSet('suite', o.suite);
+
+    CR_SEL.concat(CR_TXT).forEach(function(f){
+      var el = document.getElementById('cr-'+f);
+      if(el) el.value = o[f] || '';
+    });
+
+    /* Première ouverture : on reprend l'observation déjà saisie dans le tableau */
+    var pts = document.getElementById('cr-points');
+    if(pts && !pts.value && !o.id && crMeta.obs) pts.value = crMeta.obs;
+
+    var ag = document.getElementById('cr-agent');
+    if(ag) ag.value = o.agent || (window.ACH_USER && window.ACH_USER.name) || 'Laurent Sellem';
+
+    /* Bloc message : replié à l'ouverture */
+    var bd = document.getElementById('cr-msg-bd'), ar = document.getElementById('cr-msg-arrow');
+    if(bd) bd.style.display = 'none';
+    if(ar) ar.textContent = '▸';
+
+    var del = document.getElementById('cr-del-btn');
+    if(del) del.style.display = (o.id && crIsAdmin()) ? '' : 'none';
+
+    crStatus(o.id ? ('Enregistré par '+(o.author||'—')+(o.updated?(' · '+crFmtStamp(o.updated)):'')) : 'Nouveau compte rendu');
+
+    crFilling = false;
+
+    document.getElementById('cr-panel').style.right = '0';
+    document.getElementById('cr-overlay').style.display = 'block';
+    crGenerate();
+  }
+
+  window.crOpen = function(n){
     var bon = BV_DATA.find(function(b){ return b && b.n === n; });
     if(!bon){
       try{
@@ -8639,68 +8860,198 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     }
     if(!bon) return;
     crCurrentBon = bon;
-    crCurrentReaction = '';
-
-    var cu = planCurrentUser();
-    var agentSel = document.getElementById('cr-agent');
-    if(agentSel){
-      agentSel.value=(window.ACH_USER&&window.ACH_USER.name)||'Laurent Sellem';
-    }
-
-    document.getElementById('cr-points').value = bon.obs || '';
-    document.getElementById('cr-suite').value = '';
-    document.querySelectorAll('#cr-reaction-btns button').forEach(function(b){
-      b.style.background='var(--blanc)'; b.style.color='var(--gris)'; b.style.borderColor='var(--border)';
-    });
-
-    document.getElementById('cr-subtitle').textContent = 'N°' + bon.n + ' · ' + bon.v + ' · ' + bon.d;
-
-    document.getElementById('cr-panel').style.right = '0';
-    document.getElementById('cr-overlay').style.display = 'block';
-    crGenerate();
+    crOpenRef('bv'+n, { n:bon.n, v:bon.v, a:bon.a, d:bon.d, obs:bon.obs });
   };
 
-  window.crClose = function() {
-    document.getElementById('cr-panel').style.right = '-520px';
+  /* Visites sans bon : même formulaire */
+  window.crOpenVsb = function(id){
+    var o = (window.vsbGet ? window.vsbGet(id) : null);
+    if(!o) return;
+    crCurrentBon = null;
+    crOpenRef('vsb:'+id, { v:o.v, a:o.a, d:o.d, obs:o.obs });
+  };
+
+  window.crClose = function(){
+    crSaveNow();
+    document.getElementById('cr-panel').style.right = '-620px';
     document.getElementById('cr-overlay').style.display = 'none';
     crCurrentBon = null;
+    crRef = '';
   };
 
-  window.crReaction = function(btn, val) {
+  window.crReaction = function(btn, val){
     crCurrentReaction = (crCurrentReaction === val) ? '' : val;
     document.querySelectorAll('#cr-reaction-btns button').forEach(function(b){
-      if(b === btn && crCurrentReaction){
-        b.style.background='var(--terra)'; b.style.color='var(--blanc)'; b.style.borderColor='var(--terra)';
-      } else {
-        b.style.background='var(--blanc)'; b.style.color='var(--gris)'; b.style.borderColor='var(--border)';
-      }
+      if(b === btn && crCurrentReaction) b.classList.add('on');
+      else b.classList.remove('on');
     });
-    crGenerate();
+    crTouch();
   };
 
-  window.crGenerate = function() {
-    if(!crCurrentBon) return;
-    var b = crCurrentBon;
-    var agent = (document.getElementById('cr-agent')||{value:'votre conseiller'}).value;
-    var points = (document.getElementById('cr-points')||{value:''}).value.trim();
-    var suite = (document.getElementById('cr-suite')||{value:''}).value.trim();
-    var reaction = crCurrentReaction;
+  window.crToggleMsg = function(){
+    var bd = document.getElementById('cr-msg-bd'), ar = document.getElementById('cr-msg-arrow');
+    if(!bd) return;
+    var open = (bd.style.display === 'none' || !bd.style.display);
+    bd.style.display = open ? 'block' : 'none';
+    if(ar) ar.textContent = open ? '▾' : '▸';
+    if(open) crGenerate();
+  };
 
-    // ── SMS / WhatsApp ──
+  /* ---------- Enregistrement ---------- */
+  function crFmtStamp(iso){
+    try{
+      var d = new Date(iso);
+      return new Intl.DateTimeFormat('fr-FR',{ timeZone:'Europe/Paris', day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' }).format(d).replace(', ',' à ');
+    }catch(e){ return ''+iso; }
+  }
+  function crStatus(txt){ var el = document.getElementById('cr-status'); if(el) el.textContent = txt || ''; }
+
+  function crCollect(){
+    var o = { id:'cr:'+crRef, ref:crRef, reaction:crCurrentReaction,
+              pos:crChipVals('pos'), neg:crChipVals('neg'), suite:crChipVals('suite') };
+    CR_SEL.concat(CR_TXT).forEach(function(f){
+      var el = document.getElementById('cr-'+f);
+      o[f] = el ? (''+el.value).trim() : '';
+    });
+    var ag = document.getElementById('cr-agent');
+    o.agent = ag ? ag.value : '';
+    o.visite = { n:crMeta.n||'', v:crMeta.v||'', a:crMeta.a||'', d:crMeta.d||'' };
+    o.filled = crCount(o) > 0;
+    return o;
+  }
+
+  window.crTouch = function(){
+    if(crFilling || !crRef) return;
+    crStatus('Enregistrement…');
+    clearTimeout(crSaveTimer);
+    crSaveTimer = setTimeout(function(){ crSaveNow(); crGenerate(); }, 700);
+  };
+
+  function crSaveNow(){
+    clearTimeout(crSaveTimer);
+    if(crFilling || !crRef) return;
+    if(window.achCan && !window.achCan('visites','create')) return;
+
+    var o = crCollect();
+    var prev = window.crGet(crRef);
+    if(!o.filled && !prev){ crStatus('Nouveau compte rendu'); return; }   /* rien à enregistrer */
+
+    var now = new Date().toISOString();
+    o.created = (prev && prev.created) || now;
+    o.updated = now;
+    o.author  = (prev && prev.author) || (window.ACH_USER && window.ACH_USER.name) || 'Achille';
+    o.lastBy  = (window.ACH_USER && window.ACH_USER.name) || o.author;
+
+    var list = crList().filter(function(x){ return !x || x.id !== o.id; });
+    list.push(o);
+    crWrite(list);
+
+    if(!crLogged){
+      crLogged = true;
+      try{ if(window.achLog) achLog(prev?'modification':'ajout','Comptes rendus de visite',(crMeta.a||crMeta.v||crRef)); }catch(e){}
+    }
+    crStatus('Enregistré ✓ · '+crFmtStamp(now));
+    crRefreshTables();
+  }
+
+  function crRefreshTables(){
+    try{ if(window.bvFilter) window.bvFilter(); }catch(e){}
+    try{ var vv = document.getElementById('vsb-view');
+         if(vv && vv.style.display !== 'none' && window.vsbRender) window.vsbRender(); }catch(e){}
+  }
+
+  window.crSaveClose = function(){ crSaveNow(); window.crClose(); };
+
+  window.crDelete = function(){
+    if(!crRef) return;
+    if(!crIsAdmin()){ if(window.toast) toast('Suppression réservée à l’administrateur'); return; }
+    if(!confirm('Supprimer définitivement ce compte rendu de visite ?')) return;
+    var id = 'cr:'+crRef;
+    crWrite(crList().filter(function(x){ return !x || x.id !== id; }));
+    try{ if(window.achLog) achLog('suppression','Comptes rendus de visite',(crMeta.a||crMeta.v||crRef)); }catch(e){}
+    if(window.toast) toast('Compte rendu supprimé');
+    crFilling = true;
+    document.getElementById('cr-panel').style.right = '-620px';
+    document.getElementById('cr-overlay').style.display = 'none';
+    crRef = ''; crCurrentBon = null; crFilling = false;
+    crRefreshTables();
+  };
+
+  /* ---------- Compte rendu en texte (copie / archivage) ---------- */
+  window.crText = function(){
+    var o = crCollect();
+    var L = [];
+    L.push('COMPTE RENDU DE VISITE');
+    var ent = [];
+    if(crMeta.a) ent.push(crMeta.a);
+    if(crMeta.d) ent.push('le '+crFmtDate(crMeta.d));
+    if(crMeta.v) ent.push('visiteur : '+crMeta.v);
+    if(crMeta.n) ent.push('bon n°'+crMeta.n);
+    if(ent.length) L.push(ent.join(' — '));
+    L.push('');
+    if(o.reaction) L.push('Ressenti : '+o.reaction);
+    if(o.pos.length) L.push('Points appréciés : '+o.pos.join(', '));
+    if(o.neg.length) L.push('Freins / objections : '+o.neg.join(', '));
+
+    var pr = [];
+    if(o.fin) pr.push('financement : '+o.fin);
+    if(o.projet) pr.push('projet : '+o.projet);
+    if(o.dec) pr.push('décideurs : '+o.dec);
+    if(o.delai) pr.push('délai : '+o.delai);
+    if(o.prealable) pr.push('vente préalable : '+o.prealable);
+    if(o.budget) pr.push('budget évoqué : '+o.budget+' €');
+    if(o.duree) pr.push('durée : '+o.duree);
+    if(o.pers) pr.push('présents : '+o.pers);
+    if(pr.length){ L.push(''); L.push('Le visiteur & son projet'); pr.forEach(function(x){ L.push('• '+x); }); }
+
+    if(o.points){ L.push(''); L.push('Ce qu’a dit le visiteur'); L.push(o.points); }
+
+    var su = [];
+    if(o.suite.length) su.push(o.suite.join(', '));
+    if(o.suite2) su.push(o.suite2);
+    if(o.relance) su.push('relance le '+crFmtDate(o.relance));
+    if(su.length){ L.push(''); L.push('Suite à donner : '+su.join(' — ')); }
+
+    if(o.notes){ L.push(''); L.push('Notes internes (usage interne)'); L.push(o.notes); }
+
+    L.push('');
+    L.push('Rédigé par '+((window.ACH_USER && window.ACH_USER.name)||o.agent||'Achille Immobilier')+' — Achille Immobilier');
+    return L.join('\n');
+  };
+
+  /* ---------- Message au vendeur (optionnel) ---------- */
+  window.crGenerate = function(){
+    if(!crRef) return;
+    var bd = document.getElementById('cr-msg-bd');
+    if(bd && bd.style.display === 'none') return;   /* bloc replié : rien à générer */
+
+    var o = crCollect();
+    var adr = crMeta.a || 'votre bien';
+    var dte = crFmtDate(crMeta.d);
+    var vis = crMeta.v || 'le visiteur';
+    var agent = o.agent || 'votre conseiller';
+
+    /* ── SMS / WhatsApp ── */
     var sms = 'Bonjour,\n\n';
-    sms += 'Suite à la visite de votre bien (' + b.a + ') le ' + b.d + ' avec ' + b.v + ' :\n\n';
-    if(reaction) sms += '→ ' + reaction + '.\n';
-    if(points) sms += '→ ' + points + '\n';
-    if(suite) sms += '→ Suite : ' + suite + '\n';
-    if(!reaction && !points) sms += '→ La visite s\'est bien déroulée.\n';
+    sms += 'Suite à la visite de votre bien (' + adr + ')' + (dte?(' le ' + dte):'') + ' avec ' + vis + ' :\n\n';
+    if(o.reaction) sms += '→ ' + o.reaction + '.\n';
+    if(o.pos.length) sms += '→ Points appréciés : ' + o.pos.join(', ') + '.\n';
+    if(o.neg.length) sms += '→ Réserves : ' + o.neg.join(', ') + '.\n';
+    if(o.points) sms += '→ ' + o.points.replace(/\n+/g,' ') + '\n';
+    var smsSui = [];
+    if(o.suite.length) smsSui.push(o.suite.join(', '));
+    if(o.suite2) smsSui.push(o.suite2);
+    if(o.relance) smsSui.push('prochain point le ' + crFmtDate(o.relance));
+    if(smsSui.length) sms += '→ Suite : ' + smsSui.join(' — ') + '.\n';
+    if(!o.reaction && !o.pos.length && !o.neg.length && !o.points) sms += '→ La visite s\'est bien déroulée.\n';
     sms += '\nNous restons disponibles pour toute question.\n';
     sms += agent + ' — Achille Immobilier';
 
     var smsEl = document.getElementById('cr-sms');
-    if(smsEl){ smsEl.value = sms; document.getElementById('cr-sms-len').textContent = sms.length + ' car.'; }
+    if(smsEl){ smsEl.value = sms; var sl = document.getElementById('cr-sms-len'); if(sl) sl.textContent = sms.length + ' car.'; }
 
-    // ── Email ──
-    var subject = 'Compte rendu de visite — ' + b.a;
+    /* ── Email ── */
+    var subject = 'Compte rendu de visite — ' + adr;
     var subjectEl = document.getElementById('cr-email-subject');
     if(subjectEl) subjectEl.textContent = subject;
 
@@ -8713,33 +9064,48 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     };
 
     var email = 'Madame, Monsieur,\n\n';
-    email += 'Nous faisons suite à la visite organisée le ' + b.d + ' pour votre bien situé au ' + b.a + '.\n\n';
-    email += 'Visiteur : ' + b.v + '\n\n';
-    if(reaction) email += (reactionMap[reaction] || reaction) + '\n\n';
-    if(points){
-      email += 'Points relevés lors de la visite :\n';
-      points.split('\n').forEach(function(l){ if(l.trim()) email += '• ' + l.trim() + '\n'; });
+    email += 'Nous faisons suite à la visite organisée' + (dte?(' le ' + dte):'') + ' pour votre bien situé au ' + adr + '.\n\n';
+    email += 'Visiteur : ' + vis + '\n\n';
+    if(o.reaction) email += (reactionMap[o.reaction] || o.reaction) + '\n\n';
+    if(o.pos.length){
+      email += 'Points appréciés lors de la visite :\n';
+      o.pos.forEach(function(x){ email += '• ' + x + '\n'; });
       email += '\n';
     }
-    if(suite) email += 'Suite donnée : ' + suite + '\n\n';
-    if(b.obs && b.obs.trim()) email += 'Note complémentaire : ' + b.obs + '\n\n';
-    if(!reaction && !points && !suite) email += 'La visite s\'est déroulée dans de bonnes conditions. Nous vous tiendrons informés de tout retour du visiteur.\n\n';
+    if(o.neg.length){
+      email += 'Réserves exprimées :\n';
+      o.neg.forEach(function(x){ email += '• ' + x + '\n'; });
+      email += '\n';
+    }
+    if(o.points){
+      email += 'Remarques du visiteur :\n';
+      o.points.split('\n').forEach(function(l){ if(l.trim()) email += '• ' + l.trim() + '\n'; });
+      email += '\n';
+    }
+    var sui = [];
+    if(o.suite.length) sui.push(o.suite.join(', '));
+    if(o.suite2) sui.push(o.suite2);
+    if(o.relance) sui.push('prochain point le ' + crFmtDate(o.relance));
+    if(sui.length) email += 'Suite donnée : ' + sui.join(' — ') + '\n\n';
+    if(!o.reaction && !o.pos.length && !o.neg.length && !o.points && !sui.length){
+      email += 'La visite s\'est déroulée dans de bonnes conditions. Nous vous tiendrons informés de tout retour du visiteur.\n\n';
+    }
     email += 'Nous demeurons à votre entière disposition pour tout renseignement complémentaire.\n\n';
     email += 'Bien cordialement,\n\n';
     email += agent + '\n';
-    email += 'Achille Immobilier\n';
-    email += '——————————————\n';
-    email += 'Réf. bon de visite n°' + b.n;
+    email += 'Achille Immobilier';
+    if(crMeta.n){ email += '\n——————————————\nRéf. bon de visite n°' + crMeta.n; }
 
     var emailEl = document.getElementById('cr-email');
     if(emailEl) emailEl.value = email;
   };
 
-  window.crCopy = function(type) {
+  window.crCopy = function(type){
     var text = '', btnId = '';
     if(type==='sms'){ text=(document.getElementById('cr-sms')||{value:''}).value; btnId='cr-copy-sms'; }
     else if(type==='email'){ text=(document.getElementById('cr-email')||{value:''}).value; btnId='cr-copy-email'; }
     else if(type==='subject'){ text=(document.getElementById('cr-email-subject')||{textContent:''}).textContent; }
+    else if(type==='full'){ text=window.crText(); }
     if(!text) return;
     function flash(id){
       var btn=document.getElementById(id); if(!btn)return;
@@ -8754,7 +9120,6 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
       if(btnId) flash(btnId); toast('Texte copié ✓');
     }
   };
-
 </script>
 
   <!-- COMPTE RENDU VISITE MODAL -->
@@ -8947,7 +9312,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
 <script>
 (function(){
   var AUDIT_KEY='ach_audit_v1';
-  var LABELS={ach_pi_v4:'Post-its',ach_encours_v1:'Ventes (En cours)',ach_todos_v1:'To-dos',ach_plan_events:'Planning',ach_vt_v4:'Visites',ach_bv_obs:'Bons de visite (observations)',ach_bv_extra:'Bons de visite',ach_bv_pending:'Bons de visite (validation)',ach_bv_notifs:'Notifications',ach_fin_v3:'Finances',ach_prosp_v1:'Prospection',ach_lex_html_v1:'Lexique',ach_lex_proposals:'Lexique (propositions)',ach_pige_v1:'Pige',ach_docaff_v1:'Documents par affaire',ach_docs_cfg_v1:'Documents (réglages)', ach_docgen_assets_v1:'Générateur (charte & polices)', ach_rappels_v1:'Rappels', ach_redac_v1:'Rédaction quotidienne', ach_routines_v1:'Routines & Objectifs'};
+  var LABELS={ach_pi_v4:'Post-its',ach_encours_v1:'Ventes (En cours)',ach_todos_v1:'To-dos',ach_plan_events:'Planning',ach_vt_v4:'Visites',ach_bv_obs:'Bons de visite (observations)',ach_bv_extra:'Bons de visite',ach_bv_pending:'Bons de visite (validation)',ach_bv_notifs:'Notifications',ach_bv_cr_v1:'Comptes rendus de visite',ach_fin_v3:'Finances',ach_prosp_v1:'Prospection',ach_lex_html_v1:'Lexique',ach_lex_proposals:'Lexique (propositions)',ach_pige_v1:'Pige',ach_docaff_v1:'Documents par affaire',ach_docs_cfg_v1:'Documents (réglages)', ach_docgen_assets_v1:'Générateur (charte & polices)', ach_rappels_v1:'Rappels', ach_redac_v1:'Rédaction quotidienne', ach_routines_v1:'Routines & Objectifs'};
   var _orig=localStorage.setItem.bind(localStorage);
   function curName(){var e=document.getElementById('s-name');return e?e.textContent:'?';}
   function curRole(){var e=document.getElementById('s-role');return e?e.textContent:'';}
@@ -9582,7 +9947,8 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     ach_fin_hist_v3:'Honoraires', ach_fin_ops_v3:'Finances', ach_fin_lines_v1:'Finances',
     ach_fin_solde_v3:'Finances', ach_encours_v1:'Affaires en cours', ach_audit_v1:'Journal', ach_pige_v1:'Pige', ach_docaff_v1:'Documents par affaire', ach_docs_cfg_v1:'Documents (réglages)', ach_docgen_assets_v1:'Générateur (charte & polices)', ach_rappels_v1:'Rappels', ach_evol_v1:'Évolutions', ach_redac_v1:'Rédaction quotidienne', ach_routines_v1:'Routines & Objectifs', ach_tomb_v2:'(technique) suppressions',
     ach_affaires_v1:'Pipeline (affaires)', ach_aff_pins_v1:'Pipeline (épingles)', ach_conc_v1:'Honoraires (concurrence)',
-    ach_perms_v1:'Droits & Accès', ach_vsb_v1:'Visites sans bon', ach_bv_accomp:'Bons de visite (accompagnateurs)'
+    ach_perms_v1:'Droits & Accès', ach_vsb_v1:'Visites sans bon', ach_bv_accomp:'Bons de visite (accompagnateurs)',
+    ach_bv_cr_v1:'Comptes rendus de visite'
   };
   function labelFor(k){ if(/^ach_pgread_/.test(k)) return 'Pige (fiches lues)'; if(/mig|democlean|seeded|datereset|diagflow|normmig/.test(k)&&!LABELS[k]) return '(technique) migration'; return LABELS[k] || k; }
   /* v8.03 : clés OBSOLÈTES (anciens registres pige v1) — jamais réimportées du cloud */
@@ -10250,7 +10616,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     startRealtime();
     var ov=document.getElementById('ach-login-overlay'); if(ov) ov.classList.add('ach-hidden');
     var ub=document.getElementById('ach-userbar'); if(ub) ub.style.display='none';
-    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v8.13';
+    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v8.14';
     flag('Synchronis\u00e9');
     // fin de l'init : on autorise la journalisation des actions
     setTimeout(function(){ installInterceptor._init=false; }, 1500);
@@ -13124,6 +13490,35 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
 .vt-subtab{background:transparent;border:none;border-bottom:3px solid transparent;border-radius:0;margin-bottom:-2px;padding:10px 18px;font-size:13px;letter-spacing:.03em;color:var(--gris);}
 .vt-subtab:hover{color:var(--noir);}
 .vt-subtab.vt-subtab-on{background:transparent;color:var(--noir);border-bottom-color:var(--terra);}
+/* v8.14 — Compte rendu de visite : formulaire rapide (page Visites) */
+.crf-hint{font-size:11.5px;color:var(--gris-2);line-height:1.5;background:var(--beige);border-radius:7px;padding:7px 10px;margin-bottom:14px;}
+.crf-sec{margin-bottom:15px;}
+.crf-lb{font-size:11px;font-weight:600;color:var(--kaki);letter-spacing:.09em;text-transform:uppercase;margin-bottom:7px;}
+.crf-lb .crf-opt{font-weight:400;letter-spacing:0;text-transform:none;color:var(--gris-2);font-size:11px;}
+.crf-chips{display:flex;gap:5px;flex-wrap:wrap;}
+.crf-chip{padding:4px 10px;border-radius:20px;border:1px solid var(--border);background:var(--blanc);font-size:12px;font-family:'Jost',sans-serif;line-height:1.5;color:var(--gris);cursor:pointer;transition:all .12s;}
+.crf-chip:hover{border-color:var(--terra);color:var(--terra);}
+.crf-chip.on{background:var(--terra);border-color:var(--terra);color:var(--blanc);}
+.crf-chip.pos.on{background:var(--vert);border-color:var(--vert);}
+.crf-chip.neg.on{background:var(--rouge);border-color:var(--rouge);}
+.crf-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px;}
+.crf-f label{display:block;font-size:11px;color:var(--gris);margin-bottom:3px;}
+.crf-in,.crf-sel,.crf-ta{width:100%;padding:7px 9px;border:1.5px solid var(--border);border-radius:7px;font-family:'Jost',sans-serif;font-size:13px;background:var(--blanc);color:var(--noir);outline:none;box-sizing:border-box;}
+.crf-ta{resize:vertical;line-height:1.55;}
+.crf-in:focus,.crf-sel:focus,.crf-ta:focus{border-color:var(--terra);}
+.crf-opt-blk{border:1px dashed var(--beige-3);border-radius:9px;background:var(--beige);margin-top:4px;}
+.crf-opt-hd{padding:11px 13px;cursor:pointer;display:flex;align-items:center;gap:8px;font-size:13px;color:var(--kaki);font-weight:500;}
+.crf-opt-hd:hover{color:var(--terra);}
+.crf-opt-bd{display:none;padding:0 13px 13px;}
+.crf-foot{border-top:1px solid var(--border);padding:11px 20px;display:flex;align-items:center;gap:8px;background:var(--blanc);flex-shrink:0;}
+.crf-status{font-size:11.5px;color:var(--gris-2);margin-right:auto;line-height:1.4;}
+.crf-btn{padding:8px 14px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--gris);font-family:'Jost',sans-serif;font-size:13px;cursor:pointer;white-space:nowrap;transition:all .15s;}
+.crf-btn:hover{border-color:var(--terra);color:var(--terra);}
+.crf-btn.crf-main{background:var(--terra);border-color:var(--terra);color:#fff;font-weight:500;}
+.crf-btn.crf-main:hover{filter:brightness(1.07);color:#fff;}
+.bv-cr-btn:hover{background:var(--terra)!important;color:var(--blanc)!important;}
+.bv-cr-btn.done{background:var(--vert-p)!important;border-color:var(--vert)!important;color:var(--vert)!important;font-weight:500;}
+.bv-cr-btn.done:hover{background:var(--vert)!important;color:var(--blanc)!important;}
 /* v4.01 — Lexique : fond clair pour la lisibilité */
 .lex-body{background:var(--blanc);}
 /* v4.02 — Relief & lisibilité (retours Achille) */
