@@ -1611,7 +1611,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     </div>
   </div>
   </div>
-  <div class="logo-ver app-ver">Achille App — v8.12</div>
+  <div class="logo-ver app-ver">Achille App — v8.13</div>
 </aside>
 <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Réduire la barre latérale">‹</button>
 
@@ -1805,14 +1805,6 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
           <div id="docs-all-list"><div style="color:var(--gris-2);font-style:italic;font-size:14px;">Chargement…</div></div>
         </div>
 
-        <div class="docs-panel" id="docs-affaires">
-          <div style="display:flex;align-items:baseline;gap:12px;margin-bottom:20px;">
-            <div style="font-family:'Cormorant Garamond',serif;font-size:28px;color:var(--noir);">Documents <span style="color:var(--terra);">par affaire</span></div>
-            <div style="font-size:11px;color:var(--gris-2);">suivi des pièces de chaque dossier — affaires du suivi des ventes + affaires ajoutées</div>
-            <button id="docaff-add-aff-btn" class="btn btn-terra btn-sm" style="margin-left:auto;display:none;" onclick="docaffAddAff()">+ Ajouter une affaire</button>
-          </div>
-          <div id="docaff-list"><div style="color:var(--gris-2);font-style:italic;font-size:14px;">Chargement…</div></div>
-        </div>
 
         <div class="docs-panel" id="docs-redac">
           <div style="display:flex;align-items:baseline;gap:12px;margin-bottom:14px;">
@@ -4015,7 +4007,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
   // MODALS
   window.openModal=function(id){document.getElementById(id).classList.add('open');};
   window.closeModal=function(id){document.getElementById(id).classList.remove('open');};
-  window.saveClose=function(id){closeModal(id);toast('Enregistre !');};
+  
   document.querySelectorAll('.modal-overlay').forEach(function(o){
     o.addEventListener('mousedown',function(e){ o._downOnOverlay=(e.target===o); });
     o.addEventListener('click',function(e){ if(e.target===o && o._downOnOverlay) o.classList.remove('open'); o._downOnOverlay=false; });
@@ -4038,60 +4030,22 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
   window.closeNotifs=function(){document.getElementById('notif-panel').classList.remove('open');};
 
   // TASKS
-  window.toggleTask=function(el){
-    el.classList.toggle('done');
-    var n=document.querySelectorAll('.task-item:not(.done)').length;
-    var b=document.getElementById('badge-tasks');
-    if(b){b.textContent=n>0?n:'';b.style.display=n>0?'':'none';}
-  };
+  
 
   // RELANCES
-  window.doneRelance=function(btn){
-    var item=btn.closest('.rel-item');
-    item.style.transition='all .3s';item.style.opacity='0';item.style.transform='translateX(28px)';
-    setTimeout(function(){item.remove();},300);
-    toast('Relance traitee');
-  };
+  
 
   // MESSAGERIE
-  window.selectConv=function(el,name,sub){
-    document.querySelectorAll('.conv-item').forEach(function(i){i.classList.remove('active');});
-    el.classList.add('active');
-    document.getElementById('conv-name').textContent=name;
-    document.getElementById('conv-sub').textContent=sub;
-    var d=el.querySelector('.conv-unread');if(d) d.remove();
-  };
-  window.sendMsg=function(){
-    var inp=document.getElementById('msg-input');var txt=inp.value.trim();if(!txt) return;
-    var body=document.getElementById('msg-body');var div=document.createElement('div');
-    var h=now.getHours(),m=String(now.getMinutes()).padStart(2,'0');
-    div.innerHTML='<div class="bubble out">'+txt+'</div><div class="bubble-meta right">Vous - '+h+':'+m+'</div>';
-    body.appendChild(div);body.scrollTop=body.scrollHeight;inp.value='';
-  };
+  
+  
 
   // COMMISSIONS
   var fmt=function(n){return n.toLocaleString('fr-FR')+' EUR';};
-  window.calcComm=function(){
-    var p=parseFloat(document.getElementById('sim-prix').value);
-    var t=parseFloat(document.getElementById('sim-type').value);
-    document.getElementById('sim-result').textContent=(!isNaN(p)&&p>0)?fmt(p*t):'-';
-  };
-  window.calcMC=function(){
-    var p=window.NUMV(document.getElementById('mc-prix').value);
-    var t=parseFloat(document.getElementById('mc-type').value);
-    document.getElementById('mc-result').textContent=(!isNaN(p)&&p>0)?fmt(p*t):'-';
-  };
+  
+  
 
   // CHARTS
-  window.initCharts=function(){
-    if(!document.getElementById('chart-ca')) return;
-    if(chartsOk) return; chartsOk=true;
-    if(typeof Chart==='undefined') return;
-    var tc={color:'#a09890',font:{family:"'Jost',sans-serif",size:10}};
-    new Chart(document.getElementById('chart-ca'),{type:'bar',data:{labels:['Sep','Oct','Nov','Dec','Jan','Fev'],datasets:[{data:[98,112,87,145,141,148],backgroundColor:'rgba(180,115,96,.2)',borderColor:'#b47360',borderWidth:1.5,borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{color:'rgba(0,0,0,.04)'},ticks:tc},y:{grid:{color:'rgba(0,0,0,.04)'},ticks:{color:tc.color,font:tc.font,callback:function(v){return v+'k';}}}}}});
-    new Chart(document.getElementById('chart-type'),{type:'doughnut',data:{labels:['Vente','Location','Prestige'],datasets:[{data:[55,25,20],backgroundColor:['rgba(76,83,59,.7)','rgba(180,115,96,.7)','rgba(226,216,203,.9)'],borderWidth:1.5}]},options:{responsive:true,maintainAspectRatio:false,cutout:'65%',plugins:{legend:{position:'bottom',labels:{color:'#a09890',font:{size:10},padding:10}}}}});
-    new Chart(document.getElementById('chart-pipe'),{type:'bar',data:{labels:['Prospect','Estimation','Mandat','Visite','Offre','Compromis'],datasets:[{data:[3,2,2,2,1,2],backgroundColor:'rgba(180,115,96,.3)',borderColor:'#b47360',borderWidth:1.5,borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{display:false},ticks:{color:tc.color,font:tc.font,maxRotation:30}},y:{grid:{color:'rgba(0,0,0,.04)'},ticks:{color:tc.color,font:tc.font,stepSize:1}}}}});
-  };
+  
 
   // ========== POST-ITS ==========
   var piNotes=[],piId=0,piActiveFilter=null,piColorSel='hot',piEditId=null;
@@ -4350,21 +4304,13 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
   function vtFmt(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
   function vtDisp(d){return d.getDate()+' '+MNMS_C[d.getMonth()];}
 
-  window.vtInit=function(){if(!vtInited){vtInited=true;vtLoad();}vtRefresh();};
+  
   window._vtResync=function(){ try{ if(vtInited){ vtV=[]; vtId=0; vtLoad(); } }catch(e){} };
-  window.vtSetView=function(v,btn){
-    vtView=v;
-    document.querySelectorAll('.view-tab').forEach(function(b){b.classList.remove('active');});
-    btn.classList.add('active');
-    document.getElementById('vt-cal').style.display=v==='cal'?'flex':'none';
-    document.getElementById('vt-list').style.display=v==='list'?'block':'none';
-    document.getElementById('vt-week-nav').style.display=v==='cal'?'flex':'none';
-    vtRefresh();
-  };
+  
   function vtRefresh(){if(vtView==='cal') vtRenderCal();else vtRenderList();vtStats();}
-  window.vtPrev=function(){vtWk=vtAdd(vtWk,-7);vtRenderCal();};
-  window.vtNext=function(){vtWk=vtAdd(vtWk,7);vtRenderCal();};
-  window.vtToday=function(){vtWk=vtMonday(new Date());vtRenderCal();};
+  
+  
+  
   window.vtSelSt=function(el){document.querySelectorAll('.statut-choice').forEach(function(c){c.classList.remove('active');});el.classList.add('active');vtSt=el.dataset.s;};
   window.vtSelSu=function(el){if(el.classList.contains('active')){el.classList.remove('active');vtSu=null;}else{document.querySelectorAll('.suite-choice').forEach(function(c){c.classList.remove('active');});el.classList.add('active');vtSu=el.dataset.s;}};
   // ===== Accompagnateurs (multi-sélection façon réseaux) + visibilité (v3.56) =====
@@ -5234,13 +5180,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
   function sectFD(m){return m<1000?m+'m':(m/1000).toFixed(1)+'km';}
 
   // ========== PROSPECTION ==========
-  window.prospTab = function(id, btn) {
-    document.querySelectorAll('.prosp-panel').forEach(function(p){ p.classList.remove('active'); });
-    document.querySelectorAll('.prosp-tab').forEach(function(b){ b.classList.remove('active'); });
-    var panel = document.getElementById('prosp-'+id);
-    if(panel) panel.classList.add('active');
-    if(btn) btn.classList.add('active');
-  };
+  
 
   window.prospToggle = function(el) {
     // Don't toggle if clicking a checkbox
@@ -5333,11 +5273,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     if(!prospEditMode) toast('Modifications en memoire — cliquez Sauvegarder pour persister');
   };
 
-  window.prospSaveEdits = function() {
-    /* v6.15 : neutralisé (l'édition libre de la page Prospection est retirée
-       avec le nouveau design — la sauvegarde de page.innerHTML était fragile). */
-    if(window.toast) toast('Édition de la page Prospection désactivée depuis la v6.15');
-  };
+  
 
   window.prospDelCheck = function(btn, e) {
     e.stopPropagation();
@@ -5345,27 +5281,9 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     if(item) { item.style.transition='all .2s'; item.style.opacity='0'; item.style.transform='translateX(10px)'; setTimeout(function(){item.remove();},200); }
   };
 
-  window.prospDelStep = function(btn, e) {
-    e.stopPropagation();
-    var step = btn.closest('.script-step');
-    if(step) { step.style.transition='all .25s'; step.style.opacity='0'; setTimeout(function(){step.remove();},250); }
-  };
+  
 
-  window.prospAddCheck = function(addBtn) {
-    var list = addBtn.closest('.doc-section') ?
-      addBtn.closest('.doc-section').querySelector('.check-list') :
-      addBtn.closest('.script-step-body') ?
-      addBtn.closest('.script-step-body').querySelector('.check-list') :
-      addBtn.previousElementSibling;
-    if(!list) return;
-    var item = document.createElement('div');
-    item.className = 'check-item';
-    item.onclick = function(){ prospCheck(this, event); };
-    item.innerHTML = '<div class="check-box"></div><div><div class="check-label" contenteditable="true">Nouvelle case — cliquez pour modifier</div></div><button class="edit-del-btn" onclick="prospDelCheck(this,event)" title="Supprimer">✕</button>';
-    list.appendChild(item);
-    var lbl = item.querySelector('.check-label');
-    if(lbl) { lbl.focus(); document.execCommand('selectAll',false,null); }
-  };
+  
 
   // Load saved version if exists
   function prospLoadSaved() {
@@ -5657,132 +5575,14 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
   lexCheckRole();
 
   // ========== DOCUMENTS ==========
-  var MODELES_PREVIEW = {
-  'visite': { title: 'Fiche Visite d Estimation', filename: 'Visite_d_estimation.docx', html: '<div class="mpv-h1">Visite d\'estimation</div><div class="mpv-h2">Informations générales</div><div class="mpv-field"><span class="mpv-field-label">Type de bien</span><span style="color:var(--beige-3);">—</span></div><div class="mpv-field"><span class="mpv-field-label">Superficie habitable</span><span class="mpv-field-val">m²</span></div><div class="mpv-field"><span class="mpv-field-label">Étage / Ascenseur</span><span style="color:var(--beige-3);">—</span></div><div class="mpv-field"><span class="mpv-field-label">Prix souhaité</span><span style="color:var(--beige-3);">—</span></div><div class="mpv-field"><span class="mpv-field-label">Nb pièces / chambres</span><span style="color:var(--beige-3);">—</span></div><div class="mpv-field"><span class="mpv-field-label">Exposition principale</span><span style="color:var(--beige-3);">—</span></div><div class="mpv-field"><span class="mpv-field-label">Charges mensuelles</span><span style="color:var(--beige-3);">—</span></div><div class="mpv-field"><span class="mpv-field-label">Chauffage / Eau chaude</span><span style="color:var(--beige-3);">—</span></div><div class="mpv-field"><span class="mpv-field-label">Taxe foncière</span><span style="color:var(--beige-3);">—</span></div><div class="mpv-h2">Description du bien</div><div class="mpv-field"><span class="mpv-field-label">Séjour (exposition)</span><span style="color:var(--beige-3);">—</span></div><div class="mpv-field"><span class="mpv-field-label">Cuisine</span><span class="mpv-field-val">Ouverte / Fermée — Équipée / Non-équipée</span></div><div class="mpv-field"><span class="mpv-field-label">Chambres</span><span style="color:var(--beige-3);">—</span></div><div class="mpv-field"><span class="mpv-field-label">Salles de bains</span><span style="color:var(--beige-3);">—</span></div><div class="mpv-field"><span class="mpv-field-label">Balcon / Terrasse / Vue</span><span style="color:var(--beige-3);">—</span></div><div class="mpv-h2">Travaux / Diagnostics</div><div class="mpv-field"><span class="mpv-field-label">Travaux à prévoir</span><span style="color:var(--beige-3);">—</span></div><div class="mpv-field"><span class="mpv-field-label">DPE (date)</span><span style="color:var(--beige-3);">—</span></div><div class="mpv-h2">Parties communes</div><div class="mpv-field"><span class="mpv-field-label">Type d\'immeuble</span><span style="color:var(--beige-3);">—</span></div><div class="mpv-field"><span class="mpv-field-label">État des parties communes</span><span style="color:var(--beige-3);">—</span></div><div class="mpv-field"><span class="mpv-field-label">Parking / Box / Cave</span><span style="color:var(--beige-3);">—</span></div><div class="mpv-h2">Environnement</div><div class="mpv-field"><span class="mpv-field-label">Transports</span><span style="color:var(--beige-3);">—</span></div><div class="mpv-field"><span class="mpv-field-label">Écoles / Commerces</span><span style="color:var(--beige-3);">—</span></div><div class="mpv-note">ℹ️ Document Word éditable — à imprimer ou remplir sur tablette lors de la visite.</div>' },
-  'eval-loc': { title: 'Avis de Valeur Locative', filename: 'Modèle_Estimation_Valeur_Locative.docx', html: '<div class="mpv-h1">Avis de Valeur Locative</div><div class="mpv-field"><span class="mpv-field-label">Date</span><span style="color:var(--beige-3);">—</span></div><div class="mpv-field"><span class="mpv-field-label">Adresse du logement</span><span style="color:var(--beige-3);">—</span></div><div class="mpv-field"><span class="mpv-field-label">Surface Carrez / au sol</span><span class="mpv-field-val">xx m² / xx m²</span></div><div class="mpv-field"><span class="mpv-field-label">Points notables</span><span style="color:var(--beige-3);">—</span></div><div class="mpv-h2">Description du bien</div><div class="mpv-para">L\'appartement se compose d\'une cuisine moderne entièrement aménagée et ouverte, d\'un espace de réception / salon / bureau…</div><div class="mpv-h2">Analyse du marché locatif</div><div class="mpv-para">L\'appartement est situé dans un secteur à très forte attractivité locative…</div><div class="mpv-h2">Estimation locative</div><div class="mpv-para">Au regard des caractéristiques du bien, de son emplacement, de son état général et des loyers pratiqués, nous estimons la valeur locative entre X € et Y € par mois charges comprises.</div><div class="mpv-h2">Cadre et limites</div><div class="mpv-para">Le présent avis est fourni à titre indicatif, sur la base des informations communiquées…</div><div class="mpv-note">ℹ️ Modèle vierge — voir aussi l\'exemple rempli (15 av. du Président Wilson).</div>' },
-  'offre': { title: 'Maquette Offre d Achat', filename: 'Maquette_d_offre_d_achat.docx', html: '<div class="mpv-h1">Offre d\'Achat</div><div class="mpv-field"><span class="mpv-field-label">Proposants</span><span class="mpv-field-val">Identité + adresse</span></div><div class="mpv-field"><span class="mpv-field-label">Destinataire</span><span class="mpv-field-val">Achille Immobilier — 115 avenue Achille Peretti, 92200 Neuilly</span></div><div class="mpv-h2">Prix proposé</div><div class="mpv-para">Nous avons le plaisir de vous faire une offre pour le bien immobilier, libre de toute occupation, au prix de … € (en chiffres et en lettres).</div><div class="mpv-h2">Conditions de l\'offre</div><div class="mpv-para">Cette offre est valable jusqu\'à la date du … à 23h59.</div><div class="mpv-h2">Financement</div><div class="mpv-para">Sous réserve de l\'obtention d\'un prêt d\'un montant maximal de … € — OU — financement sans emprunt (offre sans condition suspensive).</div><div class="mpv-h2">Séquestre & annexes</div><div class="mpv-para">Séquestre de 10 % prévu à l\'acceptation. Documents de financement joints en annexe.</div><div class="mpv-note">ℹ️ Mentions légales incluses : « La présente offre est ferme et irrévocable jusqu\'à son échéance »</div>' },
-  'edl': { title: "Modèle État des Lieux", filename: 'Modèle_état_des_lieux.docx', html: '<div class="mpv-h1">État des Lieux</div><div class="mpv-field"><span class="mpv-field-label">Date</span><span style="color:var(--beige-3);">—</span></div><div class="mpv-field"><span class="mpv-field-label">Adresse</span><span style="color:var(--beige-3);">—</span></div><div class="mpv-field"><span class="mpv-field-label">Bailleur</span><span style="color:var(--beige-3);">—</span></div><div class="mpv-field"><span class="mpv-field-label">Locataire</span><span style="color:var(--beige-3);">—</span></div><div class="mpv-h2">Relevé des compteurs</div><div class="mpv-para">Électricité — Gaz — Eau froide / chaude — Index à renseigner</div><div class="mpv-h2">État par pièce</div><div class="mpv-para">Entrée — Séjour — Cuisine — Chambre(s) — Salle(s) de bains — WC — Cave — Parking — Extérieur</div><div class="mpv-para">Pour chaque pièce : Murs / Sol / Plafond / Observations</div><div class="mpv-h2">Clés remises</div><div class="mpv-field"><span class="mpv-field-label">Nombre et type de clés</span><span style="color:var(--beige-3);">—</span></div><div class="mpv-h2">Signatures</div><div class="mpv-para">Signature bailleur + locataire avec date et lieu.</div><div class="mpv-note">ℹ️ Document Word éditable — à compléter sur place lors de l\'entrée ou sortie du locataire.</div>' },
-};
-
+  /* v8.13 : l'ancien générateur Word simplifié (MODELES_PREVIEW/CONTENT + ensureDocx) a été retiré —
+     tous les téléchargements Word servent les fichiers OFFICIELS embarqués (ACH_DOCX, v8.03). */
   window.docsTab = function(id, btn) {
-    document.querySelectorAll('.docs-panel').forEach(function(p){p.classList.remove('active');});
-    document.querySelectorAll('.docs-tab').forEach(function(b){b.classList.remove('active');});
-    var p = document.getElementById('docs-'+id);
-    if(p) p.classList.add('active');
-    if(btn) btn.classList.add('active');
+    document.querySelectorAll('.docs-panel').forEach(function(p){ p.classList.remove('active'); });
+    document.querySelectorAll('.docs-tabs .docs-tab').forEach(function(b){ b.classList.remove('active'); });
+    var pane=document.getElementById('docs-'+id); if(pane) pane.classList.add('active');
+    if(btn && btn.classList) btn.classList.add('active');
   };
-
-  // Génération docx à la volée via contenu structuré
-  var MODELES_CONTENT = {
-    'visite': {
-      title: 'Fiche Visite d\'Estimation',
-      sections: [
-        { type: 'h1', text: 'Visite d\'estimation' },
-        { type: 'h2', text: 'Informations générales' },
-        { type: 'field', label: 'Type de bien', val: '—' },
-        { type: 'field', label: 'Superficie habitable', val: 'm²' },
-        { type: 'field', label: 'Étage / Ascenseur', val: '—' },
-        { type: 'field', label: 'Prix souhaité', val: '—' },
-        { type: 'field', label: 'Nb pièces / chambres', val: '—' },
-        { type: 'field', label: 'Exposition principale', val: '—' },
-        { type: 'field', label: 'Charges mensuelles', val: '—' },
-        { type: 'field', label: 'Chauffage / Eau chaude', val: '—' },
-        { type: 'field', label: 'Taxe foncière', val: '—' },
-        { type: 'h2', text: 'Description du bien' },
-        { type: 'field', label: 'Séjour (exposition)', val: '—' },
-        { type: 'field', label: 'Cuisine', val: 'Ouverte / Fermée — Équipée / Non-équipée' },
-        { type: 'field', label: 'Chambres', val: '—' },
-        { type: 'field', label: 'Salles de bains', val: '—' },
-        { type: 'field', label: 'Balcon / Terrasse / Vue', val: '—' },
-        { type: 'h2', text: 'Travaux / Diagnostics' },
-        { type: 'field', label: 'Travaux à prévoir', val: '—' },
-        { type: 'field', label: 'DPE (date)', val: '—' },
-        { type: 'h2', text: 'Parties communes' },
-        { type: 'field', label: 'Type d\'immeuble', val: '—' },
-        { type: 'field', label: 'État des parties communes', val: '—' },
-        { type: 'field', label: 'Parking / Box / Cave', val: '—' },
-        { type: 'h2', text: 'Environnement' },
-        { type: 'field', label: 'Transports', val: '—' },
-        { type: 'field', label: 'Écoles / Commerces', val: '—' },
-        { type: 'note', text: 'Document Word éditable — à imprimer ou remplir sur tablette lors de la visite.' }
-      ]
-    },
-    'eval-loc': {
-      title: 'Avis de Valeur Locative',
-      sections: [
-        { type: 'h1', text: 'Avis de Valeur Locative' },
-        { type: 'field', label: 'Date', val: '—' },
-        { type: 'field', label: 'Adresse du logement', val: '—' },
-        { type: 'field', label: 'Surface Carrez / au sol', val: 'xx m² / xx m²' },
-        { type: 'field', label: 'Points notables', val: '—' },
-        { type: 'h2', text: 'Description du bien' },
-        { type: 'para', text: 'L\'appartement se compose d\'une cuisine moderne entièrement aménagée et ouverte, d\'un espace de réception / salon / bureau…' },
-        { type: 'h2', text: 'Analyse du marché locatif' },
-        { type: 'para', text: 'L\'appartement est situé dans un secteur à très forte attractivité locative…' },
-        { type: 'h2', text: 'Estimation locative' },
-        { type: 'para', text: 'Au regard des caractéristiques du bien, de son emplacement, de son état général et des loyers pratiqués, nous estimons la valeur locative entre X € et Y € par mois charges comprises.' },
-        { type: 'h2', text: 'Cadre et limites' },
-        { type: 'para', text: 'Le présent avis est fourni à titre indicatif, sur la base des informations communiquées…' },
-        { type: 'note', text: 'Modèle vierge — voir aussi l\'exemple rempli (15 av. du Président Wilson).' }
-      ]
-    },
-    'offre': {
-      title: 'Maquette Offre d\'Achat',
-      sections: [
-        { type: 'h1', text: 'Offre d\'Achat' },
-        { type: 'field', label: 'Proposants', val: 'Identité + adresse' },
-        { type: 'field', label: 'Destinataire', val: 'Achille Immobilier — 115 avenue Achille Peretti, 92200 Neuilly' },
-        { type: 'h2', text: 'Prix proposé' },
-        { type: 'para', text: 'Nous avons le plaisir de vous faire une offre pour le bien immobilier, libre de toute occupation, au prix de … € (en chiffres et en lettres).' },
-        { type: 'h2', text: 'Conditions de l\'offre' },
-        { type: 'para', text: 'Cette offre est valable jusqu\'à la date du … à 23h59.' },
-        { type: 'h2', text: 'Financement' },
-        { type: 'para', text: 'Sous réserve de l\'obtention d\'un prêt d\'un montant maximal de … € — OU — financement sans emprunt (offre sans condition suspensive).' },
-        { type: 'h2', text: 'Séquestre & annexes' },
-        { type: 'para', text: 'Séquestre de 10 % prévu à l\'acceptation. Documents de financement joints en annexe.' },
-        { type: 'note', text: 'Mentions légales incluses : La présente offre est ferme et irrévocable jusqu\'à son échéance.' }
-      ]
-    },
-    'edl': {
-      title: 'Modèle État des Lieux',
-      sections: [
-        { type: 'h1', text: 'État des Lieux' },
-        { type: 'field', label: 'Date', val: '—' },
-        { type: 'field', label: 'Adresse', val: '—' },
-        { type: 'field', label: 'Bailleur', val: '—' },
-        { type: 'field', label: 'Locataire', val: '—' },
-        { type: 'h2', text: 'Relevé des compteurs' },
-        { type: 'para', text: 'Électricité — Gaz — Eau froide / chaude — Index à renseigner' },
-        { type: 'h2', text: 'État par pièce' },
-        { type: 'para', text: 'Entrée — Séjour — Cuisine — Chambre(s) — Salle(s) de bains — WC — Cave — Parking — Extérieur' },
-        { type: 'para', text: 'Pour chaque pièce : Murs / Sol / Plafond / Observations' },
-        { type: 'h2', text: 'Clés remises' },
-        { type: 'field', label: 'Nombre et type de clés', val: '—' },
-        { type: 'h2', text: 'Signatures' },
-        { type: 'para', text: 'Signature bailleur + locataire avec date et lieu.' },
-        { type: 'note', text: 'Document Word éditable — à compléter sur place lors de l\'entrée ou sortie du locataire.' }
-      ]
-    }
-  };
-
-  window.ensureDocx = function(){
-    if(window.docx && window.docx.Packer) return Promise.resolve(window.docx);
-    if(window.__docxLoading) return window.__docxLoading;
-    var urls=['https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.umd.js','https://unpkg.com/docx@8.5.0/build/index.umd.js'];
-    window.__docxLoading=new Promise(function(resolve,reject){
-      var idx=0;
-      (function tryNext(){
-        if(window.docx && window.docx.Packer){ resolve(window.docx); return; }
-        if(idx>=urls.length){ reject(new Error('docx introuvable')); return; }
-        var s=document.createElement('script'); s.src=urls[idx++];
-        s.onload=function(){ if(window.docx&&window.docx.Packer) resolve(window.docx); else tryNext(); };
-        s.onerror=tryNext;
-        document.head.appendChild(s);
-      })();
-    });
-    return window.__docxLoading;
-  };
-
   /* v8.03 : les VRAIS documents Word de l'agence, embarqués tels quels (images recompressées,
      contenu et mise en page d'origine). downloadDocx les sert en priorité ; l'ancien générateur
      simplifié ne sert plus que de repli éventuel pour un modèle sans fichier officiel. */
@@ -5808,48 +5608,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
       setTimeout(function(){ document.body.removeChild(a); URL.revokeObjectURL(url); }, 1000);
       return;
     }
-    var content = MODELES_CONTENT[key] || MODELES_PREVIEW[key];
-    if (!content) return;
-    var filename = MODELES_PREVIEW[key] ? MODELES_PREVIEW[key].filename : (key + '.docx');
-
-    ensureDocx().then(function(D){
-      var children = [];
-      children.push(new D.Paragraph({
-        children: [new D.TextRun({ text: 'ACHILLE IMMOBILIER', bold: true, size: 28, color: 'B47360', font: 'Arial' })],
-        spacing: { after: 120 }
-      }));
-      children.push(new D.Paragraph({
-        children: [new D.TextRun({ text: '115 avenue Achille Peretti — 92200 Neuilly-sur-Seine', size: 18, color: '7A7570', font: 'Arial' })],
-        spacing: { after: 400 },
-        border: { bottom: { style: D.BorderStyle.SINGLE, size: 4, color: 'B47360', space: 1 } }
-      }));
-      var sections = content.sections || [];
-      sections.forEach(function(s) {
-        if (s.type === 'h1') {
-          children.push(new D.Paragraph({ children: [new D.TextRun({ text: s.text, bold: true, size: 36, font: 'Arial', color: '1A1A18' })], spacing: { before: 200, after: 200 } }));
-        } else if (s.type === 'h2') {
-          children.push(new D.Paragraph({ children: [new D.TextRun({ text: s.text, bold: true, size: 24, font: 'Arial', color: '4C533B' })], spacing: { before: 300, after: 100 }, border: { bottom: { style: D.BorderStyle.SINGLE, size: 2, color: 'D4DAC8', space: 1 } } }));
-        } else if (s.type === 'field') {
-          children.push(new D.Paragraph({ children: [ new D.TextRun({ text: s.label + ' : ', bold: true, size: 20, font: 'Arial', color: '4C533B' }), new D.TextRun({ text: s.val, size: 20, font: 'Arial', color: '1A1A18' }) ], spacing: { after: 80 } }));
-        } else if (s.type === 'para') {
-          children.push(new D.Paragraph({ children: [new D.TextRun({ text: s.text, size: 20, font: 'Arial' })], spacing: { after: 120 } }));
-        } else if (s.type === 'note') {
-          children.push(new D.Paragraph({ children: [new D.TextRun({ text: 'ℹ ' + s.text, size: 18, font: 'Arial', color: '7A7570', italics: true })], spacing: { before: 200, after: 80 } }));
-        }
-      });
-      var doc = new D.Document({ sections: [{ properties: { page: { size: { width: 11906, height: 16838 }, margin: { top: 1134, right: 1134, bottom: 1134, left: 1134 } } }, children: children }] });
-      return D.Packer.toBlob(doc);
-    }).then(function(blob) {
-      if(!blob) return;
-      var url = URL.createObjectURL(blob);
-      var a = document.createElement('a');
-      a.href = url; a.download = filename;
-      document.body.appendChild(a); a.click();
-      setTimeout(function() { document.body.removeChild(a); URL.revokeObjectURL(url); }, 1000);
-    }).catch(function(err) {
-      console.error('Erreur docx:', err);
-      alert('Impossible de charger la bibliothèque de génération Word. Vérifiez votre connexion Internet, puis réessayez.');
-    });
+    if(window.toast) toast('Document indisponible.');
   };
 
   // ========== PLANNING ==========
@@ -7132,22 +6891,9 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     return new Intl.NumberFormat('fr-FR',{style:'currency',currency:'EUR',maximumFractionDigits:0}).format(Math.round(n));
   }
 
-  window.v2SetType=function(mode,type,btn){
-    _v2Types[mode]=type;
-    btn.closest('.v2-type-toggle').querySelectorAll('.v2-type-btn').forEach(function(b){b.classList.remove('active');});
-    btn.classList.add('active');
-    v2Calc(mode);
-  };
-  window.v2Preset=function(mode,val,btn){
-    document.getElementById('v2-'+mode+'-taux').value=val;
-    btn.closest('.v2-presets').querySelectorAll('.v2-preset').forEach(function(b){b.classList.remove('active');});
-    btn.classList.add('active');
-    v2Calc(mode);
-  };
-  window.v2ClearPreset=function(mode){
-    var c=document.getElementById('v2-'+mode+'-presets');
-    if(c) c.querySelectorAll('.v2-preset').forEach(function(b){b.classList.remove('active');});
-  };
+  
+  
+  
 
   window.v2Calc=function(mode){
     var prix=parseFloat(document.getElementById('v2-'+mode+'-prix').value)||0;
@@ -7192,35 +6938,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     set('vc-eco-fai','\u2014','note'); set('vc-eco-sep','\u2193 '+v2Fmt(eco)+' \u00e9conomis\u00e9s','good');
   };
 
-  window.v2Rent=function(){
-    var loyer=parseFloat(document.getElementById('v2-r-loyer').value)||0;
-    var prix=parseFloat(document.getElementById('v2-r-prix').value)||0;
-    var ag=parseFloat(document.getElementById('v2-r-agence').value)||0;
-    var not=parseFloat(document.getElementById('v2-r-notaire').value)||0;
-    var taxe=parseFloat(document.getElementById('v2-r-taxe').value)||0;
-    var chg=parseFloat(document.getElementById('v2-r-charges').value)||0;
-    var ass=parseFloat(document.getElementById('v2-r-assurance').value)||0;
-    var gest=parseFloat(document.getElementById('v2-r-gestion').value)||0;
-    var entr=parseFloat(document.getElementById('v2-r-entretien').value)||0;
-    var vac=parseFloat(document.getElementById('v2-r-vacance').value)||0;
-    var imp=parseFloat(document.getElementById('v2-r-impots').value)||0;
-    if(!loyer||!prix) return;
-    var loyerAn=loyer*12;
-    var prixAch=prix+ag+not;
-    var chargesAn=taxe+chg+ass+gest+entr+(loyerAn*vac/100);
-    var brute=prixAch>0?loyerAn/prixAch*100:0;
-    var nette=prixAch>0?(loyerAn-chargesAn)/prixAch*100:0;
-    var netteImp=prixAch>0?(loyerAn-chargesAn-imp)/prixAch*100:0;
-    document.getElementById('v2-r-brute').textContent=brute.toFixed(2)+'%';
-    document.getElementById('v2-r-nette').textContent=nette.toFixed(2)+'%';
-    document.getElementById('v2-r-nette-imp').textContent=netteImp.toFixed(2)+'%';
-    document.getElementById('v2-r-d-loyeran').textContent=v2Fmt(loyerAn);
-    document.getElementById('v2-r-d-prixach').textContent=v2Fmt(prixAch);
-    document.getElementById('v2-r-d-charges').textContent=v2Fmt(chargesAn);
-    document.getElementById('v2-r-d-revnetav').textContent=v2Fmt(loyerAn-chargesAn);
-    document.getElementById('v2-r-d-impots').textContent=v2Fmt(imp);
-    document.getElementById('v2-r-d-revnetap').textContent=v2Fmt(loyerAn-chargesAn-imp);
-  };
+  
 
   // TOAST
   window.toast=function(msg){
@@ -8718,24 +8436,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
 
   // ══════════════════════════════════════════════
 
-  window.rentaTab=function(n){
-    [1,2,3].forEach(function(i){
-      var panel=document.getElementById('renta-panel-'+i);
-      var btn=document.getElementById('renta-tab-'+i);
-      if(!panel||!btn)return;
-      if(i===n){
-        panel.style.display='';
-        btn.style.borderBottom='3px solid var(--terra)';
-        btn.style.color='var(--terra)';
-        btn.style.fontWeight='600';
-      } else {
-        panel.style.display='none';
-        btn.style.borderBottom='3px solid transparent';
-        btn.style.color='var(--gris)';
-        btn.style.fontWeight='400';
-      }
-    });
-  };
+  
 
   function rentaFmt(n){
     if(isNaN(n)||n===null)return'—';
@@ -9879,9 +9580,11 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     ach_pi_v4:'Post-its', ach_plan_events:'Planning', ach_todos_v1:'To-do',
     ach_prosp_v1:'Prospection', ach_lex_html_v1:'Lexique', ach_lex_proposals:'Lexique (propositions)',
     ach_fin_hist_v3:'Honoraires', ach_fin_ops_v3:'Finances', ach_fin_lines_v1:'Finances',
-    ach_fin_solde_v3:'Finances', ach_encours_v1:'Affaires en cours', ach_audit_v1:'Journal', ach_pige_v1:'Pige', ach_docaff_v1:'Documents par affaire', ach_docs_cfg_v1:'Documents (réglages)', ach_docgen_assets_v1:'Générateur (charte & polices)', ach_rappels_v1:'Rappels', ach_evol_v1:'Évolutions', ach_redac_v1:'Rédaction quotidienne', ach_routines_v1:'Routines & Objectifs', ach_tomb_v2:'(technique) suppressions'
+    ach_fin_solde_v3:'Finances', ach_encours_v1:'Affaires en cours', ach_audit_v1:'Journal', ach_pige_v1:'Pige', ach_docaff_v1:'Documents par affaire', ach_docs_cfg_v1:'Documents (réglages)', ach_docgen_assets_v1:'Générateur (charte & polices)', ach_rappels_v1:'Rappels', ach_evol_v1:'Évolutions', ach_redac_v1:'Rédaction quotidienne', ach_routines_v1:'Routines & Objectifs', ach_tomb_v2:'(technique) suppressions',
+    ach_affaires_v1:'Pipeline (affaires)', ach_aff_pins_v1:'Pipeline (épingles)', ach_conc_v1:'Honoraires (concurrence)',
+    ach_perms_v1:'Droits & Accès', ach_vsb_v1:'Visites sans bon', ach_bv_accomp:'Bons de visite (accompagnateurs)'
   };
-  function labelFor(k){ if(/^ach_pgread_/.test(k)) return 'Pige (fiches lues)'; return LABELS[k] || k; }
+  function labelFor(k){ if(/^ach_pgread_/.test(k)) return 'Pige (fiches lues)'; if(/mig|democlean|seeded|datereset|diagflow|normmig/.test(k)&&!LABELS[k]) return '(technique) migration'; return LABELS[k] || k; }
   /* v8.03 : clés OBSOLÈTES (anciens registres pige v1) — jamais réimportées du cloud */
   function _ach_obsoleteKey(k){ return /^ach_pgread_.+_v1$/.test(''+(k||'')); }
 
@@ -10547,7 +10250,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     startRealtime();
     var ov=document.getElementById('ach-login-overlay'); if(ov) ov.classList.add('ach-hidden');
     var ub=document.getElementById('ach-userbar'); if(ub) ub.style.display='none';
-    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v8.12';
+    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v8.13';
     flag('Synchronis\u00e9');
     // fin de l'init : on autorise la journalisation des actions
     setTimeout(function(){ installInterceptor._init=false; }, 1500);
@@ -11035,7 +10738,6 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
       out+='<div class="docaff-hd">'+esc(s.label)+'<span class="st-tag">'+s.tag+'</span>'
         +(adm?'<span style="margin-left:auto;display:flex;gap:6px;">'
           +'<button class="doc-mini-btn" title="Ajouter un document" onclick="docaffAddDoc(\''+s.key+'\')">＋</button>'
-          +(s.manual?'<button class="doc-mini-btn del" title="Supprimer cette affaire" onclick="docaffDelAff(\''+s.key+'\')">🗑</button>':'')
           +'</span>':'')
         +'</div>';
       if(!docs.length){ out+='<div style="font-size:12px;color:var(--gris-2);padding:2px 4px 6px;">Aucun document suivi pour cette affaire.</div>'; }
@@ -11054,26 +10756,9 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
     box.innerHTML=out;
   };
 
-  window.docaffAddAff=function(){
-    if(!isPriv()) return;
-    document.getElementById('daff-label').value='';
-    openModal('modal-docaff-aff');
-  };
-  window.docaffSaveAff=function(){
-    var lb=(document.getElementById('daff-label').value||'').trim();
-    if(!lb){ alert('Donnez un libellé à l\u2019affaire.'); return; }
-    var o=daLoad();
-    o.manual.push({id:Date.now()+''+Math.floor(Math.random()*100), label:lb});
-    daSave(o); closeModal('modal-docaff-aff'); docaffRender();
-  };
-  window.docaffDelAff=function(key){
-    if(!isPriv()) return;
-    if(!confirm('Supprimer cette affaire et ses documents suivis ?')) return;
-    var o=daLoad();
-    o.manual=o.manual.filter(function(a){ return ('m-'+a.id)!==key; });
-    delete o.docs[key];
-    daSave(o); docaffRender();
-  };
+  
+  
+  
   window.docaffAddDoc=function(affKey){
     if(!isPriv()) return;
     document.getElementById('dadoc-aff').value=affKey;
@@ -13255,15 +12940,6 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
   };
 })();
 </script>
-<div class="modal-overlay" id="modal-docaff-aff" onmousedown="this._d=(event.target===this)" onclick="if(event.target===this&&this._d)closeModal('modal-docaff-aff');this._d=false;">
-  <div class="modal" style="max-width:440px;">
-    <button class="modal-close" onclick="closeModal('modal-docaff-aff')">x</button>
-    <div class="modal-title">Ajouter une affaire</div>
-    <div class="form-group"><label class="form-label">Libellé de l’affaire</label><input class="form-input" id="daff-label" placeholder="Ex. 12 rue de Chartres — Mise en vente"></div>
-    <div class="modal-actions"><button class="btn btn-outline" onclick="closeModal('modal-docaff-aff')">Annuler</button>
-      <button class="btn btn-terra" onclick="docaffSaveAff()">Ajouter</button></div>
-  </div>
-</div>
 <div class="modal-overlay" id="modal-docaff" onmousedown="this._d=(event.target===this)" onclick="if(event.target===this&&this._d)closeModal('modal-docaff');this._d=false;">
   <div class="modal" style="max-width:520px;">
     <button class="modal-close" onclick="closeModal('modal-docaff')">x</button>
@@ -15317,10 +14993,7 @@ window.rapDone=function(id){
   if(window.toast&&f) toast('✓ Rappel fait'+(f.label?' — '+f.label:''));
   rapRefreshAll();
 };
-window.rapDelete=function(id){
-  rapSave(rapAll().filter(function(r){ return r.id!==id; }));
-  rapRefreshAll();
-};
+
 window.rapGo=function(mod, refId){
   function nav(p){ var el=document.querySelector('.nav-item[onclick*="\''+p+'\'"]'); if(window.navTo) navTo(p, el); }
   if(mod==='pige'){ nav('pige'); if(refId) setTimeout(function(){ if(window.pigeEdit) pigeEdit(refId); }, 180); }
