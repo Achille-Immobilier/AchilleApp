@@ -1611,7 +1611,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     </div>
   </div>
   </div>
-  <div class="logo-ver app-ver">Achille App — v8.17</div>
+  <div class="logo-ver app-ver">Achille App — v8.18</div>
 </aside>
 <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Réduire la barre latérale">‹</button>
 
@@ -1720,7 +1720,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
   <div class="pga-ov" id="pgd-ov" onclick="if(event.target===this)pigeDossClose()">
     <div class="pga-card">
       <div class="pga-h" id="pgd-titre">Nouveau dossier</div>
-      <div class="pga-sub">Un dossier peut être rempli à la main (pastille à cocher dans chaque fiche) ou <b>automatiquement</b> grâce à une règle sur le prix au m².</div>
+      <div class="pga-sub">Un dossier peut être rempli à la main (pastille à cocher dans chaque fiche) ou <b>automatiquement</b> grâce à une règle sur la surface, le prix, le prix au m², les pièces ou le DPE.</div>
       <label class="pgd-lbl">Nom du dossier</label>
       <input class="pgd-inp" id="pgd-nom" placeholder="Ex. Biens d'exception">
       <label class="pgd-lbl">Règle automatique (facultatif)</label>
@@ -1728,10 +1728,13 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
         <option value="">Aucune — je range les fiches à la main</option>
         <option value="pm2:gte">⚡ Prix au m² supérieur ou égal à…</option>
         <option value="pm2:lte">⚡ Prix au m² inférieur ou égal à…</option>
+        <option value="pm2:btw">⚡ Prix au m² compris entre… et…</option>
         <option value="prix:gte">⚡ Prix total supérieur ou égal à…</option>
         <option value="prix:lte">⚡ Prix total inférieur ou égal à…</option>
+        <option value="prix:btw">⚡ Prix total compris entre… et…</option>
         <option value="surface:gte">⚡ Surface supérieure ou égale à…</option>
         <option value="surface:lte">⚡ Surface inférieure ou égale à…</option>
+        <option value="surface:btw">⚡ Surface comprise entre… et… (ex. 50 à 120 m²)</option>
         <option value="pieces">⚡ Nombre de pièces au moins égal à…</option>
         <option value="dpe_fg">⚡ DPE F ou G (passoire énergétique)</option>
         <option value="nosuivi">⚡ Jamais contactée (ni suivi ni observation)</option>
@@ -1739,6 +1742,11 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
       <div id="pgd-val-row" style="display:none;">
         <label class="pgd-lbl" id="pgd-val-lbl">Seuil</label>
         <input class="pgd-inp" id="pgd-val" placeholder="">
+      </div>
+      <!-- v8.18 : 2e borne, visible uniquement pour les règles « compris entre … et … » -->
+      <div id="pgd-val2-row" style="display:none;">
+        <label class="pgd-lbl" id="pgd-val2-lbl">Jusqu'à</label>
+        <input class="pgd-inp" id="pgd-val2" placeholder="">
       </div>
       <div id="pgd-hint" style="display:none;font-size:11px;color:var(--gris-2);line-height:1.5;margin-top:6px;">Toute fiche qui respecte la règle entre dans le dossier <b>toute seule</b> — et en sort si elle ne la respecte plus. Plus rien à cocher.</div>
       <div style="display:flex;gap:8px;margin-top:13px;">
@@ -10752,7 +10760,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     startRealtime();
     var ov=document.getElementById('ach-login-overlay'); if(ov) ov.classList.add('ach-hidden');
     var ub=document.getElementById('ach-userbar'); if(ub) ub.style.display='none';
-    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v8.17';
+    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v8.18';
     flag('Synchronis\u00e9');
     // fin de l'init : on autorise la journalisation des actions
     setTimeout(function(){ installInterceptor._init=false; }, 1500);
@@ -11961,9 +11969,15 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
     var ru=d&&d.rule;
     if(!ru) return r.dossier===(d&&d.id);
     var f=ru.f, op=ru.op, val=ru.val;
-    if(f==='pm2'){ var s=num(r.surface), p=+r.prix||0; if(!(p>0&&s>0)) return false; var v=p/s; return op==='lte'?(v<=val):(v>=val); }
-    if(f==='prix'){ var p2=+r.prix||0; if(!p2) return false; return op==='lte'?(p2<=val):(p2>=val); }
-    if(f==='surface'){ var s2=num(r.surface); if(!s2) return false; return op==='lte'?(s2<=val):(s2>=val); }
+    /* v8.18 : op 'btw' = fourchette fermée [val ; val2], bornes INCLUSES (« entre 50 et 120 m² » prend 50 et 120). */
+    var val2=(ru.val2!=null)?ru.val2:null;
+    var cmp=function(v){
+      if(op==='btw'){ if(val2==null) return false; return v>=val && v<=val2; }
+      return op==='lte' ? (v<=val) : (v>=val);
+    };
+    if(f==='pm2'){ var s=num(r.surface), p=+r.prix||0; if(!(p>0&&s>0)) return false; return cmp(p/s); }
+    if(f==='prix'){ var p2=+r.prix||0; if(!p2) return false; return cmp(p2); }
+    if(f==='surface'){ var s2=num(r.surface); if(!s2) return false; return cmp(s2); }
     if(f==='pieces'){ var pc=parseInt(r.pieces,10)||0; if(!pc) return false; return pc>=val; }
     if(f==='ville'){ var q=(''+(val||'')).toLowerCase().trim(); if(!q) return false; return (''+(r.ville||'')).toLowerCase().indexOf(q)>=0; }
     if(f==='dpe_fg'){ var dp=(''+(r.dpe||'')).toUpperCase(); return dp==='F'||dp==='G'; }
@@ -11972,10 +11986,27 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
     if(f==='nouser'){ return !r.user; }
     return false;
   }
+  /* v8.18 : une fiche à qui il MANQUE la donnée exigée par la règle ne peut pas être classée
+     (ex. surface vide pour une règle « surface entre 50 et 120 m² »). On les compte pour le dire à l'écran. */
+  function ruleMissing(r, ru){
+    if(!ru) return false;
+    if(ru.f==='surface') return !(num(r.surface)>0);
+    if(ru.f==='prix') return !((+r.prix||0)>0);
+    if(ru.f==='pm2') return !(num(r.surface)>0 && (+r.prix||0)>0);
+    if(ru.f==='pieces') return !(parseInt(r.pieces,10)>0);
+    if(ru.f==='dpe_fg') return !(''+(r.dpe||'')).trim();
+    return false;
+  }
   /* description lisible d'une règle (info-bulles, toasts) */
   function ruleDesc(ru){
     if(!ru) return '';
     var sym=(ru.op==='lte')?'≤':'≥';
+    /* v8.18 : libellé des fourchettes */
+    if(ru.op==='btw'){
+      if(ru.f==='pm2') return 'prix/m² entre '+fmtN(ru.val)+' et '+fmtN(ru.val2)+' €';
+      if(ru.f==='prix') return 'prix entre '+fmtN(ru.val)+' et '+fmtN(ru.val2)+' €';
+      if(ru.f==='surface') return 'surface entre '+ru.val+' et '+ru.val2+' m²';
+    }
     if(ru.f==='pm2') return 'prix/m² '+sym+' '+fmtN(ru.val)+' €';
     if(ru.f==='prix') return 'prix '+sym+' '+fmtN(ru.val)+' €';
     if(ru.f==='surface') return 'surface '+sym+' '+ru.val+' m²';
@@ -12056,10 +12087,16 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
     'prix:gte':['Seuil (€)','Ex. 2 000 000'],'prix:lte':['Seuil (€)','Ex. 800 000'],
     'surface:gte':['Seuil (m²)','Ex. 100'],'surface:lte':['Seuil (m²)','Ex. 40'],
     'pieces':['Nombre de pièces minimum','Ex. 4'],'ville':['Texte à chercher dans la ville','Ex. Neuilly'],
-    'age':['Nombre de jours','Ex. 30']};
+    'age':['Nombre de jours','Ex. 30'],
+    /* v8.18 : fourchettes — 1re borne */
+    'pm2:btw':['À partir de (€ / m²)','Ex. 10 000'],'prix:btw':['À partir de (€)','Ex. 600 000'],
+    'surface:btw':['À partir de (m²)','Ex. 50']};
+  /* v8.18 : libellé + exemple de la 2e borne (uniquement pour les règles « compris entre … et … ») */
+  var PGD_VAL2={'pm2:btw':['Jusqu’à (€ / m²)','Ex. 14 000'],'prix:btw':['Jusqu’à (€)','Ex. 1 200 000'],
+    'surface:btw':['Jusqu’à (m²)','Ex. 120']};
   function pgdSelOf(r){
     if(!r) return '';
-    if(r.f==='pm2'||r.f==='prix'||r.f==='surface') return r.f+':'+(r.op==='lte'?'lte':'gte');
+    if(r.f==='pm2'||r.f==='prix'||r.f==='surface') return r.f+':'+(r.op==='btw'?'btw':(r.op==='lte'?'lte':'gte'));
     return r.f;   /* pieces / ville / dpe_fg / age / nosuivi / nouser */
   }
   function pgdOpen(o){
@@ -12069,6 +12106,7 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
     var r=(o&&o.rule)||null;
     document.getElementById('pgd-op').value=pgdSelOf(r);
     document.getElementById('pgd-val').value=(r&&r.val!=null)?r.val:'';
+    document.getElementById('pgd-val2').value=(r&&r.val2!=null)?r.val2:'';
     pgdOpToggle();
     document.getElementById('pgd-ov').classList.add('open');
     setTimeout(function(){ var e=document.getElementById('pgd-nom'); if(e) e.focus(); },30);
@@ -12081,6 +12119,13 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
     if(needVal){
       document.getElementById('pgd-val-lbl').textContent=PGD_VAL[sel][0];
       document.getElementById('pgd-val').placeholder=PGD_VAL[sel][1];
+    }
+    /* v8.18 : 2e borne pour les fourchettes */
+    var v2=PGD_VAL2[sel];
+    document.getElementById('pgd-val2-row').style.display=v2?'':'none';
+    if(v2){
+      document.getElementById('pgd-val2-lbl').textContent=v2[0];
+      document.getElementById('pgd-val2').placeholder=v2[1];
     }
   };
   window.pigeDossClose=function(){ var o=document.getElementById('pgd-ov'); if(o) o.classList.remove('open'); _pgdEdit=null; };
@@ -12100,14 +12145,35 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
         var vnum=parseFloat(raw.replace(/[^\d.,]/g,'').replace(',','.'))||0;
         if(!(vnum>0)){ if(window.toast) toast('Indiquez un seuil valide'); return; }
         var parts=sel.split(':');
-        rule=(parts.length===2)? {f:parts[0], op:parts[1], val:vnum} : {f:sel, val:vnum};
+        if(parts[1]==='btw'){
+          /* v8.18 : fourchette — 2 bornes obligatoires ; si elles sont saisies à l'envers on les remet dans l'ordre
+             plutôt que de renvoyer une erreur (« entre 120 et 50 » = ce que Laurent voulait dire). */
+          var raw2=(document.getElementById('pgd-val2').value||'').trim();
+          var vnum2=parseFloat(raw2.replace(/[^\d.,]/g,'').replace(',','.'))||0;
+          if(!(vnum2>0)){ if(window.toast) toast('Indiquez la 2e borne de la fourchette'); return; }
+          if(vnum2<vnum){ var sw=vnum; vnum=vnum2; vnum2=sw; }
+          if(vnum2===vnum){ if(window.toast) toast('Les 2 bornes sont identiques — élargissez la fourchette'); return; }
+          rule={f:parts[0], op:'btw', val:vnum, val2:vnum2};
+        }
+        else rule=(parts.length===2)? {f:parts[0], op:parts[1], val:vnum} : {f:sel, val:vnum};
       }
     }
     var d=dossLoad();
     if(_pgdEdit){ var o=d.filter(function(x){return x.id===_pgdEdit;})[0]; if(o){ o.nom=nom; if(rule) o.rule=rule; else delete o.rule; } }
     else d.push({id:'dg-'+Date.now()+'-'+Math.floor(Math.random()*1000), nom:nom, rule:rule||undefined});
     dossSave(d); pigeDossClose(); pigeRender();
-    if(window.toast) toast(rule?('⚡ Dossier automatique — '+ruleDesc(rule)):'Dossier enregistré ✓');
+    /* v8.18 : on annonce tout de suite le résultat du classement — Laurent voit combien de fiches
+       DÉJÀ en pige entrent dans le dossier, et combien ne peuvent pas être classées faute de donnée. */
+    if(window.toast){
+      if(!rule){ toast('Dossier enregistré ✓'); }
+      else{
+        var act=load().filter(function(r){ return !r.arch; });
+        var nIn=act.filter(function(r){ return dossMatch(r,{id:'_',rule:rule}); }).length;
+        var nKo=act.filter(function(r){ return ruleMissing(r,rule); }).length;
+        toast('⚡ Dossier automatique — '+ruleDesc(rule)+' · '+nIn+' fiche'+(nIn>1?'s':'')+' classée'+(nIn>1?'s':'')
+              +(nKo?(' · '+nKo+' sans la donnée nécessaire'):''));
+      }
+    }
   };
   window.pigeDossNew=function(){
     if(!pgIsManager()){ if(window.toast) toast('Réservé au gérant / admin'); return; }
