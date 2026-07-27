@@ -1611,7 +1611,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     </div>
   </div>
   </div>
-  <div class="logo-ver app-ver">Achille App — v8.20</div>
+  <div class="logo-ver app-ver">Achille App — v8.21</div>
 </aside>
 <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Réduire la barre latérale">‹</button>
 
@@ -1708,6 +1708,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
       <div class="pga-h">Archiver « <span id="pga-tt"></span> »</div>
       <div class="pga-sub">La fiche quitte le stock actif mais garde tout : journal, téléphone, liens, photos. Choisissez le motif :</div>
       <div class="pga-opt" onclick="pigeArchDo('mandat')"><span>🎉</span> Mandat signé <small>bien rentré à l'agence</small></div>
+      <div class="pga-opt" onclick="pigeArchDo('visite')"><span>🤝</span> Accord de visite <small>le suivi continue dans Apimo</small></div>
       <div class="pga-opt" onclick="pigeArchDo('refus')"><span>✕</span> Refus <small>le vendeur ne souhaite pas</small></div>
       <div class="pga-opt" onclick="pigeArchDo('confrere')"><span>🏢</span> Vendue par un confrère <small>bien sorti du marché</small></div>
       <div class="pga-opt" onclick="pigeArchDo('disparue')"><span>👻</span> Annonce disparue <small>retirée des sites</small></div>
@@ -10760,7 +10761,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     startRealtime();
     var ov=document.getElementById('ach-login-overlay'); if(ov) ov.classList.add('ach-hidden');
     var ub=document.getElementById('ach-userbar'); if(ub) ub.style.display='none';
-    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v8.20';
+    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v8.21';
     flag('Synchronis\u00e9');
     // fin de l'init : on autorise la journalisation des actions
     setTimeout(function(){ installInterceptor._init=false; }, 1500);
@@ -12198,7 +12199,8 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
   window.pigeDossPick=function(val){ pgDossier=val; pgPage=1; pigeRender(); };
 
   /* ══ v7.22 : archivage des fiches (sortie du stock actif SANS suppression) ══ */
-  var PG_MOTIFS={mandat:['🎉','Mandat signé'],refus:['✕','Refus'],confrere:['🏢','Vendue par un confrère'],disparue:['👻','Annonce disparue'],autre:['📦','Autre']};
+  /* v8.21 : nouveau motif « visite » — le suivi « Accord de visite → Apimo » propose désormais l'archivage (le suivi continue dans Apimo) */
+  var PG_MOTIFS={mandat:['🎉','Mandat signé'],visite:['🤝','Accord de visite (suivi Apimo)'],refus:['✕','Refus'],confrere:['🏢','Vendue par un confrère'],disparue:['👻','Annonce disparue'],autre:['📦','Autre']};
   var _pgArchPend=null;
   function pgPad2(n){ return (n<10?'0':'')+n; }
   window.pigeArchAsk=function(id,ev){
@@ -12229,17 +12231,36 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
     if(window.toast) toast('↩ Fiche réactivée — de retour dans le stock actif');
     try{ if(window.achLog) achLog('modification','Pige','réactivation : '+(r.adresse||r.titre||'')); }catch(e){}
   };
-  /* Archiver depuis la fiche ouverte (proposition automatique) : on ENREGISTRE d'abord, puis on archive */
+  /* Archiver depuis la fiche ouverte (proposition automatique) : on ENREGISTRE d'abord, puis on archive.
+     v8.21 : référence Apimo FACULTATIVE (lue AVANT l'enregistrement, car la modale se ferme) — jamais bloquante. */
   window.pigeArchFromFiche=function(m){
     var id=document.getElementById('pg-edit-id').value; if(!id) return;
+    var _refEl=document.getElementById('pg-apimo-ref');
+    var _ref=((_refEl&&_refEl.value)||'').trim();
     window.pigeSave();
     var mo=document.getElementById('modal-pige');
     if(mo && mo.classList.contains('open')) return;   /* l'enregistrement a échoué (champ manquant) : on n'archive pas */
     var a=load(), r=a.filter(function(x){return x.id===id;})[0]; if(!r) return;
     r.arch={m:m, d:new Date().toISOString(), by:(window.ACH_USER&&ACH_USER.key)||'admin'};
+    if(_ref){ r.apimoRef=_ref; r.arch.note='Réf. Apimo '+_ref; }
     r.updated=new Date().toISOString(); save(a); pigeRender();
-    if(window.toast) toast('📦 Fiche archivée — '+PG_MOTIFS[m][1]);
-    try{ if(window.achLog) achLog('modification','Pige','archivage ('+PG_MOTIFS[m][1]+') : '+(r.adresse||r.titre||'')); }catch(e){}
+    if(window.toast) toast('📦 Fiche archivée — '+PG_MOTIFS[m][1]+(_ref?' · réf. Apimo '+_ref:''));
+    try{ if(window.achLog) achLog('modification','Pige','archivage ('+PG_MOTIFS[m][1]+(_ref?', réf. Apimo '+_ref:'')+') : '+(r.adresse||r.titre||'')); }catch(e){}
+  };
+  /* v8.21 : passer la fiche en « Réticent » depuis le bandeau (Refus catégorique) — même garde-fou que l'archivage :
+     on ENREGISTRE d'abord, et si l'enregistrement échoue (modale encore ouverte) on ne touche à rien. */
+  window.pigeReticentFromFiche=function(){
+    var id=document.getElementById('pg-edit-id').value; if(!id) return;
+    var _sv=(document.getElementById('pg-suivi')||{}).value||'';
+    var _de=document.getElementById('pg-rap2-date');
+    var _rap=(_sv==='refus-rel') && !!((_de&&_de.value)||'');   /* v8.21 : le rappel n'existe que si une date est restée saisie */
+    window.pigeSave();
+    var mo=document.getElementById('modal-pige');
+    if(mo && mo.classList.contains('open')) return;   /* l'enregistrement a échoué (champ manquant) : on ne change pas le statut */
+    var a=load(), r=a.filter(function(x){return x.id===id;})[0]; if(!r) return;
+    r.statut='offline'; r.updated=new Date().toISOString(); save(a); pigeRender();
+    if(window.toast) toast('🌙 Fiche passée en « Réticent »'+(_rap?' · 🔔 rappel créé':'')+' — elle reste dans le stock actif');
+    try{ if(window.achLog) achLog('modification','Pige','passage en Réticent ('+(_sv==='refus-rel'?'refus à relancer':'refus catégorique')+') : '+(r.adresse||r.titre||'')); }catch(e){}
   };
   /* Bandeau automatique dans la fiche, sous le menu Suivi */
   window.pigeSuiviAutoRefresh=function(){
@@ -12252,9 +12273,28 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
       box.innerHTML='<div class="pg-auto ga">📦 Fiche <b>archivée</b> ('+mm[1]+') le '+dstr(r.arch.d)+'.<button type="button" class="pg-auto-b" onclick="pigeReactivate(\''+id+'\');pigeSuiviAutoRefresh()">↩ Réactiver</button></div>';
       return;
     }
-    if((sv==='mandat'||sv==='refus') && id){
-      var mo=(sv==='mandat')?'mandat':'refus';
-      box.innerHTML='<div class="pg-auto ga">📦 <b>Ce dossier semble terminé.</b>&nbsp;Archiver la fiche avec le motif « '+PG_MOTIFS[mo][1]+' » ?<button type="button" class="pg-auto-b" onclick="pigeArchFromFiche(\''+mo+'\')">Archiver</button></div>';
+    if((sv==='mandat'||sv==='visite') && id){
+      /* v8.21 (demande Laurent) : « Accord de visite → Apimo » propose l'archivage comme « Mandat → Apimo » —
+         le suivi continue dans Apimo, la fiche de pige a fait son travail. Toujours en 1 clic, jamais silencieux. */
+      var mo=(sv==='mandat')?'mandat':'visite';
+      /* v8.21 : référence Apimo demandée mais FACULTATIVE (« proposition mais pas bloquante ») */
+      var _pv=(r&&r.apimoRef)? ' value="'+esc(r.apimoRef)+'"' : '';
+      box.innerHTML='<div class="pg-auto ga">📦 <b>Ce dossier semble terminé.</b>&nbsp;Archiver la fiche avec le motif « '+PG_MOTIFS[mo][1]+' » ?<input type="text" id="pg-apimo-ref"'+_pv+' placeholder="Réf. Apimo (facultatif)"><button type="button" class="pg-auto-b" onclick="pigeArchFromFiche(\''+mo+'\')">Archiver</button></div>';
+    } else if((sv==='refus'||sv==='refus-rel') && id && ((document.getElementById('pg-statut')||{}).value||'encours')!=='offline'){
+      /* v8.21 (demande Laurent) : « Refus catégorique » ET « Refus à relancer » ne proposent PLUS l'archivage
+         mais le passage en statut « Réticent » — la fiche reste dans le stock actif, pour information.
+         Pour « Refus à relancer », une date de rappel est PROPOSÉE (pré-remplie à +7 jours) mais jamais
+         bloquante : date effacée = passage en Réticent sans rappel. */
+      var _dt='';
+      if(sv==='refus-rel'){
+        var _prev=document.getElementById('pg-rap2-date');
+        var _val=(_prev&&_prev.value)||'';
+        if(!_val){ var _d7=new Date(); _d7.setDate(_d7.getDate()+7); _val=_d7.getFullYear()+'-'+pgPad2(_d7.getMonth()+1)+'-'+pgPad2(_d7.getDate()); }
+        _dt='&nbsp;🔔 rappel le&nbsp;<input type="date" id="pg-rap2-date" value="'+_val+'"><span class="pg-auto-hint">(effacez la date pour ne pas créer de rappel)</span>';
+      }
+      box.innerHTML='<div class="pg-auto ga">🌙 <b>'+(sv==='refus'?'Refus catégorique.':'Refus à relancer.')+'</b>&nbsp;Passer la fiche en « Réticent » ? Elle reste consultable dans le stock actif.'+_dt+'<button type="button" class="pg-auto-b" onclick="pigeReticentFromFiche()">Passer en Réticent</button></div>';
+    } else if(sv==='refus' && id){
+      box.innerHTML='<div class="pg-auto ga">🌙 Fiche déjà en <b>Réticent</b> — rien à faire.</div>';
     } else if(sv==='relance'||sv==='refus-rel'){
       var prev=document.getElementById('pg-rap2-date');
       var val=(prev&&prev.value)||'';
@@ -12270,9 +12310,12 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
     var raps; try{ raps=JSON.parse(localStorage.getItem('ach_rappels_v1')||'[]')||[]; }catch(e){ raps=[]; }
     if(!Array.isArray(raps)) raps=[];
     var ex=null; for(var i=0;i<raps.length;i++){ if(raps[i].id===rapId){ ex=raps[i]; break; } }
-    if(sv==='relance'||sv==='refus-rel'){
-      var de=document.getElementById('pg-rap2-date');
-      var d=(de&&de.value)||'';
+    var _de0=document.getElementById('pg-rap2-date');
+    var _dv0=(_de0&&_de0.value)||'';
+    /* v8.21 : pour « Refus à relancer », la date est une PROPOSITION — champ vidé = AUCUN rappel créé
+       (et le passage en Réticent n'est pas bloqué). « Bon contact à relancer » garde son défaut +7 jours. */
+    if((sv==='relance') || (sv==='refus-rel' && _dv0)){
+      var d=_dv0;
       if(!d){ var t=new Date(); t.setDate(t.getDate()+7); d=t.getFullYear()+'-'+pgPad2(t.getMonth()+1)+'-'+pgPad2(t.getDate()); }
       var r=load().filter(function(x){return x.id===fid;})[0]||{};
       var label='📞 Relancer '+(r.vendeur||r.adresse||'ce vendeur');
@@ -13983,6 +14026,7 @@ select.pg-chip{padding:6px 10px;}
 .pg-fiche.pg-arch{background:#f4f1ec;opacity:.93;}
 .pg-motif{font-size:10px;font-weight:600;padding:1px 9px;border-radius:12px;white-space:nowrap;}
 .pg-motif.mandat{background:#e2efe7;color:var(--vert);}
+.pg-motif.visite{background:#e2efe7;color:var(--vert);} /* v8.21 : accord de visite = issue positive, même vert que le mandat */
 .pg-motif.refus{background:#f6e3df;color:var(--rouge);}
 .pg-motif.confrere{background:#e3e9ee;color:#5b8aa6;}
 .pg-motif.disparue,.pg-motif.autre{background:#eceae5;color:var(--gris);}
@@ -14004,6 +14048,7 @@ select.pg-chip{padding:6px 10px;}
 .pg-auto-b{margin-left:auto;flex:none;border:none;border-radius:7px;padding:6px 13px;font-family:'Jost',sans-serif;font-size:12px;font-weight:600;cursor:pointer;color:#fff;background:#6d675f;}
 .pg-auto.ra .pg-auto-b{background:var(--terra);}
 .pg-auto input[type=date]{font-family:'Jost',sans-serif;font-size:12px;padding:4px 8px;border:1px solid #e5c4b8;border-radius:7px;background:#fff;}
+.pg-auto input[type=text]{font-family:'Jost',sans-serif;font-size:12px;padding:4px 8px;border:1px solid #e5c4b8;border-radius:7px;background:#fff;width:165px;margin-left:8px;} /* v8.21 : réf. Apimo facultative */
 .pg-auto-hint{font-size:11px;color:#b47360;}
 .pg-fold:hover{background:#fff;color:var(--noir,#1a1a18);}
 .pg-fold.on{background:#fff;color:var(--noir,#1a1a18);font-weight:600;box-shadow:0 -3px 8px rgba(0,0,0,.05);}
