@@ -1611,7 +1611,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     </div>
   </div>
   </div>
-  <div class="logo-ver app-ver">Achille App — v8.18</div>
+  <div class="logo-ver app-ver">Achille App — v8.19</div>
 </aside>
 <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Réduire la barre latérale">‹</button>
 
@@ -10760,7 +10760,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     startRealtime();
     var ov=document.getElementById('ach-login-overlay'); if(ov) ov.classList.add('ach-hidden');
     var ub=document.getElementById('ach-userbar'); if(ub) ub.style.display='none';
-    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v8.18';
+    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v8.19';
     flag('Synchronis\u00e9');
     // fin de l'init : on autorise la journalisation des actions
     setTimeout(function(){ installInterceptor._init=false; }, 1500);
@@ -11927,7 +11927,7 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
   var PG_STATUTS=[
     {k:'chaud',   label:'Chaud',    pl:'Chauds',    col:'#a03222', ico:'🔥'},
     {k:'encours', label:'En cours', pl:'En cours',  col:'#2e6e50', ico:'⏳'},
-    {k:'offline', label:'En veille', pl:'En veille', col:'#4a4a48', ico:'🌙'}   /* v7.22 : renommé (ex-Offline) — dossier en pause, à surveiller */
+    {k:'offline', label:'Réticent', pl:'Réticents', col:'#4a4a48', ico:'🌙'}   /* v8.19 : renommé (ex-« En veille », ex-Offline) — bien noté pour information, propriétaire pas ouvert aux agences (ou pas à nous) */
   ];
   function pgStatutDef(k){ for(var i=0;i<PG_STATUTS.length;i++){ if(PG_STATUTS[i].k===k) return PG_STATUTS[i]; } return PG_STATUTS[1]; }
   function pgStatutOf(r){ return (r&&r.statut)||'encours'; }
@@ -12306,8 +12306,12 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
     doss.forEach(function(d){
       var c=act.filter(function(r){return dossMatch(r,d);}).length;
       var on=(pgDossier==='d:'+d.id);
-      html+='<button class="pg-fold pg-fold-cust'+(on?' on':'')+'" onclick="pigeDossPick(\'d:'+d.id+'\')" '+(d.rule?'title="Dossier automatique : '+esc(ruleDesc(d.rule))+'"':'')+'>'
-        +(d.rule?'⚡':dot('#b8b2a6'))+' '+esc(d.nom)+' <b>'+c+'</b>'
+      /* v8.19 : les dossiers sont de VRAIS onglets de travail (même taille que les statuts, liseré terracotta).
+         Fini l'éclair : une pastille terracotta PLEINE = dossier automatique, une pastille CREUSE = rempli à la main. */
+      var _ti=d.rule ? ('Dossier automatique : '+esc(ruleDesc(d.rule)))
+                     : 'Dossier rempli à la main — cochez la pastille du dossier dans chaque fiche';
+      html+='<button class="pg-fold pg-fold-cust'+(on?' on':'')+'" onclick="pigeDossPick(\'d:'+d.id+'\')" title="'+_ti+'">'
+        +'<span class="pg-fold-dot pg-fold-dot-'+(d.rule?'auto':'man')+'"></span> '+esc(d.nom)+' <b>'+c+'</b>'
         +(pgIsManager()?'<span class="pg-fold-x" title="Modifier" onclick="pigeDossRename(\''+d.id+'\',event)">✎</span><span class="pg-fold-x" title="Supprimer" onclick="pigeDossDelete(\''+d.id+'\',event)">×</span>':'')
         +'</button>';
     });
@@ -12315,7 +12319,8 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
     /* v7.34 : tiroir Multi-annonces — visible seulement si au moins un numéro multiple existe */
     var _ixF=pgTelIndex(), _nMF=0, _nNumF=0;
     Object.keys(_ixF).forEach(function(k){ if(_ixF[k].length>1){ _nNumF++; _nMF+=_ixF[k].length; } });
-    if(_nNumF) html+='<button class="pg-fold pg-fold-archdrawer pg-fold-multi'+(pgDossier==='multi'?' on':'')+'" onclick="pigeDossPick(\'multi\')" title="Fiches partageant un même numéro de téléphone — probablement des professionnels ('+_nNumF+' numéro'+(_nNumF>1?'s':'')+')">🕵 Multi-annonces <b>'+_nMF+'</b></button>';
+    /* v8.19 : « Multi-annonces » → « Pros » (demande Laurent : le tiroir doit ALERTER sur un confrère ou un concurrent, pas décrire la détection) */
+    if(_nNumF) html+='<button class="pg-fold pg-fold-archdrawer pg-fold-multi'+(pgDossier==='multi'?' on':'')+'" onclick="pigeDossPick(\'multi\')" title="Plusieurs fiches partagent le même numéro de téléphone — confrère, agence concurrente ou marchand de biens ('+_nNumF+' numéro'+(_nNumF>1?'s':'')+')">🕵 Pros <b>'+_nMF+'</b></button>';
     html+='<button class="pg-fold pg-fold-archdrawer'+(pgDossier==='arch'?' on':'')+'" onclick="pigeDossPick(\'arch\')" title="Fiches sorties du stock actif — tout est conservé">📦 Archivées <b>'+nArch+'</b></button>';
     bar.innerHTML=html;
   }
@@ -13030,7 +13035,7 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
             ? '<span class="pg-probadge big">PRO'+(pro.nom?' · '+esc(pro.nom):'')+'</span><button class="pg-mini" onclick="pigeProUnmark(\''+k+'\',event)" title="Retirer le marquage">✕</button>'
             : '<button class="pg-mini" onclick="pigeProMark(\''+k+'\',event)" title="Mémoriser ce numéro comme professionnel">☆ Marquer PRO</button>')
           +'</div>'+(closed?'':'<div class="pg-mgrp-body">'+g.map(pgCard).join('')+'</div>')+'</div>';
-      }).join('') || '<div style="color:var(--gris-2);font-size:13.5px;padding:24px 6px;">Aucune fiche ne correspond dans les multi-annonces.</div>';
+      }).join('') || '<div style="color:var(--gris-2);font-size:13.5px;padding:24px 6px;">Aucune fiche ne correspond dans les Pros.</div>';
       renderPager(0);
       return;
     }
@@ -13960,8 +13965,15 @@ select.pg-chip{padding:6px 10px;}
 .acces-tab{background:transparent;border:none;border-bottom:2.5px solid transparent;color:var(--gris,#6b6b63);font-family:'Jost',sans-serif;font-size:13.5px;padding:8px 14px 10px;cursor:pointer;transition:all .15s;}
 .acces-tab:hover{color:var(--noir,#1a1a18);}
 .acces-tab.on{color:var(--noir,#1a1a18);font-weight:600;border-bottom-color:var(--terra,#b4552d);}
-.pg-folders{display:flex;flex-wrap:wrap;gap:5px;margin:2px 0 0;align-items:flex-end;border-bottom:2px solid var(--border,#e5ded3);padding:0 4px;}
-.pg-fold{display:inline-flex;align-items:center;gap:6px;background:var(--beige,#f3ede2);border:1px solid var(--border,#e5ded3);border-bottom:3px solid var(--border,#e5ded3);color:var(--gris,#6b6b63);border-radius:9px 9px 0 0;padding:7px 14px 6px;font-family:'Jost',sans-serif;font-size:12.5px;cursor:pointer;transition:all .15s;margin-bottom:-2px;}
+/* v8.19 — CORRECTION : cette règle visait « .pg-folders » (classe) alors que la barre est un
+   <div id="pg-folders"> : elle n'a donc JAMAIS été appliquée depuis sa création. Passée en
+   sélecteur d'ID, la barre récupère enfin son RAIL continu sous les onglets.
+   Et comme les dossiers ont repris la taille pleine des onglets de statut, la barre passe
+   souvent sur 2 lignes : le margin-top des onglets aère les lignes pour que le repli ait
+   l'air VOULU, et le margin-right sépare chaque onglet — chaque dossier redevient un outil
+   identifiable au lieu d'un bloc blanc continu. */
+#pg-folders{margin:2px 0 0;border-bottom:2px solid var(--border,#e5ded3);padding:0 4px;}
+.pg-fold{display:inline-flex;align-items:center;gap:6px;background:var(--beige,#f3ede2);border:1px solid var(--border,#e5ded3);border-bottom:3px solid var(--border,#e5ded3);color:var(--gris,#6b6b63);border-radius:9px 9px 0 0;padding:7px 14px 6px;font-family:'Jost',sans-serif;font-size:12.5px;cursor:pointer;transition:all .15s;margin:7px 4px -2px 0;vertical-align:bottom;}
 /* v7.22 : tiroir Archivées + fiches archivées + modale motif + bandeaux automatiques dans la fiche */
 .pg-fold-archdrawer{margin-left:auto;border-style:dashed;color:var(--gris-2);}
 .pg-fold-archdrawer.on{background:#6d675f;border-color:#6d675f;border-style:solid;color:#fff;}
@@ -13995,7 +14007,16 @@ select.pg-chip{padding:6px 10px;}
 .pg-fold.on{background:#fff;color:var(--noir,#1a1a18);font-weight:600;box-shadow:0 -3px 8px rgba(0,0,0,.05);}
 .pg-fold b{font-weight:600;opacity:.8;}
 #pige-list{margin-top:14px;}
-.pg-fold-cust{border-style:dashed;}
+/* v8.19 : les dossiers créés sont des OUTILS DE TRAVAIL QUOTIDIENS — fini le pointillé gris ton sur ton.
+   Trait plein, texte lisible, et un signe distinctif commun : le liseré TERRACOTTA sous l'onglet
+   (les statuts gardent leurs couleurs rouge / vert / gris — aucune confusion possible). */
+.pg-fold-cust{border-bottom-color:var(--terra,#b47360);color:var(--noir,#1a1a18);background:#fbf7f2;}
+.pg-fold-cust:hover{background:#fff;border-color:var(--terra,#b47360);border-bottom-color:var(--terra,#b47360);}
+.pg-fold-cust.on{background:#fff;color:var(--terra,#b47360);}
+.pg-fold-cust.on b{color:var(--terra,#b47360);}
+/* pastille : PLEINE = le dossier se remplit tout seul (règle) · CREUSE = rempli à la main */
+.pg-fold-dot-auto{background:var(--terra,#b47360);}
+.pg-fold-dot-man{background:#fff;box-shadow:inset 0 0 0 2px #c3bbae;}
 .pg-fold-add{border-style:dashed;color:var(--vert,#2e6e50);}
 /* v7.35-36 : fusion de fiches (+ choix d'adresse) */
 .pgm-recap{background:#faf7f2;border:1px solid var(--border);border-radius:9px;padding:10px 13px;margin-bottom:6px;font-size:12.5px;line-height:1.6;}
@@ -14033,12 +14054,12 @@ select.pg-chip{padding:6px 10px;}
 .pg-mgrp-hd .pg-mini{display:inline-flex;}
 .pg-mgrp-body{padding:10px 12px 4px;}
 .pg-mgrp-body .pg-fiche{box-shadow:none;}
-/* v7.28 : dossiers créés / ＋ Dossier / Archivées plus COMPACTS que les onglets de statut
-   (les statuts restent l'information principale de la ligne) */
-.pg-fold-cust,.pg-fold-add,.pg-fold-archdrawer{font-size:11px;padding:5px 10px 4px;gap:4px;align-self:center;}
-.pg-fold-cust b,.pg-fold-archdrawer b{font-size:11px;}
+/* v7.28 : ＋ Dossier / Archivées plus COMPACTS que les onglets de statut
+   v8.19 : les DOSSIERS sortent de cette règle — ils reprennent la taille pleine des onglets de statut */
+.pg-fold-add,.pg-fold-archdrawer{font-size:11px;padding:5px 10px 4px;gap:4px;align-self:center;}
+.pg-fold-archdrawer b{font-size:11px;}
 .pg-fold-x{margin-left:2px;opacity:.5;padding:0 2px;border-radius:4px;font-size:12px;}
-.pg-fold-cust .pg-fold-x{font-size:10px;margin-left:1px;}
+.pg-fold-cust .pg-fold-x{font-size:11px;margin-left:1px;}
 .pg-fold-x:hover{opacity:1;background:rgba(0,0,0,.08);}
 .pg-dot{display:inline-block;width:10px;height:10px;border-radius:50%;flex:none;}
 /* v7.23 : statut de la fiche = pastilles AVEC libellés (fini les petites icônes cryptiques) */
