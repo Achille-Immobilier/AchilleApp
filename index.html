@@ -1611,7 +1611,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     </div>
   </div>
   </div>
-  <div class="logo-ver app-ver">Achille App — v8.19</div>
+  <div class="logo-ver app-ver">Achille App — v8.20</div>
 </aside>
 <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Réduire la barre latérale">‹</button>
 
@@ -10760,7 +10760,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     startRealtime();
     var ov=document.getElementById('ach-login-overlay'); if(ov) ov.classList.add('ach-hidden');
     var ub=document.getElementById('ach-userbar'); if(ub) ub.style.display='none';
-    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v8.19';
+    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v8.20';
     flag('Synchronis\u00e9');
     // fin de l'init : on autorise la journalisation des actions
     setTimeout(function(){ installInterceptor._init=false; }, 1500);
@@ -12306,12 +12306,13 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
     doss.forEach(function(d){
       var c=act.filter(function(r){return dossMatch(r,d);}).length;
       var on=(pgDossier==='d:'+d.id);
-      /* v8.19 : les dossiers sont de VRAIS onglets de travail (même taille que les statuts, liseré terracotta).
-         Fini l'éclair : une pastille terracotta PLEINE = dossier automatique, une pastille CREUSE = rempli à la main. */
+      /* v8.19 : les dossiers sont de VRAIS onglets de travail (trait plein, texte lisible, liseré terracotta).
+         v8.20 (retour Laurent) : un cran SOUS les statuts, et plus AUCUN marqueur automatique/manuel dans
+         l'onglet — l'info-bulle au survol suffit (règle en clair, ou « rempli à la main »). */
       var _ti=d.rule ? ('Dossier automatique : '+esc(ruleDesc(d.rule)))
                      : 'Dossier rempli à la main — cochez la pastille du dossier dans chaque fiche';
       html+='<button class="pg-fold pg-fold-cust'+(on?' on':'')+'" onclick="pigeDossPick(\'d:'+d.id+'\')" title="'+_ti+'">'
-        +'<span class="pg-fold-dot pg-fold-dot-'+(d.rule?'auto':'man')+'"></span> '+esc(d.nom)+' <b>'+c+'</b>'
+        +esc(d.nom)+' <b>'+c+'</b>'
         +(pgIsManager()?'<span class="pg-fold-x" title="Modifier" onclick="pigeDossRename(\''+d.id+'\',event)">✎</span><span class="pg-fold-x" title="Supprimer" onclick="pigeDossDelete(\''+d.id+'\',event)">×</span>':'')
         +'</button>';
     });
@@ -12319,8 +12320,9 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
     /* v7.34 : tiroir Multi-annonces — visible seulement si au moins un numéro multiple existe */
     var _ixF=pgTelIndex(), _nMF=0, _nNumF=0;
     Object.keys(_ixF).forEach(function(k){ if(_ixF[k].length>1){ _nNumF++; _nMF+=_ixF[k].length; } });
-    /* v8.19 : « Multi-annonces » → « Pros » (demande Laurent : le tiroir doit ALERTER sur un confrère ou un concurrent, pas décrire la détection) */
-    if(_nNumF) html+='<button class="pg-fold pg-fold-archdrawer pg-fold-multi'+(pgDossier==='multi'?' on':'')+'" onclick="pigeDossPick(\'multi\')" title="Plusieurs fiches partagent le même numéro de téléphone — confrère, agence concurrente ou marchand de biens ('+_nNumF+' numéro'+(_nNumF>1?'s':'')+')">🕵 Pros <b>'+_nMF+'</b></button>';
+    /* v8.19 : « Multi-annonces » → « Pros » (demande Laurent : le tiroir doit ALERTER sur un confrère ou un concurrent, pas décrire la détection)
+       v8.20 : le 🕵 remplacé par un petit « ! » cerclé, discret — « juste une distinction, rien de trop voyant » */
+    if(_nNumF) html+='<button class="pg-fold pg-fold-archdrawer pg-fold-multi'+(pgDossier==='multi'?' on':'')+'" onclick="pigeDossPick(\'multi\')" title="Plusieurs fiches partagent le même numéro de téléphone — confrère, agence concurrente ou marchand de biens ('+_nNumF+' numéro'+(_nNumF>1?'s':'')+')"><span class="pg-fold-alert">!</span> Pros <b>'+_nMF+'</b></button>';
     html+='<button class="pg-fold pg-fold-archdrawer'+(pgDossier==='arch'?' on':'')+'" onclick="pigeDossPick(\'arch\')" title="Fiches sorties du stock actif — tout est conservé">📦 Archivées <b>'+nArch+'</b></button>';
     bar.innerHTML=html;
   }
@@ -13975,7 +13977,7 @@ select.pg-chip{padding:6px 10px;}
 #pg-folders{margin:2px 0 0;border-bottom:2px solid var(--border,#e5ded3);padding:0 4px;}
 .pg-fold{display:inline-flex;align-items:center;gap:6px;background:var(--beige,#f3ede2);border:1px solid var(--border,#e5ded3);border-bottom:3px solid var(--border,#e5ded3);color:var(--gris,#6b6b63);border-radius:9px 9px 0 0;padding:7px 14px 6px;font-family:'Jost',sans-serif;font-size:12.5px;cursor:pointer;transition:all .15s;margin:7px 4px -2px 0;vertical-align:bottom;}
 /* v7.22 : tiroir Archivées + fiches archivées + modale motif + bandeaux automatiques dans la fiche */
-.pg-fold-archdrawer{margin-left:auto;border-style:dashed;color:var(--gris-2);}
+.pg-fold-archdrawer{margin-left:auto;color:#55524b;} /* v8.20 : trait plein hérité de .pg-fold + texte foncé (fini pointillés et ton sur ton) */
 .pg-fold-archdrawer.on{background:#6d675f;border-color:#6d675f;border-style:solid;color:#fff;}
 .pg-fold-archdrawer.on b{color:#fff;}
 .pg-fiche.pg-arch{background:#f4f1ec;opacity:.93;}
@@ -14009,15 +14011,19 @@ select.pg-chip{padding:6px 10px;}
 #pige-list{margin-top:14px;}
 /* v8.19 : les dossiers créés sont des OUTILS DE TRAVAIL QUOTIDIENS — fini le pointillé gris ton sur ton.
    Trait plein, texte lisible, et un signe distinctif commun : le liseré TERRACOTTA sous l'onglet
-   (les statuts gardent leurs couleurs rouge / vert / gris — aucune confusion possible). */
-.pg-fold-cust{border-bottom-color:var(--terra,#b47360);color:var(--noir,#1a1a18);background:#fbf7f2;}
+   (les statuts gardent leurs couleurs rouge / vert / gris — aucune confusion possible).
+   v8.20 (retour Laurent) : un cran SOUS les statuts (11.5px contre 12.5px, marges réduites) —
+   les statuts restent l'information dominante — et plus aucune pastille automatique/manuel. */
+.pg-fold-cust{border-bottom-color:var(--terra,#b47360);color:var(--noir,#1a1a18);background:#fbf7f2;font-size:11.5px;padding:5px 11px 4px;}
 .pg-fold-cust:hover{background:#fff;border-color:var(--terra,#b47360);border-bottom-color:var(--terra,#b47360);}
 .pg-fold-cust.on{background:#fff;color:var(--terra,#b47360);}
 .pg-fold-cust.on b{color:var(--terra,#b47360);}
-/* pastille : PLEINE = le dossier se remplit tout seul (règle) · CREUSE = rempli à la main */
-.pg-fold-dot-auto{background:var(--terra,#b47360);}
-.pg-fold-dot-man{background:#fff;box-shadow:inset 0 0 0 2px #c3bbae;}
-.pg-fold-add{border-style:dashed;color:var(--vert,#2e6e50);}
+/* v8.20 : ＋ Dossier / Pros / Archivées passent aussi en TRAIT PLEIN et texte lisible (fini le ton sur ton),
+   tout en restant compacts : ce sont des tiroirs, pas des dossiers de travail. */
+.pg-fold-add{border-style:solid;color:var(--vert,#2e6e50);}
+/* petit « ! » cerclé devant Pros — « juste une distinction, rien de trop voyant » (Laurent) */
+.pg-fold-alert{display:inline-flex;align-items:center;justify-content:center;width:13px;height:13px;border-radius:50%;background:#f6e3df;color:var(--rouge,#a03222);font-size:9.5px;font-weight:700;line-height:1;flex:none;}
+.pg-fold-multi.on .pg-fold-alert{background:#fff;color:#5a4a75;}
 /* v7.35-36 : fusion de fiches (+ choix d'adresse) */
 .pgm-recap{background:#faf7f2;border:1px solid var(--border);border-radius:9px;padding:10px 13px;margin-bottom:6px;font-size:12.5px;line-height:1.6;}
 .pgm-recap-l span{color:var(--gris-2);font-size:11px;}
@@ -14035,8 +14041,8 @@ select.pg-chip{padding:6px 10px;}
 .pgm-why{font-size:10px;font-weight:600;color:#8a5a1e;background:#fdf3e7;border:1px solid #e8c9a0;border-radius:10px;padding:1px 8px;white-space:nowrap;}
 .pgm-go{border:none;background:#5a4a75;color:#fff;border-radius:7px;font-size:11.5px;font-weight:600;padding:6px 12px;cursor:pointer;font-family:'Jost',sans-serif;flex:none;}
 .pgm-go:hover{background:#6d5a8c;}
-/* v7.34 : multi-annonces (même numéro sur plusieurs fiches) */
-.pg-fold-multi{margin-left:auto;color:#5a4a75;}
+/* v7.34 : multi-annonces (même numéro sur plusieurs fiches) — v8.20 : texte foncé lisible */
+.pg-fold-multi{margin-left:auto;color:#4a3d61;}
 .pg-fold-multi.on{background:#5a4a75;border-color:#5a4a75;color:#fff;}
 .pg-multi{display:inline-flex;align-items:center;background:#efe9f5;color:#5a4a75;border:1px solid #cdbede;border-radius:12px;font-size:10px;font-weight:700;padding:0 7px;cursor:pointer;margin-left:2px;}
 .pg-multi:hover{background:#5a4a75;color:#fff;}
@@ -14055,8 +14061,9 @@ select.pg-chip{padding:6px 10px;}
 .pg-mgrp-body{padding:10px 12px 4px;}
 .pg-mgrp-body .pg-fiche{box-shadow:none;}
 /* v7.28 : ＋ Dossier / Archivées plus COMPACTS que les onglets de statut
-   v8.19 : les DOSSIERS sortent de cette règle — ils reprennent la taille pleine des onglets de statut */
-.pg-fold-add,.pg-fold-archdrawer{font-size:11px;padding:5px 10px 4px;gap:4px;align-self:center;}
+   v8.19 : les DOSSIERS sortent de cette règle
+   v8.20 : trait plein et texte foncé (fini pointillés + ton sur ton — retour Laurent), toujours compacts */
+.pg-fold-add,.pg-fold-archdrawer{font-size:11px;padding:5px 10px 4px;gap:4px;}
 .pg-fold-archdrawer b{font-size:11px;}
 .pg-fold-x{margin-left:2px;opacity:.5;padding:0 2px;border-radius:4px;font-size:12px;}
 .pg-fold-cust .pg-fold-x{font-size:11px;margin-left:1px;}
