@@ -1634,7 +1634,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     </div>
   </div>
   </div>
-  <div class="logo-ver app-ver">Achille App — v8.27</div>
+  <div class="logo-ver app-ver">Achille App — v8.28</div>
 </aside>
 <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Réduire la barre latérale">‹</button>
 
@@ -10450,6 +10450,24 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
           });
           origSetItem(TOMB_KEY, JSON.stringify(tomb));
           if(db&&ME){ schedulePush(TOMB_KEY); }
+          /* v8.28 : GARDE-FOU « plus jamais de perte silencieuse ».
+             Tout element qui DISPARAIT d'une donnee partagee laisse desormais une ligne au
+             journal, avec son adresse (ou son titre) — y compris pendant le demarrage, ou la
+             journalisation normale est encore coupee. Un retrait survenu a ce moment-la n'a
+             ete demande par personne : il est signale en clair comme « RETRAIT AUTOMATIQUE ». */
+          if(removed.length){
+            try{
+              var _oldItems=_ach_collectItems(_ach_parse(window.localStorage.getItem(k))||{});
+              var _nm=removed.slice(0,8).map(function(id){
+                var o=_oldItems[id];
+                return (o&&(o.adresse||o.titre||o.nom||o.name||o.ref||o.client))||('#'+id);
+              });
+              logAction('suppression', labelFor(k),
+                (installInterceptor._init?'\u26a0 RETRAIT AUTOMATIQUE au demarrage \u2014 ':'')
+                +removed.length+' element'+(removed.length>1?'s':'')+' retire'+(removed.length>1?'s':'')+' : '
+                +_nm.join(' \u00b7 ')+(removed.length>_nm.length?' \u2026':''));
+            }catch(e){}
+          }
         }
       }catch(e){}
     }
@@ -10507,56 +10525,17 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
      pour que chaque suppression laisse son certificat (tombstone) et se propage partout.
      Envois IMMÉDIATS au cloud (aucune minuterie qui puisse être coupée par un rechargement). */
   function _ach_cureV606(){
-    if(window.localStorage.getItem('ach_cure_v606')) return;
-    if(!_itcOK){ _trace('cure v606 reporté : détecteur inactif'); return; }
-    var didPige=false, didPi=false;
-    try{
-      var raw=window.localStorage.getItem('ach_pige_v1');
-      if(raw){
-        var a=JSON.parse(raw);
-        if(Array.isArray(a)){
-          var keep=a.filter(function(f){
-            var noPrix=!f||f.prix===undefined||f.prix===null||f.prix===''||f.prix===0||f.prix==='0';
-            var noVend=!f||!(''+(f.vendeur||'')).trim();
-            var noTel=!f||!(''+(f.tel||'')).trim();
-            return !(noPrix&&noVend&&noTel);
-          });
-          _trace('cure v606 pige : '+a.length+' fiches, '+(a.length-keep.length)+' coquille(s) à supprimer');
-          if(keep.length!==a.length){
-            window.localStorage.setItem('ach_pige_v1', JSON.stringify(keep));  /* voie interceptée : certificats posés */
-            didPige=true;
-          }
-        }
-      }
-    }catch(e){ _trace('cure v606 pige erreur : '+((e&&e.message)||e)); }
-    try{
-      var rawPi=window.localStorage.getItem('ach_pi_v4');
-      if(rawPi){
-        var d=JSON.parse(rawPi);
-        if(d && Array.isArray(d.piNotes)){
-          var n0=d.piNotes.length;
-          var reTest=/(^|[^a-zà-ÿ])test($|[^a-zà-ÿ])/i;  /* mot entier : ne touche pas à "attestation", "contestation"… */
-          d.piNotes=d.piNotes.filter(function(n){ return !reTest.test(''+(n.content||'')); });
-          _trace('cure v606 post-its : '+n0+' notes, '+(n0-d.piNotes.length)+' test(s) à supprimer');
-          if(d.piNotes.length!==n0){
-            window.localStorage.setItem('ach_pi_v4', JSON.stringify(d));      /* voie interceptée : certificats posés */
-            didPi=true;
-          }
-        }
-      }
-    }catch(e){ _trace('cure v606 post-its erreur : '+((e&&e.message)||e)); }
-    /* Envoi IMMÉDIAT : certificats d'abord, données ensuite — sans minuterie */
-    try{
-      if(didPige||didPi){
-        try{ clearTimeout(pushTimers[TOMB_KEY]); pushTimers[TOMB_KEY]=null; }catch(e){}
-        pushKey(TOMB_KEY);
-        if(didPige){ try{ clearTimeout(pushTimers['ach_pige_v1']); pushTimers['ach_pige_v1']=null; }catch(e){} pushKey('ach_pige_v1'); }
-        if(didPi){ try{ clearTimeout(pushTimers['ach_pi_v4']); pushTimers['ach_pi_v4']=null; }catch(e){} pushKey('ach_pi_v4'); }
-        _trace('cure v606 : envois immédiats effectués');
-      }
-    }catch(e){ _trace('cure v606 push erreur : '+((e&&e.message)||e)); }
+    /* v8.28 : NETTOYAGE DESACTIVE — il supprimait des donnees encore vivantes.
+       Ce menage ponctuel (juillet 2026) effacait : (1) toute fiche de pige sans prix NI
+       vendeur NI telephone, (2) tout post-it contenant le mot « test ». Son verrou
+       (ach_cure_v606) etant PROPRE A CHAQUE POSTE, il se declenchait encore aujourd'hui
+       sur un poste — ou simplement un navigateur — ouvrant l'app pour la premiere fois :
+       il y trouvait alors des fiches RECENTES creees ailleurs, les jugeait « coquilles
+       vides » et les supprimait POUR TOUT LE MONDE via les certificats de suppression,
+       sans laisser la moindre ligne au journal (le menage tourne pendant l'initialisation,
+       ou la journalisation est encore coupee). On ne supprime donc plus rien : on se
+       contente de poser le verrou pour que l'ancien code ne puisse plus jamais repartir. */
     try{ Object.getPrototypeOf(window.localStorage).setItem.call(window.localStorage,'ach_cure_v606','1'); }catch(e){}
-    try{ _ach_scheduleSoftRefresh(); }catch(e){}
   }
   function pullAll(cb){
     var _pullChanged=false;
@@ -10803,7 +10782,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     startRealtime();
     var ov=document.getElementById('ach-login-overlay'); if(ov) ov.classList.add('ach-hidden');
     var ub=document.getElementById('ach-userbar'); if(ub) ub.style.display='none';
-    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v8.27';
+    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v8.28';
     flag('Synchronis\u00e9');
     // fin de l'init : on autorise la journalisation des actions
     setTimeout(function(){ installInterceptor._init=false; }, 1500);
@@ -12403,6 +12382,10 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
       html+='<button class="pg-fold'+(on?' on':'')+'" style="border-bottom:3px solid '+s.col+';'+(on?'background:'+s.col+'14;color:'+s.col+';':'')+'" onclick="pigeDossPick(\''+s.k+'\')">'
         +dot(s.col)+' '+(s.pl||s.label)+' <b>'+(cnt[s.k]||0)+'</b></button>';
     });
+    /* v8.28 (demande Laurent) : le bouton de creation de dossier est reduit a un simple ＋ et
+       remonte JUSTE APRES « Reticents » — il marque ainsi la frontiere entre les dossiers
+       automatiques (a gauche) et les dossiers personnalises (a droite). */
+    if(pgIsManager()) html+='<button class="pg-fold pg-fold-add" title="Creer un dossier" onclick="pigeDossNew()">＋</button>';
     doss.forEach(function(d){
       var c=act.filter(function(r){return dossMatch(r,d);}).length;
       var on=(pgDossier==='d:'+d.id);
@@ -12416,13 +12399,20 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
         +(pgIsManager()?'<span class="pg-fold-x" title="Modifier" onclick="pigeDossRename(\''+d.id+'\',event)">✎</span><span class="pg-fold-x" title="Supprimer" onclick="pigeDossDelete(\''+d.id+'\',event)">×</span>':'')
         +'</button>';
     });
-    if(pgIsManager()) html+='<button class="pg-fold pg-fold-add" onclick="pigeDossNew()">＋ Dossier</button>';
     /* v7.34 : tiroir Multi-annonces — visible seulement si au moins un numéro multiple existe */
-    var _ixF=pgTelIndex(), _nMF=0, _nNumF=0;
-    Object.keys(_ixF).forEach(function(k){ if(_ixF[k].length>1){ _nNumF++; _nMF+=_ixF[k].length; } });
+    var _ixF=pgTelIndex(), _nMF=0, _nNumF=0, _seenF={};
+    load().forEach(function(r){
+      var k=pgTelKey(r.tel);
+      var auto = !!(k && _ixF[k] && _ixF[k].length>1);
+      var memo = !!(k && proOf(k));
+      if(!(auto||memo||r.pro)) return;
+      _nMF++;
+      var gk = k || ('#'+r.id);
+      if(!_seenF[gk]){ _seenF[gk]=1; _nNumF++; }
+    });
     /* v8.19 : « Multi-annonces » → « Pros » (demande Laurent : le tiroir doit ALERTER sur un confrère ou un concurrent, pas décrire la détection)
        v8.20 : le 🕵 remplacé par un petit « ! » cerclé, discret — « juste une distinction, rien de trop voyant » */
-    if(_nNumF) html+='<button class="pg-fold pg-fold-archdrawer pg-fold-multi'+(pgDossier==='multi'?' on':'')+'" onclick="pigeDossPick(\'multi\')" title="Plusieurs fiches partagent le même numéro de téléphone — confrère, agence concurrente ou marchand de biens ('+_nNumF+' numéro'+(_nNumF>1?'s':'')+')"><span class="pg-fold-alert">!</span> Pros <b>'+_nMF+'</b></button>';
+    if(_nNumF) html+='<button class="pg-fold pg-fold-archdrawer pg-fold-multi'+(pgDossier==='multi'?' on':'')+'" onclick="pigeDossPick(\'multi\')" title="Confrères, agences concurrentes et marchands de biens — repérés automatiquement (même numéro sur plusieurs annonces, ou numéro déjà mémorisé PRO) ou classés à la main ('+_nNumF+' professionnel'+(_nNumF>1?'s':'')+')"><span class="pg-fold-alert">!</span> Pros <b>'+_nMF+'</b></button>';
     html+='<button class="pg-fold pg-fold-archdrawer'+(pgDossier==='arch'?' on':'')+'" onclick="pigeDossPick(\'arch\')" title="Fiches sorties du stock actif — tout est conservé">📦 Archivées <b>'+nArch+'</b></button>';
     bar.innerHTML=html;
   }
@@ -12685,6 +12675,32 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
     if(!confirm('Retirer le marquage PRO de ce numéro ?')) return;
     proSave(proLoad().filter(function(p){ return p.tel!==k; }));
     pigeRender();
+  };
+  /* v8.28 (demande Laurent) : classement MANUEL d'une fiche dans « Pros ».
+     Jusqu'ici une fiche n'entrait dans le tiroir que si son numero apparaissait sur
+     plusieurs annonces. Desormais on peut aussi dire soi-meme « c'est un confrere ».
+     Bonus : si la fiche porte un numero, il est memorise PRO du meme geste, donc les
+     PROCHAINES annonces de ce confrere seront reconnues toutes seules. */
+  window.pigeProToggle=function(id, ev){
+    if(ev) ev.stopPropagation();
+    var a=load(), r=a.filter(function(x){return x.id===id;})[0]; if(!r) return;
+    var lbl=r.adresse||r.titre||'';
+    if(r.pro){
+      delete r.pro; r.updated=new Date().toISOString(); save(a); pigeRender();
+      if(window.toast) toast('Fiche retiree des Pros');
+      try{ if(window.achLog) achLog('modification','Pige','retiree des Pros : '+lbl); }catch(e){}
+      return;
+    }
+    r.pro=1; r.updated=new Date().toISOString(); save(a);
+    var k=pgTelKey(r.tel), memo=false;
+    if(k && !proOf(k)){
+      var pl=proLoad();
+      pl.push({id:'pro-'+k, tel:k, nom:(''+(r.vendeur||'')).trim(), by:(window.ACH_USER&&ACH_USER.key)||'admin', created:new Date().toISOString(), updated:new Date().toISOString()});
+      proSave(pl); memo=true;
+    }
+    pigeRender();
+    if(window.toast) toast('\U0001f3e2 Fiche classee dans les Pros'+(memo?' \u2014 numero memorise':''));
+    try{ if(window.achLog) achLog('modification','Pige','classee dans les Pros : '+lbl); }catch(e){}
   };
   var _pgMultiClosed={};
   window.pgMultiToggle=function(k){ _pgMultiClosed[k]=!_pgMultiClosed[k]; pigeRender(); };
@@ -13031,7 +13047,14 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
     renderFolderBar(a);
     /* v7.22 : « Tous » et les statuts ne montrent que les fiches ACTIVES ; le tiroir « arch » montre les archivées */
     var telIx=pgTelIndex();   /* v7.34 : index téléphone → fiches (toutes, archivées comprises) */
-    function telMulti(r){ var k=pgTelKey(r.tel); return k && telIx[k] && telIx[k].length>1; }
+    /* v8.28 : une fiche est « Pro » dans 3 cas — numero partage par plusieurs annonces
+       (detection automatique d'origine), numero deja memorise PRO, ou fiche marquee a la main. */
+    function telMulti(r){
+      if(r && r.pro) return true;
+      var k=pgTelKey(r.tel); if(!k) return false;
+      if(telIx[k] && telIx[k].length>1) return true;
+      return !!proOf(k);
+    }
     var inMulti=(pgDossier==='multi');
     if(inMulti && !load().some(telMulti)){ pgDossier='tous'; inMulti=false; }   /* plus aucun multi → retour à Tous */
     var inArch=(pgDossier==='arch');
@@ -13118,22 +13141,23 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
         +'</div>'+(nc?pgObsPreview(r,nc):'<div class="pg-obs"></div>')+'<div class="pg-side"><div class="pg-prix">'+fmtP(r.prix)+'</div>'
         +(pm2v?'<div class="pg-pm2">'+pm2v+'</div>':'')
         +ub
-        +'<div class="pg-actions">'+srcLinkBtns(r)+((function(){var fl=pigeFipacLink(r);return fl?'<button class="pg-mini pg-mini-fipac" onclick="event.stopPropagation();window.open(\''+esc(fl)+'\',\'_blank\')">Fipac</button>':'';})())+'<button class="pg-mini" onclick="event.stopPropagation();pigeEdit(\''+r.id+'\')">✎ Modifier</button><button class="pg-mini pg-mini-arch" title="Sortir du stock actif sans rien perdre" onclick="pigeArchAsk(\''+r.id+'\',event)">⤵ Archiver</button></div></div></div>';
+        +'<div class="pg-actions">'+srcLinkBtns(r)+((function(){var fl=pigeFipacLink(r);return fl?'<button class="pg-mini pg-mini-fipac" onclick="event.stopPropagation();window.open(\''+esc(fl)+'\',\'_blank\')">Fipac</button>':'';})())+'<button class="pg-mini" onclick="event.stopPropagation();pigeEdit(\''+r.id+'\')">✎ Modifier</button>'+(r.pro?'<button class="pg-mini pg-mini-pro on" title="Cette fiche est classée dans les Pros — cliquez pour l\'en retirer" onclick="pigeProToggle(\''+r.id+'\',event)">🏢 Pros ✓</button>':'<button class="pg-mini pg-mini-pro" title="C\'est la fiche d\'un confrère ou d\'un professionnel : la classer dans « Pros »" onclick="pigeProToggle(\''+r.id+'\',event)">🏢 Pros</button>')+'<button class="pg-mini pg-mini-arch" title="Sortir du stock actif sans rien perdre" onclick="pigeArchAsk(\''+r.id+'\',event)">⤵ Archiver</button></div></div></div>';
     }
     if(inMulti){
       /* v7.34 : vue groupée par numéro — un groupe repliable par téléphone, plus gros suspects d'abord */
       var grp={}; a.forEach(function(r){ var k=pgTelKey(r.tel); (grp[k]=grp[k]||[]).push(r); });
       var keys=Object.keys(grp).sort(function(x,y){ return (telIx[y]||[]).length-(telIx[x]||[]).length; });
       box.innerHTML=keys.map(function(k){
-        var g=grp[k], closed=!!_pgMultiClosed[k], pro=proOf(k);
+        var g=grp[k], closed=!!_pgMultiClosed[k], pro=k?proOf(k):null;
         var vends=[]; (telIx[k]||[]).forEach(function(r){ if(r.vendeur && vends.indexOf(r.vendeur)<0) vends.push(r.vendeur); });
         return '<div class="pg-mgrp'+(closed?' closed':'')+'"><div class="pg-mgrp-hd" onclick="pgMultiToggle(\''+k+'\')">'
           +'<span class="pg-mgrp-car">▼</span>'
-          +'<span class="pg-mgrp-tel">📞 '+pgTelFmtKey(k)+'</span>'
-          +'<span class="pg-mgrp-n">'+(telIx[k]||[]).length+' fiches</span>'
+          +'<span class="pg-mgrp-tel">'+(k?('📞 '+pgTelFmtKey(k)):'🏢 Sans téléphone')+'</span>'
+          +'<span class="pg-mgrp-n">'+((k&&telIx[k])?telIx[k].length:g.length)+' fiche'+(((k&&telIx[k])?telIx[k].length:g.length)>1?'s':'')+'</span>'
           +(vends.length?'<span class="pg-mgrp-vend">👤 '+esc(vends.join(' · '))+'</span>':'')
           +'<span class="pg-mgrp-sp"></span>'
-          +(pro
+          +(!k ? '<span class="pg-probadge big">CLASSÉ À LA MAIN</span>'
+            : pro
             ? '<span class="pg-probadge big">PRO'+(pro.nom?' · '+esc(pro.nom):'')+'</span><button class="pg-mini" onclick="pigeProUnmark(\''+k+'\',event)" title="Retirer le marquage">✕</button>'
             : '<button class="pg-mini" onclick="pigeProMark(\''+k+'\',event)" title="Mémoriser ce numéro comme professionnel">☆ Marquer PRO</button>')
           +'</div>'+(closed?'':'<div class="pg-mgrp-body">'+g.map(pgCard).join('')+'</div>')+'</div>';
@@ -14119,6 +14143,12 @@ select.pg-chip{padding:6px 10px;}
 .pg-motif.visite{background:#e2efe7;color:var(--vert);} /* v8.21 : accord de visite = issue positive, même vert que le mandat */
 .pg-motif.refus{background:#f6e3df;color:var(--rouge);}
 .pg-motif.confrere{background:#e3e9ee;color:#5b8aa6;}
+/* v8.28 : bouton de classement manuel dans « Pros » — discret tant que la fiche n'y est pas,
+   franc et lisible une fois qu'elle y est (meme logique que les onglets depuis la v8.20). */
+.pg-mini-pro{border-color:#c9c2b6;color:#7a807b;}
+.pg-mini-pro:hover{border-color:#5b8aa6;color:#5b8aa6;background:#eef3f7;}
+.pg-mini-pro.on{border-color:#5b8aa6;color:#fff;background:#5b8aa6;}
+.pg-mini-pro.on:hover{background:#4d7891;}
 .pg-motif.disparue,.pg-motif.autre{background:#eceae5;color:var(--gris);}
 .pg-mini-arch:hover{border-color:#6d675f;color:#6d675f;background:#f0ede8;}
 .pg-mini-react{border-color:rgba(46,110,80,.45);color:var(--vert);}
