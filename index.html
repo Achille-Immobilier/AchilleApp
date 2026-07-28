@@ -1634,7 +1634,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     </div>
   </div>
   </div>
-  <div class="logo-ver app-ver">Achille App — v8.28</div>
+  <div class="logo-ver app-ver">Achille App — v8.29</div>
 </aside>
 <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Réduire la barre latérale">‹</button>
 
@@ -10192,16 +10192,38 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     if(s.charAt(1)===':'){ return s.charAt(0)==='D' ? s.slice(2) : null; }  /* 'D:date' supprimé, 'R:date' levé */
     return s;  /* ancien format (date pure) = suppression */
   }
+  /* v8.29 : LE DRAPEAU « ARCHIVÉE » NE DOIT JAMAIS DISPARAÎTRE TOUT SEUL.
+     Quand deux postes ont touché la même fiche, c'est la version la plus récente qui l'emporte
+     EN BLOC (objet entier, pas champ par champ). Si un autre poste détenait encore une copie
+     d'AVANT l'archivage et l'a modifiée ensuite — ne serait-ce qu'un changement de statut —
+     sa version, qui ne contient pas « arch », gagnait : la fiche ressortait des archives sans
+     la moindre ligne au journal, alors que l'archivage, lui, y figurait bien. C'est exactement
+     le symptôme signalé. Désormais « arch » survit à la fusion, SAUF réactivation explicite :
+     « ↩ Réactiver » pose un champ « unarch » daté, et seule une réactivation POSTÉRIEURE à
+     l'archivage peut le lever. */
+  function _ach_archKeep(win, lose){
+    try{
+      if(!win || !lose || win.arch || !lose.arch) return win;
+      var ad=lose.arch && lose.arch.d; if(!ad) return win;
+      var un=win.unarch||''; if(un && un>=ad) return win;   /* réactivation explicite et postérieure : on la respecte */
+      var out={}; for(var _k in win){ if(Object.prototype.hasOwnProperty.call(win,_k)) out[_k]=win[_k]; }
+      out.arch=lose.arch;
+      try{ if(window.achLog) achLog('modification','Pige','⚠ drapeau « archivée » rétabli à la synchronisation : '+(out.adresse||out.titre||('#'+out.id))); }catch(e){}
+      return out;
+    }catch(e){ return win; }
+  }
   function _ach_mergeArrays(local, cloud, tomb){
     var byId={}, order=[];
     function add(list){ (list||[]).forEach(function(it){ if(!it||it.id===undefined) return; var id=it.id;
       if(!(id in byId)){ byId[id]=it; order.push(id); }
-      else { var tN=_ach_ts(it), tO=_ach_ts(byId[id]);
+      else { var _prev=byId[id];
+        var tN=_ach_ts(it), tO=_ach_ts(byId[id]);
         var iN=_ach_isoTs(tN), iO=_ach_isoTs(tO);
         if(iN && !iO){ byId[id]=it; }                 /* un horodatage complet bat une date d'affichage */
         else if(!iN && iO){ /* la version datée précisément reste */ }
         else if(tN > tO){ byId[id]=it; }
-        else if(tN===tO && _ach_rich(it) >= _ach_rich(byId[id])){ byId[id]=it; } }  /* à égalité : la version la plus complète gagne */
+        else if(tN===tO && _ach_rich(it) >= _ach_rich(byId[id])){ byId[id]=it; }   /* à égalité : la version la plus complète gagne */
+        byId[id]=_ach_archKeep(byId[id], (byId[id]===_prev? it : _prev)); }
     }); }
     add(cloud); add(local);
     var out=[];
@@ -10782,7 +10804,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     startRealtime();
     var ov=document.getElementById('ach-login-overlay'); if(ov) ov.classList.add('ach-hidden');
     var ub=document.getElementById('ach-userbar'); if(ub) ub.style.display='none';
-    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v8.28';
+    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v8.29';
     flag('Synchronis\u00e9');
     // fin de l'init : on autorise la journalisation des actions
     setTimeout(function(){ installInterceptor._init=false; }, 1500);
@@ -12254,6 +12276,7 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
     var a=load(), r=a.filter(function(x){return x.id===id;})[0]; if(!r){ pigeArchClose(); return; }
     r.arch={m:m, d:new Date().toISOString(), by:(window.ACH_USER&&ACH_USER.key)||'admin'};
     if(note) r.arch.note=note;
+    delete r.unarch;   /* v8.29 : on archive de nouveau — l'ancienne réactivation ne compte plus */
     r.updated=new Date().toISOString(); save(a);
     pigeArchClose(); pigeRender();
     if(window.toast) toast('📦 Fiche archivée — '+PG_MOTIFS[m][1]);
@@ -12262,7 +12285,10 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
   window.pigeReactivate=function(id,ev){
     if(ev) ev.stopPropagation();
     var a=load(), r=a.filter(function(x){return x.id===id;})[0]; if(!r||!r.arch) return;
-    delete r.arch; r.updated=new Date().toISOString(); save(a);
+    /* v8.29 : on garde la TRACE DATÉE de la réactivation. Sans elle, la synchronisation
+       rétablirait l'archive au prochain passage (voir _ach_archKeep). */
+    r.unarch=new Date().toISOString();
+    delete r.arch; r.updated=r.unarch; save(a);
     pigeRender();
     if(window.toast) toast('↩ Fiche réactivée — de retour dans le stock actif');
     try{ if(window.achLog) achLog('modification','Pige','réactivation : '+(r.adresse||r.titre||'')); }catch(e){}
@@ -12279,6 +12305,7 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
     var a=load(), r=a.filter(function(x){return x.id===id;})[0]; if(!r) return;
     r.arch={m:m, d:new Date().toISOString(), by:(window.ACH_USER&&ACH_USER.key)||'admin'};
     if(_ref){ r.apimoRef=_ref; r.arch.note='Réf. Apimo '+_ref; }
+    delete r.unarch;   /* v8.29 */
     r.updated=new Date().toISOString(); save(a); pigeRender();
     if(window.toast) toast('📦 Fiche archivée — '+PG_MOTIFS[m][1]+(_ref?' · réf. Apimo '+_ref:''));
     try{ if(window.achLog) achLog('modification','Pige','archivage ('+PG_MOTIFS[m][1]+(_ref?', réf. Apimo '+_ref:'')+') : '+(r.adresse||r.titre||'')); }catch(e){}
@@ -12367,10 +12394,16 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
   }
 
   /* Barre de dossiers avec compteurs — v7.22 : « Tous » = fiches ACTIVES ; tiroir « 📦 Archivées » à droite */
-  function renderFolderBar(all){
+  function renderFolderBar(all, raw){
     var bar=document.getElementById('pg-folders'); if(!bar) return;
+    /* v8.29 : « all » est la liste DÉJÀ FILTRÉE (recherche + puces Site / Négociateur / Ville) —
+       elle sert aux compteurs des dossiers de travail. Mais le tiroir « 📦 Archivées » doit
+       toujours annoncer le VRAI total : une puce « Neuilly » encore active affichait « 📦 Archivées 0 »
+       alors que la fiche archivée la veille était bien là, simplement hors filtre. On repart donc
+       de « raw », la liste complète. */
+    raw=raw||all;
     var act=all.filter(function(r){ return !r.arch; });
-    var nArch=all.length-act.length;
+    var nArch=raw.filter(function(r){ return !!r.arch; }).length;
     var cnt={tous:act.length, chaud:0, encours:0, offline:0};
     act.forEach(function(r){ var s=pgStatutOf(r); cnt[s]=(cnt[s]||0)+1; });
     var doss=dossLoad();
@@ -12403,9 +12436,7 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
     var _ixF=pgTelIndex(), _nMF=0, _nNumF=0, _seenF={};
     load().forEach(function(r){
       var k=pgTelKey(r.tel);
-      var auto = !!(k && _ixF[k] && _ixF[k].length>1);
-      var memo = !!(k && proOf(k));
-      if(!(auto||memo||r.pro)) return;
+      if(!pgInPros(r, _ixF)) return;   /* v8.29 : même règle que le bouton de la fiche */
       _nMF++;
       var gk = k || ('#'+r.id);
       if(!_seenF[gk]){ _seenF[gk]=1; _nNumF++; }
@@ -12648,6 +12679,21 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
     return d.length>=9 ? d : '';
   }
   function pgTelFmtKey(k){ return k.replace(/(\d{2})(?=\d)/g,'$1 ').trim(); }
+  /* v8.29 : UNE SEULE définition de « cette fiche est un Pro », utilisée partout — le tiroir,
+     son compteur, et le bouton 🏢 Pros de chaque fiche. Avant, le bouton ne regardait que le
+     marquage manuel (r.pro) : une fiche repérée AUTOMATIQUEMENT — comme le 41 rue Molitor —
+     apparaissait bien dans le tiroir Pros mais avec la case décochée. Trois cas font un Pro :
+     numéro partagé par plusieurs annonces, numéro déjà mémorisé PRO, ou classement à la main.
+     Le retrait à la main (r.nopro) prime sur tout : c'est le seul moyen de sortir une fiche
+     repérée automatiquement, et il est réversible d'un clic. */
+  function pgInPros(r, ix){
+    if(!r || r.nopro) return false;
+    if(r.pro) return true;
+    var k=pgTelKey(r.tel); if(!k) return false;
+    ix=ix||pgTelIndex();
+    if(ix[k] && ix[k].length>1) return true;
+    return !!proOf(k);
+  }
   function pgTelIndex(){
     var ix={};
     load().forEach(function(r){ var k=pgTelKey(r.tel); if(k){ (ix[k]=ix[k]||[]).push(r); } });
@@ -12681,17 +12727,22 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
      plusieurs annonces. Desormais on peut aussi dire soi-meme « c'est un confrere ».
      Bonus : si la fiche porte un numero, il est memorise PRO du meme geste, donc les
      PROCHAINES annonces de ce confrere seront reconnues toutes seules. */
+  /* v8.29 : le bouton devient un vrai interrupteur, quelle que soit la raison de la presence
+     dans les Pros. Cliquer sur une fiche COCHEE la retire (drapeau nopro), meme si elle avait
+     ete reperee automatiquement ; recliquer la remet. Le numero memorise PRO, lui, n'est pas
+     touche : il continue a servir pour les AUTRES annonces du meme confrere. */
   window.pigeProToggle=function(id, ev){
     if(ev) ev.stopPropagation();
     var a=load(), r=a.filter(function(x){return x.id===id;})[0]; if(!r) return;
     var lbl=r.adresse||r.titre||'';
-    if(r.pro){
-      delete r.pro; r.updated=new Date().toISOString(); save(a); pigeRender();
-      if(window.toast) toast('Fiche retiree des Pros');
+    if(pgInPros(r)){
+      var _auto=!r.pro;
+      delete r.pro; r.nopro=1; r.updated=new Date().toISOString(); save(a); pigeRender();
+      if(window.toast) toast('Fiche retiree des Pros'+(_auto?' \u2014 le reperage automatique est neutralise pour cette fiche':''));
       try{ if(window.achLog) achLog('modification','Pige','retiree des Pros : '+lbl); }catch(e){}
       return;
     }
-    r.pro=1; r.updated=new Date().toISOString(); save(a);
+    r.pro=1; delete r.nopro; r.updated=new Date().toISOString(); save(a);
     var k=pgTelKey(r.tel), memo=false;
     if(k && !proOf(k)){
       var pl=proLoad();
@@ -13044,17 +13095,11 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
       return pgFilt.users.some(function(f){ return f==='none'? !r.user : r.user===f; });
     }); }
     if(pgFilt.villes.length){ a=a.filter(function(r){ return pgFilt.villes.indexOf(villeOf(r))>=0; }); }
-    renderFolderBar(a);
+    renderFolderBar(a, load());
     /* v7.22 : « Tous » et les statuts ne montrent que les fiches ACTIVES ; le tiroir « arch » montre les archivées */
     var telIx=pgTelIndex();   /* v7.34 : index téléphone → fiches (toutes, archivées comprises) */
-    /* v8.28 : une fiche est « Pro » dans 3 cas — numero partage par plusieurs annonces
-       (detection automatique d'origine), numero deja memorise PRO, ou fiche marquee a la main. */
-    function telMulti(r){
-      if(r && r.pro) return true;
-      var k=pgTelKey(r.tel); if(!k) return false;
-      if(telIx[k] && telIx[k].length>1) return true;
-      return !!proOf(k);
-    }
+    /* v8.29 : voir pgInPros — définition unique et partagée. */
+    function telMulti(r){ return pgInPros(r, telIx); }
     var inMulti=(pgDossier==='multi');
     if(inMulti && !load().some(telMulti)){ pgDossier='tous'; inMulti=false; }   /* plus aucun multi → retour à Tous */
     var inArch=(pgDossier==='arch');
@@ -13062,8 +13107,20 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
     /* v7.27 : une RECHERCHE depuis « Tous » remonte AUSSI les fiches archivées (affichées directement,
        avec leur style grisé + badge de motif — classées après les actives) */
     var withArch=(!!q && pgDossier==='tous');
-    if(inArch){ a=a.filter(function(r){ return r.arch; }); }
-    else if(inMulti){ a=a.filter(telMulti); }   /* v7.34 : la vue multi montre actives ET archivées du groupe */
+    var _archHidden=0;
+    if(inArch){
+      a=a.filter(function(r){ return r.arch; });
+      /* v8.29 : les filtres en cours s'appliquent aussi ici — on le DIT, au lieu de laisser croire
+         que des fiches archivées ont disparu. */
+      _archHidden=load().filter(function(r){ return !!r.arch; }).length - a.length;
+    }
+    else if(inMulti){
+      a=a.filter(telMulti);
+      /* v8.29 : même précaution que pour les archives — le tiroir « Pros » annonce le VRAI total
+         dans son onglet, mais la liste, elle, subit les filtres en cours. Sans avertissement,
+         « Pros 2 » au-dessus de « Aucune fiche ne correspond » se lit comme une perte de fiches. */
+      _archHidden=load().filter(telMulti).length - a.length;
+    }
     else {
       if(!withArch) a=a.filter(function(r){ return !r.arch; });
       if(pgDossier!=='tous'){
@@ -13097,7 +13154,17 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
     else if(sortMode==='ville') a.sort(function(x,y){ return villeKey(x).localeCompare(villeKey(y),'fr',{numeric:true})*dir; });
     else a.sort(function(x,y){ return (x.created||'').localeCompare(y.created||'')*dir; });
     if(withArch){ var _actP=a.filter(function(r){return !r.arch;}), _arcP=a.filter(function(r){return r.arch;}); a=_actP.concat(_arcP); }   /* v7.27 : actives d'abord, archivées ensuite */
-    if(!a.length){ box.innerHTML='<div style="color:var(--gris-2);font-size:13.5px;padding:24px 6px;">Aucune fiche ne correspond. Modifiez la recherche ou les filtres.</div>'; renderPager(0); return; }
+    /* v8.29 : bandeau d'alerte quand des fiches sont masquées par les filtres, dans les DEUX
+       tiroirs automatiques (Archivées et Pros). Le compteur de l'onglet dit la vérité ; le bandeau
+       explique l'écart avec la liste affichée et propose de tout réafficher en un clic. */
+    var _archNote='';
+    if((inArch||inMulti) && _archHidden>0){
+      var _lbl=inArch? 'archivée' : 'professionnelle';
+      _archNote='<div style="background:#fdf3e3;border:1px solid #e0c9a0;border-radius:8px;padding:10px 12px;margin-bottom:10px;font-size:13.5px;color:#7a5a20;">'
+        +'\u26a0 <b>'+_archHidden+' fiche'+(_archHidden>1?'s':'')+' '+_lbl+(_archHidden>1?'s':'')+' '+(_archHidden>1?'sont masquées':'est masquée')+' par la recherche ou les filtres en cours.</b> '
+        +'Rien n\u2019est perdu \u2014 <a href="#" onclick="pigeFiltReset();return false;" style="color:#7a5a20;font-weight:600;">tout afficher</a>.</div>';
+    }
+    if(!a.length){ box.innerHTML=_archNote+'<div style="color:var(--gris-2);font-size:13.5px;padding:24px 6px;">Aucune fiche ne correspond. Modifiez la recherche ou les filtres.</div>'; renderPager(0); return; }
     var _totalShown=a.length, _pages=Math.max(1,Math.ceil(_totalShown/PG_PER));
     if(pgPage>_pages) pgPage=_pages; if(pgPage<1) pgPage=1;
     var _slice=a.slice((pgPage-1)*PG_PER, pgPage*PG_PER);
@@ -13141,7 +13208,7 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
         +'</div>'+(nc?pgObsPreview(r,nc):'<div class="pg-obs"></div>')+'<div class="pg-side"><div class="pg-prix">'+fmtP(r.prix)+'</div>'
         +(pm2v?'<div class="pg-pm2">'+pm2v+'</div>':'')
         +ub
-        +'<div class="pg-actions">'+srcLinkBtns(r)+((function(){var fl=pigeFipacLink(r);return fl?'<button class="pg-mini pg-mini-fipac" onclick="event.stopPropagation();window.open(\''+esc(fl)+'\',\'_blank\')">Fipac</button>':'';})())+'<button class="pg-mini" onclick="event.stopPropagation();pigeEdit(\''+r.id+'\')">✎ Modifier</button>'+(r.pro?'<button class="pg-mini pg-mini-pro on" title="Cette fiche est classée dans les Pros — cliquez pour l\'en retirer" onclick="pigeProToggle(\''+r.id+'\',event)">🏢 Pros ✓</button>':'<button class="pg-mini pg-mini-pro" title="C\'est la fiche d\'un confrère ou d\'un professionnel : la classer dans « Pros »" onclick="pigeProToggle(\''+r.id+'\',event)">🏢 Pros</button>')+'<button class="pg-mini pg-mini-arch" title="Sortir du stock actif sans rien perdre" onclick="pigeArchAsk(\''+r.id+'\',event)">⤵ Archiver</button></div></div></div>';
+        +'<div class="pg-actions">'+srcLinkBtns(r)+((function(){var fl=pigeFipacLink(r);return fl?'<button class="pg-mini pg-mini-fipac" onclick="event.stopPropagation();window.open(\''+esc(fl)+'\',\'_blank\')">Fipac</button>':'';})())+'<button class="pg-mini" onclick="event.stopPropagation();pigeEdit(\''+r.id+'\')">✎ Modifier</button>'+(telMulti(r)?'<button class="pg-mini pg-mini-pro on" title="'+(r.pro?'Fiche classée à la main dans les Pros':'Fiche repérée automatiquement comme professionnelle')+' — cliquez pour l\'en retirer" onclick="pigeProToggle(\''+r.id+'\',event)">🏢 Pros ✓</button>':'<button class="pg-mini pg-mini-pro'+(r.nopro?' off':'')+'" title="'+(r.nopro?'Fiche retirée des Pros à la main — cliquez pour l\'y remettre':'C\'est la fiche d\'un confrère ou d\'un professionnel : la classer dans « Pros »')+'" onclick="pigeProToggle(\''+r.id+'\',event)">🏢 Pros</button>')+'<button class="pg-mini pg-mini-arch" title="Sortir du stock actif sans rien perdre" onclick="pigeArchAsk(\''+r.id+'\',event)">⤵ Archiver</button></div></div></div>';
     }
     if(inMulti){
       /* v7.34 : vue groupée par numéro — un groupe repliable par téléphone, plus gros suspects d'abord */
@@ -13165,7 +13232,7 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
       renderPager(0);
       return;
     }
-    box.innerHTML=_slice.map(pgCard).join('');
+    box.innerHTML=_archNote+_slice.map(pgCard).join('');
     renderPager(_totalShown);
   };
 
@@ -14137,6 +14204,15 @@ select.pg-chip{padding:6px 10px;}
 .pg-fold-archdrawer{margin-left:auto;color:#55524b;} /* v8.20 : trait plein hérité de .pg-fold + texte foncé (fini pointillés et ton sur ton) */
 .pg-fold-archdrawer.on{background:#6d675f;border-color:#6d675f;border-style:solid;color:#fff;}
 .pg-fold-archdrawer.on b{color:#fff;}
+/* v8.29 : LE COMPTEUR DU TIROIR OUVERT ETAIT ECRIT EN BLANC SUR BLANC.
+   La regle .pg-fold.on (plus bas dans la feuille, meme poids) impose un fond BLANC a l'onglet
+   actif et l'emporte sur le fond fonce prevu en v8.20 pour « Archivees ». Le <b> du compteur,
+   lui, restait blanc : des qu'on ouvrait le tiroir 📦 Archivees, son nombre devenait invisible.
+   Un tiroir ouvert qui n'affiche plus son nombre, c'est exactement ce qui donne l'impression
+   que des fiches ont disparu. On remet donc un texte lisible. L'onglet « Pros », lui, garde
+   bien son fond violet (regle .pg-fold-multi.on, encore plus bas) : son compteur reste blanc. */
+.pg-fold-archdrawer.on b{color:#4a453d;opacity:1;}
+.pg-fold-multi.on b{color:#fff;opacity:1;}
 .pg-fiche.pg-arch{background:#f4f1ec;opacity:.93;}
 .pg-motif{font-size:10px;font-weight:600;padding:1px 9px;border-radius:12px;white-space:nowrap;}
 .pg-motif.mandat{background:#e2efe7;color:var(--vert);}
@@ -14149,6 +14225,7 @@ select.pg-chip{padding:6px 10px;}
 .pg-mini-pro:hover{border-color:#5b8aa6;color:#5b8aa6;background:#eef3f7;}
 .pg-mini-pro.on{border-color:#5b8aa6;color:#fff;background:#5b8aa6;}
 .pg-mini-pro.on:hover{background:#4d7891;}
+.pg-mini-pro.off{border-style:dashed;color:#a8a49c;}
 .pg-motif.disparue,.pg-motif.autre{background:#eceae5;color:var(--gris);}
 .pg-mini-arch:hover{border-color:#6d675f;color:#6d675f;background:#f0ede8;}
 .pg-mini-react{border-color:rgba(46,110,80,.45);color:var(--vert);}
