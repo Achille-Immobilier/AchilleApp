@@ -1353,6 +1353,8 @@ body.lex-admin-editing .lex-save-btn{display:block;}
 .role-public .pt-vis{display:none!important;}
 .role-public .pt-text{pointer-events:none!important;}
 .role-public .pi-col-add-btn{display:none!important;}
+/* v8.25 : sur l'écran vitrine il ne reste qu'une rubrique — l'intitulé « Équipe » n'apporte rien */
+.role-public .nav-lbl{display:none!important;}
 .pt-actions{display:inline-flex;gap:5px;align-items:center;}
 .pt-edit{background:rgba(180,115,96,.12);border:none;cursor:pointer;font-size:11px;padding:3px 7px;border-radius:3px;color:var(--terra);transition:all .2s;}
 .pt-edit:hover{background:var(--terra);color:#fff;}
@@ -1626,7 +1628,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     </div>
   </div>
   </div>
-  <div class="logo-ver app-ver">Achille App — v8.24</div>
+  <div class="logo-ver app-ver">Achille App — v8.26</div>
 </aside>
 <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Réduire la barre latérale">‹</button>
 
@@ -4099,7 +4101,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
   window.ROLES=ROLES;
   /* v8.24 : rôle « Écran public » — HORS de ROLES pour ne jamais apparaître dans le Planning,
      les listes de négociateurs ou les propriétaires de post-its. Compte vitrine : lecture seule. */
-  var PUBLIC_ROLE={name:'Achille Immobilier',role:'Écran public',initials:'AI'};
+  var PUBLIC_ROLE={name:'Achille',role:'Écran public',initials:'AI'};
   window.setRole=function(r,btn){
     var d=ROLES[r]||(r==='public'?PUBLIC_ROLE:null); if(!d) return;
     window.ACH_USER={key:r,name:d.name,initials:d.initials,role:d.role};
@@ -4265,7 +4267,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
   });
   function piCanSee(n){
     var u=window.ACH_USER||{key:'admin',initials:'LS'};
-    if(u.key==='public') return n.vis==='ecran';         // v8.24 : l'Écran public ne voit QUE les post-its marqués « Écran »
+    if(u.key==='public') return n.vis==='ecran'||n.vis==='equipe';  // v8.26 : l'écran affiche les post-its PARTAGÉS (Équipe + Écran). Les « Privé » restent invisibles.
     if(u.key==='admin'||u.key==='gerant') return true;   // Admin + Gérant voient tout
     if(n.vis==='equipe'||n.vis==='ecran') return true;   // partagé (Équipe ou Écran) : visible par toute l'équipe
     return n.owner===u.initials;                         // sinon : seulement les siens
@@ -10795,7 +10797,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     startRealtime();
     var ov=document.getElementById('ach-login-overlay'); if(ov) ov.classList.add('ach-hidden');
     var ub=document.getElementById('ach-userbar'); if(ub) ub.style.display='none';
-    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v8.24';
+    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v8.26';
     flag('Synchronis\u00e9');
     // fin de l'init : on autorise la journalisation des actions
     setTimeout(function(){ installInterceptor._init=false; }, 1500);
@@ -11443,6 +11445,15 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
       if(cp && !window.achCan(cp,'view')){ var db=document.querySelector('.nav-item[onclick*="'+_home+'"]'); if(typeof window.navTo==='function') window.navTo(_home, db); }
     }catch(e){}
     try{ if(window.bvApplyPerms) window.bvApplyPerms(); }catch(e){}
+    /* v8.25 : un intitulé de rubrique sans aucune ligne visible (ex. « Principal » ou
+       « Gestion » sur l'Écran public) faisait un menu à trous — on le masque. */
+    try{
+      document.querySelectorAll('.nav-section').forEach(function(sec){
+        if(sec.id==='nav-admin-section') return;   /* déjà géré ci-dessus */
+        var vis=Array.prototype.filter.call(sec.querySelectorAll('.nav-item[onclick]'),function(n){ return n.style.display!=='none'; }).length;
+        sec.style.display = vis ? '' : 'none';
+      });
+    }catch(e){}
   };
   window.droitsRender=function(){
     var body=document.getElementById('droits-body'); if(!body) return;
@@ -13701,17 +13712,44 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
     var html='<div class="spy-t">Voir en tant que</div>';
     btns.forEach(function(b,i){ var nm=b.textContent.trim();
       html+='<button class="spy-item'+(nm===cur?' cur':'')+'" onclick="spyPick('+i+')">'+nm+(nm===cur?' \u2713':'')+'</button>'; });
+    /* v8.25 : le compte vitrine « Écran public » est HORS de ROLES (aucun .role-btn) :
+       il lui faut une entrée dédiée, sinon il est impossible de le prévisualiser. */
+    var pubOn=!!(window.ACH_USER&&window.ACH_USER.key==='public');
+    html+='<div class="spy-sep"></div>';
+    html+='<button class="spy-item spy-pub'+(pubOn?' cur':'')+'" onclick="spyPickRole(\'public\')">\ud83d\udda5\ufe0f Écran public'+(pubOn?' \u2713':'')+'</button>';
+    var real=window.ACH_REAL;
+    if(real && real.name && cur && real.name!==cur){
+      html+='<button class="spy-item spy-back" onclick="spyBack()">\u21a9 Revenir à mon compte ('+real.name+')</button>';
+    }
     p.innerHTML=html; p.classList.add('open');
   };
-  window.spyPick=function(i){
-    var btns=document.querySelectorAll('.role-btn'); var b=btns[i]; if(b) b.click();
+  /* v8.25 : redessin commun à toutes les façons de changer de vue */
+  function spyAfter(){
     var p=document.getElementById('spy-pop'); if(p) p.classList.remove('open');
+    try{ if(window.achApplyPerms) window.achApplyPerms(); }catch(e){}
     if(window.spyRefresh) spyRefresh();
     /* La vue se redessine immédiatement avec les droits du rôle choisi */
     try{
       var active=document.querySelector('.page.active');
       if(active && window.navTo){ var id=active.id.replace(/^page-/,''); window.navTo(id, document.querySelector('.nav-item.active')); }
     }catch(e){}
+  }
+  window.spyPick=function(i){
+    var btns=document.querySelectorAll('.role-btn'); var b=btns[i]; if(b) b.click();
+    spyAfter();
+  };
+  /* v8.25 : bascule par clé de rôle — marche aussi pour « public » qui n'a aucun bouton */
+  window.spyPickRole=function(k){
+    var target=null;
+    document.querySelectorAll('.role-btn').forEach(function(b){
+      if((b.getAttribute('onclick')||'').indexOf("'"+k+"'")>=0) target=b;
+    });
+    if(target){ target.click(); }
+    else if(typeof window.setRole==='function'){ try{ window.setRole(k,null); }catch(e){} }
+    spyAfter();
+  };
+  window.spyBack=function(){
+    var r=window.ACH_REAL; if(r&&r.role) window.spyPickRole(r.role);
   };
   window.spyRefresh=function(){
     var el=document.getElementById('spy-btn'); if(!el) return;
@@ -13903,6 +13941,12 @@ input:focus,textarea:focus,select:focus{border-color:var(--terra-l);}
 .spy-item{display:block;width:100%;text-align:left;background:transparent;border:none;border-radius:7px;padding:8px 10px;font-family:'Jost',sans-serif;font-size:13.5px;color:var(--noir);cursor:pointer;}
 .spy-item:hover{background:var(--beige);}
 .spy-item.cur{background:var(--kaki-p);font-weight:600;}
+/* v8.25 — entrées « Écran public » et retour d'identité dans le sélecteur « Voir en tant que » */
+.spy-pop{min-width:250px;}
+.spy-sep{height:1px;background:var(--border,#e5ded3);margin:6px 6px;}
+.spy-item.spy-pub{color:#4a3d61;}
+.spy-item.spy-back{color:var(--terra,#b47360);font-size:12.5px;}
+
 /* v4.08 — Page Pige */
 .pg-sortbar{display:flex;gap:8px;align-items:center;margin-bottom:14px;flex-wrap:wrap;}
 .pg-lbl{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--gris-2);}
