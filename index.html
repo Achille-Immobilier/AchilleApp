@@ -1344,6 +1344,15 @@ body.lex-admin-editing .lex-save-btn{display:block;}
 </style>
 <style>
 .pi-readonly .pi-admin-action{display:none!important;}
+/* v8.24 : compte « Écran public » — on masque tout ce qui n'est pas montrable à un client :
+   la cloche de rappels (noms de clients dedans), le bouton « proposer une définition » du Lexique,
+   le changement de mot de passe (compte partagé géré par l'admin) et les filtres de visibilité des post-its. */
+.role-public .notif-btn{display:none!important;}
+.role-public .lex-propose-btn{display:none!important;}
+.role-public .tb-id-item[onclick*="pwChangeOpen"]{display:none!important;}
+.role-public .pt-vis{display:none!important;}
+.role-public .pt-text{pointer-events:none!important;}
+.role-public .pi-col-add-btn{display:none!important;}
 .pt-actions{display:inline-flex;gap:5px;align-items:center;}
 .pt-edit{background:rgba(180,115,96,.12);border:none;cursor:pointer;font-size:11px;padding:3px 7px;border-radius:3px;color:var(--terra);transition:all .2s;}
 .pt-edit:hover{background:var(--terra);color:#fff;}
@@ -1617,7 +1626,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     </div>
   </div>
   </div>
-  <div class="logo-ver app-ver">Achille App — v8.23</div>
+  <div class="logo-ver app-ver">Achille App — v8.24</div>
 </aside>
 <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Réduire la barre latérale">‹</button>
 
@@ -3944,7 +3953,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
 
 
 
-<div class="modal-overlay" id="modal-postit"><div class="modal"><button class="modal-close" onclick="closeModal('modal-postit')">x</button><div class="modal-title" id="pi-modal-title">Nouveau post-it</div><div class="form-group"><label class="form-label">Colonne</label><select class="form-select" id="pi-col-sel"><option value="produits">Produits</option><option value="clients">Clients</option></select></div><div class="form-group"><label class="form-label">Couleur / Priorite</label><div style="display:flex;gap:8px;"><div class="pi-color-choice active" data-color="hot" onclick="piSelColor(this)" style="background:#fffbe0;"><div style="width:20px;height:20px;border-radius:4px;background:var(--hot);border:1.5px solid var(--hot-d);margin:0 auto 4px;"></div>Hot</div><div class="pi-color-choice" data-color="todo" onclick="piSelColor(this)" style="background:#eaf3fc;"><div style="width:20px;height:20px;border-radius:4px;background:var(--todo);border:1.5px solid var(--todo-d);margin:0 auto 4px;"></div>To do</div><div class="pi-color-choice" data-color="ff" onclick="piSelColor(this)" style="background:#fdf0f3;"><div style="width:20px;height:20px;border-radius:4px;background:var(--ff);border:1.5px solid var(--ff-d);margin:0 auto 4px;"></div>F&amp;F</div></div></div><div class="form-group"><label class="form-label">Reference</label><input class="form-input" id="pi-ref" type="text" placeholder="Ex : nom du client / adresse du bien"></div><div class="form-group"><label class="form-label">Note</label><textarea class="form-textarea" id="pi-content" style="font-family:'Caveat',cursive;font-size:17px;" placeholder="Ecrivez votre note..."></textarea></div><div class="form-row"><div class="form-group" style="margin:0;"><label class="form-label">Visibilite</label><select class="form-select" id="pi-vis"><option value="moi">Prive</option><option value="equipe">Equipe</option></select></div><div class="form-group" style="margin:0;"><label class="form-label">Collaborateur</label><select class="form-select" id="pi-owner"><option value="LS">Laurent Sellem</option><option value="MA">Marine Attias</option><option value="LP">Liloé Pichat</option><option value="MZ">Marine Zoretic</option></select></div></div><div class="modal-actions"><button class="btn btn-outline" onclick="closeModal('modal-postit')">Annuler</button><button class="btn btn-terra" id="pi-save-btn" onclick="piCreate()">Ajouter</button></div></div></div>
+<div class="modal-overlay" id="modal-postit"><div class="modal"><button class="modal-close" onclick="closeModal('modal-postit')">x</button><div class="modal-title" id="pi-modal-title">Nouveau post-it</div><div class="form-group"><label class="form-label">Colonne</label><select class="form-select" id="pi-col-sel"><option value="produits">Produits</option><option value="clients">Clients</option></select></div><div class="form-group"><label class="form-label">Couleur / Priorite</label><div style="display:flex;gap:8px;"><div class="pi-color-choice active" data-color="hot" onclick="piSelColor(this)" style="background:#fffbe0;"><div style="width:20px;height:20px;border-radius:4px;background:var(--hot);border:1.5px solid var(--hot-d);margin:0 auto 4px;"></div>Hot</div><div class="pi-color-choice" data-color="todo" onclick="piSelColor(this)" style="background:#eaf3fc;"><div style="width:20px;height:20px;border-radius:4px;background:var(--todo);border:1.5px solid var(--todo-d);margin:0 auto 4px;"></div>To do</div><div class="pi-color-choice" data-color="ff" onclick="piSelColor(this)" style="background:#fdf0f3;"><div style="width:20px;height:20px;border-radius:4px;background:var(--ff);border:1.5px solid var(--ff-d);margin:0 auto 4px;"></div>F&amp;F</div></div></div><div class="form-group"><label class="form-label">Reference</label><input class="form-input" id="pi-ref" type="text" placeholder="Ex : nom du client / adresse du bien"></div><div class="form-group"><label class="form-label">Note</label><textarea class="form-textarea" id="pi-content" style="font-family:'Caveat',cursive;font-size:17px;" placeholder="Ecrivez votre note..."></textarea></div><div class="form-row"><div class="form-group" style="margin:0;"><label class="form-label">Visibilite</label><select class="form-select" id="pi-vis"><option value="moi">Prive</option><option value="equipe">Equipe</option><option value="ecran">🖵 Écran public (montrable aux clients)</option></select></div><div class="form-group" style="margin:0;"><label class="form-label">Collaborateur</label><select class="form-select" id="pi-owner"><option value="LS">Laurent Sellem</option><option value="MA">Marine Attias</option><option value="LP">Liloé Pichat</option><option value="MZ">Marine Zoretic</option></select></div></div><div class="modal-actions"><button class="btn btn-outline" onclick="closeModal('modal-postit')">Annuler</button><button class="btn btn-terra" id="pi-save-btn" onclick="piCreate()">Ajouter</button></div></div></div>
 
 <div class="modal-overlay" id="modal-visite"><div class="modal"><button class="modal-close" onclick="closeModal('modal-visite')">x</button><div class="modal-title">Nouvelle visite</div><div class="form-group"><label class="form-label">Bien / Adresse</label><input class="form-input" id="vt-addr" type="text" placeholder="Ex : 12 avenue Charles de Gaulle"></div><div class="form-row"><div class="form-group"><label class="form-label">Client</label><input class="form-input" id="vt-client" type="text" placeholder="Nom du client"></div><div class="form-group"><label class="form-label">Accompagnateur(s)</label><div class="vt-acc-field" id="vt-acc-field" onclick="vtAccompOpen()"><span class="vt-acc-ph">+ ajouter un accompagnateur</span></div></div></div><div class="form-row"><div class="form-group"><label class="form-label">Date</label><input class="form-input" id="vt-date" type="date"></div><div class="form-group"><label class="form-label">Heure</label><input class="form-input" id="vt-heure" type="time" value="10:00"></div></div><div class="form-group"><label class="form-label">Statut</label><div class="statut-choices"><div class="statut-choice sc-conf active" data-s="confirmee" onclick="vtSelSt(this)">Confirmee</div><div class="statut-choice sc-att" data-s="a-confirmer" onclick="vtSelSt(this)">A confirmer</div><div class="statut-choice sc-ann" data-s="annulee" onclick="vtSelSt(this)">Annulee</div></div></div><div class="sep"></div><div class="form-group"><label class="form-label">Feedback visiteur</label><textarea class="form-textarea" id="vt-feedback" placeholder="Impression, objections..."></textarea></div><div class="form-group"><label class="form-label">Suite donnee</label><div class="suite-choices"><button class="suite-choice" data-s="interesse" onclick="vtSelSu(this)">Interesse</button><button class="suite-choice" data-s="offre" onclick="vtSelSu(this)">Offre a venir</button><button class="suite-choice" data-s="sans-suite" onclick="vtSelSu(this)">Sans suite</button><button class="suite-choice" data-s="reflexion" onclick="vtSelSu(this)">En reflexion</button><button class="suite-choice" data-s="2e-visite" onclick="vtSelSu(this)">2e visite</button></div></div><div class="form-group"><label class="form-label">Note interne</label><textarea class="form-textarea" id="vt-note" style="min-height:50px;" placeholder="Note privee..."></textarea></div><div class="modal-actions"><button class="btn btn-outline" onclick="closeModal('modal-visite')">Annuler</button><button class="btn btn-terra" onclick="vtSave()">Enregistrer</button></div></div></div>
 
@@ -4036,7 +4045,11 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
 
   window.navTo=function(id,el){
     if(id==='droits'){ id='acces'; el=document.querySelector('.nav-item[onclick*="acces"]')||el; setTimeout(function(){ try{ accesTab('droits'); }catch(e){} },0); }
-    if(window.achCan && !window.achCan(id,'view')){ id='dashboard'; el=document.querySelector('.nav-item[onclick*="dashboard"]')||el; }
+    if(window.achCan && !window.achCan(id,'view')){
+      /* v8.24 : l'Écran public n'a pas droit au Tableau de bord non plus — il retombe sur les Post-its */
+      var _hm=(window.ACH_USER&&window.ACH_USER.key==='public')?'postits':'dashboard';
+      id=_hm; el=document.querySelector('.nav-item[onclick*="'+_hm+'"]')||el;
+    }
     if(!document.getElementById('page-'+id)){ id='dashboard'; el=document.querySelector('.nav-item[onclick*="dashboard"]')||el; }
     document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active');});
     document.getElementById('page-'+id).classList.add('active');
@@ -4084,9 +4097,13 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     alternant:{name:'Liloé Pichat',role:'Collab. Alt.',initials:'LP'}
   };
   window.ROLES=ROLES;
+  /* v8.24 : rôle « Écran public » — HORS de ROLES pour ne jamais apparaître dans le Planning,
+     les listes de négociateurs ou les propriétaires de post-its. Compte vitrine : lecture seule. */
+  var PUBLIC_ROLE={name:'Achille Immobilier',role:'Écran public',initials:'AI'};
   window.setRole=function(r,btn){
-    var d=ROLES[r];
+    var d=ROLES[r]||(r==='public'?PUBLIC_ROLE:null); if(!d) return;
     window.ACH_USER={key:r,name:d.name,initials:d.initials,role:d.role};
+    try{ document.body.classList.toggle('role-public', r==='public'); }catch(e){}
     document.getElementById('s-name').textContent=d.name;
     document.getElementById('s-role').textContent=d.role;
     document.getElementById('s-av').textContent=d.initials;
@@ -4094,7 +4111,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     var t2=document.getElementById('tb-id-name'); if(t2) t2.textContent=d.name;
     var t3=document.getElementById('tb-id-role'); if(t3) t3.textContent=d.role;
     document.querySelectorAll('.role-btn').forEach(function(b){b.classList.remove('active');});
-    btn.classList.add('active');
+    if(btn) btn.classList.add('active');   /* v8.24 : le rôle public n'a pas de bouton — btn peut être null */
     toast(d.name+' — '+d.role);
   };
 
@@ -4248,8 +4265,9 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
   });
   function piCanSee(n){
     var u=window.ACH_USER||{key:'admin',initials:'LS'};
+    if(u.key==='public') return n.vis==='ecran';         // v8.24 : l'Écran public ne voit QUE les post-its marqués « Écran »
     if(u.key==='admin'||u.key==='gerant') return true;   // Admin + Gérant voient tout
-    if(n.vis==='equipe') return true;                    // partagé en Équipe : visible par tous
+    if(n.vis==='equipe'||n.vis==='ecran') return true;   // partagé (Équipe ou Écran) : visible par toute l'équipe
     return n.owner===u.initials;                         // sinon : seulement les siens
   }
   /* v7.16 : ordre MANUEL (glisser-déposer) + archives. slot=colonne 0-2, ord=position ; rangement auto legacy converti une fois. */
@@ -4343,7 +4361,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
           var ocMap={LS:'ls',MA:'ma',LP:'lp',MZ:'mz',JD:'jd',ML:'ml',SB:'sb'};var oc=ocMap[n.owner]||'ls';
           var div=document.createElement('div');
           div.className='postit '+color;div.id='pn-'+n.id;
-          div.innerHTML='<div class="pt-stripe"></div><div class="pt-inner"><div class="pt-top"><span class="pt-badge">'+PI_LABELS[color]+'</span><div class="pt-own '+oc+'" title="Auteur : '+piEsc(n.owner)+'">'+piEsc(n.owner)+'</div></div>'+(n.ref?'<div class="pt-ref">'+piEsc(n.ref)+'</div>':'')+'<textarea class="pt-text" data-id="'+n.id+'" onchange="piUpdate('+n.id+',this.value)">'+piEsc(n.content)+'</textarea><div class="pt-footer"><span class="pt-date">'+piEsc(n.date)+'</span><span class="pt-vis">'+(n.vis==='equipe'?'Equipe':'Prive')+'</span><span class="pt-actions"><button class="pt-arch pi-admin-action" title="Archiver (retirer du tableau sans supprimer)" onclick="piArch('+n.id+')">🗄</button><button class="pt-edit pi-admin-action" onclick="piEdit('+n.id+')">Modif.</button><button class="pt-del pi-admin-action" onclick="piDel('+n.id+')">Suppr.</button></span></div></div>';
+          div.innerHTML='<div class="pt-stripe"></div><div class="pt-inner"><div class="pt-top"><span class="pt-badge">'+PI_LABELS[color]+'</span><div class="pt-own '+oc+'" title="Auteur : '+piEsc(n.owner)+'">'+piEsc(n.owner)+'</div></div>'+(n.ref?'<div class="pt-ref">'+piEsc(n.ref)+'</div>':'')+'<textarea class="pt-text" data-id="'+n.id+'" onchange="piUpdate('+n.id+',this.value)">'+piEsc(n.content)+'</textarea><div class="pt-footer"><span class="pt-date">'+piEsc(n.date)+'</span><span class="pt-vis">'+(n.vis==='equipe'?'Equipe':(n.vis==='ecran'?'🖵 Écran':'Prive'))+'</span><span class="pt-actions"><button class="pt-arch pi-admin-action" title="Archiver (retirer du tableau sans supprimer)" onclick="piArch('+n.id+')">🗄</button><button class="pt-edit pi-admin-action" onclick="piEdit('+n.id+')">Modif.</button><button class="pt-del pi-admin-action" onclick="piDel('+n.id+')">Suppr.</button></span></div></div>';
           if(canDrag){
             div.draggable=true;
             div.addEventListener('dragstart', function(e){ _piDragId=n.id; div.classList.add('pi-dragging'); try{ e.dataTransfer.setData('text/plain',''+n.id); e.dataTransfer.effectAllowed='move'; }catch(err){} });
@@ -7733,9 +7751,10 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     // Gestion page invisible collab
     var page = document.getElementById('page-encours');
     if(page) page.style.display='';
-    // Accès "En cours" ouvert à tous pour l'instant (restrictions à définir avec les permissions)
+    /* v8.24 : ce ré-affichage forcé (héritage « ouvert à tous pour l'instant ») ne doit plus
+       écraser les permissions — le rôle Écran public ne doit JAMAIS voir « Ventes / En cours ». */
     var navEnc = document.querySelector('.nav-item[onclick*="encours"]');
-    if(navEnc) navEnc.style.display = '';
+    if(navEnc) navEnc.style.display = (window.achCan && !window.achCan('encours','view')) ? 'none' : '';
     ecEncRender();
   }
 
@@ -10283,8 +10302,11 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
   }
 
   // ---------- Journalisation ----------
+  /* v8.24 : le compte Écran public est en LECTURE SEULE côté cloud — il n'envoie jamais rien
+     (ni journal, ni données). Le verrou serveur (RLS) fait la même chose côté Supabase : ceinture ET bretelles. */
+  function isPublicScreen(){ return !!(ME && ME.role==='public'); }
   function logAction(action, entity, details){
-    if(!db||!ME) return;
+    if(!db||!ME||isPublicScreen()) return;
     try{
       db.from('history').insert({
         user_id: ME.id, user_name: ME.name, user_email: ME.email,
@@ -10345,6 +10367,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
 
   // ---------- Pousser une clé vers le cloud ----------
   function _doUpsert(key, val){
+    if(isPublicScreen()){ _trace('écran public : envoi bloqué ('+key+')'); return; }   /* v8.24 */
     justPushed[key]=Date.now();
     db.from('app_data').upsert({ key:key, value:val, updated_at:new Date().toISOString(), updated_by:ME.id }, {onConflict:'key'})
       .then(function(r){ if(r && r.error){ _lastSyncErr=(r.error.message||'?'); _trace('ERREUR envoi '+key+' : '+_lastSyncErr); flag('Erreur de synchro', true); } else { _lastSyncErr=''; _trace('envoyé ✓ '+key); flag('Synchronisé'); } },
@@ -10431,7 +10454,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
        d'« ach_pgread_admin_v1 » toutes les minutes). */
     var existed = window.localStorage.getItem(k)!==null;
     origRemoveItem(k);
-    if(existed && isSync(k)&&db&&ME){
+    if(existed && isSync(k)&&db&&ME&&!isPublicScreen()){   /* v8.24 : l'écran public ne supprime rien au cloud */
       db.from('app_data').delete().eq('key',k).then(function(){},function(){});
       logAction('suppression', labelFor(k), '');
     }
@@ -10540,14 +10563,14 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
           if(isSync(k)){ ups.push({key:k, value:window.localStorage.getItem(k), updated_by:ME.id, updated_at:new Date().toISOString()}); }
         }
         window.ACH_PULLED=true;   /* cloud vide = téléchargement effectué (base neuve) */
-        if(ups.length){ db.from('app_data').upsert(ups,{onConflict:'key'}).then(function(){cb(true);},function(){cb(true);}); }
+        if(ups.length && !isPublicScreen()){ db.from('app_data').upsert(ups,{onConflict:'key'}).then(function(){cb(true);},function(){cb(true);}); }
         else { cb(true); }
       } else {
         rows.sort(function(a,b){ return (a.key===TOMB_KEY?-1:0)-(b.key===TOMB_KEY?-1:0); });  /* tombstones en premier */
         var cloudKeys={};
         rows.forEach(function(row){
           if(!isSync(row.key)) return;
-          if(_ach_obsoleteKey(row.key)){ try{ db.from('app_data').delete().eq('key',row.key).then(function(){},function(){}); }catch(e){} return; }  /* v8.03 : nettoyage silencieux */
+          if(_ach_obsoleteKey(row.key)){ try{ if(!isPublicScreen()) db.from('app_data').delete().eq('key',row.key).then(function(){},function(){}); }catch(e){} return; }  /* v8.03 : nettoyage silencieux · v8.24 : jamais depuis l'écran public */
           cloudKeys[row.key]=1;
           var localVal=window.localStorage.getItem(row.key), merged;
           var cloudVal=row.value; if(cloudVal!==undefined && cloudVal!==null && typeof cloudVal!=='string'){ cloudVal=JSON.stringify(cloudVal); }
@@ -10600,12 +10623,13 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
   }
 
   // ---------- Identité & "voir en tant que" ----------
-  var ROLE_LABEL = {admin:'Administrateur', gerant:'Gérante', collaborateur:'Collab. Free', alternant:'Collab. Alt.'};
+  var ROLE_LABEL = {admin:'Administrateur', gerant:'Gérante', collaborateur:'Collab. Free', alternant:'Collab. Alt.', public:'Écran public'};   /* v8.24 */
   function applyIdentity(roleKey){
     // Appelle le setRole existant (déclenche toutes les permissions) via le bon bouton
     var btns=document.querySelectorAll('.role-btn'), target=null;
     btns.forEach(function(b){ if((b.getAttribute('onclick')||'').indexOf("'"+roleKey+"'")>=0) target=b; });
-    if(target && typeof window.setRole==='function'){ try{ window.setRole(roleKey, target); }catch(e){} }
+    /* v8.24 : le rôle « public » n'a aucun bouton — on appelle setRole quand même (btn null accepté) */
+    if(typeof window.setRole==='function'){ try{ window.setRole(roleKey, target); }catch(e){} }
   }
   function setupRoleArea(){
     var canViewAs = (ME.role==='admin' || ME.role==='gerant');
@@ -10771,7 +10795,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     startRealtime();
     var ov=document.getElementById('ach-login-overlay'); if(ov) ov.classList.add('ach-hidden');
     var ub=document.getElementById('ach-userbar'); if(ub) ub.style.display='none';
-    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v8.23';
+    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v8.24';
     flag('Synchronis\u00e9');
     // fin de l'init : on autorise la journalisation des actions
     setTimeout(function(){ installInterceptor._init=false; }, 1500);
@@ -11390,8 +11414,12 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
     return DEFAULTS[sec]||'modify';
   }
   window.achUserLevel=userLevel;
+  /* v8.24 : liste blanche VERROUILLÉE EN DUR du rôle « Écran public » — volontairement PAS configurable
+     dans « Droits par rôle », pour qu'aucune erreur de manipulation ne puisse ouvrir une page confidentielle. */
+  var PUBLIC_ALLOW={postits:1,sectorisation:1,lexique:1};
   window.achCan=function(sec,action,uk){
     uk=uk||curKey();
+    if(uk==='public') return !!PUBLIC_ALLOW[sec] && (!action||action==='view');
     if(sec==='droits') return uk==='admin';
     if(uk==='admin') return true;
     if(sec==='dashboard' && (action==='view'||!action)) return true;
@@ -11410,7 +11438,9 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
     try{
       var active=document.querySelector('.page.active');
       var cp=active?active.id.replace('page-',''):'';
-      if(cp && !window.achCan(cp,'view')){ var db=document.querySelector('.nav-item[onclick*="dashboard"]'); if(typeof window.navTo==='function') window.navTo('dashboard', db); }
+      /* v8.24 : le compte Écran public n'a pas accès au Tableau de bord (chiffres d'affaires) — il atterrit sur les Post-its */
+      var _home=(uk==='public')?'postits':'dashboard';
+      if(cp && !window.achCan(cp,'view')){ var db=document.querySelector('.nav-item[onclick*="'+_home+'"]'); if(typeof window.navTo==='function') window.navTo(_home, db); }
     }catch(e){}
     try{ if(window.bvApplyPerms) window.bvApplyPerms(); }catch(e){}
   };
@@ -13630,7 +13660,7 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
       <div class="form-group"><label class="form-label">Initiales</label><input class="form-input" id="acc-initials" placeholder="CD" maxlength="4"></div>
     </div>
     <div class="form-row">
-      <div class="form-group"><label class="form-label">Rôle</label><select class="form-select" id="acc-role"><option value="collaborateur">Collaboratrice</option><option value="alternant">Alternant(e)</option><option value="gerant">Gérant(e)</option><option value="admin">Administrateur</option></select></div>
+      <div class="form-group"><label class="form-label">Rôle</label><select class="form-select" id="acc-role"><option value="collaborateur">Collaboratrice</option><option value="alternant">Alternant(e)</option><option value="gerant">Gérant(e)</option><option value="admin">Administrateur</option><option value="public">🖵 Écran public (vitrine, lecture seule)</option></select></div>
       <div class="form-group" style="flex:1.4;"><label class="form-label">Mot de passe provisoire</label><input class="form-input" id="acc-pass" placeholder="au moins 6 caractères"><div style="font-size:10.5px;color:var(--gris-2);margin-top:3px;cursor:pointer;" onclick="document.getElementById('acc-pass').value=accesGenPass()">↻ générer un mot de passe</div></div>
     </div>
     <div class="modal-actions"><button class="btn btn-outline" onclick="closeModal('modal-acces-add')">Annuler</button>
@@ -14188,7 +14218,7 @@ select.pg-chip{padding:6px 10px;}
   var FN_URL='https://iagxsulepbwlnfrslspn.supabase.co/functions/v1/achille-acces';
   var ANON='sb_publishable_k2cnvYiGaEM_Z4PHG2xv_A_H6GSjKwe';
   function esc(s){ return (''+(s||'')).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-  var ROLE_LBL={admin:'Administrateur',gerant:'Gérant(e)',collaborateur:'Collaboratrice',alternant:'Alternant(e)'};
+  var ROLE_LBL={admin:'Administrateur',gerant:'Gérant(e)',collaborateur:'Collaboratrice',alternant:'Alternant(e)',public:'🖵 Écran public'};   /* v8.24 */
 
   function getToken(){
     return new Promise(function(res){
@@ -14252,7 +14282,7 @@ select.pg-chip{padding:6px 10px;}
           +'<div style="flex:1;min-width:0;"><div class="acc-name">'+esc(u.full_name||'(sans nom)')+'</div>'
           +'<div class="acc-mail">'+esc(u.email||'')+'</div></div>'
           +'<select class="form-select acc-role-sel" onchange="accesSetRole(\''+u.id+'\',this.value)">'
-          +['admin','gerant','collaborateur','alternant'].map(function(r){ return '<option value="'+r+'"'+(u.role===r?' selected':'')+'>'+ROLE_LBL[r]+'</option>'; }).join('')
+          +['admin','gerant','collaborateur','alternant','public'].map(function(r){ return '<option value="'+r+'"'+(u.role===r?' selected':'')+'>'+ROLE_LBL[r]+'</option>'; }).join('')
           +'</select>'
           +'<button class="btn btn-outline btn-sm" onclick="accesPassOpen(\''+u.id+'\',\''+esc(u.full_name||u.email)+'\')">🔑 Mot de passe</button>'
           +'</div>';
