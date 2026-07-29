@@ -1634,7 +1634,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     </div>
   </div>
   </div>
-  <div class="logo-ver app-ver">Achille App — v8.29</div>
+  <div class="logo-ver app-ver">Achille App — v8.30</div>
 </aside>
 <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Réduire la barre latérale">‹</button>
 
@@ -5395,11 +5395,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
 
   
 
-  window.prospDelCheck = function(btn, e) {
-    e.stopPropagation();
-    var item = btn.closest('.check-item');
-    if(item) { item.style.transition='all .2s'; item.style.opacity='0'; item.style.transform='translateX(10px)'; setTimeout(function(){item.remove();},200); }
-  };
+  /* v8.30 : prospDelCheck supprimée — définie mais appelée nulle part (aucun onclick, aucun appel). */
 
   
 
@@ -7004,7 +7000,6 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
   window.honoInit=function(){ honoCalc(); if(window.concSyncMontant)concSyncMontant(); honoSim(); if(window.concRenderGrille)concRenderGrille(); };
 
 
-  var _v2Types={fai:'ht',net:'ht'};
 
   function v2Fmt(n){
     if(!n&&n!==0||isNaN(n)||!isFinite(n)) return '—';
@@ -7015,32 +7010,8 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
   
   
 
-  window.v2Calc=function(mode){
-    var prix=parseFloat(document.getElementById('v2-'+mode+'-prix').value)||0;
-    var taux=parseFloat(document.getElementById('v2-'+mode+'-taux').value)||0;
-    var type=_v2Types[mode]||'ht';
-    var tauxHT=type==='ht'?taux/100:taux/100/1.2;
-    var tauxTTC=type==='ht'?taux/100*1.2:taux/100;
-    if(!prix||!taux){
-      ['fai','net','honttc','tva','honht'].forEach(function(s){
-        var el=document.getElementById('v2-'+mode+'-'+s); if(el) el.textContent='—';
-      });
-      return;
-    }
-    var fai,net,honTTC,tva,honHT;
-    if(mode==='fai'){
-      net=prix/(1+tauxTTC); honTTC=prix-net; tva=honTTC/6; honHT=honTTC-tva;
-      document.getElementById('v2-fai-net').textContent=v2Fmt(net);
-    } else {
-      fai=prix*(1+tauxTTC); honTTC=fai-prix; tva=honTTC/6; honHT=honTTC-tva;
-      document.getElementById('v2-net-fai').textContent=v2Fmt(fai);
-    }
-    document.getElementById('v2-'+mode+'-honttc').textContent=v2Fmt(honTTC);
-    document.getElementById('v2-'+mode+'-tva').textContent=v2Fmt(tva);
-    document.getElementById('v2-'+mode+'-honht').textContent=v2Fmt(honHT);
-    var hint=document.getElementById('v2-'+mode+'-hint');
-    if(hint) hint.innerHTML='Taux HT\u00a0: <strong>'+(tauxHT*100).toFixed(4)+'%</strong>\u00a0\u00a0\u00b7\u00a0\u00a0Taux TTC\u00a0: <strong>'+(tauxTTC*100).toFixed(4)+'%</strong>';
-  };
+  /* v8.30 : v2Calc supprimée — elle pilotait des champs (v2-fai-prix, v2-net-prix…) qui n'existent
+     plus dans la page Calculs ; plus aucun bouton ne l'appelait. v2Compar et v2Fmt, eux, restent actifs. */
 
   window.v2Compar=function(){
     var net=window.NUMV(document.getElementById('v2-cmp-net').value);
@@ -9674,7 +9645,12 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
   var posts=[], cour=[], commTab='posts', commInited=false;
   var commQuery='', commSort={posts:{f:'date',d:'desc'}, cour:{f:'date',d:'desc'}};
   function commToday(){ var d=new Date(); var m=(''+(d.getMonth()+1)); if(m.length<2)m='0'+m; var j=(''+d.getDate()); if(j.length<2)j='0'+j; return d.getFullYear()+'-'+m+'-'+j; }
-  function commNorm(s){ return (s==null?'':''+s).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase(); }
+  /* v8.30 : il existait DEUX « function commNorm » dans ce même bloc. En JavaScript, la seconde
+     écrase silencieusement la première pour tout le bloc (hoisting) — la recherche de la page
+     Communication, écrite pour ignorer les accents, ne les ignorait donc PLUS : chercher
+     « publicite » ne trouvait pas « publicité ». Une seule définition désormais, qui cumule
+     les deux besoins : accents ignorés, minuscules, espaces normalisés. */
+  function commNorm(s){ return (s==null?'':''+s).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim().replace(/\s+/g,' '); }
   function commMatch(o,tbl){
     if(!commQuery) return true;
     var f = tbl==='posts'
@@ -9942,7 +9918,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     commModalDupCheck();
   };
   window.commAdrHide=function(){ var l=document.getElementById('cm-ac-list'); if(l) l.style.display='none'; };
-  function commNorm(s){ return (s==null?'':''+s).trim().toLowerCase().replace(/\s+/g,' '); }
+  /* v8.30 : la seconde définition de commNorm (doublon) vivait ici — voir la définition unique plus haut. */
   window.commModalDupCheck=function(){
     var warn=document.getElementById('comm-dup-warn'); if(!warn) return;
     var ref=commNorm(document.getElementById('cm-ref').value);
@@ -10804,7 +10780,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     startRealtime();
     var ov=document.getElementById('ach-login-overlay'); if(ov) ov.classList.add('ach-hidden');
     var ub=document.getElementById('ach-userbar'); if(ub) ub.style.display='none';
-    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v8.29';
+    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v8.30';
     flag('Synchronis\u00e9');
     // fin de l'init : on autorise la journalisation des actions
     setTimeout(function(){ installInterceptor._init=false; }, 1500);
@@ -14203,7 +14179,6 @@ select.pg-chip{padding:6px 10px;}
 /* v7.22 : tiroir Archivées + fiches archivées + modale motif + bandeaux automatiques dans la fiche */
 .pg-fold-archdrawer{margin-left:auto;color:#55524b;} /* v8.20 : trait plein hérité de .pg-fold + texte foncé (fini pointillés et ton sur ton) */
 .pg-fold-archdrawer.on{background:#6d675f;border-color:#6d675f;border-style:solid;color:#fff;}
-.pg-fold-archdrawer.on b{color:#fff;}
 /* v8.29 : LE COMPTEUR DU TIROIR OUVERT ETAIT ECRIT EN BLANC SUR BLANC.
    La regle .pg-fold.on (plus bas dans la feuille, meme poids) impose un fond BLANC a l'onglet
    actif et l'emporte sur le fond fonce prevu en v8.20 pour « Archivees ». Le <b> du compteur,
