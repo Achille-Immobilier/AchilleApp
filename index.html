@@ -1639,7 +1639,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     </div>
   </div>
   </div>
-  <div class="logo-ver app-ver">Achille App — v8.36</div>
+  <div class="logo-ver app-ver">Achille App — v8.37</div>
 </aside>
 <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Réduire la barre latérale">‹</button>
 
@@ -3966,7 +3966,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
 
 
 
-<div class="modal-overlay" id="modal-postit"><div class="modal"><button class="modal-close" onclick="closeModal('modal-postit')">x</button><div class="modal-title" id="pi-modal-title">Nouveau post-it</div><div class="form-group"><label class="form-label">Colonne</label><select class="form-select" id="pi-col-sel"><option value="produits">Produits</option><option value="clients">Clients</option></select></div><div class="form-group"><label class="form-label">Couleur / Priorite</label><div style="display:flex;gap:8px;"><div class="pi-color-choice active" data-color="hot" onclick="piSelColor(this)" style="background:#fffbe0;"><div style="width:20px;height:20px;border-radius:4px;background:var(--hot);border:1.5px solid var(--hot-d);margin:0 auto 4px;"></div>Hot</div><div class="pi-color-choice" data-color="todo" onclick="piSelColor(this)" style="background:#eaf3fc;"><div style="width:20px;height:20px;border-radius:4px;background:var(--todo);border:1.5px solid var(--todo-d);margin:0 auto 4px;"></div>To do</div><div class="pi-color-choice" data-color="ff" onclick="piSelColor(this)" style="background:#fdf0f3;"><div style="width:20px;height:20px;border-radius:4px;background:var(--ff);border:1.5px solid var(--ff-d);margin:0 auto 4px;"></div>F&amp;F</div></div></div><div class="form-group"><label class="form-label">Reference</label><input class="form-input" id="pi-ref" type="text" placeholder="Ex : nom du client / adresse du bien"></div><div class="form-group"><label class="form-label">Note</label><textarea class="form-textarea" id="pi-content" style="font-family:'Caveat',cursive;font-size:17px;" placeholder="Ecrivez votre note..."></textarea></div><div class="form-row"><div class="form-group" style="margin:0;"><label class="form-label">Visibilite</label><select class="form-select" id="pi-vis"><option value="moi">Prive</option><option value="equipe">Equipe</option><option value="ecran">Agence (montrable aux clients)</option></select></div><div class="form-group" style="margin:0;"><label class="form-label">Collaborateur</label><select class="form-select" id="pi-owner"><option value="LS">Laurent Sellem</option><option value="MA">Marine Attias</option><option value="LP">Liloé Pichat</option><option value="MZ">Marine Zoretic</option></select></div></div><div class="modal-actions"><button class="btn btn-outline" onclick="closeModal('modal-postit')">Annuler</button><button class="btn btn-terra" id="pi-save-btn" onclick="piCreate()">Ajouter</button></div></div></div>
+<div class="modal-overlay" id="modal-postit"><div class="modal"><button class="modal-close" onclick="closeModal('modal-postit')">x</button><div class="modal-title" id="pi-modal-title">Nouveau post-it</div><div class="form-group"><label class="form-label">Colonne</label><select class="form-select" id="pi-col-sel" onchange="piColFields()"><option value="produits">Produits</option><option value="clients">Clients</option></select></div><div class="form-group"><label class="form-label">Couleur / Priorite</label><div style="display:flex;gap:8px;"><div class="pi-color-choice active" data-color="hot" onclick="piSelColor(this)" style="background:#fffbe0;"><div style="width:20px;height:20px;border-radius:4px;background:var(--hot);border:1.5px solid var(--hot-d);margin:0 auto 4px;"></div>Hot</div><div class="pi-color-choice" data-color="todo" onclick="piSelColor(this)" style="background:#eaf3fc;"><div style="width:20px;height:20px;border-radius:4px;background:var(--todo);border:1.5px solid var(--todo-d);margin:0 auto 4px;"></div>To do</div><div class="pi-color-choice" data-color="ff" onclick="piSelColor(this)" style="background:#fdf0f3;"><div style="width:20px;height:20px;border-radius:4px;background:var(--ff);border:1.5px solid var(--ff-d);margin:0 auto 4px;"></div>F&amp;F</div></div></div><input type="hidden" id="pi-ref" value=""><div class="form-group" id="pi-fg-cli" style="display:none;"><label class="form-label">Nom du client <span style="color:var(--terra);">*</span></label><input class="form-input" id="pi-cli" type="text" placeholder="Ex : M. et Mme Charpentier"></div><div id="pi-fg-prod" style="display:none;"><div class="form-row"><div class="form-group"><label class="form-label">Nom du vendeur <span style="color:var(--terra);">*</span></label><input class="form-input" id="pi-vendeur" type="text" placeholder="Ex : Mme Lefort"></div><div class="form-group"><label class="form-label">Adresse du bien <span style="color:var(--terra);">*</span></label><input class="form-input" id="pi-adresse" type="text" placeholder="Ex : 12 rue de Chartres"></div></div></div><div class="form-group"><label class="form-label">Note <span style="font-weight:400;color:var(--gris-2);">(affichée sur le post-it — <span id="pi-cnt">120</span> caract.)</span></label><textarea class="form-textarea" id="pi-content" maxlength="120" oninput="piCntUpd()" style="font-family:'Caveat',cursive;font-size:17px;" placeholder="L'essentiel, court et lisible..."></textarea></div><div class="form-group"><label class="form-label">Détails internes <span style="font-weight:400;color:var(--gris-2);">(visibles par l'équipe au survol du post-it — jamais à l'écran Agence)</span></label><textarea class="form-textarea" id="pi-details" placeholder="Tout le contexte utile : coordonnées, historique, montants..."></textarea></div><div class="form-row"><div class="form-group" style="margin:0;"><label class="form-label">Visibilite</label><select class="form-select" id="pi-vis" onchange="piPubField()"><option value="moi">Prive</option><option value="equipe">Equipe</option><option value="ecran">Agence (montrable aux clients)</option></select></div><div class="form-group" style="margin:0;"><label class="form-label">Collaborateur</label><select class="form-select" id="pi-owner"><option value="LS">Laurent Sellem</option><option value="MA">Marine Attias</option><option value="LP">Liloé Pichat</option><option value="MZ">Marine Zoretic</option></select></div></div><div class="form-group" id="pi-fg-pub" style="display:none;"><label class="form-label">Ce qui s'affichera sur l'écran Agence <span style="color:var(--terra);">*</span> <span style="font-weight:400;color:var(--gris-2);">(<span id="pi-pub-cnt">90</span> caract. — ni nom complet ni téléphone : c'est visible des clients)</span></label><input class="form-input" id="pi-pub" type="text" maxlength="90" oninput="piPubCntUpd()" placeholder="Ex : Nouveau 3 pièces à Neuilly — visites samedi"></div><div class="modal-actions"><button class="btn btn-outline" onclick="closeModal('modal-postit')">Annuler</button><button class="btn btn-terra" id="pi-save-btn" onclick="piCreate()">Ajouter</button></div></div></div>
 
 <div class="modal-overlay" id="modal-visite"><div class="modal"><button class="modal-close" onclick="closeModal('modal-visite')">x</button><div class="modal-title">Nouvelle visite</div><div class="form-group"><label class="form-label">Bien / Adresse</label><input class="form-input" id="vt-addr" type="text" placeholder="Ex : 12 avenue Charles de Gaulle"></div><div class="form-row"><div class="form-group"><label class="form-label">Client</label><input class="form-input" id="vt-client" type="text" placeholder="Nom du client"></div><div class="form-group"><label class="form-label">Accompagnateur(s)</label><div class="vt-acc-field" id="vt-acc-field" onclick="vtAccompOpen()"><span class="vt-acc-ph">+ ajouter un accompagnateur</span></div></div></div><div class="form-row"><div class="form-group"><label class="form-label">Date</label><input class="form-input" id="vt-date" type="date"></div><div class="form-group"><label class="form-label">Heure</label><input class="form-input" id="vt-heure" type="time" value="10:00"></div></div><div class="form-group"><label class="form-label">Statut</label><div class="statut-choices"><div class="statut-choice sc-conf active" data-s="confirmee" onclick="vtSelSt(this)">Confirmee</div><div class="statut-choice sc-att" data-s="a-confirmer" onclick="vtSelSt(this)">A confirmer</div><div class="statut-choice sc-ann" data-s="annulee" onclick="vtSelSt(this)">Annulee</div></div></div><div class="sep"></div><div class="form-group"><label class="form-label">Feedback visiteur</label><textarea class="form-textarea" id="vt-feedback" placeholder="Impression, objections..."></textarea></div><div class="form-group"><label class="form-label">Suite donnee</label><div class="suite-choices"><button class="suite-choice" data-s="interesse" onclick="vtSelSu(this)">Interesse</button><button class="suite-choice" data-s="offre" onclick="vtSelSu(this)">Offre a venir</button><button class="suite-choice" data-s="sans-suite" onclick="vtSelSu(this)">Sans suite</button><button class="suite-choice" data-s="reflexion" onclick="vtSelSu(this)">En reflexion</button><button class="suite-choice" data-s="2e-visite" onclick="vtSelSu(this)">2e visite</button></div></div><div class="form-group"><label class="form-label">Note interne</label><textarea class="form-textarea" id="vt-note" style="min-height:50px;" placeholder="Note privee..."></textarea></div><div class="modal-actions"><button class="btn btn-outline" onclick="closeModal('modal-visite')">Annuler</button><button class="btn btn-terra" onclick="vtSave()">Enregistrer</button></div></div></div>
 
@@ -4183,6 +4183,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     document.querySelectorAll('.pi-color-choice').forEach(function(c){ c.classList.toggle('active', c.dataset.color==='hot'); });
     document.getElementById('pi-content').value='';
     document.getElementById('pi-ref').value='';
+    piColFields(); piPubField(); piCntUpd(); piPubCntUpd();   /* v8.37 */
     openModal('modal-postit');
   };
   window.piSelColor=function(el){
@@ -4198,8 +4199,28 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     piRenderAll();
     toast(piActiveFilter?'Filtre : '+PI_LABELS[piActiveFilter]:'Tous les post-its');
   };
+  /* v8.37 : NOUVELLES RÈGLES décidées par Laurent.
+     Un post-it CLIENTS exige un nom de client ; un post-it PRODUITS exige vendeur + adresse.
+     La note est normée à 120 caractères (c'est elle qu'on lit sur le tableau), les détails
+     longs vivent dans un champ à part (survol). Et si le post-it est « Agence », on écrit
+     EXPLICITEMENT ce que les clients verront à l'écran (90 caract., champ pub). */
+  window.piColFields=function(){
+    var col=(document.getElementById('pi-col-sel')||{}).value;
+    var c=document.getElementById('pi-fg-cli'), pr=document.getElementById('pi-fg-prod');
+    if(c) c.style.display=(col==='clients')?'':'none';
+    if(pr) pr.style.display=(col==='produits')?'':'none';
+  };
+  window.piPubField=function(){
+    var v=(document.getElementById('pi-vis')||{}).value;
+    var f=document.getElementById('pi-fg-pub');
+    if(f) f.style.display=(v==='ecran')?'':'none';
+  };
+  window.piCntUpd=function(){ var e=document.getElementById('pi-content'), c=document.getElementById('pi-cnt'); if(e&&c) c.textContent=120-e.value.length; };
+  window.piPubCntUpd=function(){ var e=document.getElementById('pi-pub'), c=document.getElementById('pi-pub-cnt'); if(e&&c) c.textContent=90-e.value.length; };
   function piResetModal(){
     piEditId=null;
+    ['pi-cli','pi-vendeur','pi-adresse','pi-details','pi-pub'].forEach(function(id){ var e=document.getElementById(id); if(e) e.value=''; });
+    piColFields(); piPubField(); piCntUpd(); piPubCntUpd();
     var t=document.getElementById('pi-modal-title'); if(t) t.textContent='Nouveau post-it';
     var b=document.getElementById('pi-save-btn'); if(b) b.textContent='Ajouter';
     /* Présélectionner la personne connectée (sinon le 1er de la liste = Laurent, et un
@@ -4221,6 +4242,13 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     document.getElementById('pi-content').value=n.content||'';
     document.getElementById('pi-vis').value=n.vis;
     document.getElementById('pi-owner').value=n.owner;
+    /* v8.37 : champs structurés */
+    document.getElementById('pi-cli').value=n.cli||'';
+    document.getElementById('pi-vendeur').value=n.vendeur||'';
+    document.getElementById('pi-adresse').value=n.adresse||'';
+    document.getElementById('pi-details').value=n.details||'';
+    document.getElementById('pi-pub').value=n.pub||'';
+    piColFields(); piPubField(); piCntUpd(); piPubCntUpd();
     var t=document.getElementById('pi-modal-title'); if(t) t.textContent='Modifier le post-it';
     var b=document.getElementById('pi-save-btn'); if(b) b.textContent='Enregistrer';
     openModal('modal-postit');
@@ -4228,16 +4256,28 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
   window.piCreate=function(){
     var content=document.getElementById('pi-content').value.trim();
     if(!content){toast('Ecrivez quelque chose !');return;}
+    /* v8.37 : les règles de validation */
+    var _col=document.getElementById('pi-col-sel').value;
+    var _cli=(document.getElementById('pi-cli')||{value:''}).value.trim();
+    var _vend=(document.getElementById('pi-vendeur')||{value:''}).value.trim();
+    var _adr=(document.getElementById('pi-adresse')||{value:''}).value.trim();
+    var _det=(document.getElementById('pi-details')||{value:''}).value.trim();
+    var _pub=(document.getElementById('pi-pub')||{value:''}).value.trim();
+    var _vis=document.getElementById('pi-vis').value;
+    if(_col==='clients' && !_cli){ toast('Indiquez le nom du client.'); return; }
+    if(_col==='produits' && (!_vend || !_adr)){ toast('Indiquez le nom du vendeur ET l\u2019adresse du bien.'); return; }
+    if(_vis==='ecran' && !_pub){ toast('\u00c9crivez ce qui s\u2019affichera sur l\u2019\u00e9cran Agence.'); return; }
     if(piEditId!==null){
       if(!piCanEdit()){toast("Réservé à l'administrateur ou au gérant");return;}
       var ed=piNotes.find(function(x){return x.id===piEditId;});
       if(ed){
-        ed.col=document.getElementById('pi-col-sel').value;
+        ed.col=_col;
         ed.color=piColorSel;
         ed.ref=document.getElementById('pi-ref').value.trim();
         ed.content=content;
-        ed.vis=document.getElementById('pi-vis').value;
+        ed.vis=_vis;
         ed.owner=document.getElementById('pi-owner').value;
+        ed.cli=_cli; ed.vendeur=_vend; ed.adresse=_adr; ed.details=_det; ed.pub=_pub;   /* v8.37 */
         ed.updated=new Date().toISOString();
       }
       closeModal('modal-postit');
@@ -4247,9 +4287,10 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
       piRenderAll();piSave();toast('Post-it modifié !');
       return;
     }
-    var note={id:Date.now()+Math.floor(Math.random()*1000),created:new Date().toISOString(),col:document.getElementById('pi-col-sel').value,color:piColorSel,
+    var note={id:Date.now()+Math.floor(Math.random()*1000),created:new Date().toISOString(),col:_col,color:piColorSel,
       ref:document.getElementById('pi-ref').value.trim(),content:content,
-      vis:document.getElementById('pi-vis').value,owner:document.getElementById('pi-owner').value,date:PI_TODAY};
+      cli:_cli,vendeur:_vend,adresse:_adr,details:_det,pub:_pub,   /* v8.37 */
+      vis:_vis,owner:document.getElementById('pi-owner').value,date:PI_TODAY};
     piNotes.push(note);
     closeModal('modal-postit');
     document.getElementById('pi-content').value='';
@@ -4375,7 +4416,10 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
           var ocMap={LS:'ls',MA:'ma',LP:'lp',MZ:'mz',JD:'jd',ML:'ml',SB:'sb'};var oc=ocMap[n.owner]||'ls';
           var div=document.createElement('div');
           div.className='postit '+color;div.id='pn-'+n.id;
-          div.innerHTML='<div class="pt-stripe"></div><div class="pt-inner"><div class="pt-top"><span class="pt-badge">'+PI_LABELS[color]+'</span><div class="pt-own '+oc+'" title="Auteur : '+piEsc(n.owner)+'">'+piEsc(n.owner)+'</div></div>'+(n.ref?'<div class="pt-ref">'+piEsc(n.ref)+'</div>':'')+'<textarea class="pt-text" data-id="'+n.id+'" onchange="piUpdate('+n.id+',this.value)">'+piEsc(n.content)+'</textarea><div class="pt-footer"><span class="pt-date">'+piEsc(n.date)+'</span><span class="pt-vis">'+(n.vis==='equipe'?'Equipe':(n.vis==='ecran'?'Agence':'Prive'))+'</span><span class="pt-actions"><button class="pt-arch pi-admin-action" title="Archiver (retirer du tableau sans supprimer)" onclick="piArch('+n.id+')">🗄</button><button class="pt-edit pi-admin-action" onclick="piEdit('+n.id+')">Modif.</button><button class="pt-del pi-admin-action" onclick="piDel('+n.id+')">Suppr.</button></span></div></div>';
+          /* v8.37 : ligne d'identification structurée (client OU vendeur+adresse) + détails au survol */
+          var _sub=(n.col==='clients')? (n.cli||'') : ((n.vendeur||'')+(n.vendeur&&n.adresse?' \u2014 ':'')+(n.adresse||''));
+          if(n.details) div.title='\ud83d\udd0e D\u00e9tails : '+n.details;
+          div.innerHTML='<div class="pt-stripe"></div><div class="pt-inner"><div class="pt-top"><span class="pt-badge">'+PI_LABELS[color]+'</span><div class="pt-own '+oc+'" title="Auteur : '+piEsc(n.owner)+'">'+piEsc(n.owner)+'</div></div>'+(_sub?'<div class="pt-ref">'+piEsc(_sub)+(n.details?' <span title="D\u00e9tails internes disponibles \u2014 survolez le post-it">\u24d8</span>':'')+'</div>':'')+(n.ref?'<div class="pt-ref">'+piEsc(n.ref)+'</div>':'')+'<textarea class="pt-text" data-id="'+n.id+'" onchange="piUpdate('+n.id+',this.value)">'+piEsc(n.content)+'</textarea><div class="pt-footer"><span class="pt-date">'+piEsc(n.date)+'</span><span class="pt-vis">'+(n.vis==='equipe'?'Equipe':(n.vis==='ecran'?'Agence':'Prive'))+'</span><span class="pt-actions"><button class="pt-arch pi-admin-action" title="Archiver (retirer du tableau sans supprimer)" onclick="piArch('+n.id+')">🗄</button><button class="pt-edit pi-admin-action" onclick="piEdit('+n.id+')">Modif.</button><button class="pt-del pi-admin-action" onclick="piDel('+n.id+')">Suppr.</button></span></div></div>';
           if(canDrag){
             div.draggable=true;
             div.addEventListener('dragstart', function(e){ _piDragId=n.id; div.classList.add('pi-dragging'); try{ e.dataTransfer.setData('text/plain',''+n.id); e.dataTransfer.effectAllowed='move'; }catch(err){} });
@@ -10786,7 +10830,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     startRealtime();
     var ov=document.getElementById('ach-login-overlay'); if(ov) ov.classList.add('ach-hidden');
     var ub=document.getElementById('ach-userbar'); if(ub) ub.style.display='none';
-    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v8.36';
+    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v8.37';
     flag('Synchronis\u00e9');
     // fin de l'init : on autorise la journalisation des actions
     setTimeout(function(){ installInterceptor._init=false; }, 1500);
@@ -13883,6 +13927,7 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
       +'<img class="v-word" src="'+wordSrc+'" alt="Achille immobilier">'
       +'<div class="v-base">Conseils immobiliers \u00e0 Neuilly et dans tout l\u2019Ouest parisien</div>'
       +'<div class="v-clock"></div><div class="v-date"></div>'
+      +'<div class="v-extra"><span class="v-meteo" id="v-meteo"></span><span class="v-sep" id="v-sep1" style="display:none;"></span><span class="v-fete" id="v-fete"></span></div>'
       +'<div class="v-wifi"><div class="v-wline">'+wifiSvg+'Wifi invit\u00e9s&nbsp;: <b>Guest Achille Immobilier</b></div>'
       +'<div class="v-wline v-wpass">Mot de passe&nbsp;: <b>Guest@Achille!</b></div></div></div>';
     var notes=_vPostits();
@@ -13891,14 +13936,18 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
        Taille selon le nombre TOTAL (grand ≤6, moyen ≤12, petit au-delà), punaises de
        couleurs alternées, rotations légères. */
     if(notes.length){
-      var size=notes.length<=6?'vn-l':(notes.length<=12?'vn-m':'vn-s');
+      /* v8.37 : sur l'écran Agence on n'affiche QUE le texte « pub » décidé à la validation
+         (repli : la note, pour les post-its d'avant la règle). Ni auteur, ni date, ni nom
+         de client — c'est un écran visible des clients. Et la taille descend jusqu'à
+         50 post-its PAR CÔTÉ tout en gardant tout sur un seul écran. */
+      var _nh=Math.max(notes.filter(function(n){return n.col!=='clients';}).length,
+                       notes.filter(function(n){return n.col==='clients';}).length);
+      var size=_nh<=3?'vn-l':(_nh<=6?'vn-m':(_nh<=12?'vn-s':(_nh<=24?'vn-xs':'vn-xxs')));
       var rots=[-2.2,1.6,-1.1,2.4,-1.8,1.2,-2.6,2.0];
       var pins=['#b3392b','#33518a','#3e6b4f','#8a6d2f'];
       function vNote(n,i){ var c=(n.color==='hot'||n.color==='ff')?n.color:'todo';
         return '<div class="v-note '+c+'" style="transform:rotate('+rots[i%rots.length]+'deg);--vpin:'+pins[i%pins.length]+';">'
-          +(n.ref?'<div class="v-ref">'+_vEsc(n.ref)+'</div>':'')
-          +'<div class="v-txt">'+_vEsc(n.content)+'</div>'
-          +'<div class="v-who">'+_vEsc(n.owner||'')+'</div></div>'; }
+          +'<div class="v-txt">'+_vEsc(n.pub||n.content)+'</div></div>'; }
       var prod=notes.filter(function(n){ return n.col!=='clients'; });
       var cli=notes.filter(function(n){ return n.col==='clients'; });
       h+='<div class="vslide"><div class="v-cork '+size+'">'
@@ -13910,11 +13959,71 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
     v.innerHTML=h;
     _vSlides=v.querySelectorAll('.vslide').length; _vIdx=0;
     _vTick();
+    /* v8.37 : garantie « tout tient sur l'écran » — si une moitié du tableau déborde encore
+       malgré les paliers de taille, elle est réduite EXACTEMENT du facteur nécessaire.
+       Mesuré après rendu (2 cadres pour laisser la mise en page se poser). */
+    requestAnimationFrame(function(){ requestAnimationFrame(function(){
+      try{
+        v.querySelectorAll('.v-board').forEach(function(bd){
+          bd.style.transform=''; bd.style.alignContent='';
+          var need=bd.scrollHeight, got=bd.clientHeight;
+          if(need>got+2){
+            /* ancré en haut d'abord (sinon le centrage fait déborder au-dessus, PAR-DESSUS
+               l'étiquette de zone), puis réduit exactement du facteur nécessaire */
+            bd.style.alignContent='flex-start';
+            need=bd.scrollHeight;
+            var k=Math.max(.4, got/need);
+            bd.style.transformOrigin='50% 0'; bd.style.transform='scale('+k+')';
+          }
+        });
+      }catch(e){}
+    }); });
   }
+  /* v8.37 : éphéméride (calendrier des prénoms usuel) — index [mois][jour-1] */
+  var V_FETES=[
+   ['Marie','Basile','Geneviève','Odilon','Édouard','Mélaine','Raymond','Lucien','Alix','Guillaume','Paulin','Tatiana','Yvette','Nina','Rémi','Marcel','Roseline','Prisca','Marius','Sébastien','Agnès','Vincent','Barnard','François de Sales','Conversion de Paul','Paule','Angèle','Thomas d\u2019Aquin','Gildas','Martine','Marcelle'],
+   ['Ella','Présentation','Blaise','Véronique','Agathe','Gaston','Eugénie','Jacqueline','Apolline','Arnaud','N.-D. de Lourdes','Félix','Béatrice','Valentin','Claude','Julienne','Alexis','Bernadette','Gabin','Aimée','Damien','Isabelle','Lazare','Modeste','Roméo','Nestor','Honorine','Romain','Auguste'],
+   ['Aubin','Charles le Bon','Guénolé','Casimir','Olive','Colette','Félicité','Jean de Dieu','Françoise','Vivien','Rosine','Justine','Rodrigue','Mathilde','Louise','Bénédicte','Patrice','Cyrille','Joseph','Herbert','Clémence','Léa','Victorien','Catherine de Suède','Annonciation','Larissa','Habib','Gontran','Gwladys','Amédée','Benjamin'],
+   ['Hugues','Sandrine','Richard','Isidore','Irène','Marcellin','Jean-Baptiste de la Salle','Julie','Gautier','Fulbert','Stanislas','Jules','Ida','Maxime','Paterne','Benoît-Joseph','Anicet','Parfait','Emma','Odette','Anselme','Alexandre','Georges','Fidèle','Marc','Alida','Zita','Valérie','Catherine de Sienne','Robert'],
+   ['Jérémie','Boris','Philippe, Jacques','Sylvain','Judith','Prudence','Gisèle','Désiré','Pacôme','Solange','Estelle','Achille','Rolande','Matthias','Denise','Honoré','Pascal','Éric','Yves','Bernardin','Constantin','Émile','Didier','Donatien','Sophie','Bérenger','Augustin','Germain','Aymard','Ferdinand','Visitation'],
+   ['Justin','Blandine','Kévin','Clotilde','Igor','Norbert','Gilbert','Médard','Diane','Landry','Barnabé','Guy','Antoine de Padoue','Élisée','Germaine','Jean-François Régis','Hervé','Léonce','Romuald','Silvère','Été / Rodolphe','Alban','Audrey','Jean-Baptiste','Prosper','Anthelme','Fernand','Irénée','Pierre, Paul','Martial'],
+   ['Thierry','Martinien','Thomas','Florent','Antoine','Mariette','Raoul','Thibault','Amandine','Ulrich','Benoît','Olivier','Henri, Joël','Camille','Donald','N.-D. du Mont-Carmel','Charlotte','Frédéric','Arsène','Marina','Victor','Marie-Madeleine','Brigitte','Christine','Jacques','Anne, Joachim','Nathalie','Samson','Marthe','Juliette','Ignace de Loyola'],
+   ['Alphonse','Julien Eymard','Lydie','Jean-Marie Vianney','Abel','Transfiguration','Gaétan','Dominique','Amour','Laurent','Claire','Clarisse','Hippolyte','Évrard','Assomption','Armel','Hyacinthe','Hélène','Jean Eudes','Bernard','Christophe','Fabrice','Rose de Lima','Barthélemy','Louis','Natacha','Monique','Augustin','Sabine','Fiacre','Aristide'],
+   ['Gilles','Ingrid','Grégoire','Rosalie','Raïssa','Bertrand','Reine','Nativité de Marie','Alain','Inès','Adelphe','Apollinaire','Aimé','La Sainte-Croix','Roland','Édith','Renaud','Nadège','Émilie','Davy','Matthieu','Maurice','Constant','Thècle','Hermann','Côme, Damien','Vincent de Paul','Venceslas','Michel, Gabriel, Raphaël','Jérôme'],
+   ['Thérèse de l\u2019Enfant-Jésus','Léger','Gérard','François d\u2019Assise','Fleur','Bruno','Serge','Pélagie','Denis','Ghislain','Firmin','Wilfried','Géraud','Juste','Thérèse d\u2019Avila','Edwige','Baudouin','Luc','René','Adeline','Céline','Élodie','Jean de Capistran','Florentin','Crépin','Dimitri','Émeline','Simon, Jude','Narcisse','Bienvenue','Quentin'],
+   ['Toussaint','Défunts','Hubert','Charles','Sylvie','Bertille','Carine','Geoffroy','Théodore','Léon','Martin','Christian','Brice','Sidoine','Albert','Marguerite','Élisabeth','Aude','Tanguy','Edmond','Présentation de Marie','Cécile','Clément','Flora','Catherine','Delphine','Séverin','Jacques de la Marche','Saturnin','André'],
+   ['Florence','Viviane','François-Xavier','Barbara','Gérald','Nicolas','Ambroise','Immaculée Conception','Pierre Fourier','Romaric','Daniel','Jeanne de Chantal','Lucie','Odile','Ninon','Alice','Gaël','Gatien','Urbain','Théophile','Hiver / Pierre C.','Françoise-Xavière','Armand','Adèle','Noël','Étienne','Jean l\u2019Évangéliste','Innocents','David','Roger','Sylvestre']];
   function _vTick(){
     var t=new Date(), c=document.querySelector('#ach-veille .v-clock'), d=document.querySelector('#ach-veille .v-date');
     if(c) c.textContent=t.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
     if(d) d.textContent=t.toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'});
+    try{
+      var f=document.getElementById('v-fete');
+      if(f){ var nm=(V_FETES[t.getMonth()]||[])[t.getDate()-1]||'';
+        f.textContent=nm?('Nous f\u00eatons les '+nm):''; _vSepUpd(); }
+    }catch(e){}
+  }
+  function _vSepUpd(){
+    var m=document.getElementById('v-meteo'), f=document.getElementById('v-fete'), sp=document.getElementById('v-sep1');
+    if(sp) sp.style.display=(m&&m.textContent&&f&&f.textContent)?'':'none';
+  }
+  /* v8.37 : météo de Neuilly-sur-Seine (Open-Meteo, gratuit et sans clé).
+     En cas d'échec réseau : la ligne reste simplement vide, jamais d'erreur à l'écran. */
+  var _vMeteoTimer=null;
+  function _vMeteo(){
+    try{
+      fetch('https://api.open-meteo.com/v1/forecast?latitude=48.8846&longitude=2.2686&current=temperature_2m,weather_code&daily=temperature_2m_max,temperature_2m_min&forecast_days=1&timezone=Europe%2FParis')
+      .then(function(r){ return r.json(); })
+      .then(function(j){
+        var el=document.getElementById('v-meteo'); if(!el||!j||!j.current) return;
+        var code=j.current.weather_code, t=Math.round(j.current.temperature_2m);
+        var ic=code===0?'\u2600\ufe0f':(code<=2?'\u26c5':(code===3?'\u2601\ufe0f':(code<=48?'\ud83c\udf2b\ufe0f':(code<=67?'\ud83c\udf26\ufe0f':(code<=77?'\u2744\ufe0f':(code<=82?'\ud83c\udf27\ufe0f':'\u26c8\ufe0f'))))));
+        var mn=j.daily&&j.daily.temperature_2m_min?Math.round(j.daily.temperature_2m_min[0]):null;
+        var mx=j.daily&&j.daily.temperature_2m_max?Math.round(j.daily.temperature_2m_max[0]):null;
+        el.innerHTML=ic+' <b>'+t+'\u00b0</b>'+(mn!==null&&mx!==null?(' \u00b7 '+mn+'\u00b0 / '+mx+'\u00b0'):'')+' \u00e0 Neuilly';
+        _vSepUpd();
+      }).catch(function(){});
+    }catch(e){}
   }
   function _vShow(i){
     var v=document.getElementById('ach-veille'); if(!v) return;
@@ -13935,6 +14044,7 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
     _vBuild(); v.classList.add('on'); _vArm();
     try{ document.body.classList.add('ach-veille-live'); }catch(e){}
     if(_vClock) clearInterval(_vClock); _vClock=setInterval(_vTick,15000);
+    _vMeteo(); if(_vMeteoTimer) clearInterval(_vMeteoTimer); _vMeteoTimer=setInterval(_vMeteo,1800000);   /* v8.37 : météo toutes les 30 min */
   };
   window.achVeilleStop=function(){
     var v=document.getElementById('ach-veille'); if(!v) return;
@@ -13942,6 +14052,7 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
     try{ document.body.classList.remove('ach-veille-live'); }catch(e){}
     if(_vTimer){ clearTimeout(_vTimer); _vTimer=null; }
     if(_vClock){ clearInterval(_vClock); _vClock=null; }
+    if(_vMeteoTimer){ clearInterval(_vMeteoTimer); _vMeteoTimer=null; }
   };
   document.addEventListener('fullscreenchange',function(){
     var pub=document.body.classList.contains('ach-agence');
@@ -15906,14 +16017,20 @@ body.ach-veille-live #agence-wifi, body.ach-veille-live #agence-fs{display:none 
 #ach-veille .vslide.on{opacity:1;}
 #ach-veille .v-wm{position:absolute;top:50%;left:50%;transform:translate(-50%,-54%);pointer-events:none;}
 #ach-veille .v-wm img{height:52vh;opacity:.10;}
-#ach-veille .v-kicker{font-family:'Belleza','Jost',sans-serif;font-size:26px;letter-spacing:.4em;text-transform:uppercase;color:#9a9384;position:relative;margin-bottom:3.2vh;}
+#ach-veille .v-kicker{font-family:'Belleza','Jost',sans-serif;font-size:34px;letter-spacing:.42em;text-transform:uppercase;color:#a8a08f;position:relative;margin-bottom:3.2vh;}   /* v8.37 : plus grand */
 #ach-veille .v-word{width:min(34vw,560px);position:relative;}
 #ach-veille .v-base{font-family:'Cormorant Garamond',serif;font-style:italic;font-weight:300;font-size:26px;color:#b3ab9b;position:relative;margin-top:4vh;letter-spacing:.03em;}
-#ach-veille .v-clock{position:relative;margin-top:7vh;font-size:44px;font-weight:200;color:#e8e2d5;letter-spacing:.1em;font-variant-numeric:tabular-nums;font-family:'Jost',sans-serif;}
-#ach-veille .v-date{font-size:19px;font-weight:300;letter-spacing:.3em;text-transform:uppercase;color:#6f6a60;margin-top:1.2vh;position:relative;}
+#ach-veille .v-clock{position:relative;margin-top:6vh;font-size:58px;font-weight:200;color:#e8e2d5;letter-spacing:.1em;font-variant-numeric:tabular-nums;font-family:'Jost',sans-serif;}
+#ach-veille .v-date{font-size:24px;font-weight:300;letter-spacing:.3em;text-transform:uppercase;color:#8a847a;margin-top:1.2vh;position:relative;}
+/* v8.37 : la ligne conviviale — météo de Neuilly + saint du jour, touches de vert Achille */
+#ach-veille .v-extra{position:relative;margin-top:3.4vh;display:flex;align-items:center;gap:18px;font-family:'Jost',sans-serif;font-size:20px;font-weight:300;color:#9aa382;letter-spacing:.04em;min-height:28px;}
+#ach-veille .v-extra .v-sep{width:5px;height:5px;border-radius:50%;background:#cd7a52;}
+#ach-veille .v-meteo b{color:#d9d3c4;font-weight:400;}
+#ach-veille .v-fete{color:#9aa382;}
 #ach-veille .v-wifi{position:absolute;bottom:4vh;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:7px;
   font-size:16px;font-weight:300;color:#8f8878;letter-spacing:.05em;white-space:nowrap;font-family:'Jost',sans-serif;}
-#ach-veille .v-wifi b{color:#d4cdbf;font-weight:400;}
+#ach-veille .v-wifi b{color:#cd7a52;font-weight:400;}   /* v8.37 : terracotta */
+#ach-veille .v-wifi{border-top:1px solid rgba(205,122,82,.35);padding-top:1.8vh;}
 #ach-veille .v-wline{display:flex;align-items:center;gap:12px;}
 #ach-veille .v-wpass{font-size:15px;color:#7d776b;}
 /* v8.36 : LE TABLEAU EN LIÈGE — tous les post-its partagés sur UN écran de 43 pouces,
@@ -15937,7 +16054,7 @@ body.ach-veille-live #agence-wifi, body.ach-veille-live #agence-fs{display:none 
   font-family:'Belleza','Jost',sans-serif;font-size:23px;letter-spacing:.3em;text-transform:uppercase;
   padding:1.2vh 2.2vw 1vh;margin-bottom:3vh;box-shadow:0 6px 14px rgba(0,0,0,.35);transform:rotate(-.6deg);}
 #ach-veille .v-half+.v-half .v-half-lbl{transform:rotate(.5deg);}
-#ach-veille .v-board{display:flex;flex-wrap:wrap;gap:2.8vh 1.2vw;justify-content:center;align-content:center;position:relative;flex:1;width:100%;}
+#ach-veille .v-board{display:flex;flex-wrap:wrap;gap:2.8vh 1.2vw;justify-content:center;align-content:center;position:relative;flex:1;width:100%;min-height:0;}   /* v8.37 : min-height:0 = la hauteur allouée est RÉELLEMENT contrainte, l'auto-réduction peut mesurer juste */
 #ach-veille .v-note{position:relative;text-align:left;display:flex;flex-direction:column;border-radius:2px;
   box-shadow:0 8px 16px rgba(50,30,10,.45), inset 0 -14px 22px rgba(0,0,0,.06);padding:2.4vh 1.1vw 1.4vh;}
 /* la punaise : tête ronde brillante + pointe d'ombre */
@@ -15957,6 +16074,13 @@ body.ach-veille-live #agence-wifi, body.ach-veille-live #agence-fs{display:none 
 #ach-veille .v-cork.vn-l .v-note{width:clamp(230px,15.5vw,320px);min-height:23vh;font-size:34px;}
 #ach-veille .v-cork.vn-m .v-note{width:clamp(195px,13vw,260px);min-height:19vh;font-size:28px;}
 #ach-veille .v-cork.vn-s .v-note{width:clamp(160px,11vw,210px);min-height:15vh;font-size:23px;}
+/* v8.37 : jusqu'à ~50 post-its par côté sur le 43 pouces */
+#ach-veille .v-cork.vn-xs .v-note{width:clamp(128px,8.6vw,165px);min-height:11vh;font-size:19px;padding:1.6vh .8vw 1vh;}
+#ach-veille .v-cork.vn-xxs .v-note{width:clamp(104px,6.8vw,130px);min-height:8.5vh;font-size:15.5px;padding:1.3vh .6vw .8vh;}
+#ach-veille .v-cork.vn-xs .v-note::before{width:16px;height:16px;top:-8px;}
+#ach-veille .v-cork.vn-xxs .v-note::before{width:13px;height:13px;top:-7px;}
+#ach-veille .v-cork.vn-xs .v-board{gap:2vh .9vw;}
+#ach-veille .v-cork.vn-xxs .v-board{gap:1.6vh .7vw;}
 #ach-veille .v-cork-mono{position:absolute;right:1.6vw;bottom:2.2vh;background:linear-gradient(180deg,#fbf6ea,#f1e8d4);border-radius:3px;
   padding:1vh .7vw;box-shadow:0 6px 14px rgba(0,0,0,.35);transform:rotate(1.2deg);}
 #ach-veille .v-cork-mono img{height:6.5vh;display:block;filter:brightness(.32) sepia(.25);opacity:.8;}
