@@ -1639,7 +1639,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     </div>
   </div>
   </div>
-  <div class="logo-ver app-ver">Achille App — v8.34</div>
+  <div class="logo-ver app-ver">Achille App — v8.35</div>
 </aside>
 <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Réduire la barre latérale">‹</button>
 
@@ -10786,7 +10786,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     startRealtime();
     var ov=document.getElementById('ach-login-overlay'); if(ov) ov.classList.add('ach-hidden');
     var ub=document.getElementById('ach-userbar'); if(ub) ub.style.display='none';
-    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v8.34';
+    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v8.35';
     flag('Synchronis\u00e9');
     // fin de l'init : on autorise la journalisation des actions
     setTimeout(function(){ installInterceptor._init=false; }, 1500);
@@ -13886,11 +13886,17 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
       +'<div class="v-wifi"><div class="v-wline">'+wifiSvg+'Wifi invit\u00e9s&nbsp;: <b>Guest Achille Immobilier</b></div>'
       +'<div class="v-wline v-wpass">Mot de passe&nbsp;: <b>Guest@Achille!</b></div></div></div>';
     var notes=_vPostits();
-    for(var i=0;i<notes.length;i+=3){
-      var grp=notes.slice(i,i+3);
-      h+='<div class="vslide"><div class="v-ptitle">Le mot de l\u2019\u00e9quipe</div><div class="v-board">'
-        +grp.map(function(n){ var c=(n.color==='hot'||n.color==='ff')?n.color:'todo';
-          return '<div class="v-note '+c+'"><div class="v-stripe"></div><div class="v-txt">'+_vEsc(n.content)+'</div>'
+    /* v8.35 : UNE seule planche = LE TABLEAU ENTIER. Taille des post-its selon leur nombre
+       (grand jusqu'à 6, moyen jusqu'à 12, petit au-delà) pour que tout tienne à l'écran.
+       Rotation légère et régulière, comme des vrais post-its collés à la main. */
+    if(notes.length){
+      var size=notes.length<=6?'vn-l':(notes.length<=12?'vn-m':'vn-s');
+      var rots=[-2.2,1.6,-1.1,2.4,-1.8,1.2,-2.6,2.0];
+      h+='<div class="vslide"><div class="v-ptitle">Le mot de l\u2019\u00e9quipe</div><div class="v-board '+size+'">'
+        +notes.map(function(n,i){ var c=(n.color==='hot'||n.color==='ff')?n.color:'todo';
+          return '<div class="v-note '+c+'" style="transform:rotate('+rots[i%rots.length]+'deg);">'
+            +(n.ref?'<div class="v-ref">'+_vEsc(n.ref)+'</div>':'')
+            +'<div class="v-txt">'+_vEsc(n.content)+'</div>'
             +'<div class="v-who">'+_vEsc(n.owner||'')+'</div></div>'; }).join('')
         +'</div><div class="v-mini-wm"><img src="'+wmSrc+'" alt=""></div></div>';
     }
@@ -13915,7 +13921,7 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
     if(_vTimer) clearTimeout(_vTimer);
     /* l'accueil reste 20 s, chaque planche de post-its 12 s ; retour à l'accueil = on reconstruit
        (les post-its ajoutés ou modifiés entre-temps sont pris en compte) */
-    _vTimer=setTimeout(function(){ if(_vIdx===_vSlides-1){ _vBuild(); _vArm(); } else { _vShow(_vIdx+1); } }, _vIdx===0?20000:12000);
+    _vTimer=setTimeout(function(){ if(_vIdx===_vSlides-1){ _vBuild(); _vArm(); } else { _vShow(_vIdx+1); } }, _vIdx===0?20000:25000);   /* v8.35 : accueil 20 s, tableau 25 s */
   }
   window.achVeilleStart=function(){
     var v=document.getElementById('ach-veille'); if(!v) return;
@@ -15903,14 +15909,25 @@ body.ach-veille-live #agence-wifi, body.ach-veille-live #agence-fs{display:none 
 #ach-veille .v-wifi b{color:#d4cdbf;font-weight:400;}
 #ach-veille .v-wline{display:flex;align-items:center;gap:12px;}
 #ach-veille .v-wpass{font-size:15px;color:#7d776b;}
-#ach-veille .v-ptitle{font-family:'Belleza','Jost',sans-serif;font-size:24px;letter-spacing:.38em;text-transform:uppercase;color:#9a9384;margin-bottom:6vh;position:relative;}
-#ach-veille .v-board{display:flex;gap:2.6vw;justify-content:center;align-items:stretch;position:relative;padding:0 5vw;}
-#ach-veille .v-note{width:min(26vw,430px);background:#161513;border:1px solid #2a2825;border-radius:16px;padding:3.4vh 2.2vw;text-align:left;
-  display:flex;flex-direction:column;box-shadow:0 14px 40px rgba(0,0,0,.5);}
-#ach-veille .v-note .v-stripe{height:4px;border-radius:3px;margin-bottom:2.6vh;}
-#ach-veille .v-note.hot .v-stripe{background:#b4552d;} #ach-veille .v-note.todo .v-stripe{background:#c5a878;} #ach-veille .v-note.ff .v-stripe{background:#5f7d63;}
-#ach-veille .v-note .v-txt{font-family:'Cormorant Garamond',serif;font-size:25px;line-height:1.45;color:#ddd6c8;flex:1;white-space:pre-wrap;word-break:break-word;}
-#ach-veille .v-note .v-who{margin-top:3vh;font-family:'Jost',sans-serif;font-size:13px;letter-spacing:.22em;text-transform:uppercase;color:#777166;}
+#ach-veille .v-ptitle{font-family:'Belleza','Jost',sans-serif;font-size:24px;letter-spacing:.38em;text-transform:uppercase;color:#9a9384;margin-bottom:4.5vh;position:relative;}
+/* v8.35 : LE TABLEAU TEL QUEL — tous les post-its partagés sur UN écran, en vrais post-its
+   papier (les couleurs du tableau : jaune Hot, bleu To do, rose F&F), écriture Caveat,
+   légère rotation, ombre portée. La taille s'adapte au nombre pour que TOUT tienne. */
+#ach-veille .v-board{display:flex;flex-wrap:wrap;gap:2.2vh 1.6vw;justify-content:center;align-content:center;position:relative;padding:0 3vw;max-width:96vw;flex:0 1 auto;}
+#ach-veille .v-note{position:relative;text-align:left;display:flex;flex-direction:column;border-radius:3px;
+  box-shadow:0 10px 22px rgba(0,0,0,.55), inset 0 -14px 22px rgba(0,0,0,.06);padding:2vh 1.1vw 1.4vh;}
+#ach-veille .v-note::before{content:'';position:absolute;top:-9px;left:50%;transform:translateX(-50%) rotate(-1deg);width:52px;height:16px;
+  background:rgba(255,255,255,.28);border:1px solid rgba(0,0,0,.05);border-radius:2px;}
+#ach-veille .v-note.hot{background:linear-gradient(180deg,#fdec62,#fde84a 60%,#f2d938);}
+#ach-veille .v-note.todo{background:linear-gradient(180deg,#b6d2f4,#a8c8f0 60%,#98b8e2);}
+#ach-veille .v-note.ff{background:linear-gradient(180deg,#f6adc0,#f4a0b4 60%,#e690a6);}
+#ach-veille .v-note .v-ref{font-family:'Jost',sans-serif;font-size:.62em;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:rgba(0,0,0,.5);margin-bottom:.5vh;}
+#ach-veille .v-note .v-txt{font-family:'Caveat',cursive;color:rgba(0,0,0,.8);flex:1;white-space:pre-wrap;word-break:break-word;line-height:1.22;}
+#ach-veille .v-note .v-who{margin-top:1.2vh;font-family:'Jost',sans-serif;font-size:.55em;letter-spacing:.2em;text-transform:uppercase;color:rgba(0,0,0,.45);align-self:flex-end;}
+#ach-veille .v-board.vn-l .v-note{width:clamp(240px,17vw,330px);min-height:24vh;font-size:34px;}
+#ach-veille .v-board.vn-m .v-note{width:clamp(200px,14vw,270px);min-height:20vh;font-size:28px;}
+#ach-veille .v-board.vn-s .v-note{width:clamp(165px,11.5vw,215px);min-height:16vh;font-size:23px;}
+#ach-veille .v-board .v-note .v-txt{font-size:1em;}
 #ach-veille .v-mini-wm{position:absolute;bottom:4vh;left:50%;transform:translateX(-50%);}
 #ach-veille .v-mini-wm img{height:7vh;opacity:.35;}
 #agence-wifi b{font-weight:600;color:var(--terra,#b4552d);}
