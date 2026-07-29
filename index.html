@@ -485,6 +485,11 @@ body.sb-collapsed .sidebar::-webkit-scrollbar{width:3px;}
 .comm-date::-webkit-calendar-picker-indicator{margin-left:2px;padding:2px;cursor:pointer;}
 /* v7.29 : la page Communication récupère une partie des marges du contenu */
 #page-communication{margin-left:-24px;margin-right:-24px;}   /* v7.30 : recupere la TOTALITE des marges du contenu */
+/* v8.31 : en mode plein écran (Communication y est depuis v7.30), navTo met DÉJÀ le padding du
+   contenu à 0 — les marges négatives ci-dessus faisaient alors déborder la page de 24px À DROITE
+   du bord de la fenêtre : « ＋ Ajouter une ligne » et « 🔔 Nouveau rappel » étaient collés,
+   voire coupés. Plus de marges négatives quand le padding est déjà retiré. */
+#page-communication.fullscreen{margin-left:0;margin-right:0;}
 .comm-m2{display:inline-flex;align-items:center;gap:3px;}
 .comm-m2 i{font-style:normal;font-size:12px;color:var(--gris-2);}
 .comm-reseau,.comm-pub{min-height:32px;display:flex;align-items:center;gap:4px;flex-wrap:wrap;cursor:pointer;padding:4px 6px;border-radius:6px;transition:background .12s;}
@@ -1634,7 +1639,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     </div>
   </div>
   </div>
-  <div class="logo-ver app-ver">Achille App — v8.30</div>
+  <div class="logo-ver app-ver">Achille App — v8.31</div>
 </aside>
 <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Réduire la barre latérale">‹</button>
 
@@ -10780,7 +10785,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     startRealtime();
     var ov=document.getElementById('ach-login-overlay'); if(ov) ov.classList.add('ach-hidden');
     var ub=document.getElementById('ach-userbar'); if(ub) ub.style.display='none';
-    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v8.30';
+    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v8.31';
     flag('Synchronis\u00e9');
     // fin de l'init : on autorise la journalisation des actions
     setTimeout(function(){ installInterceptor._init=false; }, 1500);
@@ -11413,6 +11418,10 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
   };
   window.achApplyPerms=function(){
     var uk=curKey();
+    /* v8.31 : le compte Agence (écran visible par les clients) a sa classe sur <body> —
+       le CSS masque d'un bloc tout ce qui ne le concerne pas (rappels, cloche) et
+       affiche ce qui n'existe que pour lui (encart Wifi invités). */
+    try{ document.body.classList.toggle('ach-agence', uk==='public'); }catch(e){}
     var adminSec=document.getElementById('nav-admin-section');
     if(adminSec) adminSec.style.display=(uk==='admin')?'':'none';
     document.querySelectorAll('.nav-item[onclick]').forEach(function(n){
@@ -13774,6 +13783,7 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
       <button class="btn btn-terra" onclick="pwChangeSave()">Enregistrer</button></div>
   </div>
 </div>
+<div id="agence-wifi"><span class="wifi-ico">📶</span><span>Wifi invités : <b>Guest Achille Immobilier</b> · Mot de passe : <b>Guest@Achille!</b></span></div>
 <button id="spy-btn" class="spy-btn" title="Voir l’application comme un autre utilisateur" onclick="spyToggle()">🕵️</button>
 <div id="spy-pop" class="spy-pop"></div>
 <script>
@@ -13791,7 +13801,12 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
     html+='<div class="spy-sep"></div>';
     html+='<button class="spy-item spy-pub'+(pubOn?' cur':'')+'" onclick="spyPickRole(\'public\')">Achille Immobilier (Agence)'+(pubOn?' \u2713':'')+'</button>';
     var real=window.ACH_REAL;
-    if(real && real.name && cur && real.name!==cur){
+    /* v8.31 : la ligne « ↩ Revenir à mon compte » n'a de sens QUE pendant une vue « en tant
+       qu'autre ». Elle s'affichait tout le temps parce que la comparaison portait sur les NOMS —
+       et le nom du compte Supabase (« Laurent S. ») ne s'écrit pas comme le nom du rôle
+       (« Laurent Sellem »). On compare désormais les CLÉS de rôle, insensibles à l'orthographe. */
+    var _realKey=(real&&real.role)||'', _curKey=(window.ACH_USER&&ACH_USER.key)||'';
+    if(real && real.name && _realKey && _curKey && _realKey!==_curKey){
       html+='<button class="spy-item spy-back" onclick="spyBack()">\u21a9 Revenir à mon compte ('+real.name+')</button>';
     }
     p.innerHTML=html; p.classList.add('open');
@@ -13826,7 +13841,8 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
   };
   window.spyRefresh=function(){
     var el=document.getElementById('spy-btn'); if(!el) return;
-    var real=(window.ACH_REAL&&ACH_REAL.name)||null; var cur=(window.ACH_USER&&ACH_USER.name)||null;
+    /* v8.31 : comparaison par clés de rôle (voir spyToggle) — les noms diffèrent d'orthographe. */
+    var real=(window.ACH_REAL&&ACH_REAL.role)||null; var cur=(window.ACH_USER&&ACH_USER.key)||null;
     var on=!!(real&&cur&&real!==cur);
     el.classList.toggle('spy-on',on);
     el.title=on?('Vue actuelle : '+cur+' \u2014 cliquez pour changer'):'Voir l\u2019application comme un autre utilisateur';
@@ -15723,7 +15739,20 @@ window.docsPdfBlank=function(key, filename){
 .rap-btn{background:var(--terra);color:#fff;border:none;border-radius:10px;padding:10px 18px;font-family:'Jost',sans-serif;font-weight:600;font-size:13px;cursor:pointer;}
 .rap-btn-sec{background:#fff;border:1px solid var(--beige-2);border-radius:10px;padding:10px 16px;font-family:'Jost',sans-serif;font-size:13px;color:var(--gris);cursor:pointer;}
 #pg-rap-btn.rap-has{background:rgba(180,85,45,.08);}
-.rap-pagebar{display:flex;justify-content:flex-end;padding:8px 14px 0;}
+.rap-pagebar{display:flex;justify-content:flex-end;padding:8px 22px 0;}   /* v8.31 : aligné sur le padding 22px de la barre d'outils */
+/* v8.31 : COMPTE AGENCE (écran en agence, visible par les clients).
+   Les rappels sont un outil de travail interne : ni boutons « 🔔 Nouveau rappel », ni bandeaux,
+   ni cloche de notifications, ni encarts de rappels sur ce compte. */
+body.ach-agence .rap-new, body.ach-agence .rap-pagebar, body.ach-agence .rap-strip,
+body.ach-agence #rap-dash, body.ach-agence #rap-plan, body.ach-agence .nav-badge-rap,
+body.ach-agence .notif-btn{display:none !important;}
+/* v8.31 : encart Wifi invités — visible UNIQUEMENT sur le compte Agence, en bas à droite. */
+#agence-wifi{display:none;}
+body.ach-agence #agence-wifi{display:flex;align-items:center;gap:10px;position:fixed;right:18px;bottom:16px;z-index:600;
+  background:#fff;border:1px solid var(--beige-2,#e5ded3);border-radius:12px;padding:10px 16px;box-shadow:0 4px 14px rgba(0,0,0,.08);
+  font-family:'Jost',sans-serif;font-size:13.5px;color:var(--noir,#1a1a18);}
+#agence-wifi .wifi-ico{font-size:19px;}
+#agence-wifi b{font-weight:600;color:var(--terra,#b4552d);}
 #aff-rap-btn.rap-has{background:rgba(180,85,45,.08);}
 
 </style>
