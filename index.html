@@ -1639,7 +1639,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     </div>
   </div>
   </div>
-  <div class="logo-ver app-ver">Achille App — v8.38</div>
+  <div class="logo-ver app-ver">Achille App — v8.39</div>
 </aside>
 <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Réduire la barre latérale">‹</button>
 
@@ -3966,7 +3966,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
 
 
 
-<div class="modal-overlay" id="modal-postit"><div class="modal"><button class="modal-close" onclick="closeModal('modal-postit')">x</button><div class="modal-title" id="pi-modal-title">Nouveau post-it</div><div class="form-group"><label class="form-label">Colonne</label><select class="form-select" id="pi-col-sel" onchange="piColFields()"><option value="produits">Produits</option><option value="clients">Clients</option></select></div><div class="form-group"><label class="form-label">Couleur / Priorite</label><div style="display:flex;gap:8px;"><div class="pi-color-choice active" data-color="hot" onclick="piSelColor(this)" style="background:#fffbe0;"><div style="width:20px;height:20px;border-radius:4px;background:var(--hot);border:1.5px solid var(--hot-d);margin:0 auto 4px;"></div>Hot</div><div class="pi-color-choice" data-color="todo" onclick="piSelColor(this)" style="background:#eaf3fc;"><div style="width:20px;height:20px;border-radius:4px;background:var(--todo);border:1.5px solid var(--todo-d);margin:0 auto 4px;"></div>To do</div><div class="pi-color-choice" data-color="ff" onclick="piSelColor(this)" style="background:#fdf0f3;"><div style="width:20px;height:20px;border-radius:4px;background:var(--ff);border:1.5px solid var(--ff-d);margin:0 auto 4px;"></div>F&amp;F</div></div></div><input type="hidden" id="pi-ref" value=""><div class="form-group" id="pi-fg-cli" style="display:none;"><label class="form-label">Nom du client <span style="color:var(--terra);">*</span></label><input class="form-input" id="pi-cli" type="text" placeholder="Ex : M. et Mme Charpentier"></div><div id="pi-fg-prod" style="display:none;"><div class="form-row"><div class="form-group"><label class="form-label">Nom du vendeur <span style="color:var(--terra);">*</span></label><input class="form-input" id="pi-vendeur" type="text" placeholder="Ex : Mme Lefort"></div><div class="form-group"><label class="form-label">Adresse du bien <span style="color:var(--terra);">*</span></label><input class="form-input" id="pi-adresse" type="text" placeholder="Ex : 12 rue de Chartres"></div></div></div><div class="form-group"><label class="form-label">Note <span style="font-weight:400;color:var(--gris-2);">(affichée sur le post-it — <span id="pi-cnt">120</span> caract.)</span></label><textarea class="form-textarea" id="pi-content" maxlength="120" oninput="piCntUpd()" style="font-family:'Caveat',cursive;font-size:17px;" placeholder="L'essentiel, court et lisible..."></textarea></div><div class="form-group"><label class="form-label">Détails internes <span style="font-weight:400;color:var(--gris-2);">(visibles par l'équipe au survol du post-it — jamais à l'écran Agence)</span></label><textarea class="form-textarea" id="pi-details" placeholder="Tout le contexte utile : coordonnées, historique, montants..."></textarea></div><div class="form-row"><div class="form-group" style="margin:0;"><label class="form-label">Visibilite</label><select class="form-select" id="pi-vis" onchange="piPubField()"><option value="moi">Prive</option><option value="equipe">Equipe</option><option value="ecran">Agence (montrable aux clients)</option></select></div><div class="form-group" style="margin:0;"><label class="form-label">Collaborateur</label><select class="form-select" id="pi-owner"><option value="LS">Laurent Sellem</option><option value="MA">Marine Attias</option><option value="LP">Liloé Pichat</option><option value="MZ">Marine Zoretic</option></select></div></div><div class="form-group" id="pi-fg-pub"><label class="form-label">Ce qui s'affichera sur l'écran Agence <span style="color:var(--terra);" id="pi-pub-req">*</span> <span style="font-weight:400;color:var(--gris-2);">(obligatoire si visibilité « Agence » — <span id="pi-pub-cnt">90</span> caract., ni nom complet ni téléphone : c'est visible des clients)</span></label><input class="form-input" id="pi-pub" type="text" maxlength="90" oninput="piPubCntUpd()" placeholder="Ex : Nouveau 3 pièces à Neuilly — visites samedi"></div><div class="modal-actions"><button class="btn btn-outline" onclick="closeModal('modal-postit')">Annuler</button><button class="btn btn-terra" id="pi-save-btn" onclick="piCreate()">Ajouter</button></div></div></div>
+<div class="modal-overlay" id="modal-postit"><div class="modal"><button class="modal-close" onclick="closeModal('modal-postit')">x</button><div class="modal-title" id="pi-modal-title">Nouveau post-it</div><div class="form-group"><label class="form-label">Colonne</label><select class="form-select" id="pi-col-sel" onchange="piColFields()"><option value="produits">Produits</option><option value="clients">Clients</option></select></div><div class="form-group"><label class="form-label">Couleur / Priorite</label><div style="display:flex;gap:8px;"><div class="pi-color-choice active" data-color="hot" onclick="piSelColor(this)" style="background:#fffbe0;"><div style="width:20px;height:20px;border-radius:4px;background:var(--hot);border:1.5px solid var(--hot-d);margin:0 auto 4px;"></div>Hot</div><div class="pi-color-choice" data-color="todo" onclick="piSelColor(this)" style="background:#eaf3fc;"><div style="width:20px;height:20px;border-radius:4px;background:var(--todo);border:1.5px solid var(--todo-d);margin:0 auto 4px;"></div>To do</div><div class="pi-color-choice" data-color="ff" onclick="piSelColor(this)" style="background:#fdf0f3;"><div style="width:20px;height:20px;border-radius:4px;background:var(--ff);border:1.5px solid var(--ff-d);margin:0 auto 4px;"></div>F&amp;F</div></div></div><input type="hidden" id="pi-ref" value=""><div id="pi-fg-cli" style="display:none;"><div class="form-row"><div class="form-group"><label class="form-label">Nom et prénom du client <span style="color:var(--terra);">*</span> <span style="font-weight:400;color:var(--gris-2);">(interne)</span></label><input class="form-input" id="pi-cli" type="text" placeholder="Ex : Jean Charpentier"></div><div class="form-group"><label class="form-label">Identité affichée <span style="color:var(--terra);">*</span> <span style="font-weight:400;color:var(--gris-2);">(tableau &amp; écran Agence)</span></label><input class="form-input" id="pi-cli-pub" type="text" placeholder="Ex : M. C."></div></div></div><div id="pi-fg-prod" style="display:none;"><div class="form-row"><div class="form-group"><label class="form-label">Nom et prénom du vendeur <span style="color:var(--terra);">*</span> <span style="font-weight:400;color:var(--gris-2);">(interne)</span></label><input class="form-input" id="pi-vendeur" type="text" placeholder="Ex : Anne Lefort"></div><div class="form-group"><label class="form-label">Adresse du bien <span style="color:var(--terra);">*</span> <span style="font-weight:400;color:var(--gris-2);">(interne)</span></label><input class="form-input" id="pi-adresse" type="text" placeholder="Ex : 12 rue de Chartres"></div></div><div class="form-row"><div class="form-group"><label class="form-label">Identité affichée <span style="color:var(--terra);">*</span> <span style="font-weight:400;color:var(--gris-2);">(tableau &amp; écran)</span></label><input class="form-input" id="pi-vend-pub" type="text" placeholder="Ex : Mme L."></div><div class="form-group"><label class="form-label">Lieu affiché <span style="color:var(--terra);">*</span> <span style="font-weight:400;color:var(--gris-2);">(tableau &amp; écran)</span></label><input class="form-input" id="pi-adr-pub" type="text" placeholder="Ex : quartier du Château"></div></div></div><div class="form-group"><label class="form-label">La recherche / l'info en quelques mots-clés <span style="font-weight:400;color:var(--gris-2);">(affichée sur le post-it — <span id="pi-cnt">120</span> caract.)</span></label><textarea class="form-textarea" id="pi-content" maxlength="120" oninput="piCntUpd()" style="font-family:'Caveat',cursive;font-size:17px;" placeholder="L'essentiel, court et lisible..."></textarea></div><div class="form-group"><label class="form-label">Détails internes <span style="font-weight:400;color:var(--gris-2);">(lisibles en OUVRANT le post-it d'un clic — jamais à l'écran Agence)</span></label><textarea class="form-textarea" id="pi-details" placeholder="Tout le contexte utile : coordonnées, historique, montants..."></textarea></div><div class="form-row"><div class="form-group" style="margin:0;"><label class="form-label">Visibilite</label><select class="form-select" id="pi-vis" onchange="piPubField()"><option value="moi">Prive</option><option value="equipe">Equipe</option><option value="ecran">Agence (montrable aux clients)</option></select></div><div class="form-group" style="margin:0;"><label class="form-label">Collaborateur</label><select class="form-select" id="pi-owner"><option value="LS">Laurent Sellem</option><option value="MA">Marine Attias</option><option value="LP">Liloé Pichat</option><option value="MZ">Marine Zoretic</option></select></div></div><!-- v8.39 : le champ « pub » 90c est remplacé par « Identité affichée » + « Lieu affiché » (choix du rédacteur, champ par champ) — les anciens post-its qui portent encore n.pub restent affichés tels quels --><div class="modal-actions"><button class="btn btn-outline" onclick="closeModal('modal-postit')">Annuler</button><button class="btn btn-terra" id="pi-save-btn" onclick="piCreate()">Ajouter</button></div></div></div>
 
 <div class="modal-overlay" id="modal-visite"><div class="modal"><button class="modal-close" onclick="closeModal('modal-visite')">x</button><div class="modal-title">Nouvelle visite</div><div class="form-group"><label class="form-label">Bien / Adresse</label><input class="form-input" id="vt-addr" type="text" placeholder="Ex : 12 avenue Charles de Gaulle"></div><div class="form-row"><div class="form-group"><label class="form-label">Client</label><input class="form-input" id="vt-client" type="text" placeholder="Nom du client"></div><div class="form-group"><label class="form-label">Accompagnateur(s)</label><div class="vt-acc-field" id="vt-acc-field" onclick="vtAccompOpen()"><span class="vt-acc-ph">+ ajouter un accompagnateur</span></div></div></div><div class="form-row"><div class="form-group"><label class="form-label">Date</label><input class="form-input" id="vt-date" type="date"></div><div class="form-group"><label class="form-label">Heure</label><input class="form-input" id="vt-heure" type="time" value="10:00"></div></div><div class="form-group"><label class="form-label">Statut</label><div class="statut-choices"><div class="statut-choice sc-conf active" data-s="confirmee" onclick="vtSelSt(this)">Confirmee</div><div class="statut-choice sc-att" data-s="a-confirmer" onclick="vtSelSt(this)">A confirmer</div><div class="statut-choice sc-ann" data-s="annulee" onclick="vtSelSt(this)">Annulee</div></div></div><div class="sep"></div><div class="form-group"><label class="form-label">Feedback visiteur</label><textarea class="form-textarea" id="vt-feedback" placeholder="Impression, objections..."></textarea></div><div class="form-group"><label class="form-label">Suite donnee</label><div class="suite-choices"><button class="suite-choice" data-s="interesse" onclick="vtSelSu(this)">Interesse</button><button class="suite-choice" data-s="offre" onclick="vtSelSu(this)">Offre a venir</button><button class="suite-choice" data-s="sans-suite" onclick="vtSelSu(this)">Sans suite</button><button class="suite-choice" data-s="reflexion" onclick="vtSelSu(this)">En reflexion</button><button class="suite-choice" data-s="2e-visite" onclick="vtSelSu(this)">2e visite</button></div></div><div class="form-group"><label class="form-label">Note interne</label><textarea class="form-textarea" id="vt-note" style="min-height:50px;" placeholder="Note privee..."></textarea></div><div class="modal-actions"><button class="btn btn-outline" onclick="closeModal('modal-visite')">Annuler</button><button class="btn btn-terra" onclick="vtSave()">Enregistrer</button></div></div></div>
 
@@ -4210,19 +4210,12 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     if(c) c.style.display=(col==='clients')?'':'none';
     if(pr) pr.style.display=(col==='produits')?'':'none';
   };
-  window.piPubField=function(){
-    /* v8.38 : le champ est TOUJOURS visible (Laurent ne le retrouvait pas : il n'apparaissait
-       qu'une fois la visibilité déjà passée sur « Agence »). Seule l'étoile « obligatoire »
-       suit la visibilité choisie. */
-    var v=(document.getElementById('pi-vis')||{}).value;
-    var r=document.getElementById('pi-pub-req');
-    if(r) r.style.visibility=(v==='ecran')?'visible':'hidden';
-  };
+  window.piPubField=function(){ /* v8.39 : plus de champ « pub » — identité/lieu affichés le remplacent */ };
   window.piCntUpd=function(){ var e=document.getElementById('pi-content'), c=document.getElementById('pi-cnt'); if(e&&c) c.textContent=120-e.value.length; };
   window.piPubCntUpd=function(){ var e=document.getElementById('pi-pub'), c=document.getElementById('pi-pub-cnt'); if(e&&c) c.textContent=90-e.value.length; };
   function piResetModal(){
     piEditId=null;
-    ['pi-cli','pi-vendeur','pi-adresse','pi-details','pi-pub'].forEach(function(id){ var e=document.getElementById(id); if(e) e.value=''; });
+    ['pi-cli','pi-cli-pub','pi-vendeur','pi-adresse','pi-vend-pub','pi-adr-pub','pi-details'].forEach(function(id){ var e=document.getElementById(id); if(e) e.value=''; });
     piColFields(); piPubField(); piCntUpd(); piPubCntUpd();
     var t=document.getElementById('pi-modal-title'); if(t) t.textContent='Nouveau post-it';
     var b=document.getElementById('pi-save-btn'); if(b) b.textContent='Ajouter';
@@ -4247,11 +4240,13 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     document.getElementById('pi-owner').value=n.owner;
     /* v8.37 : champs structurés */
     document.getElementById('pi-cli').value=n.cli||'';
+    document.getElementById('pi-cli-pub').value=n.cliPub||'';
     document.getElementById('pi-vendeur').value=n.vendeur||'';
     document.getElementById('pi-adresse').value=n.adresse||'';
+    document.getElementById('pi-vend-pub').value=n.vendPub||'';
+    document.getElementById('pi-adr-pub').value=n.adrPub||'';
     document.getElementById('pi-details').value=n.details||'';
-    document.getElementById('pi-pub').value=n.pub||'';
-    piColFields(); piPubField(); piCntUpd(); piPubCntUpd();
+    piColFields(); piCntUpd();
     var t=document.getElementById('pi-modal-title'); if(t) t.textContent='Modifier le post-it';
     var b=document.getElementById('pi-save-btn'); if(b) b.textContent='Enregistrer';
     openModal('modal-postit');
@@ -4262,14 +4257,18 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     /* v8.37 : les règles de validation */
     var _col=document.getElementById('pi-col-sel').value;
     var _cli=(document.getElementById('pi-cli')||{value:''}).value.trim();
+    var _cliPub=(document.getElementById('pi-cli-pub')||{value:''}).value.trim();
     var _vend=(document.getElementById('pi-vendeur')||{value:''}).value.trim();
     var _adr=(document.getElementById('pi-adresse')||{value:''}).value.trim();
+    var _vendPub=(document.getElementById('pi-vend-pub')||{value:''}).value.trim();
+    var _adrPub=(document.getElementById('pi-adr-pub')||{value:''}).value.trim();
     var _det=(document.getElementById('pi-details')||{value:''}).value.trim();
-    var _pub=(document.getElementById('pi-pub')||{value:''}).value.trim();
     var _vis=document.getElementById('pi-vis').value;
-    if(_col==='clients' && !_cli){ toast('Indiquez le nom du client.'); return; }
-    if(_col==='produits' && (!_vend || !_adr)){ toast('Indiquez le nom du vendeur ET l\u2019adresse du bien.'); return; }
-    if(_vis==='ecran' && !_pub){ toast('\u00c9crivez ce qui s\u2019affichera sur l\u2019\u00e9cran Agence.'); return; }
+    /* v8.39 : le rédacteur DÉCIDE ce que les autres (et l'écran Agence) voient — champs affichés obligatoires */
+    if(_col==='clients' && !_cli){ toast('Indiquez le nom et le pr\u00e9nom du client.'); return; }
+    if(_col==='clients' && !_cliPub){ toast('D\u00e9cidez de l\u2019identit\u00e9 AFFICH\u00c9E (ex. \u00ab M. C. \u00bb).'); return; }
+    if(_col==='produits' && (!_vend || !_adr)){ toast('Indiquez le vendeur ET l\u2019adresse du bien.'); return; }
+    if(_col==='produits' && (!_vendPub || !_adrPub)){ toast('D\u00e9cidez de l\u2019identit\u00e9 et du LIEU affich\u00e9s.'); return; }
     if(piEditId!==null){
       if(!piCanEdit()){toast("Réservé à l'administrateur ou au gérant");return;}
       var ed=piNotes.find(function(x){return x.id===piEditId;});
@@ -4280,7 +4279,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
         ed.content=content;
         ed.vis=_vis;
         ed.owner=document.getElementById('pi-owner').value;
-        ed.cli=_cli; ed.vendeur=_vend; ed.adresse=_adr; ed.details=_det; ed.pub=_pub;   /* v8.37 */
+        ed.cli=_cli; ed.cliPub=_cliPub; ed.vendeur=_vend; ed.adresse=_adr; ed.vendPub=_vendPub; ed.adrPub=_adrPub; ed.details=_det;   /* v8.39 */
         ed.updated=new Date().toISOString();
       }
       closeModal('modal-postit');
@@ -4292,7 +4291,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     }
     var note={id:Date.now()+Math.floor(Math.random()*1000),created:new Date().toISOString(),col:_col,color:piColorSel,
       ref:document.getElementById('pi-ref').value.trim(),content:content,
-      cli:_cli,vendeur:_vend,adresse:_adr,details:_det,pub:_pub,   /* v8.37 */
+      cli:_cli,cliPub:_cliPub,vendeur:_vend,adresse:_adr,vendPub:_vendPub,adrPub:_adrPub,details:_det,   /* v8.39 */
       vis:_vis,owner:document.getElementById('pi-owner').value,date:PI_TODAY};
     piNotes.push(note);
     closeModal('modal-postit');
@@ -4419,10 +4418,16 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
           var ocMap={LS:'ls',MA:'ma',LP:'lp',MZ:'mz',JD:'jd',ML:'ml',SB:'sb'};var oc=ocMap[n.owner]||'ls';
           var div=document.createElement('div');
           div.className='postit '+color;div.id='pn-'+n.id;
-          /* v8.37 : ligne d'identification structurée (client OU vendeur+adresse) + détails au survol */
-          var _sub=(n.col==='clients')? (n.cli||'') : ((n.vendeur||'')+(n.vendeur&&n.adresse?' \u2014 ':'')+(n.adresse||''));
-          if(n.details) div.title='\ud83d\udd0e D\u00e9tails : '+n.details;
-          div.innerHTML='<div class="pt-stripe"></div><div class="pt-inner"><div class="pt-top"><span class="pt-badge">'+PI_LABELS[color]+'</span><div class="pt-own '+oc+'" title="Auteur : '+piEsc(n.owner)+'">'+piEsc(n.owner)+'</div></div>'+(_sub?'<div class="pt-ref">'+piEsc(_sub)+(n.details?' <span title="D\u00e9tails internes disponibles \u2014 survolez le post-it">\u24d8</span>':'')+'</div>':'')+(n.ref?'<div class="pt-ref">'+piEsc(n.ref)+'</div>':'')+'<textarea class="pt-text" data-id="'+n.id+'" onchange="piUpdate('+n.id+',this.value)">'+piEsc(n.content)+'</textarea><div class="pt-footer"><span class="pt-date">'+piEsc(n.date)+'</span><span class="pt-vis">'+(n.vis==='equipe'?'Equipe':(n.vis==='ecran'?'Agence':'Prive'))+'</span><span class="pt-actions"><button class="pt-arch pi-admin-action" title="Archiver (retirer du tableau sans supprimer)" onclick="piArch('+n.id+')">🗄</button><button class="pt-edit pi-admin-action" onclick="piEdit('+n.id+')">Modif.</button><button class="pt-del pi-admin-action" onclick="piDel('+n.id+')">Suppr.</button></span></div></div>';
+          /* v8.39 : la ligne d'identification montre CE QUE LE RÉDACTEUR A DÉCIDÉ d'afficher
+             (identité affichée + lieu affiché) — jamais les noms internes. Repli : anciens champs. */
+          var _sub=(n.col==='clients')? (n.cliPub||n.cli||'')
+                  : ((n.vendPub||n.vendeur||'')+((n.vendPub||n.vendeur)&&(n.adrPub||n.adresse)?' \u2014 ':'')+(n.adrPub||n.adresse||''));
+          if(n.details) div.title='Cliquez sur le post-it pour l\u2019ouvrir (d\u00e9tails)';
+          div.addEventListener('click', function(e){
+            if(e.target.closest('textarea,button,input,select')) return;
+            if(window.piView) piView(n.id);
+          });
+          div.innerHTML='<div class="pt-stripe"></div><div class="pt-inner"><div class="pt-top"><span class="pt-badge">'+PI_LABELS[color]+'</span><div class="pt-own '+oc+'" title="Auteur : '+piEsc(n.owner)+'">'+piEsc(n.owner)+'</div></div>'+(_sub?'<div class="pt-ref">'+piEsc(_sub)+(n.details?' <span title="D\u00e9tails internes \u2014 cliquez sur le post-it pour l\u2019ouvrir">\u24d8</span>':'')+'</div>':'')+(n.ref?'<div class="pt-ref">'+piEsc(n.ref)+'</div>':'')+'<textarea class="pt-text" data-id="'+n.id+'" onchange="piUpdate('+n.id+',this.value)">'+piEsc(n.content)+'</textarea><div class="pt-footer"><span class="pt-date">'+piEsc(n.date)+'</span><span class="pt-vis">'+(n.vis==='equipe'?'Equipe':(n.vis==='ecran'?'Agence':'Prive'))+'</span><span class="pt-actions"><button class="pt-arch pi-admin-action" title="Archiver (retirer du tableau sans supprimer)" onclick="piArch('+n.id+')">🗄</button><button class="pt-edit pi-admin-action" onclick="piEdit('+n.id+')">Modif.</button><button class="pt-del pi-admin-action" onclick="piDel('+n.id+')">Suppr.</button></span></div></div>';
           if(canDrag){
             div.draggable=true;
             div.addEventListener('dragstart', function(e){ _piDragId=n.id; div.classList.add('pi-dragging'); try{ e.dataTransfer.setData('text/plain',''+n.id); e.dataTransfer.effectAllowed='move'; }catch(err){} });
@@ -4442,6 +4447,43 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     var ael=document.getElementById('pi-cnt-arch');
     if(ael) ael.textContent=piNotes.filter(function(n){return n.arch&&piCanSee(n);}).length;
     piApplyRole();
+  };
+  /* v8.39 : OUVRIR un post-it d'un clic — tout le monde peut lire ce que le rédacteur a
+     partagé ; l'identité INTERNE (noms complets, adresse exacte) n'est montrée qu'à
+     l'admin, au gérant et au propriétaire du post-it. */
+  window.piView=function(id){
+    var n=piNotes.find(function(x){return x.id===id;}); if(!n) return;
+    var me=(window.ACH_USER&&ACH_USER.initials)||'';
+    var isPub=((window.ACH_USER||{}).key==='public');
+    var canFull=!isPub && (piCanEdit()||n.owner===me);
+    var ov=document.getElementById('pi-view-ov');
+    if(!ov){
+      ov=document.createElement('div'); ov.id='pi-view-ov';
+      ov.style.cssText='position:fixed;inset:0;z-index:9500;background:rgba(26,26,24,.5);display:flex;align-items:center;justify-content:center;padding:20px;';
+      ov.addEventListener('click',function(e){ if(e.target===ov) ov.style.display='none'; });
+      document.body.appendChild(ov);
+    }
+    var colLbl=(n.col==='clients')?'\ud83d\udc64 Client':'\ud83c\udfe0 Produit';
+    var pubId=(n.col==='clients')?(n.cliPub||n.cli||''):((n.vendPub||n.vendeur||'')+((n.adrPub||n.adresse)?(' \u00b7 '+(n.adrPub||n.adresse)):''));
+    var interne='';
+    if(canFull){
+      interne=(n.col==='clients')?(n.cli||''):((n.vendeur||'')+((n.adresse)?(' \u00b7 '+n.adresse):''));
+    }
+    var visLbl=(n.vis==='equipe'?'\u00c9quipe':(n.vis==='ecran'?'Agence (\u00e9cran)':'Priv\u00e9'));
+    ov.innerHTML='<div style="background:var(--blanc,#fdfbf7);border-radius:14px;max-width:560px;width:100%;max-height:84vh;overflow:auto;padding:22px 24px;box-shadow:0 24px 60px rgba(0,0,0,.35);font-family:\'Jost\',sans-serif;" onclick="event.stopPropagation()">'
+      +'<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px;">'
+      +'<div style="font-size:12.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--gris,#6b6b63);">'+colLbl+' \u00b7 '+visLbl+'</div>'
+      +'<button onclick="document.getElementById(\'pi-view-ov\').style.display=\'none\'" style="border:none;background:none;font-size:19px;cursor:pointer;color:var(--gris,#6b6b63);">\u2715</button></div>'
+      +(pubId?('<div style="font-size:16px;font-weight:600;color:var(--noir,#1a1a18);margin-bottom:4px;">'+piEsc(pubId)+' <span style="font-weight:400;font-size:12px;color:var(--gris-2,#a8a49a);">(affich\u00e9)</span></div>'):'')
+      +(interne&&interne!==pubId?('<div style="font-size:13.5px;color:var(--gris,#6b6b63);margin-bottom:4px;">Interne : '+piEsc(interne)+'</div>'):'')
+      +'<div style="font-family:\'Caveat\',cursive;font-size:22px;line-height:1.35;color:#2c2a25;background:#fdf6dc;border-radius:8px;padding:12px 14px;margin:10px 0;white-space:pre-wrap;">'+piEsc(n.content||'')+'</div>'
+      +((n.details&&!isPub)?('<div style="font-size:12.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--gris,#6b6b63);margin-bottom:4px;">D\u00e9tails</div>'
+        +'<div style="font-size:14px;line-height:1.55;color:var(--noir,#1a1a18);white-space:pre-wrap;">'+piEsc(n.details)+'</div>'):'')
+      +'<div style="margin-top:14px;padding-top:10px;border-top:1px solid var(--border,#e5ded3);display:flex;align-items:center;justify-content:space-between;">'
+      +'<span style="font-size:12px;color:var(--gris-2,#a8a49a);">'+piEsc(n.owner||'')+(n.date?(' \u00b7 '+piEsc(n.date)):'')+'</span>'
+      +(piCanEdit()?'<button class="btn btn-outline" style="padding:6px 14px;font-size:13px;" onclick="document.getElementById(\'pi-view-ov\').style.display=\'none\';piEdit('+n.id+')">\u270e Modifier</button>':'')
+      +'</div></div>';
+    ov.style.display='flex';
   };
   window.piUpdate=function(id,val){if(!piCanEdit())return;var n=piNotes.find(function(n){return n.id===id;});if(n){n.content=val;n.updated=new Date().toISOString();piSave();}};
   window.piDel=function(id){
@@ -10898,7 +10940,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     startRealtime();
     var ov=document.getElementById('ach-login-overlay'); if(ov) ov.classList.add('ach-hidden');
     var ub=document.getElementById('ach-userbar'); if(ub) ub.style.display='none';
-    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v8.38';
+    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v8.39';
     flag('Synchronis\u00e9');
     // fin de l'init : on autorise la journalisation des actions
     setTimeout(function(){ installInterceptor._init=false; }, 1500);
@@ -14014,14 +14056,19 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
       var rots=[-2.2,1.6,-1.1,2.4,-1.8,1.2,-2.6,2.0];
       var pins=['#b3392b','#33518a','#3e6b4f','#8a6d2f'];
       function vNote(n,i){ var c=(n.color==='hot'||n.color==='ff')?n.color:'todo';
+        /* v8.39 : l'écran montre l'IDENTITÉ AFFICHÉE et le LIEU AFFICHÉ décidés par le rédacteur,
+           puis les mots-clés. Jamais les noms internes. Repli : l'ancien texte « pub » (v8.37). */
+        var idl=(n.col==='clients')?(n.cliPub||''):((n.vendPub||'')+((n.vendPub&&n.adrPub)?' \u00b7 ':'')+(n.adrPub||''));
         return '<div class="v-note '+c+'" style="transform:rotate('+rots[i%rots.length]+'deg);--vpin:'+pins[i%pins.length]+';">'
-          +'<div class="v-txt">'+_vEsc(n.pub||n.content)+'</div></div>'; }
+          +(idl?('<div class="v-ref">'+_vEsc(idl)+'</div>'):'')
+          +'<div class="v-txt">'+_vEsc(n.content||n.pub||'')+'</div></div>'; }
       var prod=notes.filter(function(n){ return n.col!=='clients'; });
       var cli=notes.filter(function(n){ return n.col==='clients'; });
       h+='<div class="vslide"><div class="v-cork '+size+'">'
+        +'<div class="v-wmfull"><img src="'+wmSrc+'" alt=""></div>'
         +'<div class="v-sepline"></div>'
-        +'<div class="v-half"><div class="v-wmhalf"><img src="'+wmSrc+'" alt=""></div><div class="v-half-lbl">Nos Produits</div><div class="v-board">'+prod.map(vNote).join('')+'</div></div>'
-        +'<div class="v-half"><div class="v-wmhalf"><img src="'+wmSrc+'" alt=""></div><div class="v-half-lbl">Nos Clients</div><div class="v-board">'+cli.map(vNote).join('')+'</div></div>'
+        +'<div class="v-half"><div class="v-half-lbl">Nos Produits</div><div class="v-board">'+prod.map(vNote).join('')+'</div></div>'
+        +'<div class="v-half"><div class="v-half-lbl">Nos Clients</div><div class="v-board">'+cli.map(vNote).join('')+'</div></div>'
         +'<div class="v-wordmk"><img src="'+wordSrc+'" alt=""></div>'
         +'</div></div>';
     }
@@ -16123,8 +16170,10 @@ body.ach-veille-live #agence-wifi, body.ach-veille-live #agence-fs{display:none 
              radial-gradient(ellipse 55% 60% at 74% 0%, #262320 0%, transparent 55%);}
 #ach-veille .v-sepline{position:absolute;left:50%;top:3vh;bottom:3vh;width:1px;
   background:linear-gradient(180deg,transparent,rgba(205,122,82,.4) 20%,rgba(205,122,82,.4) 80%,transparent);}
-#ach-veille .v-wmhalf{position:absolute;top:52%;left:50%;transform:translate(-50%,-50%);pointer-events:none;}
-#ach-veille .v-wmhalf img{height:66vh;opacity:.07;}
+/* v8.39 : UN SEUL grand filigrane plein écran (choix Laurent : les logos par moitié se perdaient
+   derrière les post-its) — bien visible, derrière tout. */
+#ach-veille .v-wmfull{position:absolute;top:50%;left:50%;transform:translate(-50%,-52%);pointer-events:none;}
+#ach-veille .v-wmfull img{height:94vh;opacity:.085;}
 #ach-veille .v-wordmk{position:absolute;bottom:2.6vh;left:50%;transform:translateX(-50%);pointer-events:none;}
 #ach-veille .v-wordmk img{height:6vh;opacity:.35;}
 #ach-veille .v-half{flex:1;display:flex;flex-direction:column;align-items:center;padding:2.4vh 1.4vw 2vh;min-width:0;position:relative;}
@@ -16144,7 +16193,7 @@ body.ach-veille-live #agence-wifi, body.ach-veille-live #agence-fs{display:none 
 #ach-veille .v-note.hot{background:linear-gradient(180deg,#fdec62,#fde84a 60%,#f2d938);}
 #ach-veille .v-note.todo{background:linear-gradient(180deg,#b6d2f4,#a8c8f0 60%,#98b8e2);}
 #ach-veille .v-note.ff{background:linear-gradient(180deg,#f6adc0,#f4a0b4 60%,#e690a6);}
-#ach-veille .v-note .v-ref{font-family:'Jost',sans-serif;font-size:.62em;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:rgba(0,0,0,.5);margin-bottom:.5vh;}
+#ach-veille .v-note .v-ref{font-family:'Jost',sans-serif;font-size:.58em;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:rgba(0,0,0,.55);margin-bottom:.6vh;}
 #ach-veille .v-note .v-txt{font-family:'Caveat',cursive;color:rgba(0,0,0,.8);flex:1;white-space:pre-wrap;word-break:break-word;line-height:1.22;}
 #ach-veille .v-note .v-who{margin-top:1.2vh;font-family:'Jost',sans-serif;font-size:.55em;letter-spacing:.2em;text-transform:uppercase;color:rgba(0,0,0,.45);align-self:flex-end;}
 #ach-veille .v-cork.vn-l .v-note{width:clamp(230px,15.5vw,320px);min-height:23vh;font-size:34px;}
