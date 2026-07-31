@@ -1639,7 +1639,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     </div>
   </div>
   </div>
-  <div class="logo-ver app-ver">Achille App — v8.45</div>
+  <div class="logo-ver app-ver">Achille App — v8.47</div>
 </aside>
 <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Réduire la barre latérale">‹</button>
 
@@ -10990,7 +10990,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     startRealtime();
     var ov=document.getElementById('ach-login-overlay'); if(ov) ov.classList.add('ach-hidden');
     var ub=document.getElementById('ach-userbar'); if(ub) ub.style.display='none';
-    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v8.45';
+    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v8.47';
     flag('Synchronis\u00e9');
     // fin de l'init : on autorise la journalisation des actions
     setTimeout(function(){ installInterceptor._init=false; }, 1500);
@@ -13715,8 +13715,44 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
     }
     try{ pigeRelanceRappel(id||obj.id, suivi); }catch(e){}   /* v7.22 : rappel auto sur les suivis « à relancer » */
     if(id && window.achLockClear) achLockClear(id);
-    closeModal('modal-pige'); pigeRender();
-    if(window.toast) toast(id?'Fiche mise à jour ✓':'Fiche de pige créée ✓');
+    closeModal('modal-pige');
+    /* v8.47 : APRÈS UNE CRÉATION, L'APPLICATION MONTRE LA FICHE — quoi qu'il arrive.
+       Cas réel (Liloé) : fiche bien enregistrée mais créée pendant qu'un onglet de statut,
+       un dossier personnalisé ou une recherche était actif → la nouvelle fiche ne matchait
+       pas la vue courante : « confirmation mais fiche invisible, compteur inchangé ».
+       Désormais : on bascule sur l'onglet du statut de la fiche, on efface recherche et
+       filtres, on revient page 1, on surligne la fiche 3 secondes. Et si MALGRÉ TOUT sa
+       carte n'est pas à l'écran, une alerte le dit avec les infos utiles. */
+    if(!id){
+      try{
+        pgDossier=pgStatutOf(obj)||'tous';
+        pgFilt={sites:[],users:[],villes:[]};
+        var _se=document.getElementById('pg-search'); if(_se) _se.value='';
+        pgPage=1; sortMode='date'; sortDir=-1;
+      }catch(e){}
+    }
+    pigeRender();
+    if(!id){
+      setTimeout(function(){
+        try{
+          var card=document.querySelector('#pige-list .pg-fiche[data-id="'+obj.id+'"]');
+          if(!card){
+            /* repli : certaines cartes n'ont pas data-id → on cherche par le bouton Modifier */
+            var btn=document.querySelector('#pige-list [onclick*="'+obj.id+'"]');
+            card=btn && btn.closest('.pg-fiche');
+          }
+          if(card){
+            card.scrollIntoView({block:'center', behavior:'smooth'});
+            card.style.transition='box-shadow .3s';
+            card.style.boxShadow='0 0 0 3px var(--terra,#b4552d)';
+            setTimeout(function(){ card.style.boxShadow=''; }, 3000);
+          } else {
+            alert('\u26a0\ufe0f Fiche ENREGISTR\u00c9E (elle est bien dans les donn\u00e9es) mais introuvable \u00e0 l\u2019\u00e9cran.\n\nNotez ces infos pour Laurent :\nadresse \u00ab '+(obj.adresse||'')+' \u00bb \u00b7 statut \u00ab '+(obj.statut||'')+' \u00bb \u00b7 onglet \u00ab '+pgDossier+' \u00bb');
+          }
+        }catch(e){}
+      }, 350);
+    }
+    if(window.toast) toast(id?'Fiche mise à jour ✓':'Fiche de pige créée ✓ — affichée à l\u2019écran');
   };
   window.pigeDelete=function(){
     if(!canDel()) return;
@@ -13775,6 +13811,31 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
     var val = which==='photo'?_photo:_plan; if(!val) return;
     var zi=document.getElementById('pg-zoom-img'); if(zi){ zi.src=val; openModal('modal-pige-zoom'); }
   };
+  /* ===== v8.46 : LES PHOTOS VIVENT DANS LE CLOUD (Supabase Storage, coffre « pige-photos »).
+     Demande de Laurent : ne PLUS avoir à supprimer de photos quand le stockage du navigateur
+     sature. Principe : l'image collée est d'abord posée en local (affichage immédiat), puis
+     envoyée au coffre — la fiche ne garde alors que l'ADRESSE (quelques dizaines d'octets au
+     lieu de ~20 Ko). Hors ligne ou coffre absent (SQL pas encore passé) : l'image reste en
+     base64 comme avant, et la migration la rattrapera plus tard. Compromis assumé : le coffre
+     est en lecture publique (adresses non devinables) pour un affichage simple sur tous les
+     postes — ce sont des photos d'annonces déjà publiques. */
+  function pgPhotoUpload(dataUrl){
+    return new Promise(function(res){
+      try{
+        if(!window.ACH_DB || !window.ACH_DB.storage || !navigator.onLine || !dataUrl || dataUrl.indexOf('data:image')!==0){ res(null); return; }
+        fetch(dataUrl).then(function(r){ return r.blob(); }).then(function(blob){
+          var path='p'+Date.now()+'-'+Math.floor(Math.random()*1e6)+'.jpg';
+          return window.ACH_DB.storage.from('pige-photos').upload(path, blob, {contentType:'image/jpeg', upsert:false})
+            .then(function(up){
+              if(up && up.error){ res(null); return; }
+              var pub=window.ACH_DB.storage.from('pige-photos').getPublicUrl(path);
+              var url=pub && pub.data && pub.data.publicUrl;
+              res(url||null);
+            });
+        }).catch(function(){ res(null); });
+      }catch(e){ res(null); }
+    });
+  }
   function pgCompress(file, target){
     var rd=new FileReader();
     rd.onload=function(){ var im=new Image();
@@ -13782,10 +13843,58 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
         cv.width=w; cv.height=Math.round(im.height*r);
         cv.getContext('2d').drawImage(im,0,0,cv.width,cv.height);
         var data=cv.toDataURL('image/jpeg',0.55);
-        if(target==='plan'){ _plan=data; pgPlanShow(); } else { _photo=data; pgPhotoShow(); } };
+        if(target==='plan'){ _plan=data; pgPlanShow(); } else { _photo=data; pgPhotoShow(); }
+        /* v8.46 : envoi au coffre en arrière-plan — si l'utilisateur n'a pas encore enregistré,
+           la fiche stockera directement l'adresse cloud */
+        pgPhotoUpload(data).then(function(url){
+          if(!url) return;
+          if(target==='plan'){ if(_plan===data){ _plan=url; } }
+          else { if(_photo===data){ _photo=url; } }
+        }); };
       im.src=rd.result; };
     rd.readAsDataURL(file);
   }
+  /* v8.46 : MIGRATION AUTOMATIQUE des photos déjà stockées en base64 — une par une, en douceur.
+     Idempotente (seules les images « data: » sont concernées), elle tourne après la connexion ;
+     la synchronisation propage les fiches allégées à tous les postes. */
+  function pgPhotoMigrate(){
+    try{
+      if(!window.ACH_DB || !window.ACH_DB.storage || !navigator.onLine) return;
+      if(sessionStorage.getItem('ach_pgphmig_run')==='1') return;
+      sessionStorage.setItem('ach_pgphmig_run','1');
+      var todo=[];
+      load().forEach(function(r){
+        if(r && r.photo && (''+r.photo).indexOf('data:image')===0) todo.push({id:r.id, f:'photo'});
+        if(r && r.plan && (''+r.plan).indexOf('data:image')===0) todo.push({id:r.id, f:'plan'});
+      });
+      if(!todo.length) return;
+      var done=0;
+      function step(i){
+        if(i>=todo.length){
+          if(done){
+            try{ if(window.achLog) achLog('modification','Pige',done+' photo'+(done>1?'s':'')+' d\u00e9plac\u00e9e'+(done>1?'s':'')+' vers le cloud (all\u00e8gement du poste)'); }catch(e){}
+            pigeRender();
+          }
+          return;
+        }
+        var t=todo[i];
+        var a=load(), r=a.filter(function(x){return x.id===t.id;})[0];
+        if(!r || (''+r[t.f]).indexOf('data:image')!==0){ step(i+1); return; }
+        pgPhotoUpload(r[t.f]).then(function(url){
+          if(url){
+            var a2=load(), r2=a2.filter(function(x){return x.id===t.id;})[0];
+            if(r2 && (''+r2[t.f]).indexOf('data:image')===0){
+              r2[t.f]=url; r2.updated=new Date().toISOString();
+              if(save(a2)) done++;
+            }
+          }
+          setTimeout(function(){ step(i+1); }, 900);
+        });
+      }
+      setTimeout(function(){ step(0); }, 400);
+    }catch(e){}
+  }
+  setTimeout(pgPhotoMigrate, 15000);   /* après la connexion et le premier pull */
   function wireZone(zoneId, target){
     var zone=document.getElementById(zoneId); if(!zone) return;
     zone.addEventListener('paste',function(e){
