@@ -1639,7 +1639,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     </div>
   </div>
   </div>
-  <div class="logo-ver app-ver">Achille App — v8.48</div>
+  <div class="logo-ver app-ver">Achille App — v8.50</div>
 </aside>
 <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Réduire la barre latérale">‹</button>
 
@@ -10990,7 +10990,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     startRealtime();
     var ov=document.getElementById('ach-login-overlay'); if(ov) ov.classList.add('ach-hidden');
     var ub=document.getElementById('ach-userbar'); if(ub) ub.style.display='none';
-    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v8.48';
+    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v8.50';
     flag('Synchronis\u00e9');
     // fin de l'init : on autorise la journalisation des actions
     setTimeout(function(){ installInterceptor._init=false; }, 1500);
@@ -12117,7 +12117,7 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
         </div>
         <div class="form-row">
           <div class="form-group fg-vendeur"><label class="form-label">Vendeur</label><input class="form-input" id="pg-vendeur" placeholder="Nom du vendeur"></div>
-          <div class="form-group fg-tel"><label class="form-label">Téléphone</label><input class="form-input" id="pg-tel" placeholder="06 12 34 56 78" oninput="pigeTelFmt(this);pigeDupCheck()"></div>
+          <div class="form-group fg-tel"><label class="form-label">Téléphone</label><input class="form-input" id="pg-tel" placeholder="06 12 34 56 78" oninput="pigeTelFmt(this);pigeDupCheck()" onblur="this.value=pgTelPretty(this.value);pigeDupCheck()"></div>
         </div>
         <div class="form-row">
           <div class="form-group"><label class="form-label">Attribuée à</label><select class="form-select" id="pg-user"><option value="">— Personne —</option><option value="admin">Laurent Sellem</option><option value="gerant">Marine Attias</option><option value="collaborateur">Marine Zoretic</option><option value="alternant">Liloé Pichat</option></select></div>
@@ -13086,9 +13086,51 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
     var cand=pgDupCandidates(v, id);
     if(!cand.length){ warn.style.display='none'; return; }
     var reasons=[]; cand.forEach(function(c){ c.why.forEach(function(w){ if(reasons.indexOf(w)<0) reasons.push(w); }); });
-    var adrs=cand.slice(0,3).map(function(c){ return '« '+esc(c.r.adresse||c.r.titre||'(sans adresse)')+' »'; }).join(', ');
-    warn.innerHTML='⚠️ <b>Doublon possible</b> — '+reasons.join(', ')+' que sur '+adrs+(cand.length>3?'…':'')+'. Vérifiez qu’il ne s’agit pas du même bien avant de créer une 2ᵉ fiche.';
+    /* v8.49 : chaque fiche suspectée est un LIEN (demande Laurent) — il ouvre un APERÇU
+       par-dessus le formulaire, sans toucher à la saisie en cours. */
+    var adrs=cand.slice(0,3).map(function(c){
+      return '<a href="#" onclick="pgDupPeek(\''+c.r.id+'\');return false;" style="color:#8a5a20;font-weight:600;text-decoration:underline;">« '+esc(c.r.adresse||c.r.titre||'(sans adresse)')+' »</a>';
+    }).join(', ');
+    warn.innerHTML='⚠️ <b>Doublon possible</b> — '+reasons.join(', ')+' que sur '+adrs+(cand.length>3?'…':'')+'. Cliquez pour comparer avant de créer une 2ᵉ fiche.';
     warn.style.display='block';
+  };
+  /* v8.49 : l'aperçu de la fiche suspectée — au-dessus du modal, la saisie reste intacte. */
+  window.pgDupPeek=function(fid){
+    var r=load().filter(function(x){return x.id===fid;})[0]; if(!r) return;
+    var ov=document.getElementById('pg-dup-peek');
+    if(!ov){
+      ov=document.createElement('div'); ov.id='pg-dup-peek';
+      ov.style.cssText='position:fixed;inset:0;z-index:9600;background:rgba(26,26,24,.55);display:flex;align-items:center;justify-content:center;padding:20px;';
+      ov.addEventListener('click',function(e){ if(e.target===ov) ov.style.display='none'; });
+      document.body.appendChild(ov);
+    }
+    function row(l,v){ return v?('<div style="display:flex;gap:10px;font-size:13.5px;margin:3px 0;"><span style="min-width:92px;color:var(--gris,#6b6b63);">'+l+'</span><b style="color:var(--noir,#1a1a18);font-weight:600;">'+esc(''+v)+'</b></div>'):''; }
+    var st=pgStatutDef(pgStatutOf(r));
+    var links=pigeSources(r);
+    ov.innerHTML='<div style="background:var(--blanc,#fdfbf7);border-radius:14px;max-width:520px;width:100%;max-height:86vh;overflow:auto;padding:20px 22px;box-shadow:0 24px 60px rgba(0,0,0,.4);font-family:\'Jost\',sans-serif;" onclick="event.stopPropagation()">'
+      +'<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px;">'
+      +'<div style="font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--gris,#6b6b63);">Fiche existante \u00b7 '+esc(st&&st.lbl||'')+(r.arch?' \u00b7 \ud83d\udce6 archiv\u00e9e':'')+'</div>'
+      +'<button onclick="document.getElementById(\'pg-dup-peek\').style.display=\'none\'" style="border:none;background:none;font-size:19px;cursor:pointer;color:var(--gris,#6b6b63);">\u2715</button></div>'
+      +(r.photo?('<img src="'+r.photo+'" style="width:100%;max-height:180px;object-fit:cover;border-radius:9px;margin-bottom:10px;">'):'')
+      +'<div style="font-family:\'Cormorant Garamond\',serif;font-size:21px;color:var(--noir,#1a1a18);margin-bottom:8px;">'+esc(r.adresse||'(sans adresse)')+(r.ville?(' \u00b7 '+esc(r.ville)):'')+'</div>'
+      +row('Prix', r.prix?fmtN(NUMV(r.prix))+' \u20ac':'')
+      +row('Surface', r.surface?(r.surface+' m\u00b2'):'')
+      +row('Pi\u00e8ces', r.pieces)
+      +row('Vendeur', r.vendeur)
+      +row('T\u00e9l\u00e9phone', r.tel)
+      +row('Liens', links.length? links.length+' source'+(links.length>1?'s':''):'')
+      +row('Cr\u00e9\u00e9e le', (r.created||'').slice(0,10))
+      +'<div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--border,#e5ded3);display:flex;justify-content:space-between;gap:10px;">'
+      +'<button class="btn btn-outline" style="padding:7px 14px;font-size:13px;" onclick="document.getElementById(\'pg-dup-peek\').style.display=\'none\'">Fermer \u2014 continuer ma saisie</button>'
+      +'<button class="btn btn-terra" style="padding:7px 14px;font-size:13px;" onclick="pgDupOpen(\''+r.id+'\')">Ouvrir cette fiche</button>'
+      +'</div></div>';
+    ov.style.display='flex';
+  };
+  window.pgDupOpen=function(fid){
+    if(!confirm('Ouvrir la fiche existante ?\n\n\u26a0 Votre saisie en cours (nouvelle fiche) sera perdue.')) return;
+    var ov=document.getElementById('pg-dup-peek'); if(ov) ov.style.display='none';
+    closeModal('modal-pige');
+    pigeEdit(fid);
   };
   /* v7.34 : le bandeau pro se met à jour avec les mêmes saisies */
   (function(){ var _dc=window.pigeDupCheck; window.pigeDupCheck=function(){ _dc(); try{ pigeProWarn(); }catch(e){} }; })();
@@ -13433,9 +13475,25 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
   };
   window.pigeTelFmt=function(el){
     var digits=(el.value||'').replace(/\D/g,'');
-    if(digits.length>10){ return; }              /* format international/long : on ne touche pas */
+    if(digits.length>10){ return; }              /* format international/long : on ne touche pas (normalisé à la sortie du champ) */
     var out=digits.replace(/(\d{2})(?=\d)/g,'$1 ').trim();
     el.value=out;
+  };
+  /* ══ v8.50 : LE normalisateur de téléphone — quelle que soit la forme saisie
+     (618127977, +33618127977, 06.18.12.79.77, +336.18.12.79.77, 0033 6 18 12 79 77…),
+     on affiche et on enregistre « 06 18 12 79 77 ». Une forme non reconnue (numéro
+     étranger, trop court…) est laissée telle quelle : on n'invente jamais de chiffres.
+     Utilisé partout : sortie du champ Téléphone, enregistrement de la fiche,
+     ✨ Extraire, et reconnaissance auto au collage d'une annonce (v8.48). */
+  window.pgTelPretty=function(v){
+    var s=(v==null?'':''+v).trim(); if(!s) return s;
+    var d=s.replace(/\D/g,'');
+    if(d.slice(0,4)==='0033' && d.length===13) d='0'+d.slice(4);       /* 0033… → 0… */
+    else if(d.slice(0,2)==='33' && d.length===11) d='0'+d.slice(2);    /* +33…  → 0… */
+    else if(d.length===9 && d.charAt(0)!=='0') d='0'+d;                /* 618127977 → 0618127977 */
+    if(d.length===10 && d.charAt(0)==='0' && d.charAt(1)!=='0')
+      return d.replace(/(\d{2})(?=\d)/g,'$1 ').trim();               /* → 06 18 12 79 77 */
+    return s;
   };
   window.pigeSuiviChanged=function(){
     var sv=document.getElementById('pg-suivi'), dt=document.getElementById('pg-suivi-date');
@@ -13640,7 +13698,7 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
       cave:cval('pg-cave'), parking:cval('pg-parking'), balcon:cval('pg-balcon'), terrasse:cval('pg-terrasse'), jardin:cval('pg-jardin'),
       descriptif:(document.getElementById('pg-descriptif').value||'').trim(),
       vendeur:(document.getElementById('pg-vendeur').value||'').trim(),
-      tel:(document.getElementById('pg-tel').value||'').trim(),
+      tel:pgTelPretty((document.getElementById('pg-tel').value||'').trim()),   /* v8.50 : toujours enregistré « 06 18 12 79 77 » */
       user:document.getElementById('pg-user').value||'',
       suivi:suivi,
       suiviDate:suivi? (document.getElementById('pg-suivi-date').value||today()) : '',
@@ -13787,7 +13845,7 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
     if(/balcon/i.test(t)) chk('pg-balcon');
     if(/terrasse|jardin/i.test(t)) chk('pg-terrasse');
     var tel=(t.match(/(?:\+33\s?|0)[1-9](?:[\s.\-]?\d{2}){4}/)||[])[0];
-    if(tel) setIf('pg-tel', tel.replace(/[.\-]/g,' '));
+    if(tel) setIf('pg-tel', pgTelPretty(tel));   /* v8.50 */
     var adr=(t.match(/\b(?:rue|avenue|av\.|boulevard|bd|place|allée|chemin|impasse|quai|villa|square)\s+[A-Za-zÀ-ÿ'’\- ]{2,40}/i)||[])[0];
     if(adr) setIf('pg-adresse', adr.trim());
     pigeCalcM2();
@@ -13916,7 +13974,7 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
           var t=d.value||'';
           var tel=(t.match(/(?:\+33\s?|0)[1-9](?:[\s.\-]?\d{2}){4}/)||[])[0];
           if(!tel) return;
-          e.value=tel.replace(/^\+33\s?/,'0').replace(/[.\-]/g,' ');
+          e.value=pgTelPretty(tel);   /* v8.50 : même normalisation partout */
           try{ window.pigeDupCheck(); }catch(x){}
           if(window.toast) toast('\ud83d\udcde T\u00e9l\u00e9phone reconnu dans l\u2019annonce \u2014 rempli automatiquement');
         }catch(x){}
