@@ -1639,7 +1639,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     </div>
   </div>
   </div>
-  <div class="logo-ver app-ver">Achille App — v8.50</div>
+  <div class="logo-ver app-ver">Achille App — v8.51</div>
 </aside>
 <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Réduire la barre latérale">‹</button>
 
@@ -10990,7 +10990,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     startRealtime();
     var ov=document.getElementById('ach-login-overlay'); if(ov) ov.classList.add('ach-hidden');
     var ub=document.getElementById('ach-userbar'); if(ub) ub.style.display='none';
-    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v8.50';
+    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v8.51';
     flag('Synchronis\u00e9');
     // fin de l'init : on autorise la journalisation des actions
     setTimeout(function(){ installInterceptor._init=false; }, 1500);
@@ -13120,10 +13120,12 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
       +row('T\u00e9l\u00e9phone', r.tel)
       +row('Liens', links.length? links.length+' source'+(links.length>1?'s':''):'')
       +row('Cr\u00e9\u00e9e le', (r.created||'').slice(0,10))
-      +'<div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--border,#e5ded3);display:flex;justify-content:space-between;gap:10px;">'
-      +'<button class="btn btn-outline" style="padding:7px 14px;font-size:13px;" onclick="document.getElementById(\'pg-dup-peek\').style.display=\'none\'">Fermer \u2014 continuer ma saisie</button>'
-      +'<button class="btn btn-terra" style="padding:7px 14px;font-size:13px;" onclick="pgDupOpen(\''+r.id+'\')">Ouvrir cette fiche</button>'
-      +'</div></div>';
+      +'<div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--border,#e5ded3);display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:8px;">'
+      +'<button class="btn btn-outline" style="padding:7px 12px;font-size:13px;" onclick="document.getElementById(\'pg-dup-peek\').style.display=\'none\'">Fermer \u2014 continuer ma saisie</button>'
+      +'<div style="display:flex;gap:8px;flex-wrap:wrap;">'
+      +'<button class="btn btn-outline" style="padding:7px 12px;font-size:13px;" onclick="pgDupTab(\''+r.id+'\')">Ouvrir dans un onglet \u2197</button>'
+      +'<button class="btn btn-terra" style="padding:7px 12px;font-size:13px;" onclick="pgDupMerge(\''+r.id+'\')">\ud83d\udd00 Fusionner dans cette fiche</button>'
+      +'</div></div></div>';
     ov.style.display='flex';
   };
   window.pgDupOpen=function(fid){
@@ -13132,6 +13134,78 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
     closeModal('modal-pige');
     pigeEdit(fid);
   };
+  /* \u2550\u2550 v8.51 : depuis l'aper\u00e7u doublon, OUVRIR la fiche dans un NOUVEL ONGLET (la saisie
+     en cours reste intacte dans cet onglet-ci) \u2014 lien profond #pg=<id> trait\u00e9 au d\u00e9marrage. */
+  window.pgDupTab=function(fid){
+    var base=location.href.split('#')[0];
+    window.open(base+'#pg='+encodeURIComponent(fid),'_blank');
+  };
+  /* \u2550\u2550 v8.51 : FUSIONNER LA SAISIE EN COURS dans la fiche existante (demande Laurent).
+     R\u00e8gles \u2014 les m\u00eames que la fusion de fiches v7.35, adapt\u00e9es \u00e0 une saisie :
+     \u2022 la fiche existante est CONSERV\u00c9E ; ses champs vides sont compl\u00e9t\u00e9s par la saisie ;
+     \u2022 liens/sources r\u00e9unis sans doublon ; caract\u00e9ristiques (cave, parking\u2026) au max des deux ;
+     \u2022 PRIX : le nouveau relev\u00e9 fait foi (suivi des baisses/hausses), l'ancien est not\u00e9 en commentaire ;
+     \u2022 aucune 2\u1d49 fiche n'est cr\u00e9\u00e9e ; fiche archiv\u00e9e \u2192 r\u00e9activ\u00e9e (l'annonce revit) ;
+     \u2022 en \u00c9DITION d'une fiche existante \u2192 on renvoie vers la fusion de fiches classique. */
+  window.pgDupMerge=function(fid){
+    var editId=(document.getElementById('pg-edit-id')||{}).value||'';
+    if(editId===fid) return;
+    if(editId){
+      var pk0=document.getElementById('pg-dup-peek'); if(pk0) pk0.style.display='none';
+      pigeMergeOpen(); return;
+    }
+    var all=load(); var r=all.filter(function(x){return x.id===fid;})[0]; if(!r) return;
+    if(!confirm('Fusionner votre saisie dans la fiche existante \u00ab '+(r.adresse||r.ville||'?')+' \u00bb ?\n\n\u2022 La fiche existante est conserv\u00e9e et compl\u00e9t\u00e9e (liens ajout\u00e9s, champs vides remplis).\n\u2022 Si le prix relev\u00e9 diff\u00e8re, la fiche prend le nouveau prix et l\u2019ancien est not\u00e9 en commentaire.\n\u2022 Aucune 2\u1d49 fiche n\u2019est cr\u00e9\u00e9e.')) return;
+    function gv(i){ var e=document.getElementById(i); return e?(''+(e.value||'')).trim():''; }
+    var vals={ adresse:gv('pg-adresse'), ville:villeCanon(gv('pg-ville')), prix:num(gv('pg-prix'))||'',
+      surface:num(gv('pg-surface'))||'', pieces:gv('pg-pieces'), chambres:gv('pg-chambres'),
+      etage:gv('pg-etage'), annee:gv('pg-annee'), dpe:gv('pg-dpe'),
+      descriptif:gv('pg-descriptif'), vendeur:gv('pg-vendeur'), tel:pgTelPretty(gv('pg-tel')),
+      fipac:gv('pg-fipac'), photo:_photo||'', plan:_plan||'' };
+    ['adresse','ville','surface','pieces','chambres','etage','annee','dpe','descriptif','vendeur','tel','fipac','photo','plan'].forEach(function(f){
+      if((r[f]==null||r[f]==='')&&vals[f]!=null&&vals[f]!=='') r[f]=vals[f];
+    });
+    ['cave','parking','balcon','terrasse','jardin'].forEach(function(f){
+      var e=document.getElementById('pg-'+f); var v=e?(parseInt(e.value||0,10)||0):0;
+      r[f]=Math.max(parseInt(r[f]||0,10)||0, v);
+    });
+    var newP=NUMV(vals.prix), oldP=NUMV(r.prix);
+    if(newP && !oldP) r.prix=vals.prix;
+    else if(newP && oldP && newP!==oldP){
+      r.notes=r.notes||[];
+      r.notes.push({u:realName(),t:Date.now(),txt:'\ud83d\udd00 Fusion : prix relev\u00e9 '+fmtN(newP)+' \u20ac (pr\u00e9c\u00e9demment '+fmtN(oldP)+' \u20ac)'});
+      r.prix=vals.prix;
+    }
+    var seen={}, links=[];
+    pigeSources(r).concat(pigeLinksRead()).forEach(function(l){ if(!l.url) return; var k=pgNormUrl(l.url); if(seen[k]) return; seen[k]=1; links.push({src:l.src||'manuel',url:l.url}); });
+    r.links=links.filter(function(l){return (l.src||'')!=='fipac';});
+    r.src=(r.links[0]&&r.links[0].src)||r.src||'manuel';
+    r.url=(r.links[0]&&r.links[0].url)||'';
+    if(window._pgNewComs&&window._pgNewComs.length){ r.notes=(r.notes||[]).concat(window._pgNewComs); window._pgNewComs=[]; }
+    if(r.arch) delete r.arch;   /* on vient de la revoir en annonce \u2192 elle sort des archives */
+    r.updated=new Date().toISOString();
+    save(all);
+    var pk=document.getElementById('pg-dup-peek'); if(pk) pk.style.display='none';
+    closeModal('modal-pige');
+    pigeRender();
+    if(window.toast) toast('\ud83d\udd00 Saisie fusionn\u00e9e dans \u00ab '+(r.adresse||r.ville||'la fiche')+' \u00bb \u2014 aucune 2\u1d49 fiche cr\u00e9\u00e9e');
+    try{ if(window.achLog) achLog('modification','Pige','fusion d\u2019une saisie dans : '+(r.adresse||'')); }catch(e){}
+    setTimeout(function(){ try{ pigeEdit(fid); }catch(e){} },150);
+  };
+  /* \u2550\u2550 v8.51 : lien profond #pg=<id> \u2014 ouvert dans un nouvel onglet, l'app attend d'\u00eatre
+     connect\u00e9e puis ouvre la fiche demand\u00e9e. Silencieux si la fiche n'existe pas / pas de droits. */
+  (function(){
+    var m=(location.hash||'').match(/^#pg=([A-Za-z0-9%\-_]+)$/); if(!m) return;
+    var fid=decodeURIComponent(m[1]); var tries=0;
+    var it=setInterval(function(){
+      tries++;
+      if(window.ACH_USER && window.rapGo){
+        clearInterval(it);
+        try{ history.replaceState(null,'',location.pathname+location.search); }catch(e){}
+        setTimeout(function(){ try{ rapGo('pige', fid); }catch(e){} }, 400);
+      } else if(tries>120){ clearInterval(it); }
+    },500);
+  })();
   /* v7.34 : le bandeau pro se met à jour avec les mêmes saisies */
   (function(){ var _dc=window.pigeDupCheck; window.pigeDupCheck=function(){ _dc(); try{ pigeProWarn(); }catch(e){} }; })();
   var UCOL={admin:'#4c533b',gerant:'#6b7453',collaborateur:'#b47360',alternant:'#b0883b'};
