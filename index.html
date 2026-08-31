@@ -650,6 +650,16 @@ body.sb-collapsed .sidebar::-webkit-scrollbar{width:3px;}
 /* v7.36 : Direction (LS+MA) + blocs masqués « Privé » */
 .et-direction{background:#4a3f5e;color:#fff;}
 .month-event.et-masked{background:#9a948c;color:#fff;cursor:default;}
+/* v8.52 : fêtes religieuses dans le Planning */
+.month-cell{position:relative;}
+.week-allday-cell{position:relative;}
+.plan-fete{font-size:10.5px;padding:1.5px 6px;border-radius:3px;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:500;font-family:'Jost',sans-serif;}
+.pf-j{background:#e3ecf2;color:#3c637c;} .pf-c{background:#f2ead6;color:#7c5c22;} .pf-m{background:#dcebe2;color:#1f4e38;}
+.plan-fete-dot{position:absolute;top:5px;right:6px;font-size:11px;line-height:1;opacity:.75;cursor:help;}
+.plan-fete-badge{font-size:11px;border-radius:20px;padding:1px 8px;font-weight:500;}
+.plan-fetes-btn{font-family:'Jost',sans-serif;font-size:12px;border:1.5px solid var(--gris-2);background:#fff;border-radius:20px;padding:4px 12px;color:var(--gris);cursor:pointer;transition:all .15s;}
+.plan-fetes-btn:hover{border-color:var(--terra);color:var(--terra);}
+.plan-fetes-btn.on{border-color:var(--terra);background:var(--terra);color:#fff;}
 .cal-event.et-maskblock{opacity:.8;cursor:default;}
 .cal-event.et-maskblock .cal-event-title{font-style:italic;}
 
@@ -1639,7 +1649,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     </div>
   </div>
   </div>
-  <div class="logo-ver app-ver">Achille App — v8.51</div>
+  <div class="logo-ver app-ver">Achille App — v8.52</div>
 </aside>
 <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Réduire la barre latérale">‹</button>
 
@@ -2677,6 +2687,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
           <button class="plan-view-btn" onclick="planSetView('list',this)">Liste</button>
         </div>
         <div style="width:1px;height:20px;background:var(--border);flex-shrink:0;"></div>
+        <button class="plan-fetes-btn" id="plan-fetes-btn" style="display:none;flex-shrink:0;" onclick="planFetesToggle()">🕊 Fêtes religieuses</button>
         <div class="plan-users" id="plan-user-chips" style="flex-shrink:0;"></div>
         <button class="plan-add-btn" onclick="planQuickAdd(planToday(),9)" style="flex-shrink:0;margin-left:auto;">+ Événement</button>
       </div>
@@ -5915,6 +5926,89 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
   }
   function planAddDays(d,n){ var r=new Date(d); r.setDate(r.getDate()+n); return r; }
   function planFmt(d){ return achDayFR(d); }  /* v7.40 : jour à l'heure de PARIS (avant : UTC → « aujourd'hui » entouré sur le mauvais jour) */
+  /* ══ v8.52 : FÊTES RELIGIEUSES dans le Planning (maquette v2 validée par Laurent).
+     UN bouton « 🕊 Fêtes religieuses », toutes confessions réunies, éteint par défaut.
+     Éteint : pastille ✡ ✝ ☪ dans le coin du jour, nom au survol. Allumé : bandeaux nommés.
+     Choix mémorisé PAR POSTE (clé locale non synchronisée). JAMAIS sur le compte Agence.
+     Repères non cliquables — ils n'empêchent jamais de poser un rendez-vous.
+     Dates vérifiées (Chabad.org pour les fêtes juives ; fêtes musulmanes fixées à
+     l'observation de la lune → mention « à confirmer »). Couverture : sept. 2026 → fin 2027. */
+  var FETES_REL=(function(){
+    var M={};
+    function add(ds,t,n){ (M[ds]=M[ds]||[]).push({t:t,n:n}); }
+    function range(from,to,t,n){ var d=new Date(from+'T12:00:00'), e=new Date(to+'T12:00:00');
+      while(d<=e){ add(d.toISOString().slice(0,10),t,n); d.setDate(d.getDate()+1); } }
+    /* — Juives (commencent la veille au soir) — */
+    add('2026-09-11','j','Veille de Roch Hachana');
+    add('2026-09-12','j','Roch Hachana'); add('2026-09-13','j','Roch Hachana');
+    add('2026-09-20','j','Veille de Kippour'); add('2026-09-21','j','Yom Kippour');
+    add('2026-09-25','j','Veille de Souccot'); range('2026-09-26','2026-10-02','j','Souccot');
+    add('2026-10-03','j','Chemini Atséret'); add('2026-10-04','j','Sim’hat Torah');
+    range('2026-12-05','2026-12-12','j','Hanouccah');
+    add('2027-03-23','j','Pourim');
+    add('2027-04-21','j','Veille de Pessah'); range('2027-04-22','2027-04-29','j','Pessah');
+    add('2027-06-10','j','Veille de Chavouot'); add('2027-06-11','j','Chavouot'); add('2027-06-12','j','Chavouot');
+    add('2027-10-01','j','Veille de Roch Hachana'); add('2027-10-02','j','Roch Hachana'); add('2027-10-03','j','Roch Hachana');
+    add('2027-10-10','j','Veille de Kippour'); add('2027-10-11','j','Yom Kippour');
+    add('2027-10-15','j','Veille de Souccot'); range('2027-10-16','2027-10-22','j','Souccot');
+    add('2027-10-23','j','Chemini Atséret'); add('2027-10-24','j','Sim’hat Torah');
+    range('2027-12-25','2027-12-31','j','Hanouccah');
+    /* — Catholiques — */
+    add('2026-09-29','c','Saint Michel');
+    add('2026-11-01','c','Toussaint');
+    add('2026-11-29','c','1ᵉʳ dimanche de l’Avent');
+    add('2026-12-25','c','Noël');
+    add('2027-01-06','c','Épiphanie');
+    add('2027-02-10','c','Mercredi des Cendres');
+    add('2027-03-21','c','Rameaux');
+    add('2027-03-28','c','Pâques'); add('2027-03-29','c','Lundi de Pâques');
+    add('2027-05-06','c','Ascension');
+    add('2027-05-16','c','Pentecôte'); add('2027-05-17','c','Lundi de Pentecôte');
+    add('2027-08-15','c','Assomption');
+    add('2027-11-01','c','Toussaint');
+    add('2027-11-28','c','1ᵉʳ dimanche de l’Avent');
+    add('2027-12-25','c','Noël');
+    /* — Musulmanes — */
+    add('2027-02-08','m','Début du Ramadan (à confirmer)');
+    add('2027-03-10','m','Aïd el-Fitr (à confirmer)');
+    add('2027-05-17','m','Aïd el-Adha (à confirmer)');
+    add('2027-08-15','m','Mawlid (à confirmer)');
+    return M;
+  })();
+  var FETES_ICO={j:'✡',c:'✝',m:'☪'};
+  function planFetesAllowed(){ return (window.ACH_USER||{}).key!=='public'; }   /* jamais sur le compte Agence */
+  function planFetesOn(){ try{ return planFetesAllowed() && localStorage.getItem('plan_fetes_on')==='1'; }catch(e){ return false; } }
+  window.planFetesToggle=function(){
+    try{ localStorage.setItem('plan_fetes_on', planFetesOn()?'0':'1'); }catch(e){}
+    planRender();
+  };
+  function planFetesBtn(){
+    var b=document.getElementById('plan-fetes-btn'); if(!b) return;
+    b.style.display=planFetesAllowed()?'':'none';
+    b.classList.toggle('on', planFetesOn());
+  }
+  function planFetesOf(ds){ return planFetesAllowed()? (FETES_REL[ds]||[]) : []; }
+  function planFetesBands(ds,small){
+    if(!planFetesOn()) return '';
+    return planFetesOf(ds).map(function(f){
+      return '<div class="plan-fete pf-'+f.t+'"'+(small?' style="font-size:10px;"':'')+' title="Repère — non cliquable">'+FETES_ICO[f.t]+' '+f.n+'</div>';
+    }).join('');
+  }
+  function planFetesDot(ds){
+    if(planFetesOn()) return '';
+    var f=planFetesOf(ds); if(!f.length) return '';
+    var names=f.map(function(x){ return FETES_ICO[x.t]+' '+x.n; }).join(' · ');
+    var icos=[]; f.forEach(function(x){ if(icos.indexOf(FETES_ICO[x.t])<0) icos.push(FETES_ICO[x.t]); });
+    return '<span class="plan-fete-dot" title="'+names.replace(/"/g,'&quot;')+'">'+icos.join('')+'</span>';
+  }
+  function planFetesListMark(ds){
+    var f=planFetesOf(ds); if(!f.length) return '';
+    if(!planFetesOn()){
+      var icos=[]; f.forEach(function(x){ if(icos.indexOf(FETES_ICO[x.t])<0) icos.push(FETES_ICO[x.t]); });
+      return ' <span style="font-size:12px;opacity:.7;cursor:help;" title="'+f.map(function(x){return x.n;}).join(' · ').replace(/"/g,'&quot;')+'">'+icos.join('')+'</span>';
+    }
+    return f.map(function(x){ return ' <span class="plan-fete-badge pf-'+x.t+'">'+FETES_ICO[x.t]+' '+x.n+'</span>'; }).join('');
+  }
   function planToday(){ return planFmt(new Date()); }
   window.planFmt = planFmt;
   window.planToday = planToday;
@@ -6031,7 +6125,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
         if(planVisib(e)==='masked') return '<div class="month-event et-masked" onclick="planPrivateInfo(event)" style="font-size:10px;">🔒 Privé</div>';
         return '<div class="month-event '+t.cls+'" onclick="planEditEvent(\''+e.id+'\')" style="font-size:10px;">'+t.icon+' '+escH(e.title)+'</div>';
       }).join('');
-      hdr+='<div class="week-allday-cell" onclick="if(event.target===this)planQuickAddAllDay(\''+ds+'\')" title="Cliquez pour créer un événement sur toute la journée">'+cells+'</div>';
+      hdr+='<div class="week-allday-cell" onclick="if(event.target===this)planQuickAddAllDay(\''+ds+'\')" title="Cliquez pour créer un événement sur toute la journée">'+planFetesDot(ds)+planFetesBands(ds,true)+cells+'</div>';
     });
     hdr+='</div>';
 
@@ -6086,7 +6180,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     var cells=[];
     for(var i=0;i<startDow;i++) cells.push({d:planAddDays(first,-startDow+i),other:true});
     for(var d=1;d<=last.getDate();d++) cells.push({d:new Date(y,m,d),other:false});
-    while(cells.length%7!==0) cells.push({d:planAddDays(last,cells.length-startDow-last.getDate()),other:true});
+    while(cells.length%7!==0) cells.push({d:planAddDays(last,cells.length-startDow-last.getDate()+1),other:true});   /* v8.52 : +1 — les cases grisées de fin de mois commençaient par DUPLIQUER le dernier jour (« 30 » deux fois) */
 
     var DOWS=['Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi','Dimanche'];  /* v7.44 : jours en entier */
     var h='<div class="month-grid"><div class="month-header">';
@@ -6098,6 +6192,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
       var isToday=planIsToday(cell.d);
       h+='<div class="month-cell'+(cell.other?' other-month':'')+(isToday?' today':'')+'" onclick="planQuickAdd(\''+ds+'\',9)">';
       h+='<div class="month-cell-num">'+cell.d.getDate()+'</div>';
+      h+=planFetesDot(ds)+planFetesBands(ds);   /* v8.52 */
       dayEvs.slice(0,3).forEach(function(e){
         var t=PLAN_TYPES[e.type]||PLAN_TYPES.visite;
         h+= (planVisib(e)==='masked')
@@ -6113,6 +6208,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
 
   function planRender(){
     planPrivMigrate();
+    planFetesBtn();   /* v8.52 */
     planRenderLabel();
     document.getElementById('plan-cal').style.display = (planView==='list') ? 'none' : '';
     var pl = document.getElementById('plan-list');
@@ -6146,7 +6242,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
       var d = new Date(ev.date+'T12:00:00');
       var dateStr = d.toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
       if(ev.date !== lastDate){
-        html += '<div style="font-family:Cormorant Garamond,serif;font-size:15px;font-weight:600;color:var(--terra);margin:18px 0 8px;border-bottom:1px solid var(--beige-3);padding-bottom:4px;text-transform:capitalize;">'+dateStr+'</div>';
+        html += '<div style="font-family:Cormorant Garamond,serif;font-size:15px;font-weight:600;color:var(--terra);margin:18px 0 8px;border-bottom:1px solid var(--beige-3);padding-bottom:4px;text-transform:capitalize;">'+dateStr+planFetesListMark(ev.date)+'</div>';   /* v8.52 */
         lastDate = ev.date;
       }
       var type = ev.type||'';
@@ -10990,7 +11086,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     startRealtime();
     var ov=document.getElementById('ach-login-overlay'); if(ov) ov.classList.add('ach-hidden');
     var ub=document.getElementById('ach-userbar'); if(ub) ub.style.display='none';
-    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v8.51';
+    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v8.52';
     flag('Synchronis\u00e9');
     // fin de l'init : on autorise la journalisation des actions
     setTimeout(function(){ installInterceptor._init=false; }, 1500);
