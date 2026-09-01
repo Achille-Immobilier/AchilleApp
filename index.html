@@ -1649,7 +1649,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     </div>
   </div>
   </div>
-  <div class="logo-ver app-ver">Achille App — v8.52</div>
+  <div class="logo-ver app-ver">Achille App — v8.53</div>
 </aside>
 <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Réduire la barre latérale">‹</button>
 
@@ -2687,8 +2687,8 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
           <button class="plan-view-btn" onclick="planSetView('list',this)">Liste</button>
         </div>
         <div style="width:1px;height:20px;background:var(--border);flex-shrink:0;"></div>
-        <button class="plan-fetes-btn" id="plan-fetes-btn" style="display:none;flex-shrink:0;" onclick="planFetesToggle()">🕊 Fêtes religieuses</button>
         <div class="plan-users" id="plan-user-chips" style="flex-shrink:0;"></div>
+        <button class="plan-fetes-btn" id="plan-fetes-btn" style="display:none;flex-shrink:0;" onclick="planFetesToggle()">🕊 Fêtes religieuses</button>
         <button class="plan-add-btn" onclick="planQuickAdd(planToday(),9)" style="flex-shrink:0;margin-left:auto;">+ Événement</button>
       </div>
 
@@ -11086,7 +11086,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     startRealtime();
     var ov=document.getElementById('ach-login-overlay'); if(ov) ov.classList.add('ach-hidden');
     var ub=document.getElementById('ach-userbar'); if(ub) ub.style.display='none';
-    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v8.52';
+    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v8.53';
     flag('Synchronis\u00e9');
     // fin de l'init : on autorise la journalisation des actions
     setTimeout(function(){ installInterceptor._init=false; }, 1500);
