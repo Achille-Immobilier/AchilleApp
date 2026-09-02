@@ -1662,7 +1662,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     </div>
   </div>
   </div>
-  <div class="logo-ver app-ver">Achille App — v8.56</div>
+  <div class="logo-ver app-ver">Achille App — v8.58</div>
 </aside>
 <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Réduire la barre latérale">‹</button>
 
@@ -11160,7 +11160,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     startRealtime();
     var ov=document.getElementById('ach-login-overlay'); if(ov) ov.classList.add('ach-hidden');
     var ub=document.getElementById('ach-userbar'); if(ub) ub.style.display='none';
-    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v8.56';
+    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v8.58';
     flag('Synchronis\u00e9');
     // fin de l'init : on autorise la journalisation des actions
     setTimeout(function(){ installInterceptor._init=false; }, 1500);
@@ -12258,7 +12258,7 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
     <div class="pige-grid">
       <div class="pige-col">
         <div class="form-row">
-          <div class="form-group" style="flex:1.7;position:relative;"><label class="form-label">Adresse ou secteur <span class="pg-maps-open" onclick="pigeMapsForm(event)" title="Ouvre Google Maps sur l'adresse saisie (nouvel onglet)">🗺 Google Maps ↗</span></label><input class="form-input" id="pg-adresse" autocomplete="off" oninput="pigeAdrAC(this.value);pigeDupCheck()" onblur="setTimeout(pigeAdrHide,180)" placeholder="Ex. 12 rue de Chartres — ou « secteur Trocadéro »"><div id="pg-ac-list" style="display:none;position:absolute;top:100%;left:0;right:0;z-index:40;background:#fff;border:1px solid var(--beige-3);border-radius:0 0 7px 7px;max-height:190px;overflow-y:auto;box-shadow:0 8px 20px rgba(0,0,0,.12);"></div></div>
+          <div class="form-group" style="flex:1.7;position:relative;"><label class="form-label">Adresse ou secteur <span class="pg-maps-open" onclick="pigeMapsForm(event)" title="Ouvre Google Maps sur l'adresse saisie (nouvel onglet)">🗺 Google Maps ↗</span><span class="pg-maps-open" onclick="pigeSectoForm(event)" title="Secteur, transports, écoles — sectorisation de l'adresse saisie (nouvel onglet)">🧭 Sectorisation ↗</span></label><input class="form-input" id="pg-adresse" autocomplete="off" oninput="pigeAdrAC(this.value);pigeDupCheck()" onblur="setTimeout(pigeAdrHide,180)" placeholder="Ex. 12 rue de Chartres — ou « secteur Trocadéro »"><div id="pg-ac-list" style="display:none;position:absolute;top:100%;left:0;right:0;z-index:40;background:#fff;border:1px solid var(--beige-3);border-radius:0 0 7px 7px;max-height:190px;overflow-y:auto;box-shadow:0 8px 20px rgba(0,0,0,.12);"></div></div>
           <div class="form-group" style="flex:1;"><label class="form-label">Ville / arrondissement</label><input class="form-input" id="pg-ville" placeholder="Neuilly, Paris 16e…"></div>
         </div>
         <div class="form-group"><label class="form-label">Liens &amp; sources <span style="font-weight:400;color:var(--gris-2);font-size:11px;">— un même bien peut être publié sur plusieurs sites</span></label>
@@ -12344,11 +12344,11 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
   /* v7.23 : label = singulier (une fiche) ; pl = pluriel (onglets de la barre de dossiers)
      v7.24 : statut « Terminé » SUPPRIMÉ (doublon des Archives) — les anciennes fiches Terminé sont archivées automatiquement */
   var PG_STATUTS=[
+    {k:'encours', label:'En cours', pl:'En cours',  col:'#2e6e50', ico:'⏳'},   /* v8.58 : ordre des dossiers voulu par Laurent — En cours, Chauds, Réticents, Tous */
     {k:'chaud',   label:'Chaud',    pl:'Chauds',    col:'#a03222', ico:'🔥'},
-    {k:'encours', label:'En cours', pl:'En cours',  col:'#2e6e50', ico:'⏳'},
     {k:'offline', label:'Réticent', pl:'Réticents', col:'#4a4a48', ico:'🌙'}   /* v8.19 : renommé (ex-« En veille », ex-Offline) — bien noté pour information, propriétaire pas ouvert aux agences (ou pas à nous) */
   ];
-  function pgStatutDef(k){ for(var i=0;i<PG_STATUTS.length;i++){ if(PG_STATUTS[i].k===k) return PG_STATUTS[i]; } return PG_STATUTS[1]; }
+  function pgStatutDef(k){ for(var i=0;i<PG_STATUTS.length;i++){ if(PG_STATUTS[i].k===k) return PG_STATUTS[i]; } return PG_STATUTS[0]; }   /* v8.58 : repli = « En cours » (désormais en tête du tableau) */
   function pgStatutOf(r){ return (r&&r.statut)||'encours'; }
   var pgDossier='tous';   /* filtre dossier courant : 'tous' | statut | 'd:'+id */
   var pgPage=1;
@@ -12769,12 +12769,14 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
     var doss=dossLoad();
     function dot(col){ return '<span class="pg-fold-dot" style="background:'+col+';"></span>'; }
     var onTous=(pgDossier==='tous');
-    var html='<button class="pg-fold'+(onTous?' on':'')+'" onclick="pigeDossPick(\'tous\')">'+(onTous?'🗂':'🗃')+' Tous <b>'+cnt.tous+'</b></button>';
+    /* v8.58 : ordre voulu par Laurent — En cours, Chauds, Réticents, PUIS Tous */
+    var html='';
     PG_STATUTS.forEach(function(s){
       var on=(pgDossier===s.k);
       html+='<button class="pg-fold'+(on?' on':'')+'" style="border-bottom:3px solid '+s.col+';'+(on?'background:'+s.col+'14;color:'+s.col+';':'')+'" onclick="pigeDossPick(\''+s.k+'\')">'
         +dot(s.col)+' '+(s.pl||s.label)+' <b>'+(cnt[s.k]||0)+'</b></button>';
     });
+    html+='<button class="pg-fold'+(onTous?' on':'')+'" onclick="pigeDossPick(\'tous\')">'+(onTous?'🗂':'🗃')+' Tous <b>'+cnt.tous+'</b></button>';
     /* v8.28 (demande Laurent) : le bouton de creation de dossier est reduit a un simple ＋ et
        remonte JUSTE APRES « Reticents » — il marque ainsi la frontiere entre les dossiers
        automatiques (a gauche) et les dossiers personnalises (a droite). */
@@ -13310,6 +13312,52 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
     var base=location.href.split('#')[0];
     window.open(base+'#pg='+encodeURIComponent(fid),'_blank');
   };
+  /* ══ v8.57 : SECTORISATION EN UN CLIC depuis la pige (demande Laurent).
+     Ouvre la page Sectorisation dans un NOUVEL ONGLET (la pige reste ouverte telle quelle),
+     adresse pré-remplie et recherche lancée automatiquement (lien profond #secto=…). */
+  window.pgSectoAddr=function(addr){
+    addr=(''+(addr||'')).trim();
+    if(!addr){ if(window.toast) toast('Renseignez d\u2019abord une adresse ou une ville'); return; }
+    var base=location.href.split('#')[0];
+    window.open(base+'#secto='+encodeURIComponent(addr),'_blank');
+  };
+  window.pgSectoTab=function(fid){
+    var r=load().filter(function(x){return x.id===fid;})[0]; if(!r) return;
+    var addr=(r.adresse||'').trim();
+    var ville=(r.ville||'').trim().replace(/\s*\(\d{5}\)\s*$/,'');
+    pgSectoAddr(addr? (addr+(ville?', '+ville:'')) : ville);
+  };
+  window.pigeSectoForm=function(ev){
+    try{ if(ev) ev.stopPropagation(); }catch(e){}
+    var addr=((document.getElementById('pg-adresse')||{}).value||'').trim();
+    var ville=((document.getElementById('pg-ville')||{}).value||'').trim().replace(/\s*\(\d{5}\)\s*$/,'');
+    pgSectoAddr(addr? (addr+(ville?', '+ville:'')) : ville);
+  };
+  /* lien profond #secto=<adresse> : au démarrage, on attend l'app connectée puis on ouvre
+     la Sectorisation, on remplit l'adresse et on lance la recherche. */
+  (function(){
+    var m=(location.hash||'').match(/^#secto=(.+)$/); if(!m) return;
+    var addr=''; try{ addr=decodeURIComponent(m[1]); }catch(e){ return; }
+    var tries=0;
+    var it=setInterval(function(){
+      tries++;
+      if(window.ACH_USER && window.sectGo && window.navTo){
+        clearInterval(it);
+        try{ history.replaceState(null,'',location.pathname+location.search); }catch(e){}
+        setTimeout(function(){
+          try{
+            var el=document.querySelector('.nav-item[onclick*="\'sectorisation\'"]');
+            navTo('sectorisation', el);
+            setTimeout(function(){
+              var inp=document.getElementById('sect-input');
+              if(inp){ inp.value=addr; }
+              try{ sectGo(); }catch(e){}
+            }, 350);
+          }catch(e){}
+        }, 400);
+      } else if(tries>120){ clearInterval(it); }
+    },500);
+  })();
   /* \u2550\u2550 v8.51 : FUSIONNER LA SAISIE EN COURS dans la fiche existante (demande Laurent).
      R\u00e8gles \u2014 les m\u00eames que la fusion de fiches v7.35, adapt\u00e9es \u00e0 une saisie :
      \u2022 la fiche existante est CONSERV\u00c9E ; ses champs vides sont compl\u00e9t\u00e9s par la saisie ;
@@ -13662,7 +13710,7 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
           +(_vd?'<div class="pg-vend">'+_vd+'</div>':'')
           +'<div class="pg-carac" style="color:var(--gris-2);font-size:11px;">journal, téléphone et photos conservés</div></div>'
           +'<div class="pg-obs"></div><div class="pg-side"><div class="pg-prix" style="color:var(--gris);">'+fmtP(r.prix)+'</div>'
-          +'<div class="pg-actions"><button class="pg-mini" onclick="event.stopPropagation();pigeEdit(\''+r.id+'\')">👁 Consulter</button>'
+          +'<div class="pg-actions"><button class="pg-mini" onclick="event.stopPropagation();pigeEdit(\''+r.id+'\')">👁 Consulter</button><button class="pg-mini" title="Secteur, transports, écoles — sectorisation dans un nouvel onglet" onclick="event.stopPropagation();pgSectoTab(\''+r.id+'\')">🧭 Secteur</button>'
           +'<button class="pg-mini pg-mini-react" onclick="pigeReactivate(\''+r.id+'\',event)">↩ Réactiver</button></div></div></div>';
       }
       var ub=r.user?'<span class="pg-ub" style="background:'+(UCOL[r.user]||'#777')+'22;color:'+(UCOL[r.user]||'#777')+';border:1px solid '+(UCOL[r.user]||'#777')+'55;" title="'+esc(roleName(r.user))+'">'+esc((function(){var R=window.ROLES&&ROLES[r.user];if(!R)return r.user;var p=(R.name||'').split(' ');return p[0]+(p[1]?' '+p[1].charAt(0)+'.':'');})())+'</span>':'<span class="pg-ub pg-ub-none">non attribuée</span>';
@@ -13684,7 +13732,7 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
         +'</div>'+(nc?pgObsPreview(r,nc):'<div class="pg-obs"></div>')+'<div class="pg-side"><div class="pg-prix">'+fmtP(r.prix)+'</div>'
         +(pm2v?'<div class="pg-pm2">'+pm2v+'</div>':'')
         +ub
-        +'<div class="pg-actions">'+srcLinkBtns(r)+((function(){var fl=pigeFipacLink(r);return fl?'<button class="pg-mini pg-mini-fipac" onclick="event.stopPropagation();window.open(\''+esc(fl)+'\',\'_blank\')">Fipac</button>':'';})())+'<button class="pg-mini" onclick="event.stopPropagation();pigeEdit(\''+r.id+'\')">✎ Modifier</button>'+(telMulti(r)?'<button class="pg-mini pg-mini-pro on" title="'+(r.pro?'Fiche classée à la main dans les Pros':'Fiche repérée automatiquement comme professionnelle')+' — cliquez pour l\'en retirer" onclick="pigeProToggle(\''+r.id+'\',event)">🏢 Pros ✓</button>':'<button class="pg-mini pg-mini-pro'+(r.nopro?' off':'')+'" title="'+(r.nopro?'Fiche retirée des Pros à la main — cliquez pour l\'y remettre':'C\'est la fiche d\'un confrère ou d\'un professionnel : la classer dans « Pros »')+'" onclick="pigeProToggle(\''+r.id+'\',event)">🏢 Pros</button>')+'<button class="pg-mini pg-mini-arch" title="Sortir du stock actif sans rien perdre" onclick="pigeArchAsk(\''+r.id+'\',event)">⤵ Archiver</button></div></div></div>';
+        +'<div class="pg-actions">'+srcLinkBtns(r)+((function(){var fl=pigeFipacLink(r);return fl?'<button class="pg-mini pg-mini-fipac" onclick="event.stopPropagation();window.open(\''+esc(fl)+'\',\'_blank\')">Fipac</button>':'';})())+'<button class="pg-mini" title="Secteur, transports, écoles — sectorisation dans un nouvel onglet" onclick="event.stopPropagation();pgSectoTab(\''+r.id+'\')">🧭 Secteur</button><button class="pg-mini" onclick="event.stopPropagation();pigeEdit(\''+r.id+'\')">✎ Modifier</button>'+(telMulti(r)?'<button class="pg-mini pg-mini-pro on" title="'+(r.pro?'Fiche classée à la main dans les Pros':'Fiche repérée automatiquement comme professionnelle')+' — cliquez pour l\'en retirer" onclick="pigeProToggle(\''+r.id+'\',event)">🏢 Pros ✓</button>':'<button class="pg-mini pg-mini-pro'+(r.nopro?' off':'')+'" title="'+(r.nopro?'Fiche retirée des Pros à la main — cliquez pour l\'y remettre':'C\'est la fiche d\'un confrère ou d\'un professionnel : la classer dans « Pros »')+'" onclick="pigeProToggle(\''+r.id+'\',event)">🏢 Pros</button>')+'<button class="pg-mini pg-mini-arch" title="Sortir du stock actif sans rien perdre" onclick="pigeArchAsk(\''+r.id+'\',event)">⤵ Archiver</button></div></div></div>';
     }
     if(inMulti){
       /* v7.34 : vue groupée par numéro — un groupe repliable par téléphone, plus gros suspects d'abord */
