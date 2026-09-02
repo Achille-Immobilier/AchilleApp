@@ -1662,7 +1662,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     </div>
   </div>
   </div>
-  <div class="logo-ver app-ver">Achille App — v8.55</div>
+  <div class="logo-ver app-ver">Achille App — v8.56</div>
 </aside>
 <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Réduire la barre latérale">‹</button>
 
@@ -4030,7 +4030,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
       <div style="display:flex;gap:12px;margin-bottom:20px;">
         <div style="width:118px;flex:none;">
           <label style="font-size:10px;letter-spacing:.10em;text-transform:uppercase;color:var(--gris-2);display:block;margin-bottom:5px;white-space:nowrap;">Date (jj/mm)</label>
-          <input id="fin-op-date" type="text" inputmode="numeric" maxlength="5" placeholder="jj/mm" style="width:100%;background:var(--beige);border:1px solid var(--border);border-radius:5px;padding:9px 12px;font-family:'Jost',sans-serif;font-size:14px;color:var(--noir);outline:none;box-sizing:border-box;">
+          <input id="fin-op-date" type="text" inputmode="numeric" maxlength="10" placeholder="jj/mm/aaaa" style="width:100%;background:var(--beige);border:1px solid var(--border);border-radius:5px;padding:9px 12px;font-family:'Jost',sans-serif;font-size:14px;color:var(--noir);outline:none;box-sizing:border-box;">
         </div>
         <div style="flex:1;">
           <label style="font-size:10px;letter-spacing:.10em;text-transform:uppercase;color:var(--gris-2);display:block;margin-bottom:5px;white-space:nowrap;">Montant (négatif = sortie)</label>
@@ -7625,7 +7625,13 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
      5 semaines (retard), « 15/01 » = dans 4 mois et demi (à venir), jamais d'ambiguïté
      à cheval sur le nouvel an. Sans date → en fin de liste. */
   function finOpWhen(op){
-    var m=(''+(op&&op.date||'')).match(/^(\d{2})\/(\d{2})$/);
+    var raw=(''+(op&&op.date||''));
+    /* v8.56 : date complète « jj/mm/aaaa » → exacte, aucune devinette */
+    var f=raw.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+    if(f){ var fd=+f[1], fm=+f[2], fy=+f[3];
+      if(!fd||fd>31||!fm||fm>12) return null;
+      return new Date(fy, fm-1, fd, 12, 0, 0, 0); }
+    var m=raw.match(/^(\d{2})\/(\d{2})$/);
     if(!m) return null;
     var dd=+m[1], mm=+m[2];
     if(!dd||dd>31||!mm||mm>12) return null;
@@ -7705,14 +7711,19 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     modal.style.display = 'flex';
   };
 
-  /* v8.10 : normalise une date « jj/mm » (accepte 1508, 15 08, 15/8…) ; vide si non renseignée */
+  /* v8.56 (remplace v8.10) : normalise vers « jj/mm/aaaa » — l'ANNÉE EN COURS est mise
+     d'office quand on n'en saisit pas (demande Laurent), et une année tapée (aa ou aaaa)
+     est respectée. Accepte toujours 1508, 15 08, 15/8, 15/08/27, 15-08-2027… */
   function finOpNormDate(s){
     s=(''+(s||'')).trim(); if(!s) return '';
-    var m=s.match(/^(\d{1,2})\s*[\/\-\. ]\s*(\d{1,2})/);
-    if(m){ return ('0'+m[1]).slice(-2)+'/'+('0'+m[2]).slice(-2); }
+    var yNow=new Date().getFullYear();
+    function yr(y){ if(y==null||y==='') return yNow; y=''+y; if(y.length===2) return +('20'+y); return +y; }
+    var m=s.match(/^(\d{1,2})\s*[\/\-\. ]\s*(\d{1,2})(?:\s*[\/\-\. ]\s*(\d{2}|\d{4}))?\s*$/);
+    if(m){ return ('0'+m[1]).slice(-2)+'/'+('0'+m[2]).slice(-2)+'/'+yr(m[3]); }
     var d=s.replace(/\D/g,'');
-    if(d.length===4){ return d.slice(0,2)+'/'+d.slice(2); }
-    if(d.length===3){ return '0'+d.slice(0,1)+'/'+d.slice(1); }
+    if(d.length===8){ return d.slice(0,2)+'/'+d.slice(2,4)+'/'+d.slice(4); }
+    if(d.length===4){ return d.slice(0,2)+'/'+d.slice(2)+'/'+yNow; }
+    if(d.length===3){ return '0'+d.slice(0,1)+'/'+d.slice(1)+'/'+yNow; }
     return s;
   }
   window.finOpSave = function() {
@@ -7724,10 +7735,13 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     var modal = document.getElementById('fin-op-modal');
     var editId = modal ? (modal.dataset.editId || '') : '';
     var ops = loadOps();
+    var _now=new Date().toISOString();   /* v8.56 : SANS horodatage, la fusion cloud comparait le champ
+       date (« 03/09 » < « 30/07 » en texte) et l'ANCIENNE version du cloud regagnait silencieusement.
+       Un « updated » ISO complet bat toujours une simple date : la modification est désormais gardée. */
     if (editId) {
-      ops = ops.map(function(o){ return ((''+o.id)===(''+editId)) ? {id:o.id, label:label, montant:amt, date:dateV} : o; });
+      ops = ops.map(function(o){ return ((''+o.id)===(''+editId)) ? {id:o.id, label:label, montant:amt, date:dateV, updated:_now} : o; });
     } else {
-      ops.push({id: Date.now(), label: label, montant: amt, date:dateV});
+      ops.push({id: Date.now(), label: label, montant: amt, date:dateV, updated:_now});
     }
     saveOps(ops);
     if (modal) { modal.dataset.editId=''; modal.style.display='none'; }
@@ -11146,7 +11160,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     startRealtime();
     var ov=document.getElementById('ach-login-overlay'); if(ov) ov.classList.add('ach-hidden');
     var ub=document.getElementById('ach-userbar'); if(ub) ub.style.display='none';
-    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v8.55';
+    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v8.56';
     flag('Synchronis\u00e9');
     // fin de l'init : on autorise la journalisation des actions
     setTimeout(function(){ installInterceptor._init=false; }, 1500);
