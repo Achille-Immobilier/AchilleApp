@@ -1213,7 +1213,6 @@ body.lex-admin-editing .lex-save-btn{display:block;}
 .ec-calc-lock{font-size:10px;color:var(--gris-2);display:flex;align-items:center;gap:3px;margin-top:2px;}
 .ec-calc-lock svg{width:9px;height:9px;stroke:var(--gris-2);fill:none;stroke-width:2;}
 .ec-calc-lock,.ec-modal-lock{display:none!important;}
-.ec-comment{font-size:12px;color:var(--terra);margin-top:4px;line-height:1.35;font-style:italic;white-space:pre-wrap;word-break:break-word;}
 /* v8.54 : commentaire compact — sur la ligne de la date, tronqué, clic pour déplier.
    .ec-sub-com passe en flex pour que date + commentaire tiennent sur UNE seule ligne (hauteur inchangée). */
 .ec-row>div:first-child{min-width:0;}   /* v8.54 : autorise la troncature du commentaire (sinon la colonne s'élargit) */
@@ -1662,7 +1661,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     </div>
   </div>
   </div>
-  <div class="logo-ver app-ver">Achille App — v8.62</div>
+  <div class="logo-ver app-ver">Achille App — v8.63</div>
 </aside>
 <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Réduire la barre latérale">‹</button>
 
@@ -5111,21 +5110,6 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     window.__sectCard.transport={val:best.name, sub:sub};
     sectCardRender();
   };
-  function sectPickCollegeName(f){
-    var best='', bestScore=-1;
-    Object.keys(f).forEach(function(k){
-      if(k==='geo_shape'||k==='geo_point_2d') return;
-      var v=f[k]; if(typeof v!=='string'||!v) return;
-      var score=0;
-      if(/coll|etab|nom|lib/i.test(k)) score+=5;
-      if(/[A-Za-z\u00c0-\u00ff]{4,}/.test(v)) score+=2;
-      if(/^[0-9]+$/.test(v)) score-=6;
-      score += Math.min(v.length,30)/30;
-      if(score>bestScore){ bestScore=score; best=v; }
-    });
-    if(best.indexOf(' - ')>=0){ var pp=best.split(' - '); best=pp.slice(1).join(' - '); }
-    return best;
-  }
 
   // ── Établissements scolaires à proximité (Annuaire Éducation Nationale) ──
   window.sectLoadSchools = async function(lat, lon) {
@@ -5934,11 +5918,6 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
   }
   function planSaveEvents(arr) {
     try { localStorage.setItem('ach_plan_events', JSON.stringify(arr)); } catch(e){} }
-  function planGetTodos() {
-    try { return JSON.parse(localStorage.getItem('ach_todos_v1')||'[]'); } catch(e){ return []; }
-  }
-  function planSaveTodos(arr) {
-    try { localStorage.setItem('ach_todos_v1', JSON.stringify(arr)); } catch(e){} }
 
   // ── Helpers ──
   function planWeekStart(d) {
@@ -6081,9 +6060,6 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     return users.some(function(u){ return planActiveUsers[u]; });
   }
 
-  function planMonthStart(d){
-    var s=new Date(d.getFullYear(),d.getMonth(),1); return s;
-  }
 
   // ── Render period label ──
   function planRenderLabel(){
@@ -7045,13 +7021,6 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
   function hnSet(id,v){ var e=document.getElementById(id); if(e) e.innerHTML=v; }
   function hnNum(id){ var e=document.getElementById(id); return e?window.NUMV(e.value):0; }
   var HN_REF=[[50000,5000],[60000,6000],[70000,7000],[80000,8000],[90000,9000],[100000,9500],[110000,10500],[120000,11500],[130000,12500],[140000,13000],[150000,13500],[160000,14500],[170000,15000],[180000,16000],[190000,16500],[200000,17000],[210000,18000],[220000,18500],[230000,19000],[240000,19500],[250000,20000],[260000,20500],[270000,21000],[280000,21500],[290000,22000],[300000,22500],[310000,23000],[320000,23500],[330000,24000],[340000,24500],[350000,25000],[360000,25500],[370000,26000],[380000,26500],[390000,27000],[400000,27500],[410000,28000],[420000,28500],[430000,29000],[440000,29500],[450000,30000],[460000,30500],[470000,31000],[480000,31500],[490000,32000],[500000,32500],[510000,33000],[520000,33500],[530000,34000],[540000,34500],[550000,35000],[560000,35500],[570000,36000],[580000,36500],[590000,37000],[600000,37500],[610000,38000],[620000,38500],[630000,39000],[640000,39500],[650000,40000],[660000,40500],[700000,41000]];
-  function hnDeFerla(price){
-    if(price<=0) return 0;
-    if(price>700000) return price*0.06;
-    var hono=HN_REF[0][1];
-    for(var i=0;i<HN_REF.length;i++){ if(HN_REF[i][0]<=price) hono=HN_REF[i][1]; else break; }
-    return hono;
-  }
 
   window.honoTab=function(id,btn){
     document.querySelectorAll('#page-honoraires .comm-panel').forEach(function(p){p.classList.remove('active');});
@@ -11168,7 +11137,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     startRealtime();
     var ov=document.getElementById('ach-login-overlay'); if(ov) ov.classList.add('ach-hidden');
     var ub=document.getElementById('ach-userbar'); if(ub) ub.style.display='none';
-    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v8.62';
+    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v8.63';
     flag('Synchronis\u00e9');
     // fin de l'init : on autorise la journalisation des actions
     setTimeout(function(){ installInterceptor._init=false; }, 1500);
@@ -11327,7 +11296,6 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
     return c;
   }
   function cfgSave(c){ try{ localStorage.setItem(CFG_KEY,JSON.stringify(c)); }catch(e){} }
-  function themeLabel(c,id){ var t=c.themes.filter(function(x){return x.id===id;})[0]; return t?t.label:id; }
   function themeIdFromLabel(c,label){
     var t=c.themes.filter(function(x){return x.label===label;})[0]; if(t) return t.id;
     var d=THEME_DEFAULTS.filter(function(x){return x.label===label;})[0]; return d?d.id:'autre';
@@ -12049,10 +12017,6 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
   };
 
   /* ---------- TABLEAU DE BORD ---------- */
-  function countLS(key){ try{ var a=JSON.parse(localStorage.getItem(key)||'[]'); return Array.isArray(a)?a.length:0; }catch(e){ return 0; } }
-  function bonsCount(){ try{ return window.bvTotalCount?window.bvTotalCount():0; }catch(e){ return 0; } }
-  function eventsUpcoming(){ try{ var a=JSON.parse(localStorage.getItem('ach_plan_events')||'[]'); var t=achDayFR(); return a.filter(function(e){return (e.date||'')>=t;}).length; }catch(e){ return 0; } }  /* v7.40 : heure de Paris */
-  function todosOpen(){ try{ var a=JSON.parse(localStorage.getItem('ach_todos_v1')||'[]'); return a.filter(function(t){return !t.done;}).length; }catch(e){ return 0; } }
 
   /* ---- Période d'activité + vue affaires (état) ---- */
   window.dashPeriod='all';
@@ -12364,7 +12328,6 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
 
   function dossLoad(){ try{ var a=JSON.parse(localStorage.getItem(DOSS_K)||'[]'); return Array.isArray(a)?a:[]; }catch(e){ return []; } }
   function dossSave(a){ try{ localStorage.setItem(DOSS_K, JSON.stringify(a)); }catch(e){} }
-  function pgIsManager(){ try{ var k=(window.ACH_USER&&ACH_USER.key)||'admin'; return k==='admin'||k==='gerant'; }catch(e){ return true; } }
   /* v8.62 (demande Laurent) : la GESTION des dossiers personnalisés (créer / modifier / supprimer)
      est réservée au seul profil ADMINISTRATEUR — les dossiers restent visibles et utilisables par tous. */
   function pgIsAdmin(){ try{ return ((window.ACH_USER&&ACH_USER.key)||'admin')==='admin'; }catch(e){ return true; } }
@@ -12775,10 +12738,8 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
     raw=raw||all;
     var act=all.filter(function(r){ return !r.arch; });
     var nArch=raw.filter(function(r){ return !!r.arch; }).length;
-    var cnt={tous:act.length, chaud:0, encours:0, offline:0};
-    act.forEach(function(r){ var s=pgStatutOf(r); cnt[s]=(cnt[s]||0)+1; });
+    var cnt={tous:act.length};   /* v8.63 : le comptage par statut et le helper dot() ne servaient plus depuis les onglets-étapes (v8.59) */
     var doss=dossLoad();
-    function dot(col){ return '<span class="pg-fold-dot" style="background:'+col+';"></span>'; }
     var onTous=(pgDossier==='tous');
     /* v8.59 : onglets par ÉTAPE (En cours, En attente, Achille, Refus — libellés Laurent), puis Tous */
     var ecnt={vivier:0,attente:0,accord:0,refusG:0};
@@ -13045,7 +13006,6 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
   }
   /* une URL réduite au seul domaine est trop générique pour signaler un doublon */
   function pgUrlSignif(u){ return !!u && (u.indexOf('/')>=0 || u.indexOf('?')>=0); }
-  function pgNormTel(t){ return (t==null?'':''+t).replace(/\D/g,''); }
   /* ══ v7.34 : détection multi-annonces par téléphone ══ */
   function pgTelKey(t){
     var d=(''+(t==null?'':t)).replace(/\D/g,'');
@@ -13312,12 +13272,6 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
       +'<button class="btn btn-terra" style="padding:7px 12px;font-size:13px;" onclick="pgDupMerge(\''+r.id+'\')">\ud83d\udd00 Fusionner dans cette fiche</button>'
       +'</div></div></div>';
     ov.style.display='flex';
-  };
-  window.pgDupOpen=function(fid){
-    if(!confirm('Ouvrir la fiche existante ?\n\n\u26a0 Votre saisie en cours (nouvelle fiche) sera perdue.')) return;
-    var ov=document.getElementById('pg-dup-peek'); if(ov) ov.style.display='none';
-    closeModal('modal-pige');
-    pigeEdit(fid);
   };
   /* \u2550\u2550 v8.51 : depuis l'aper\u00e7u doublon, OUVRIR la fiche dans un NOUVEL ONGLET (la saisie
      en cours reste intacte dans cet onglet-ci) \u2014 lien profond #pg=<id> trait\u00e9 au d\u00e9marrage. */
@@ -15315,7 +15269,6 @@ select.pg-chip{padding:6px 10px;}
 .pgd-save{flex:1;border:none;background:var(--terra);color:#fff;border-radius:8px;padding:8px;font-family:'Jost',sans-serif;font-size:12.5px;font-weight:600;cursor:pointer;}
 .pgd-save:hover{background:var(--terra-l);}
 .pg-statut-lbl{font-family:'Jost',sans-serif;font-size:12.5px;color:var(--gris,#6b6b63);letter-spacing:.03em;margin-left:2px;white-space:nowrap;}
-.pg-fold-dot{display:inline-block;width:10px;height:10px;border-radius:50%;flex:none;box-shadow:0 0 0 1px rgba(0,0,0,.08);}
 
 .pg-statut-dot{display:inline-block;width:13px;height:13px;border-radius:50%;flex:none;cursor:pointer;border:1.5px solid rgba(255,255,255,.7);box-shadow:0 0 0 1px rgba(0,0,0,.12);margin-right:2px;vertical-align:middle;}
 .pg-statut-dot:hover{transform:scale(1.2);}
