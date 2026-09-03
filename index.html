@@ -1662,7 +1662,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     </div>
   </div>
   </div>
-  <div class="logo-ver app-ver">Achille App — v8.59</div>
+  <div class="logo-ver app-ver">Achille App — v8.60</div>
 </aside>
 <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Réduire la barre latérale">‹</button>
 
@@ -1791,7 +1791,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
         <option value="surface:btw">⚡ Surface comprise entre… et… (ex. 50 à 120 m²)</option>
         <option value="pieces">⚡ Nombre de pièces au moins égal à…</option>
         <option value="dpe_fg">⚡ DPE F ou G (passoire énergétique)</option>
-        <option value="nosuivi">⚡ Jamais contactée (ni suivi ni observation)</option>
+        <option value="nosuivi">⚡ Jamais contactée (ni suivi, ni observation, ni tampon 📞)</option>
       </select>
       <div id="pgd-val-row" style="display:none;">
         <label class="pgd-lbl" id="pgd-val-lbl">Seuil</label>
@@ -1853,12 +1853,19 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
       <div class="docs-tabs">
         <button class="docs-tab active" onclick="docsTab('modeles',this)">📁 Documents de l’agence</button>
         <button class="docs-tab" onclick="docsTab('redac',this)">✍️ Rédaction quot.</button>
+        <button class="docs-tab" onclick="docsTab('histo',this)">🕘 Historique</button>
       </div>
       <div class="docs-body">
         <div class="docs-panel" id="docs-generer"><div class="nx-wrap">
     <div class="nx-head"><span class="pg-lbl">Générateur de documents</span><span class="nx-hint">Vos modèles officiels — remplir la fiche, générer le PDF (polices de l'agence incorporées), envoyer ou imprimer</span></div>
     <div id="dg-view"></div>
   </div></div>
+
+        <!-- v8.60 : historique des générations — chaque « 📄 Générer » y enregistre les données saisies -->
+        <div class="docs-panel" id="docs-histo"><div class="nx-wrap">
+          <div class="nx-head"><span class="pg-lbl">Historique des générations</span><span class="nx-hint">Chaque PDF généré enregistre ici ses données : « ↻ Recharger » re-remplit le formulaire, « 📄 PDF » régénère le document à l'identique. Partagé avec l'équipe, 200 dernières générations conservées.</span></div>
+          <div id="dgh-list"></div>
+        </div></div>
 
         <div class="docs-panel active" id="docs-modeles">
           <div style="display:flex;align-items:baseline;gap:12px;margin-bottom:20px;">
@@ -5867,6 +5874,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     document.querySelectorAll('.docs-tabs .docs-tab').forEach(function(b){ b.classList.remove('active'); });
     var pane=document.getElementById('docs-'+id); if(pane) pane.classList.add('active');
     if(btn && btn.classList) btn.classList.add('active');
+    if(id==='histo'){ try{ window.dghRender&&dghRender(); }catch(e){} }   /* v8.60 */
   };
   /* v8.03 : les VRAIS documents Word de l'agence, embarqués tels quels (images recompressées,
      contenu et mise en page d'origine). downloadDocx les sert en priorité ; l'ancien générateur
@@ -9845,7 +9853,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
 <script>
 (function(){
   var AUDIT_KEY='ach_audit_v1';
-  var LABELS={ach_pi_v4:'Post-its',ach_encours_v1:'Ventes (En cours)',ach_todos_v1:'To-dos',ach_plan_events:'Planning',ach_vt_v4:'Visites',ach_bv_obs:'Bons de visite (observations)',ach_bv_extra:'Bons de visite',ach_bv_pending:'Bons de visite (validation)',ach_bv_notifs:'Notifications',ach_bv_cr_v1:'Comptes rendus de visite',ach_fin_v3:'Finances',ach_prosp_v1:'Prospection',ach_lex_html_v1:'Lexique', ach_cr_crit_v1:'Comptes rendus (critères)',ach_lex_proposals:'Lexique (propositions)',ach_pige_v1:'Pige',ach_docaff_v1:'Documents par affaire',ach_docs_cfg_v1:'Documents (réglages)', ach_docgen_assets_v1:'Générateur (charte & polices)', ach_rappels_v1:'Rappels', ach_redac_v1:'Rédaction quotidienne', ach_routines_v1:'Routines & Objectifs'};
+  var LABELS={ach_pi_v4:'Post-its',ach_encours_v1:'Ventes (En cours)',ach_todos_v1:'To-dos',ach_plan_events:'Planning',ach_vt_v4:'Visites',ach_bv_obs:'Bons de visite (observations)',ach_bv_extra:'Bons de visite',ach_bv_pending:'Bons de visite (validation)',ach_bv_notifs:'Notifications',ach_bv_cr_v1:'Comptes rendus de visite',ach_fin_v3:'Finances',ach_prosp_v1:'Prospection',ach_lex_html_v1:'Lexique', ach_cr_crit_v1:'Comptes rendus (critères)',ach_lex_proposals:'Lexique (propositions)',ach_pige_v1:'Pige',ach_docaff_v1:'Documents par affaire',ach_docs_cfg_v1:'Documents (réglages)', ach_docgen_assets_v1:'Générateur (charte & polices)', ach_dghist_v1:'Documents (historique des générations)', ach_rappels_v1:'Rappels', ach_redac_v1:'Rédaction quotidienne', ach_routines_v1:'Routines & Objectifs'};
   var _orig=localStorage.setItem.bind(localStorage);
   function curName(){var e=document.getElementById('s-name');return e?e.textContent:'?';}
   function curRole(){var e=document.getElementById('s-role');return e?e.textContent:'';}
@@ -10483,7 +10491,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     ach_pi_v4:'Post-its', ach_plan_events:'Planning', ach_todos_v1:'To-do',
     ach_prosp_v1:'Prospection', ach_lex_html_v1:'Lexique', ach_lex_proposals:'Lexique (propositions)',
     ach_fin_hist_v3:'Honoraires', ach_fin_ops_v3:'Finances', ach_fin_lines_v1:'Finances',
-    ach_fin_solde_v3:'Finances', ach_encours_v1:'Affaires en cours', ach_audit_v1:'Journal', ach_pige_v1:'Pige', ach_docaff_v1:'Documents par affaire', ach_docs_cfg_v1:'Documents (réglages)', ach_docgen_assets_v1:'Générateur (charte & polices)', ach_rappels_v1:'Rappels', ach_evol_v1:'Évolutions', ach_redac_v1:'Rédaction quotidienne', ach_routines_v1:'Routines & Objectifs', ach_tomb_v2:'(technique) suppressions',
+    ach_fin_solde_v3:'Finances', ach_encours_v1:'Affaires en cours', ach_audit_v1:'Journal', ach_pige_v1:'Pige', ach_docaff_v1:'Documents par affaire', ach_docs_cfg_v1:'Documents (réglages)', ach_docgen_assets_v1:'Générateur (charte & polices)', ach_dghist_v1:'Documents (historique des générations)', ach_rappels_v1:'Rappels', ach_evol_v1:'Évolutions', ach_redac_v1:'Rédaction quotidienne', ach_routines_v1:'Routines & Objectifs', ach_tomb_v2:'(technique) suppressions',
     ach_affaires_v1:'Pipeline (affaires)', ach_aff_pins_v1:'Pipeline (épingles)', ach_conc_v1:'Honoraires (concurrence)',
     ach_perms_v1:'Droits & Accès', ach_vsb_v1:'Visites sans bon', ach_bv_accomp:'Bons de visite (accompagnateurs)',
     ach_bv_cr_v1:'Comptes rendus de visite'
@@ -11160,7 +11168,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     startRealtime();
     var ov=document.getElementById('ach-login-overlay'); if(ov) ov.classList.add('ach-hidden');
     var ub=document.getElementById('ach-userbar'); if(ub) ub.style.display='none';
-    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v8.59';
+    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v8.60';
     flag('Synchronis\u00e9');
     // fin de l'init : on autorise la journalisation des actions
     setTimeout(function(){ installInterceptor._init=false; }, 1500);
@@ -12401,7 +12409,7 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
     if(f==='ville'){ var q=(''+(val||'')).toLowerCase().trim(); if(!q) return false; return (''+(r.ville||'')).toLowerCase().indexOf(q)>=0; }
     if(f==='dpe_fg'){ var dp=(''+(r.dpe||'')).toUpperCase(); return dp==='F'||dp==='G'; }
     if(f==='age'){ if(!r.created) return false; var days=Math.floor((Date.now()-new Date(r.created).getTime())/86400000); return days>=val; }
-    if(f==='nosuivi'){ return !r.suivi && !(r.notes&&r.notes.length); }  /* v7.41 : une OBSERVATION compte comme un contact (demande Laurent) */
+    if(f==='nosuivi'){ return !r.suivi && !(r.notes&&r.notes.length) && !r.called; }  /* v7.41 : une OBSERVATION compte comme un contact (demande Laurent) ; v8.60 : le tampon 📞 « Appelé » aussi */
     if(f==='nouser'){ return !r.user; }
     return false;
   }
@@ -12433,7 +12441,7 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
     if(ru.f==='ville') return 'ville contient « '+ru.val+' »';
     if(ru.f==='dpe_fg') return 'DPE F ou G (passoire énergétique)';
     if(ru.f==='age') return 'en pige depuis '+ru.val+' jours ou plus';
-    if(ru.f==='nosuivi') return 'jamais contactée (ni suivi ni observation)';
+    if(ru.f==='nosuivi') return 'jamais contactée (ni suivi, ni observation, ni tampon 📞)';
     if(ru.f==='nouser') return 'non attribuée à un membre';
     return '';
   }
@@ -16619,6 +16627,105 @@ window.dgCollect=function(){
   });
   return d;
 };
+/* ══ v8.60 : HISTORIQUE DES GÉNÉRATIONS (demande Laurent — « garder un historique de mes
+   remplissages »). On conserve LES DONNÉES, pas les PDF : quelques Ko par entrée, synchronisé
+   (ach_dghist_v1), et le PDF se régénère à l'identique à la demande. 200 entrées max. */
+var DGH_KEY='ach_dghist_v1';
+function dghAll(){ try{ var a=JSON.parse(localStorage.getItem(DGH_KEY)||'[]'); return Array.isArray(a)?a:[]; }catch(e){ return []; } }
+function dghSave(a){ try{ localStorage.setItem(DGH_KEY, JSON.stringify(a)); }catch(e){} }
+function dghAdd(key, data){
+  try{
+    var t=DOCGEN_TEMPLATES[key]||{};
+    var a=dghAll();
+    a.push({ id:'dgh-'+Date.now()+Math.floor(Math.random()*1000), doc:key, nom:(t.icone?t.icone+' ':'')+(t.nom||key),
+      t:new Date().toISOString(), u:(window.ACH_USER&&ACH_USER.name)||'—', data:data });
+    while(a.length>200) a.shift();
+    dghSave(a);
+  }catch(e){}
+}
+function dghTitle(e){
+  var d=e.data||{};
+  var pref=['client','acquereur','vendeur','locataire','nom','adresse_bien','adresse','bien'];
+  for(var i=0;i<pref.length;i++){
+    for(var k in d){ if(k.toLowerCase().indexOf(pref[i])>=0 && typeof d[k]==='string' && d[k].trim()) return d[k].trim(); }
+  }
+  return '';
+}
+window.dghRender=function(){
+  var box=document.getElementById('dgh-list'); if(!box) return;
+  var a=dghAll().slice().reverse();
+  if(!a.length){ box.innerHTML='<div style="color:var(--gris-2);font-style:italic;font-size:13.5px;padding:18px 4px;">Aucune génération enregistrée pour l\u2019instant — le prochain \u00ab \ud83d\udcc4 G\u00e9n\u00e9rer le PDF \u00bb appara\u00eetra ici.</div>'; return; }
+  var adm=(function(){ try{ var k=(window.ACH_USER||{}).key; return k==='admin'||k==='gerant'; }catch(e){ return false; } })();
+  box.innerHTML=a.map(function(e){
+    var d=new Date(e.t);
+    var ds=d.toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit',year:'numeric'})+' '+d.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
+    var ti=dghTitle(e);
+    return '<div style="display:flex;align-items:center;gap:12px;padding:10px 14px;margin-bottom:7px;background:var(--blanc);border:1px solid var(--border);border-radius:9px;flex-wrap:wrap;">'
+      +'<span style="font-size:12px;color:var(--gris-2);min-width:118px;">'+ds+'</span>'
+      +'<span style="font-weight:500;font-size:13.5px;">'+dgEsc(e.nom)+'</span>'
+      +(ti?'<span style="font-size:12.5px;color:var(--terra);font-style:italic;">'+dgEsc(ti)+'</span>':'')
+      +'<span style="font-size:11.5px;color:var(--gris-2);">par '+dgEsc(e.u||'\u2014')+'</span>'
+      +'<span style="margin-left:auto;display:flex;gap:6px;">'
+      +'<button class="pg-mini" onclick="dghReload(\''+e.id+'\')" title="Rouvrir le formulaire pr\u00e9-rempli avec ces donn\u00e9es">\u21bb Recharger</button>'
+      +'<button class="pg-mini" onclick="dghPdf(\''+e.id+'\')" title="R\u00e9g\u00e9n\u00e9rer le PDF \u00e0 l\u2019identique">\ud83d\udcc4 PDF</button>'
+      +(adm?'<button class="pg-mini" onclick="dghDel(\''+e.id+'\')" title="Supprimer cette entr\u00e9e">\ud83d\uddd1</button>':'')
+      +'</span></div>';
+  }).join('');
+};
+function dghFill(data){
+  Object.keys(data||{}).forEach(function(k){
+    if(k==='compteurs'||k==='rooms'||k==='fin_mode') return;
+    var el=document.getElementById('f-'+k); if(!el) return;
+    if(el.type==='checkbox') el.checked=(data[k]==='1'); else el.value=data[k];
+  });
+  if(data.fin_mode){ var rb=document.querySelector('input[name=dg_fin_mode][value="'+data.fin_mode+'"]'); if(rb){ rb.checked=true; try{ dgFinToggle(); }catch(e){} } }
+  if(data.compteurs){
+    var t=DOCGEN_TEMPLATES[DG_CUR]||{blocks:[]};
+    t.blocks.forEach(function(b){ if(b.t==='compteurs'){ b.rows.forEach(function(rn,i){
+      var c=data.compteurs[rn]||{}; var e1=document.getElementById('f-cpt-e-'+i); if(e1) e1.value=c.e||'';
+      var e2=document.getElementById('f-cpt-s-'+i); if(e2) e2.value=c.s||''; }); } });
+  }
+  if(data.rooms && data.rooms.length){
+    var zone=document.getElementById('dg-rooms-zone');
+    if(zone){
+      zone.innerHTML='';
+      data.rooms.forEach(function(rd){ zone.insertAdjacentHTML('beforeend', dgRoomBlock(rd.nom||'Pi\u00e8ce', (rd.fields||[]).map(function(f){return f.l;}))); });
+      var rooms=zone.querySelectorAll('.dg-room');
+      data.rooms.forEach(function(rd,i){
+        var rm=rooms[i]; if(!rm) return;
+        var inps=rm.querySelectorAll('.dg-rf');
+        (rd.fields||[]).forEach(function(f,j){ if(inps[j]) inps[j].value=f.v||''; });
+      });
+    }
+  }
+}
+window.dghReload=function(id){
+  var e=dghAll().filter(function(x){return x.id===id;})[0]; if(!e) return;
+  if(!DOCGEN_TEMPLATES[e.doc]){ if(window.toast) toast('Ce mod\u00e8le n\u2019existe plus dans le g\u00e9n\u00e9rateur'); return; }
+  if(window.docsTab) docsTab('generer', null);
+  dgOpenForm(e.doc);
+  setTimeout(function(){ dghFill(e.data||{}); if(window.toast) toast('\u21bb Formulaire recharg\u00e9 \u2014 g\u00e9n\u00e9ration du '+new Date(e.t).toLocaleDateString('fr-FR')); }, 80);
+};
+window.dghPdf=function(id){
+  var e=dghAll().filter(function(x){return x.id===id;})[0]; if(!e) return;
+  if(!DOCGEN_TEMPLATES[e.doc]){ if(window.toast) toast('Ce mod\u00e8le n\u2019existe plus dans le g\u00e9n\u00e9rateur'); return; }
+  var a=dgAssets();
+  if(!a){ if(window.toast) toast('Charte non install\u00e9e sur ce poste \u2014 patientez (synchronisation)'); return; }
+  if(window.toast) toast('R\u00e9g\u00e9n\u00e9ration du PDF\u2026');
+  ensurePdfLib().then(function(){ return docgenPdf(e.doc, e.data||{}, a); }).then(function(bytes){
+    var blob=new Blob([bytes],{type:'application/pdf'});
+    var link=document.createElement('a');
+    link.href=URL.createObjectURL(blob);
+    link.download=(DOCGEN_TEMPLATES[e.doc].nom||'document').replace(/[\u2019' ]/g,'_')+'_'+new Date(e.t).toLocaleDateString('fr-FR').replace(/\//g,'-')+'.pdf';
+    document.body.appendChild(link); link.click(); link.remove();
+    if(window.toast) toast('\ud83d\udcc4 PDF r\u00e9g\u00e9n\u00e9r\u00e9');
+  }).catch(function(err){ if(window.toast) toast('\u2717 Erreur : '+((err&&err.message)||err)); });
+};
+window.dghDel=function(id){
+  if(!confirm('Supprimer cette entr\u00e9e de l\u2019historique ?')) return;
+  dghSave(dghAll().filter(function(x){return x.id!==id;}));
+  dghRender();
+};
 window.dgGenerer=function(){
   var st=document.getElementById('dg-status');
   var a=dgAssets();
@@ -16634,7 +16741,8 @@ window.dgGenerer=function(){
     link.download=DOCGEN_TEMPLATES[DG_CUR].nom.replace(/[’' ]/g,'_')+'_'+dgToday().replace(/\//g,'-')+'.pdf';
     document.body.appendChild(link); link.click(); link.remove();
     st.textContent='✓ PDF téléchargé.';
-    if(window.toast) toast('📄 Document généré');
+    try{ dghAdd(DG_CUR, dgCollect()); }catch(e){}   /* v8.60 : les données partent dans l'Historique */
+    if(window.toast) toast('📄 Document généré — données conservées dans l\u2019Historique');
   }).catch(function(e){
     st.textContent='✗ Erreur : '+(e&&e.message||e)+' — vérifiez la connexion internet.';
   });
