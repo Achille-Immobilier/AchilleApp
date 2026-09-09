@@ -1664,7 +1664,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     </div>
   </div>
   </div>
-  <div class="logo-ver app-ver">Achille App — v9.04</div>
+  <div class="logo-ver app-ver">Achille App — v9.05</div>
 </aside>
 <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Réduire la barre latérale">‹</button>
 
@@ -6030,6 +6030,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
   var LILOE_LBL={ecole:'\ud83c\udf93 Lilo\u00e9 \u2014 \u00e9cole', dist:'\ud83d\udcbb Lilo\u00e9 \u2014 distanciel', exam:'\ud83d\udcdd Lilo\u00e9 \u2014 examens', rattrap:'\ud83d\udcdd Lilo\u00e9 \u2014 rattrapages (si \u00e9chec)'};
   function planLiloeMark(ds){
     if(!planFetesAllowed()) return '';
+    if(planActiveUsers && planActiveUsers.alternant===false) return '';   /* v9.05 : décocher la puce « Liloé P. » masque aussi son calendrier (demande Laurent) */
     var t=LILOE_CAL[ds]; if(!t) return '';
     return '<div class="plan-lil pl-'+t+'" title="Calendrier d\u2019alternance ESPI 2026/27">'+LILOE_LBL[t]+'</div>';
   }
@@ -11170,7 +11171,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     startRealtime();
     var ov=document.getElementById('ach-login-overlay'); if(ov) ov.classList.add('ach-hidden');
     var ub=document.getElementById('ach-userbar'); if(ub) ub.style.display='none';
-    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v9.04';
+    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v9.05';
     flag('Synchronis\u00e9');
     // fin de l'init : on autorise la journalisation des actions
     setTimeout(function(){ installInterceptor._init=false; }, 1500);
@@ -16944,9 +16945,11 @@ body.ach-veille-live #agence-wifi, body.ach-veille-live #agence-fs{display:none 
   box-shadow:0 4px 7px rgba(0,0,0,.45);}
 #ach-veille .v-note::after{content:'';position:absolute;top:9px;left:50%;transform:translateX(-50%);width:4px;height:7px;background:rgba(40,20,5,.35);border-radius:2px;}
 /* v8.38 : plus de punaise sur les étiquettes (style galerie) */
-#ach-veille .v-note.hot{background:linear-gradient(180deg,#fdec62,#fde84a 60%,#f2d938);}
-#ach-veille .v-note.todo{background:linear-gradient(180deg,#b6d2f4,#a8c8f0 60%,#98b8e2);}
-#ach-veille .v-note.ff{background:linear-gradient(180deg,#f6adc0,#f4a0b4 60%,#e690a6);}
+/* v9.05 : couleurs plus FRANCHES sur l'écran TV (retour Laurent « très ternes en projeté ») —
+   ne touche QUE le mode veille ; les post-its dans l'application gardent leurs pastels. */
+#ach-veille .v-note.hot{background:linear-gradient(180deg,#ffee55,#ffe62e 60%,#f8d312);}
+#ach-veille .v-note.todo{background:linear-gradient(180deg,#a9cdf8,#8ebbf2 60%,#74a6e6);}
+#ach-veille .v-note.ff{background:linear-gradient(180deg,#f99cbc,#f787ab 60%,#ee6f97);}
 #ach-veille .v-note .v-ref{font-family:'Jost',sans-serif;font-size:.58em;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:rgba(0,0,0,.55);margin-bottom:.6vh;}
 #ach-veille .v-note .v-txt{font-family:'Caveat',cursive;color:rgba(0,0,0,.8);flex:1;white-space:pre-wrap;word-break:break-word;line-height:1.22;}
 #ach-veille .v-note .v-who{margin-top:1.2vh;font-family:'Jost',sans-serif;font-size:.55em;letter-spacing:.2em;text-transform:uppercase;color:rgba(0,0,0,.45);align-self:flex-end;}
