@@ -1661,7 +1661,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     </div>
   </div>
   </div>
-  <div class="logo-ver app-ver">Achille App — v9.01</div>
+  <div class="logo-ver app-ver">Achille App — v9.03</div>
 </aside>
 <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Réduire la barre latérale">‹</button>
 
@@ -11137,7 +11137,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     startRealtime();
     var ov=document.getElementById('ach-login-overlay'); if(ov) ov.classList.add('ach-hidden');
     var ub=document.getElementById('ach-userbar'); if(ub) ub.style.display='none';
-    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v9.01';
+    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v9.03';
     flag('Synchronis\u00e9');
     // fin de l'init : on autorise la journalisation des actions
     setTimeout(function(){ installInterceptor._init=false; }, 1500);
@@ -14626,7 +14626,11 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
          taille — avant, moitié/moitié figé : 19 clients s'entassaient dans l'espace de 9
          produits et le côté clients devenait ramassé et illisible. Le palier de taille se
          calcule sur la densité APRÈS répartition, et l'auto-réduction v8.37 reste le filet. */
-      var _share=Math.max(.32, Math.min(.68, _np/(_np+_nc)));
+      /* v9.02 (retour écran réel) : répartition ADOUCIE en racine carrée — le partage linéaire
+         (32/68 pour 9/19) était jugé inesthétique sur la TV ; en racine (~40/60), le côté le
+         moins garni garde de la présence et ses notes sont un peu plus grandes, ce qui est
+         naturel. La taille exacte des notes est calculée par _vFit après rendu. */
+      var _share=Math.max(.34, Math.min(.66, Math.sqrt(_np)/(Math.sqrt(_np)+Math.sqrt(_nc))));
       var _eff=Math.ceil(Math.max(_np/(2*_share), _nc/(2*(1-_share))));
       var size=_eff<=4?'vn-l':(_eff<=8?'vn-m':(_eff<=14?'vn-s':(_eff<=28?'vn-xs':'vn-xxs')));
       var rots=[-2.2,1.6,-1.1,2.4,-1.8,1.2,-2.6,2.0];
@@ -14655,24 +14659,47 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
     v.innerHTML=h;
     _vSlides=v.querySelectorAll('.vslide').length; _vIdx=0;
     _vTick();
-    /* v8.37 : garantie « tout tient sur l'écran » — si une moitié du tableau déborde encore
-       malgré les paliers de taille, elle est réduite EXACTEMENT du facteur nécessaire.
-       Mesuré après rendu (2 cadres pour laisser la mise en page se poser). */
-    requestAnimationFrame(function(){ requestAnimationFrame(function(){
-      try{
-        v.querySelectorAll('.v-board').forEach(function(bd){
-          bd.style.transform=''; bd.style.alignContent='';
-          var need=bd.scrollHeight, got=bd.clientHeight;
-          if(need>got+2){
-            /* ancré en haut d'abord (sinon le centrage fait déborder au-dessus, PAR-DESSUS
-               l'étiquette de zone), puis réduit exactement du facteur nécessaire */
-            bd.style.alignContent='flex-start';
-            need=bd.scrollHeight;
-            var k=Math.max(.4, got/need);
-            bd.style.transformOrigin='50% 0'; bd.style.transform='scale('+k+')';
-          }
+    /* ══ v9.02 : LES POST-ITS REMPLISSENT L'ESPACE (retour de Laurent sur l'écran réel :
+       « fiches très centrées au lieu d'occuper tout l'espace disponible »). Les paliers v8.37
+       ne savaient que RÉTRÉCIR quand ça débordait — jamais AGRANDIR quand il restait du vide.
+       _vFit calcule, pour chaque moitié et quelle que soit la résolution/le zoom de l'écran,
+       la largeur de note qui occupe l'espace : estimation par l'aire disponible, puis quelques
+       itérations mesurées (grandit si ça flotte, rétrécit si ça déborde), police et marges
+       proportionnelles. Le filet v8.37 (réduction exacte) reste en tout dernier recours. */
+    function _vFit(bd){
+      var notes=Array.prototype.slice.call(bd.querySelectorAll('.v-note'));
+      if(!notes.length) return;
+      var W=bd.clientWidth, H=bd.clientHeight, n=notes.length;
+      if(W<50||H<50) return;
+      var w=Math.sqrt((W*H*0.72)/(n*0.82));               /* aire visée ~72 %, note ~0.82×w de haut */
+      w=Math.min(w, W*0.46, 400); w=Math.max(w, 84);
+      function apply(x){
+        notes.forEach(function(el){
+          el.style.width=x+'px';
+          el.style.fontSize=(x*0.145).toFixed(1)+'px';
+          el.style.minHeight=(x*0.60).toFixed(0)+'px';
+          el.style.padding=(x*0.10).toFixed(0)+'px '+(x*0.06).toFixed(0)+'px '+(x*0.07).toFixed(0)+'px';
         });
-      }catch(e){}
+      }
+      for(var it=0; it<8; it++){
+        apply(w);
+        bd.style.transform=''; bd.style.alignContent='';
+        var need=bd.scrollHeight;
+        if(need>H+2){ var k1=Math.max(.78, Math.sqrt(H/need)*0.97); if(k1>=.999) break; w=Math.max(84, w*k1); }
+        else if(need<H*0.86 && w<Math.min(W*0.46,400)){ var k2=Math.min(1.12, Math.sqrt(H/Math.max(need,1))*0.96); if(k2<=1.001) break; w=Math.min(Math.min(W*0.46,400), w*k2); }
+        else break;
+      }
+      /* filet v8.37 : si ça déborde encore d'un cheveu, réduction exacte */
+      var need2=bd.scrollHeight, got=bd.clientHeight;
+      if(need2>got+2){
+        bd.style.alignContent='flex-start';
+        need2=bd.scrollHeight;
+        var k=Math.max(.4, got/need2);
+        bd.style.transformOrigin='50% 0'; bd.style.transform='scale('+k+')';
+      }
+    }
+    requestAnimationFrame(function(){ requestAnimationFrame(function(){
+      try{ v.querySelectorAll('.v-board').forEach(_vFit); }catch(e){}
     }); });
   }
   /* v8.37 : éphéméride (calendrier des prénoms usuel) — index [mois][jour-1] */
@@ -16859,7 +16886,7 @@ body.ach-veille-live #agence-wifi, body.ach-veille-live #agence-fs{display:none 
   background:radial-gradient(ellipse 55% 60% at 26% 0%, #262320 0%, transparent 55%),
              radial-gradient(ellipse 55% 60% at 74% 0%, #262320 0%, transparent 55%);}
 #ach-veille .v-sepline{position:absolute;top:3vh;bottom:3vh;width:1px;   /* v9.01 : left posé en ligne (frontière proportionnelle) */
-  background:linear-gradient(180deg,transparent,rgba(205,122,82,.4) 20%,rgba(205,122,82,.4) 80%,transparent);}
+  background:linear-gradient(180deg,transparent,rgba(205,122,82,.12) 25%,rgba(205,122,82,.12) 75%,transparent);}   /* v9.03 : trait beaucoup plus léger, presque absent (demande Laurent) */
 /* v8.39 : UN SEUL grand filigrane plein écran (choix Laurent : les logos par moitié se perdaient
    derrière les post-its) — bien visible, derrière tout. */
 #ach-veille .v-wmfull{position:absolute;top:50%;left:50%;transform:translate(-50%,-52%);pointer-events:none;}
