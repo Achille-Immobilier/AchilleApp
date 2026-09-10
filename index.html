@@ -3,6 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!-- v9.06 : le navigateur kiosque de la TV (Google TV) appliquait un « mode sombre forcé » :
+     post-its jaunes assombris en dégradé olive, texte passé en blanc. « only light » interdit
+     au navigateur de recolorer la page — l'application garde SES couleurs partout. -->
+<meta name="color-scheme" content="only light">
 <title>Achille Immobilier</title>
 <script>try{var _ac=0,_i;for(_i=0;_i<localStorage.length;_i++){if((localStorage.key(_i)||"").indexOf("ach_")===0){_ac++;}}window.__achEmptyAtLoad=(_ac===0);}catch(e){window.__achEmptyAtLoad=false;}
 /* v7.40 : RÈGLE GÉNÉRALE — l'application observe le fuseau horaire FRANÇAIS (Europe/Paris).
@@ -30,6 +34,7 @@ window.achDayFR=function(d){d=d||new Date();try{return new Intl.DateTimeFormat('
   --todo:#a8c8f0; --todo-d:#7aaad8;
   --ff:#f4a0b4;  --ff-d:#e07890;
 }
+:root{color-scheme:only light;}   /* v9.06 : voir la balise meta color-scheme */
 *{margin:0;padding:0;box-sizing:border-box;}
 html,html,body{height:100%;overflow:hidden;font-family:'Jost',sans-serif;background:var(--beige);}
 body{display:flex;}
@@ -1664,7 +1669,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     </div>
   </div>
   </div>
-  <div class="logo-ver app-ver">Achille App — v9.05</div>
+  <div class="logo-ver app-ver">Achille App — v9.06</div>
 </aside>
 <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Réduire la barre latérale">‹</button>
 
@@ -3999,7 +4004,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
 
 
 
-<div class="modal-overlay" id="modal-postit"><div class="modal"><button class="modal-close" onclick="closeModal('modal-postit')">x</button><div class="modal-title" id="pi-modal-title">Nouveau post-it</div><div class="form-group"><label class="form-label">Colonne</label><select class="form-select" id="pi-col-sel" onchange="piColFields()"><option value="produits">Produits</option><option value="clients">Clients</option></select></div><div class="form-group"><label class="form-label">Couleur / Priorite</label><div style="display:flex;gap:8px;"><div class="pi-color-choice active" data-color="hot" onclick="piSelColor(this)" style="background:#fffbe0;"><div style="width:20px;height:20px;border-radius:4px;background:var(--hot);border:1.5px solid var(--hot-d);margin:0 auto 4px;"></div>Hot</div><div class="pi-color-choice" data-color="todo" onclick="piSelColor(this)" style="background:#eaf3fc;"><div style="width:20px;height:20px;border-radius:4px;background:var(--todo);border:1.5px solid var(--todo-d);margin:0 auto 4px;"></div>To do</div><div class="pi-color-choice" data-color="ff" onclick="piSelColor(this)" style="background:#fdf0f3;"><div style="width:20px;height:20px;border-radius:4px;background:var(--ff);border:1.5px solid var(--ff-d);margin:0 auto 4px;"></div>F&amp;F</div></div></div><input type="hidden" id="pi-ref" value=""><div id="pi-fg-cli" style="display:none;"><div class="form-row"><div class="form-group"><label class="form-label">Nom et prénom du client <span style="color:var(--terra);">*</span> <span style="font-weight:400;color:var(--gris-2);">(interne)</span></label><input class="form-input" id="pi-cli" type="text" placeholder="Ex : Jean Charpentier"></div><div class="form-group"><label class="form-label">Identité affichée <span style="color:var(--terra);">*</span> <span style="font-weight:400;color:var(--gris-2);">(tableau &amp; écran Agence)</span></label><input class="form-input" id="pi-cli-pub" type="text" placeholder="Ex : M. C."></div></div></div><div id="pi-fg-prod" style="display:none;"><div class="form-row"><div class="form-group"><label class="form-label">Nom et prénom du vendeur <span style="color:var(--terra);">*</span> <span style="font-weight:400;color:var(--gris-2);">(interne)</span></label><input class="form-input" id="pi-vendeur" type="text" placeholder="Ex : Anne Lefort"></div><div class="form-group" style="position:relative;"><label class="form-label">Adresse du bien <span style="color:var(--terra);">*</span> <span style="font-weight:400;color:var(--gris-2);">(interne)</span></label><input class="form-input" id="pi-adresse" type="text" autocomplete="off" oninput="piAdrAC(this.value)" onblur="setTimeout(piAdrHide,180)" placeholder="Commencez à taper l'adresse…"><div id="pi-ac-list" style="display:none;position:absolute;top:100%;left:0;right:0;z-index:30;background:#fff;border:1px solid var(--beige-3);border-radius:0 0 7px 7px;max-height:190px;overflow-y:auto;box-shadow:0 8px 20px rgba(0,0,0,.12);"></div></div></div><div class="form-row"><div class="form-group"><label class="form-label">Identité affichée <span style="color:var(--terra);">*</span> <span style="font-weight:400;color:var(--gris-2);">(tableau &amp; écran)</span></label><input class="form-input" id="pi-vend-pub" type="text" placeholder="Ex : Mme L."></div><div class="form-group"><label class="form-label">Lieu affiché <span style="color:var(--terra);">*</span> <span style="font-weight:400;color:var(--gris-2);">(tableau &amp; écran)</span></label><input class="form-input" id="pi-adr-pub" type="text" placeholder="Ex : quartier du Château"></div></div></div><div class="form-group"><label class="form-label">La recherche / l'info en quelques mots-clés <span style="font-weight:400;color:var(--gris-2);">(affichée sur le post-it — <span id="pi-cnt">120</span> caract.)</span></label><textarea class="form-textarea" id="pi-content" maxlength="120" oninput="piCntUpd()" style="font-family:'Caveat',cursive;font-size:17px;" placeholder="L'essentiel, court et lisible..."></textarea></div><div class="form-group"><label class="form-label">Détails internes <span style="font-weight:400;color:var(--gris-2);">(lisibles en OUVRANT le post-it d'un clic — jamais à l'écran Agence)</span></label><textarea class="form-textarea" id="pi-details" placeholder="Tout le contexte utile : coordonnées, historique, montants..."></textarea></div><div class="form-row"><div class="form-group" style="margin:0;"><label class="form-label">Visibilite</label><select class="form-select" id="pi-vis" onchange="piPubField()"><option value="moi">Prive</option><option value="equipe">Equipe</option><option value="ecran">Agence (montrable aux clients)</option></select></div><div class="form-group" style="margin:0;"><label class="form-label">Collaborateur</label><select class="form-select" id="pi-owner"><option value="LS">Laurent Sellem</option><option value="MA">Marine Attias</option><option value="LP">Liloé Pichat</option><option value="MZ">Marine Zoretic</option></select></div></div><!-- v8.39 : le champ « pub » 90c est remplacé par « Identité affichée » + « Lieu affiché » (choix du rédacteur, champ par champ) — les anciens post-its qui portent encore n.pub restent affichés tels quels --><div class="modal-actions"><button class="btn btn-outline" onclick="closeModal('modal-postit')">Annuler</button><button class="btn btn-terra" id="pi-save-btn" onclick="piCreate()">Ajouter</button></div></div></div>
+<div class="modal-overlay" id="modal-postit"><div class="modal"><button class="modal-close" onclick="closeModal('modal-postit')">x</button><div class="modal-title" id="pi-modal-title">Nouveau post-it</div><div class="form-group"><label class="form-label">Colonne</label><select class="form-select" id="pi-col-sel" onchange="piColFields()"><option value="produits">Produits</option><option value="clients">Clients</option></select></div><div class="form-group"><label class="form-label">Couleur / Priorite</label><div style="display:flex;gap:8px;"><div class="pi-color-choice active" data-color="hot" onclick="piSelColor(this)" style="background:#fffbe0;"><div style="width:20px;height:20px;border-radius:4px;background:var(--hot);border:1.5px solid var(--hot-d);margin:0 auto 4px;"></div>Hot</div><div class="pi-color-choice" data-color="todo" onclick="piSelColor(this)" style="background:#eaf3fc;"><div style="width:20px;height:20px;border-radius:4px;background:var(--todo);border:1.5px solid var(--todo-d);margin:0 auto 4px;"></div>To do</div><div class="pi-color-choice" data-color="ff" onclick="piSelColor(this)" style="background:#fdf0f3;"><div style="width:20px;height:20px;border-radius:4px;background:var(--ff);border:1.5px solid var(--ff-d);margin:0 auto 4px;"></div>F&amp;F</div></div></div><input type="hidden" id="pi-ref" value=""><div id="pi-fg-cli" style="display:none;"><div class="form-row"><div class="form-group"><label class="form-label">Nom et prénom du client <span style="color:var(--terra);">*</span> <span style="font-weight:400;color:var(--gris-2);">(interne)</span></label><input class="form-input" id="pi-cli" type="text" placeholder="Ex : Jean Charpentier"></div><div class="form-group"><label class="form-label">Identité affichée <span style="color:var(--terra);">*</span> <span style="font-weight:400;color:var(--gris-2);">(tableau &amp; écran Agence)</span></label><input class="form-input" id="pi-cli-pub" type="text" placeholder="Ex : M. C."></div></div></div><div id="pi-fg-prod" style="display:none;"><div class="form-row"><div class="form-group"><label class="form-label">Nom et prénom du vendeur <span style="color:var(--terra);">*</span> <span style="font-weight:400;color:var(--gris-2);">(interne)</span></label><input class="form-input" id="pi-vendeur" type="text" placeholder="Ex : Anne Lefort"></div><div class="form-group" style="position:relative;"><label class="form-label">Adresse du bien <span style="color:var(--terra);">*</span> <span style="font-weight:400;color:var(--gris-2);">(interne)</span></label><input class="form-input" id="pi-adresse" type="text" autocomplete="off" oninput="piAdrAC(this.value)" onblur="setTimeout(piAdrHide,180)" placeholder="Commencez à taper l'adresse…"><div id="pi-ac-list" style="display:none;position:absolute;top:100%;left:0;right:0;z-index:30;background:#fff;border:1px solid var(--beige-3);border-radius:0 0 7px 7px;max-height:190px;overflow-y:auto;box-shadow:0 8px 20px rgba(0,0,0,.12);"></div></div></div><div class="form-row"><div class="form-group"><label class="form-label">Identité affichée <span style="color:var(--terra);">*</span> <span style="font-weight:400;color:var(--gris-2);">(tableau &amp; écran)</span></label><input class="form-input" id="pi-vend-pub" type="text" placeholder="Ex : Mme L."></div><div class="form-group"><label class="form-label">Lieu affiché <span style="color:var(--terra);">*</span> <span style="font-weight:400;color:var(--gris-2);">(tableau &amp; écran)</span></label><input class="form-input" id="pi-adr-pub" type="text" placeholder="Ex : quartier du Château"></div></div></div><div class="form-group"><label class="form-label">La recherche / l'info en quelques mots-clés <span style="font-weight:400;color:var(--gris-2);">(affichée sur le post-it ET sur l'écran de l'agence : aucune info personnelle — <span id="pi-cnt">120</span> caract.)</span></label><textarea class="form-textarea" id="pi-content" maxlength="120" oninput="piCntUpd()" style="font-family:'Caveat',cursive;font-size:17px;" placeholder="L'essentiel, court et lisible..."></textarea></div><div class="form-group"><label class="form-label">Détails internes <span style="font-weight:400;color:var(--gris-2);">(lisibles en OUVRANT le post-it d'un clic — jamais à l'écran Agence)</span></label><textarea class="form-textarea" id="pi-details" placeholder="Tout le contexte utile : coordonnées, historique, montants..."></textarea></div><div class="form-row"><div class="form-group" style="margin:0;"><label class="form-label">Visibilite</label><select class="form-select" id="pi-vis" onchange="piPubField()"><option value="moi">Prive</option><option value="ecran">Agence (équipe + écran de l'agence)</option></select></div><div class="form-group" style="margin:0;"><label class="form-label">Collaborateur</label><select class="form-select" id="pi-owner"><option value="LS">Laurent Sellem</option><option value="MA">Marine Attias</option><option value="LP">Liloé Pichat</option><option value="MZ">Marine Zoretic</option></select></div></div><!-- v8.39 : le champ « pub » 90c est remplacé par « Identité affichée » + « Lieu affiché » (choix du rédacteur, champ par champ) — les anciens post-its qui portent encore n.pub restent affichés tels quels --><div class="modal-actions"><button class="btn btn-outline" onclick="closeModal('modal-postit')">Annuler</button><button class="btn btn-terra" id="pi-save-btn" onclick="piCreate()">Ajouter</button></div></div></div>
 
 <div class="modal-overlay" id="modal-visite"><div class="modal"><button class="modal-close" onclick="closeModal('modal-visite')">x</button><div class="modal-title">Nouvelle visite</div><div class="form-group"><label class="form-label">Bien / Adresse</label><input class="form-input" id="vt-addr" type="text" placeholder="Ex : 12 avenue Charles de Gaulle"></div><div class="form-row"><div class="form-group"><label class="form-label">Client</label><input class="form-input" id="vt-client" type="text" placeholder="Nom du client"></div><div class="form-group"><label class="form-label">Accompagnateur(s)</label><div class="vt-acc-field" id="vt-acc-field" onclick="vtAccompOpen()"><span class="vt-acc-ph">+ ajouter un accompagnateur</span></div></div></div><div class="form-row"><div class="form-group"><label class="form-label">Date</label><input class="form-input" id="vt-date" type="date"></div><div class="form-group"><label class="form-label">Heure</label><input class="form-input" id="vt-heure" type="time" value="10:00"></div></div><div class="form-group"><label class="form-label">Statut</label><div class="statut-choices"><div class="statut-choice sc-conf active" data-s="confirmee" onclick="vtSelSt(this)">Confirmee</div><div class="statut-choice sc-att" data-s="a-confirmer" onclick="vtSelSt(this)">A confirmer</div><div class="statut-choice sc-ann" data-s="annulee" onclick="vtSelSt(this)">Annulee</div></div></div><div class="sep"></div><div class="form-group"><label class="form-label">Feedback visiteur</label><textarea class="form-textarea" id="vt-feedback" placeholder="Impression, objections..."></textarea></div><div class="form-group"><label class="form-label">Suite donnee</label><div class="suite-choices"><button class="suite-choice" data-s="interesse" onclick="vtSelSu(this)">Interesse</button><button class="suite-choice" data-s="offre" onclick="vtSelSu(this)">Offre a venir</button><button class="suite-choice" data-s="sans-suite" onclick="vtSelSu(this)">Sans suite</button><button class="suite-choice" data-s="reflexion" onclick="vtSelSu(this)">En reflexion</button><button class="suite-choice" data-s="2e-visite" onclick="vtSelSu(this)">2e visite</button></div></div><div class="form-group"><label class="form-label">Note interne</label><textarea class="form-textarea" id="vt-note" style="min-height:50px;" placeholder="Note privee..."></textarea></div><div class="modal-actions"><button class="btn btn-outline" onclick="closeModal('modal-visite')">Annuler</button><button class="btn btn-terra" onclick="vtSave()">Enregistrer</button></div></div></div>
 
@@ -4303,7 +4308,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     document.querySelectorAll('.pi-color-choice').forEach(function(c){ c.classList.toggle('active', c.dataset.color===n.color); });
     document.getElementById('pi-ref').value=n.ref||'';
     document.getElementById('pi-content').value=n.content||'';
-    document.getElementById('pi-vis').value=n.vis;
+    document.getElementById('pi-vis').value=(n.vis==='equipe'?'ecran':n.vis);   /* v9.06 : « Équipe » fusionné dans « Agence » — enregistré en Agence à la prochaine modification */
     document.getElementById('pi-owner').value=n.owner;
     /* v8.37 : champs structurés */
     document.getElementById('pi-cli').value=n.cli||'';
@@ -4389,7 +4394,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
   });
   function piCanSee(n){
     var u=window.ACH_USER||{key:'admin',initials:'LS'};
-    if(u.key==='public') return n.vis==='ecran'||n.vis==='equipe';  // v8.26 : l'écran affiche les post-its PARTAGÉS (Équipe + Écran). Les « Privé » restent invisibles.
+    if(u.key==='public') return n.vis==='ecran'||n.vis==='equipe';  // v9.06 : Équipe et Agence ne font plus qu'UNE option « Agence » (les anciens « equipe » comptent comme Agence). v8.26 : l'écran affiche les post-its PARTAGÉS (Équipe + Écran). Les « Privé » restent invisibles.
     if(u.key==='admin'||u.key==='gerant') return true;   // Admin + Gérant voient tout
     if(n.vis==='equipe'||n.vis==='ecran') return true;   // partagé (Équipe ou Écran) : visible par toute l'équipe
     return n.owner===u.initials;                         // sinon : seulement les siens
@@ -4504,7 +4509,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
             if(e.target.closest('textarea,button,input,select')) return;
             if(window.piView) piView(n.id);
           });
-          div.innerHTML='<div class="pt-stripe"></div><div class="pt-inner"><div class="pt-top"><span class="pt-badge">'+PI_LABELS[color]+'</span><div class="pt-own '+oc+'" title="Auteur : '+piEsc(n.owner)+'">'+piEsc(n.owner)+'</div></div>'+(_sub?'<div class="pt-ref">'+piEsc(_sub)+(n.details?' <span title="D\u00e9tails internes \u2014 cliquez sur le post-it pour l\u2019ouvrir">\u24d8</span>':'')+'</div>':'')+((n.ref&&!_isPubAcc&&!_sub)?'<div class="pt-ref">'+piEsc(n.ref)+'</div>':'')   /* v8.44 : plus de DOUBLE ligne — la vieille Référence s'efface devant l'identité affichée */+'<textarea class="pt-text" data-id="'+n.id+'" onchange="piUpdate('+n.id+',this.value)">'+piEsc(n.content)+'</textarea><div class="pt-footer"><span class="pt-date">'+piEsc(n.date)+'</span><span class="pt-vis">'+(n.vis==='equipe'?'Equipe':(n.vis==='ecran'?'Agence':'Prive'))+'</span><span class="pt-actions"><button class="pt-arch pi-admin-action" title="Archiver (retirer du tableau sans supprimer)" onclick="piArch('+n.id+')">🗄</button><button class="pt-edit pi-admin-action" onclick="piEdit('+n.id+')">Modif.</button><button class="pt-del pi-admin-action" onclick="piDel('+n.id+')">Suppr.</button></span></div></div>';
+          div.innerHTML='<div class="pt-stripe"></div><div class="pt-inner"><div class="pt-top"><span class="pt-badge">'+PI_LABELS[color]+'</span><div class="pt-own '+oc+'" title="Auteur : '+piEsc(n.owner)+'">'+piEsc(n.owner)+'</div></div>'+(_sub?'<div class="pt-ref">'+piEsc(_sub)+(n.details?' <span title="D\u00e9tails internes \u2014 cliquez sur le post-it pour l\u2019ouvrir">\u24d8</span>':'')+'</div>':'')+((n.ref&&!_isPubAcc&&!_sub)?'<div class="pt-ref">'+piEsc(n.ref)+'</div>':'')   /* v8.44 : plus de DOUBLE ligne — la vieille Référence s'efface devant l'identité affichée */+'<textarea class="pt-text" data-id="'+n.id+'" onchange="piUpdate('+n.id+',this.value)">'+piEsc(n.content)+'</textarea><div class="pt-footer"><span class="pt-date">'+piEsc(n.date)+'</span><span class="pt-vis">'+((n.vis==='equipe'||n.vis==='ecran')?'Agence':'Prive')+'</span><span class="pt-actions"><button class="pt-arch pi-admin-action" title="Archiver (retirer du tableau sans supprimer)" onclick="piArch('+n.id+')">🗄</button><button class="pt-edit pi-admin-action" onclick="piEdit('+n.id+')">Modif.</button><button class="pt-del pi-admin-action" onclick="piDel('+n.id+')">Suppr.</button></span></div></div>';
           if(canDrag){
             div.draggable=true;
             div.addEventListener('dragstart', function(e){ _piDragId=n.id; div.classList.add('pi-dragging'); try{ e.dataTransfer.setData('text/plain',''+n.id); e.dataTransfer.effectAllowed='move'; }catch(err){} });
@@ -4552,7 +4557,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     if(canFull){
       interne=(n.col==='clients')?(n.cli||''):((n.vendeur||'')+((n.adresse)?(' \u00b7 '+n.adresse):''));
     }
-    var visLbl=(n.vis==='equipe'?'\u00c9quipe':(n.vis==='ecran'?'Agence (\u00e9cran)':'Priv\u00e9'));
+    var visLbl=((n.vis==='equipe'||n.vis==='ecran')?'Agence':'Priv\u00e9');
     ov.innerHTML='<div style="background:var(--blanc,#fdfbf7);border-radius:14px;max-width:560px;width:100%;max-height:84vh;overflow:auto;padding:22px 24px;box-shadow:0 24px 60px rgba(0,0,0,.35);font-family:\'Jost\',sans-serif;" onclick="event.stopPropagation()">'
       +'<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px;">'
       +'<div style="font-size:12.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--gris,#6b6b63);">'+colLbl+' \u00b7 '+visLbl+'</div>'
@@ -11130,6 +11135,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
         if(!p){ setBusy(false); msg('Profil introuvable. Contactez Laurent.','err'); return; }
         ME={id:user.id, email:user.email, name:p.full_name, role:p.role, initials:p.initials};
         window.ACH_REAL={id:ME.id, name:ME.name, role:ME.role, initials:ME.initials};
+        try{ window.localStorage.setItem('achille_role', ME.role||''); }catch(e){}   /* v9.06 : mémorisé pour la règle de reconnexion (compte Écran public) */
         /* ===== GRAND NETTOYAGE v6 (une seule fois par poste) =====
            On repart de la référence : le cloud. Les copies locales périmées (doublons,
            post-its supprimés ailleurs, etc.) sont purgées, puis tout est re-téléchargé.
@@ -11171,7 +11177,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     startRealtime();
     var ov=document.getElementById('ach-login-overlay'); if(ov) ov.classList.add('ach-hidden');
     var ub=document.getElementById('ach-userbar'); if(ub) ub.style.display='none';
-    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v9.05';
+    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v9.06';
     flag('Synchronis\u00e9');
     // fin de l'init : on autorise la journalisation des actions
     setTimeout(function(){ installInterceptor._init=false; }, 1500);
@@ -11217,7 +11223,10 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
           /* v6.24 : reconnexion quotidienne obligatoire */
           var day=achDayFR();  /* v7.40 : heure de Paris */
           var last=null; try{ last=window.localStorage.getItem('achille_login_day'); }catch(e){}
-          if(last && last!==day){
+          /* v9.06 : le compte « Écran public » (TV de l'agence, lecture seule) est DISPENSÉ de la
+             reconnexion quotidienne — personne ne peut retaper un mot de passe à la télécommande. */
+          var _isScreen=false; try{ _isScreen=(window.localStorage.getItem('achille_role')==='public'); }catch(e){}
+          if(last && last!==day && !_isScreen){
             db.auth.signOut().then(function(){ showLogin('Nouvelle journée : merci de vous reconnecter.'); },
                                    function(){ showLogin('Nouvelle journée : merci de vous reconnecter.'); });
           } else { afterLogin(); }
@@ -14634,13 +14643,15 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
     var wmSrc=(document.getElementById('ach-splash-logo')||{}).src||'';
     var wordSrc=(document.getElementById('ach-logo-word')||{}).src||'';
     var wifiSvg='<svg width="22" height="18" viewBox="0 0 24 20" fill="none"><path d="M2 7.5C7.7 2.4 16.3 2.4 22 7.5" stroke="#8f8878" stroke-width="1.7" stroke-linecap="round"/><path d="M5.4 11.3C9.2 8 14.8 8 18.6 11.3" stroke="#8f8878" stroke-width="1.7" stroke-linecap="round"/><path d="M8.8 15C10.7 13.4 13.3 13.4 15.2 15" stroke="#8f8878" stroke-width="1.7" stroke-linecap="round"/><circle cx="12" cy="18" r="1.5" fill="#8f8878"/></svg>';
-    var h='<div class="vslide on">'
+    var h='<div class="vslide v-home on">'
       +'<div class="v-wm"><img src="'+wmSrc+'" alt=""></div>'
+      +'<div class="v-homebox">'   /* v9.06 : bloc central mesurable (voir _vHomeFit) */
       +'<div class="v-kicker">Bienvenue chez</div>'
       +'<img class="v-word" src="'+wordSrc+'" alt="Achille immobilier">'
       +'<div class="v-base">Conseils immobiliers \u00e0 Neuilly et dans tout l\u2019Ouest parisien</div>'
       +'<div class="v-clock"></div><div class="v-date"></div>'
       +'<div class="v-fete" id="v-fete"></div>'
+      +'</div>'
       +'<div class="v-wifi"><span class="v-met" id="v-meteo"></span><span class="v-dot" id="v-sep1" style="display:none;"></span>'
       +'<span class="v-wline">'+wifiSvg+'<b>Guest Achille Immobilier</b> \u00b7 mot de passe <b>Guest@Achille!</b></span></div></div>';
     var notes=_vPostits();
@@ -14664,7 +14675,9 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
          (32/68 pour 9/19) était jugé inesthétique sur la TV ; en racine (~40/60), le côté le
          moins garni garde de la présence et ses notes sont un peu plus grandes, ce qui est
          naturel. La taille exacte des notes est calculée par _vFit après rendu. */
-      var _share=Math.max(.34, Math.min(.66, Math.sqrt(_np)/(Math.sqrt(_np)+Math.sqrt(_nc))));
+      /* v9.06 (photo de l'écran réel) : puissance 0,75 au lieu de la racine — le côté Clients, plus
+         garni et aux textes plus longs, récupère de la largeur ; bornes 34-66 % inchangées. */
+      var _share=Math.max(.34, Math.min(.66, Math.pow(_np,.75)/(Math.pow(_np,.75)+Math.pow(_nc,.75))));
       var _eff=Math.ceil(Math.max(_np/(2*_share), _nc/(2*(1-_share))));
       var size=_eff<=4?'vn-l':(_eff<=8?'vn-m':(_eff<=14?'vn-s':(_eff<=28?'vn-xs':'vn-xxs')));
       var rots=[-2.2,1.6,-1.1,2.4,-1.8,1.2,-2.6,2.0];
@@ -14700,40 +14713,55 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
        la largeur de note qui occupe l'espace : estimation par l'aire disponible, puis quelques
        itérations mesurées (grandit si ça flotte, rétrécit si ça déborde), police et marges
        proportionnelles. Le filet v8.37 (réduction exacte) reste en tout dernier recours. */
+    /* ══ v9.06 (photo de l'écran réel du 10/09 : « grandes marges à exploiter, post-its clients
+       trop petits ») : REMPLISSAGE PAR GRILLE. On cherche le nombre de colonnes × lignes qui donne
+       les notes les plus grandes, puis chaque note prend EXACTEMENT sa case (largeur ET hauteur) :
+       le tableau est occupé d'un bord à l'autre. Proportions bornées (ni bandeau, ni colonne).
+       Le texte se réduit s'il ne tient pas (jamais sous 10 px), avec une écriture homogène sur tout le tableau. */
     function _vFit(bd){
       var notes=Array.prototype.slice.call(bd.querySelectorAll('.v-note'));
       if(!notes.length) return;
-      var W=bd.clientWidth, H=bd.clientHeight, n=notes.length;
+      bd.style.transform=''; bd.style.alignContent='';
+      var cs=getComputedStyle(bd), n=notes.length;
+      var W=bd.clientWidth-(parseFloat(cs.paddingLeft)||0)-(parseFloat(cs.paddingRight)||0);
+      var H=bd.clientHeight-(parseFloat(cs.paddingTop)||0)-(parseFloat(cs.paddingBottom)||0);
       if(W<50||H<50) return;
-      var w=Math.sqrt((W*H*0.72)/(n*0.82));               /* aire visée ~72 %, note ~0.82×w de haut */
-      w=Math.min(w, W*0.46, 400); w=Math.max(w, 84);
-      function apply(x){
-        notes.forEach(function(el){
-          el.style.width=x+'px';
-          el.style.fontSize=(x*0.145).toFixed(1)+'px';
-          el.style.minHeight=(x*0.60).toFixed(0)+'px';
-          el.style.padding=(x*0.10).toFixed(0)+'px '+(x*0.06).toFixed(0)+'px '+(x*0.07).toFixed(0)+'px';
-        });
+      var gy=Math.floor(Math.max(15, H*0.045)), gx=Math.floor(Math.max(10, W*0.026));   /* l'écart vertical laisse la place aux punaises */
+      var best=null;
+      for(var c=1;c<=n;c++){
+        var r=Math.ceil(n/c);
+        var w=(W-(c-1)*gx)/c, h=(H-(r-1)*gy)/r;
+        if(w<=0||h<=0) continue;
+        if(w>h*1.6) w=h*1.6;            /* pas de bandeau trop allongé */
+        if(h>w*1.1) h=w*1.1;            /* pas de note trop haute */
+        w=Math.floor(w)-1; h=Math.floor(h)-1;   /* arrondi VERS LE BAS : sinon la dernière colonne passe à la ligne */
+        if(!best||w*h>best.w*best.h) best={c:c,r:r,w:w,h:h};
       }
-      for(var it=0; it<8; it++){
-        apply(w);
-        bd.style.transform=''; bd.style.alignContent='';
-        var need=bd.scrollHeight;
-        if(need>H+2){ var k1=Math.max(.78, Math.sqrt(H/need)*0.97); if(k1>=.999) break; w=Math.max(84, w*k1); }
-        else if(need<H*0.86 && w<Math.min(W*0.46,400)){ var k2=Math.min(1.12, Math.sqrt(H/Math.max(need,1))*0.96); if(k2<=1.001) break; w=Math.min(Math.min(W*0.46,400), w*k2); }
-        else break;
-      }
-      /* filet v8.37 : si ça déborde encore d'un cheveu, réduction exacte */
-      var need2=bd.scrollHeight, got=bd.clientHeight;
-      if(need2>got+2){
-        bd.style.alignContent='flex-start';
-        need2=bd.scrollHeight;
-        var k=Math.max(.4, got/need2);
-        bd.style.transformOrigin='50% 0'; bd.style.transform='scale('+k+')';
-      }
+      if(!best) return;
+      bd.style.gap=gy+'px '+gx+'px';
+      var m=Math.min(best.w,best.h);
+      var fs0=Math.max(12, Math.min(best.w*0.135, best.h*0.2, 46));
+      var sizes=notes.map(function(el){
+        el.style.width=best.w+'px';
+        el.style.height=best.h+'px';
+        el.style.minHeight='0';
+        el.style.padding=(m*0.11).toFixed(0)+'px '+(m*0.07).toFixed(0)+'px '+(m*0.05).toFixed(0)+'px';
+        var t=el.querySelector('.v-txt'); var fs=fs0; el.style.fontSize=fs.toFixed(1)+'px';
+        for(var k=0;t && k<18 && t.scrollHeight>t.clientHeight+1 && fs>10;k++){ fs=Math.max(10,fs*0.92); el.style.fontSize=fs.toFixed(1)+'px'; }
+        return fs;
+      });
+      /* écriture homogène : au plus 30 % d'écart entre la plus petite et la plus grande écriture du tableau */
+      var fsMin=Math.min.apply(null,sizes);
+      notes.forEach(function(el,i){
+        el.style.fontSize=Math.min(sizes[i], fsMin*1.3).toFixed(1)+'px';
+        var t=el.querySelector('.v-txt');   /* texte encore trop long : fondu en bas plutôt qu'une ligne coupée net */
+        el.classList.toggle('v-cut', !!(t && t.scrollHeight>t.clientHeight+1));
+      });
     }
+    _vRefit=function(){ v.querySelectorAll('.v-board').forEach(_vFit); _vHomeFit(); };
     requestAnimationFrame(function(){ requestAnimationFrame(function(){
       try{ v.querySelectorAll('.v-board').forEach(_vFit); }catch(e){}
+      try{ _vHomeFit(); }catch(e){}   /* v9.06 */
     }); });
   }
   /* v8.37 : éphéméride (calendrier des prénoms usuel) — index [mois][jour-1] */
@@ -14804,6 +14832,24 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
        (les post-its ajoutés ou modifiés entre-temps sont pris en compte) */
     _vTimer=setTimeout(function(){ if(_vIdx===_vSlides-1){ _vBuild(); _vArm(); } else { _vShow(_vIdx+1); } }, _vIdx===0?20000:25000);   /* v8.35 : accueil 20 s, tableau 25 s */
   }
+  /* v9.06 : garde-fou de l'accueil — sur la TV (fenêtre ~960×540) « Nous fêtons … » passait sous
+     le pied de page. On réserve la hauteur réelle du pied de page, et si le bloc central ne tient
+     toujours pas, il est réduit à l'échelle. Rien ne peut plus se chevaucher, quelle que soit la TV. */
+  var _vRefit=function(){ _vHomeFit(); }, _vRz=null;
+  function _vHomeFit(){
+    var sl=document.querySelector('#ach-veille .vslide.v-home'); if(!sl) return;
+    var box=sl.querySelector('.v-homebox'), foot=sl.querySelector('.v-wifi'); if(!box||!foot) return;
+    box.style.transform='';
+    var H=sl.clientHeight; if(H<50) return;
+    var reserve=Math.max(0, H-foot.offsetTop)+H*0.035;
+    sl.style.paddingBottom=reserve.toFixed(0)+'px';
+    var avail=H-reserve-H*0.04, bh=box.offsetHeight;
+    if(avail>0 && bh>avail){ box.style.transform='scale('+(avail/bh).toFixed(3)+')'; }
+  }
+  window.addEventListener('resize',function(){
+    var v=document.getElementById('ach-veille'); if(!v||!v.classList.contains('on')) return;
+    clearTimeout(_vRz); _vRz=setTimeout(function(){ try{ _vRefit(); }catch(e){} },250);
+  });
   window.achVeilleStart=function(){
     var v=document.getElementById('ach-veille'); if(!v) return;
     _vBuild(); v.classList.add('on'); _vArm();
@@ -14830,6 +14876,40 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
     var v=document.getElementById('ach-veille');
     if(v && v.classList.contains('on') && document.fullscreenElement){ try{ document.exitFullscreen(); }catch(err){} }
   });
+  /* ══ v9.06 : MODE TÉLÉ AUTONOME (navigateur kiosque installé sur la TCL 43P79K).
+     Adresse de démarrage du kiosque : l'adresse habituelle + ?tv=1 (mémorisé sur l'appareil ;
+     ?tv=0 pour l'enlever). Sur le compte Agence, l'écran de veille se lance TOUT SEUL, sans le
+     bouton « Plein écran » (le kiosque est déjà en plein écran, et requestFullscreen exige un clic).
+     Double-clic (double OK à la télécommande) : on sort de la veille ; elle revient seule après
+     5 min sans activité. Rechargement automatique chaque nuit vers 5 h (nouvelles versions). */
+  (function(){
+    var q=(location.search||'')+(location.hash||'');
+    try{
+      if(/[?&#]tv=0\b/.test(q)) localStorage.removeItem('achille_tv');
+      else if(/[?&#]tv(=1)?\b/.test(q)) localStorage.setItem('achille_tv','1');
+    }catch(e){}
+    function tvOn(){ try{ return localStorage.getItem('achille_tv')==='1'; }catch(e){ return false; } }
+    window.achIsTv=tvOn;
+    var lastAct=0, IDLE=5*60*1000;
+    ['mousedown','keydown','touchstart','wheel'].forEach(function(ev){
+      window.addEventListener(ev,function(){ lastAct=Date.now(); },{passive:true,capture:true});
+    });
+    document.addEventListener('dblclick',function(){
+      if(!tvOn()) return;
+      var v=document.getElementById('ach-veille');
+      if(v && v.classList.contains('on') && !document.fullscreenElement){ lastAct=Date.now(); window.achVeilleStop(); }
+    });
+    setInterval(function(){
+      if(!tvOn()) return;
+      var v=document.getElementById('ach-veille'); if(!v) return;
+      if(document.body.classList.contains('ach-agence') && !v.classList.contains('on') && Date.now()-lastAct>IDLE && window.achVeilleStart) window.achVeilleStart();
+      var d=new Date();
+      if(d.getHours()===5){
+        var today=d.toDateString(), done=null; try{ done=localStorage.getItem('achille_tv_reload'); }catch(e){}
+        if(done!==today){ try{ localStorage.setItem('achille_tv_reload',today); }catch(e){} location.reload(); }
+      }
+    },5000);
+  })();
   /* v8.32 : plein écran pour le compte Agence. requestFullscreen ne marche que sur un clic
      de l'utilisateur (règle des navigateurs) — c'est exactement ce bouton. */
   window.agenceFsToggle=function(){
@@ -16930,7 +17010,7 @@ body.ach-veille-live #agence-wifi, body.ach-veille-live #agence-fs{display:none 
   font-size:16px;font-weight:300;color:#8f8878;letter-spacing:.05em;white-space:nowrap;font-family:'Jost',sans-serif;
   border-top:1px solid rgba(205,122,82,.35);padding-top:1.6vh;}
 #ach-veille .v-foot b{color:#cd7a52;font-weight:400;}
-#ach-veille .v-foot-wm{height:4.6vh;opacity:.5;}
+#ach-veille .v-foot-wm{height:6vh;opacity:.95;}   /* v9.06 : wordmark lisible (était 4.6vh à 50 % : gris sur noir) */
 #ach-veille .v-half{flex:1;display:flex;flex-direction:column;align-items:center;padding:2.4vh 1.4vw 2vh;min-width:0;position:relative;}
 /* v8.38 : la séparation est le trait terracotta .v-sepline */
 #ach-veille .v-half-lbl{position:relative;background:transparent;color:#cbc4b4;border-radius:0;
@@ -16957,6 +17037,30 @@ body.ach-veille-live #agence-wifi, body.ach-veille-live #agence-fs{display:none 
 #ach-veille .v-cork.vn-m .v-note{width:clamp(195px,13vw,260px);min-height:19vh;font-size:28px;}
 #ach-veille .v-cork.vn-s .v-note{width:clamp(160px,11vw,210px);min-height:15vh;font-size:23px;}
 /* v8.37 : jusqu'à ~50 post-its par côté sur le 43 pouces */
+/* ══ v9.06 : ÉCRAN TV — retours photo du 10/09 ══
+   · Post-its en couleurs PLEINES (plus de dégradé) et texte foncé imposé.
+   · Le texte se réduit dans sa note (_vFit) : il ne déborde jamais.
+   · Accueil : tailles liées à la hauteur de l'écran (identiques en 1280×720, réduites en dessous),
+     bloc central mesuré par _vHomeFit. */
+#ach-veille{color-scheme:only light;}
+#ach-veille .v-note{box-shadow:0 1.4vh 3vh rgba(0,0,0,.75);}
+#ach-veille .v-note.hot{background:#ffe433;}
+#ach-veille .v-note.todo{background:#8fbdf3;}
+#ach-veille .v-note.ff{background:#f78fb0;}
+#ach-veille .v-note .v-txt{color:#1f1a17;min-height:0;overflow:hidden;line-height:1.12;}
+#ach-veille .v-note.v-cut .v-txt{-webkit-mask-image:linear-gradient(180deg,#000 78%,transparent);mask-image:linear-gradient(180deg,#000 78%,transparent);}
+#ach-veille .v-half-lbl{white-space:nowrap;font-size:min(23px,3.3vh);padding:0 1.2vw 1.4vh;margin-bottom:1.6vh;}
+#ach-veille .v-board{padding-top:1.8vh;}   /* place pour les punaises de la 1re rangée */
+#ach-veille .vslide.v-home{padding:3vh 3vw 13vh;}
+#ach-veille .v-homebox{position:relative;display:flex;flex-direction:column;align-items:center;transform-origin:50% 50%;}
+#ach-veille .v-kicker{font-size:min(34px,4.7vh);}
+#ach-veille .v-word{width:min(34vw,560px,60vh);}
+#ach-veille .v-base{font-size:min(26px,3.6vh);}
+#ach-veille .v-clock{font-size:min(58px,8vh);}
+#ach-veille .v-date{font-size:min(29px,4vh);}
+#ach-veille .v-fete{font-size:min(24px,3.35vh);min-height:min(30px,4.2vh);}
+#ach-veille .v-fete .fj{font-size:min(21px,2.9vh);}
+#ach-veille .v-wifi{font-size:min(16.5px,2.6vh);}
 #ach-veille .v-cork.vn-xs .v-note{width:clamp(128px,8.6vw,165px);min-height:11vh;font-size:19px;padding:1.6vh .8vw 1vh;}
 #ach-veille .v-cork.vn-xxs .v-note{width:clamp(104px,6.8vw,130px);min-height:8.5vh;font-size:15.5px;padding:1.3vh .6vw .8vh;}
 #ach-veille .v-cork.vn-xs .v-note::before{width:16px;height:16px;top:-8px;}
@@ -17286,7 +17390,8 @@ function doAutoLogout(reason){
   } else location.reload();
 }
 function check(){
-  if(!window.ACH_REAL) return;                       /* pas connecté : rien à faire */
+  if(!window.ACH_REAL) return;
+  if(window.ACH_REAL.role==='public') return;   /* v9.06 : l'Écran public (TV, lecture seule) n'est jamais déconnecté — ni après 2 h, ni au changement de jour */                       /* pas connecté : rien à faire */
   var last=parseInt(localStorage.getItem('achille_lastact')||'0',10)||now();
   if(now()-last > INACT_MS){ doAutoLogout('Par sécurité, vous avez été déconnecté après 2 h d\u2019inactivité.'); return; }
   var day=achDayFR();  /* v7.40 : heure de Paris */
