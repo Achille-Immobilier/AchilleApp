@@ -1671,7 +1671,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     </div>
   </div>
   </div>
-  <div class="logo-ver app-ver">Achille App — v9.13</div>
+  <div class="logo-ver app-ver">Achille App — v9.15</div>
 </aside>
 <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Réduire la barre latérale">‹</button>
 
@@ -11179,7 +11179,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     startRealtime();
     var ov=document.getElementById('ach-login-overlay'); if(ov) ov.classList.add('ach-hidden');
     var ub=document.getElementById('ach-userbar'); if(ub) ub.style.display='none';
-    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v9.13';
+    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v9.15';
     flag('Synchronis\u00e9');
     // fin de l'init : on autorise la journalisation des actions
     setTimeout(function(){ installInterceptor._init=false; }, 1500);
@@ -16068,9 +16068,12 @@ var DOCGEN_TEMPLATES = {
       { t:'p', k:'analyse', rows:3, def:"L’appartement est situé dans un secteur à forte attractivité immobilière, à proximité immédiate de tous les commerces et des stations de métro. La demande y est soutenue, notamment pour les familles recherchant plus de 2 chambres." },
       { t:'h', v:'Estimation de votre bien' },
       { t:'p', k:'intro_estim', rows:3, def:"À la suite de l’analyse approfondie de votre bien, j’ai le plaisir de vous transmettre notre avis de valeur, établi selon les caractéristiques du logement, de son emplacement, de son état général, ainsi que d’une étude des transactions et de la demande actuelle sur votre secteur. Votre bien présente de réels atouts, tant par sa situation que par ses prestations, ce qui lui permet de se positionner favorablement sur le marché actuel. Sur cette base, notre estimation se situe dans les fourchettes suivantes :" },
-      { t:'fourchette', k:'f_basse', l:'Fourchette basse', prix:'882 000 €', opt:'f_basse_on', optLabel:'Afficher la fourchette basse', def:"La fourchette basse correspond à un prix permettant une vente rapide, dans un délai court, en tenant compte d’une négociation limitée. Elle se situe autour de" },
-      { t:'fourchette', k:'f_mediane', l:'Fourchette médiane', prix:'950 000 €', opt:'f_mediane_on', optLabel:'Afficher la fourchette médiane', def:"La fourchette médiane représente le prix de marché cohérent aujourd’hui, équilibrant attractivité pour les acquéreurs et valorisation optimale de votre bien. Elle se situe autour de" },
-      { t:'fourchette', k:'f_haute', l:'Fourchette haute', prix:'1 015 000 €', opt:'f_haute_on', optLabel:'Afficher la fourchette haute', def:"La fourchette haute correspond à un prix ambitieux, envisageable dans un contexte de délai plus long, sous réserve d’un positionnement et d’une présentation irréprochables. Elle se situe autour de" },
+      /* v9.14 : libellés renommés (basse→sécurisée, médiane→de marché, haute→ambitieuse) et
+         textes EXACTS fournis par Laurent le 14/09 — les clés f_basse/f_mediane/f_haute sont
+         CONSERVÉES (compatibilité de l'historique et des brouillons enregistrés). */
+      { t:'fourchette', k:'f_basse', l:'Fourchette sécurisée', prix:'882 000 €', opt:'f_basse_on', optLabel:'Afficher la fourchette sécurisée', def:"La fourchette sécurisée correspond à un prix permettant une vente rapide, dans un délai court, en tenant compte d’une négociation limitée. Elle se situe autour de" },
+      { t:'fourchette', k:'f_mediane', l:'Fourchette de marché', prix:'950 000 €', opt:'f_mediane_on', optLabel:'Afficher la fourchette de marché', def:"La fourchette de marché représente le prix cohérent avec le marché d’aujourd’hui, équilibrant attractivité pour les acquéreurs et valorisation optimale de votre bien. Elle se situe autour de" },
+      { t:'fourchette', k:'f_haute', l:'Fourchette ambitieuse', prix:'1 015 000 €', opt:'f_haute_on', optLabel:'Afficher la fourchette ambitieuse', def:"La fourchette ambitieuse correspond au plein potentiel de votre bien. Elle est atteignable sur un délai de commercialisation plus long, dès lors que la présentation du bien et le ciblage des acquéreurs sont à la hauteur de ses atouts — ce sur quoi nous engageons nos moyens. Elle se situe autour de" },
       { t:'p', k:'conclusion', rows:3, def:"Cette fourchette correspond à un positionnement cohérent avec le marché actuel et devrait permettre une vente dans des délais raisonnables, sous réserve des évolutions des conditions du marché et du profil des potentiels acquéreurs. Le choix du prix de mise en vente dépendra de votre stratégie, de votre calendrier et de vos priorités. Notre rôle sera ensuite de vous accompagner afin d’adapter ce positionnement au fil des retours du marché, tout en défendant au mieux la valeur de votre bien." },
       { t:'h', v:'Cadre et limites de cette estimation' },
       { t:'p', k:'cadre', rows:2, def:"Le présent avis de valeur est fourni à titre indicatif, sur la base des informations communiquées, de sa localisation et de l’analyse du marché à la date de rédaction. Il ne constitue ni un engagement de résultat, ni une garantie d’un prix de vente quel qu’il soit, et ne saurait se substituer à une étude financière ou bancaire." },
@@ -16357,6 +16360,8 @@ async function docgenPdf(docKey, data, assets){
       var _blockH=16 + (flines.length+_xtra)*BS*1.42;
       sp(2); need(_blockH+2);
       para(b.l,{font:kenoky,size:12,color:terra,lh:16});   /* v8.08 : titre = libellé seul (montant retiré ici) */
+      /* v9.15 : soulignement des libellés RETIRÉ (retour Laurent 14/09) — structure conservée :
+         « La » + libellé + corps + montant en gras (kenoky/terra) en fin de phrase. */
       flines.forEach(function(ln,i){
         need(BS*1.42);
         var last=(i===flines.length-1);
