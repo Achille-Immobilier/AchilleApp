@@ -1674,7 +1674,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     </div>
   </div>
   </div>
-  <div class="logo-ver app-ver">Achille App — v9.20</div>
+  <div class="logo-ver app-ver">Achille App — v9.21</div>
 </aside>
 <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Réduire la barre latérale">‹</button>
 
@@ -3675,6 +3675,11 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     #page-equityliving .el-row3{display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:12px;align-items:end;}
     #page-equityliving .form-group{margin-bottom:6px;}
     #page-equityliving .form-label{margin-bottom:4px;font-size:11.5px;}
+    /* v9.21 : intitulés alignés au-dessus, cases alignées — hauteur d'étiquette réservée */
+    #page-equityliving .el-row4 .form-label,#page-equityliving .el-row3 .form-label{min-height:30px;display:flex;align-items:flex-end;line-height:1.3;}
+    #page-equityliving .el-row4 .el-hint{min-height:15px;}
+    #page-equityliving .el-row3{align-items:start;}
+    #page-equityliving .el-row3 .btn{margin-top:0;}
     #page-equityliving .v2-card{margin-top:10px;}
     #page-equityliving .el-pad{padding:12px 16px;}
     #page-equityliving .el-hint{font-size:11px;color:var(--gris-2);margin-top:3px;line-height:1.4;}
@@ -3704,11 +3709,13 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
             <input class="form-input js-thousands" id="el-pv" inputmode="decimal" value="1 000 000" oninput="elSync('pv')"></div>
           <div class="form-group"><label class="form-label">Apport de l’occupant (<span class="el-sym">₪</span>)</label>
             <input class="form-input js-thousands" id="el-ec" inputmode="decimal" value="350 000" oninput="elSync('ec')"></div>
-          <div class="form-group"><label class="form-label">Prêt occupant sur sa part (%) <span style="font-weight:400;color:var(--gris-2);">0 = sans prêt · 50 % max</span></label>
-            <input class="form-input" id="el-rl" inputmode="decimal" value="30" oninput="elSync('rl')">
+          <div class="form-group"><label class="form-label">Prêt occupant sur sa part (%)</label>
+            <input class="form-input" id="el-rl" inputmode="decimal" value="30" oninput="elSync('rl')" title="0 = sans prêt · 50 % maximum">
+            <div class="el-hint">0 = sans prêt · 50 % maximum</div>
             <div class="el-hint" id="el-cash-note" style="color:var(--terra);"></div></div>
-          <div class="form-group"><label class="form-label">Frais d’acquisition cash (<span class="el-sym">₪</span>) <span style="font-weight:400;color:var(--gris-2);">(non couverts par le prêt)</span></label>
-            <input class="form-input js-thousands" id="el-af" inputmode="decimal" value="0" oninput="elSync()">
+          <div class="form-group"><label class="form-label">Frais d’acquisition cash (<span class="el-sym">₪</span>)</label>
+            <input class="form-input js-thousands" id="el-af" inputmode="decimal" value="0" oninput="elSync()" title="Frais non couverts par le prêt">
+            <div class="el-hint">(frais non couverts par le prêt)</div>
             <div class="el-hint" id="el-af-hint"></div></div>
         </div>
         <div class="el-row3" style="margin-top:6px;">
@@ -3729,24 +3736,34 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     </div>
     </div>
 
-    <!-- ═══ VOLET INVESTISSEUR ═══ -->
+    <!-- ═══ VOLET INVESTISSEUR (v9.21 : transcription INTÉGRALE du formulaire des photos) ═══ -->
     <div id="el-panel-b" style="display:none;">
     <div class="v2-card">
       <div class="el-pad">
         <div class="el-row4">
+          <div class="form-group"><label class="form-label">Valeur du bien (<span class="el-sym">₪</span>)</label>
+            <input class="form-input js-thousands" id="elb-pv" inputmode="decimal" value="1 000 000" oninput="elbSync('pv')"></div>
           <div class="form-group"><label class="form-label">Cash disponible de l’investisseur (<span class="el-sym">₪</span>)</label>
-            <input class="form-input js-thousands" id="elb-bc" inputmode="decimal" value="500 000" oninput="elbSync()"></div>
-          <div class="form-group"><label class="form-label">Prêt sur l’equity (%) <span style="font-weight:400;color:var(--gris-2);">0 = sans prêt · 50 % max</span></label>
-            <input class="form-input" id="elb-bl" inputmode="decimal" value="0" oninput="elbSync()">
-            <button class="std-tab" style="margin-top:4px;font-size:11px;" onclick="elbNeutral()">⚖ Équilibre (cash-neutral)</button></div>
+            <input class="form-input js-thousands" id="elb-bc" inputmode="decimal" value="500 000" oninput="elbSync('bc')"></div>
+          <div class="form-group"><label class="form-label">Prêt sur l’equity de l’investisseur (%)</label>
+            <input class="form-input" id="elb-bl" inputmode="decimal" value="0" oninput="elbSync('bl')" title="0 = sans prêt · 50 % maximum">
+            <div class="el-hint">0 = sans prêt · 50 % maximum</div>
+            <button class="std-tab" style="margin-top:2px;font-size:11px;" onclick="elbNeutral()">⚖ Régler à l’équilibre (cash-neutral)</button></div>
           <div class="form-group"><label class="form-label">Frais d’acquisition cash (<span class="el-sym">₪</span>)</label>
-            <input class="form-input js-thousands" id="elb-af" inputmode="decimal" value="0" oninput="elbSync()">
+            <input class="form-input js-thousands" id="elb-af" inputmode="decimal" value="0" oninput="elbSync()" title="Frais non couverts par le prêt">
+            <div class="el-hint">(frais non couverts par le prêt)</div>
             <div class="el-hint" id="elb-af-hint"></div></div>
-          <div class="form-group"><label class="form-label">Inclure les frais dans le prêt ?</label>
-            <div style="display:flex;gap:8px;"><button class="std-tab" id="elb-inc-y" onclick="elbTog('inc',1)">Oui</button><button class="std-tab on" id="elb-inc-n" onclick="elbTog('inc',0)">Non</button></div>
-            <button class="btn btn-terra" style="margin-top:8px;" onclick="elbCalc()">Calculer</button></div>
         </div>
-        <div class="el-hint" style="margin-top:4px;">En achat classique, l’investisseur est traité en investisseur locatif (taxe forfaitaire + frais annexes) — jamais en « premier bien ».</div>
+        <div class="el-row3" style="margin-top:6px;">
+          <div class="form-group"><label class="form-label">Inclure les frais dans le prêt ?</label>
+            <div style="display:flex;gap:8px;"><button class="std-tab" id="elb-inc-y" onclick="elbTog('inc',1)">Oui</button><button class="std-tab on" id="elb-inc-n" onclick="elbTog('inc',0)">Non</button></div></div>
+          <div class="form-group"><label class="form-label">Citoyen israélien ?</label>
+            <div style="display:flex;gap:8px;"><button class="std-tab on" id="elb-cit-y" onclick="elbTog('cit',1)">Oui</button><button class="std-tab" id="elb-cit-n" onclick="elbTog('cit',0)">Non</button></div></div>
+          <div class="form-group"><label class="form-label">Premier bien en Israël ?</label>
+            <div style="display:flex;gap:8px;"><button class="std-tab on" id="elb-fst-y" onclick="elbTog('fst',1)">Oui</button><button class="std-tab" id="elb-fst-n" onclick="elbTog('fst',0)">Non</button></div></div>
+          <div class="form-group"><button class="btn btn-terra" onclick="elbCalc()">Calculer</button></div>
+        </div>
+        <div class="el-hint" style="margin-top:4px;">Comme sur le simulateur d’origine, l’achat classique de l’investisseur reste taxé au forfait investisseur (taxe + frais annexes) — les deux derniers choix sont affichés à l’identique des photos et n’influent pas sur ce forfait (vérifié sur vos captures : 12 % même en « citoyen + 1er bien »).</div>
       </div>
     </div>
     <div class="v2-card">
@@ -11340,7 +11357,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     startRealtime();
     var ov=document.getElementById('ach-login-overlay'); if(ov) ov.classList.add('ach-hidden');
     var ub=document.getElementById('ach-userbar'); if(ub) ub.style.display='none';
-    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v9.20';
+    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v9.21';
     flag('Synchronis\u00e9');
     // fin de l'init : on autorise la journalisation des actions
     setTimeout(function(){ installInterceptor._init=false; }, 1500);
@@ -16162,49 +16179,55 @@ window.elCalc=function(){
     +'<div style="font-size:11.5px;color:var(--gris-2);margin-top:10px;">Part occupant : '+elFmt(share)+' (50 % du bien) \u00b7 part investisseur : '+elFmt(backer)+' \u00b7 mensualit\u00e9 EquityLiving = annuit\u00e9 du pr\u00eat ('+elFmt(elPay(loanEL,h.rate,h.yrs))+') + loyer occupant ('+elFmt(backer*h.elrent/100/12)+').</div>';
 };
 
-/* ── volet INVESTISSEUR (backer) ── */
-var ELB_ST={inc:0};
+/* ── volet INVESTISSEUR (backer) — v9.21 : E = valeur du bien / 2 (captures : cash-neutral recale le CASH,
+   BL % = (E − cash)/E ; ex. 400 600 → 19,88 %, 370 600 → 25,88 %). Citoyen/1er bien affichés comme sur les
+   photos ; l'achat classique investisseur reste au forfait (12 % vérifié même en citoyen+1er bien). ── */
+var ELB_ST={inc:0,cit:1,fst:1};
 window.elbTog=function(k,v){ ELB_ST[k]=v;
-  document.getElementById('elb-inc-y').classList.toggle('on', v===1);
-  document.getElementById('elb-inc-n').classList.toggle('on', v===0);
+  var map={inc:['elb-inc-y','elb-inc-n'],cit:['elb-cit-y','elb-cit-n'],fst:['elb-fst-y','elb-fst-n']};
+  document.getElementById(map[k][0]).classList.toggle('on', v===1);
+  document.getElementById(map[k][1]).classList.toggle('on', v===0);
+  var af=document.getElementById('elb-af'); if(k==='inc'&&af){ af.disabled=(v===1); af.style.opacity=(v===1)?'.45':''; }
   elbSync();
 };
-window.elbSync=function(){
-  var h=elHyp(), bc=elN('elb-bc'), bl=Math.max(0,Math.min(50,elN('elb-bl')));
-  var E=bl<100?bc/(1-bl/100):bc;
+window.elbSync=function(src){
+  var h=elHyp(), pv=elN('elb-pv'), E=pv/2;
+  var bcEl=document.getElementById('elb-bc'), blEl=document.getElementById('elb-bl');
+  if(!bcEl||!blEl) return;
+  var bl=Math.max(0,Math.min(50,elN('elb-bl')));
+  if(src==='bc' && E>0){ bl=Math.max(0,Math.min(50,(E-elN('elb-bc'))/E*100)); blEl.value=Math.round(bl*100)/100; }
+  else if(src==='pv'||src==='bl'){ bcEl.value=Math.round(E*(1-bl/100)).toLocaleString('fr-FR'); }
   var hint=document.getElementById('elb-af-hint');
-  if(hint) hint.textContent='Equity vis\u00e9e : '+elFmt(E)+' \u00b7 position (2\u00d7) : '+elFmt(2*E)+' \u00b7 frais EquityLiving estim\u00e9s : '+elFmt(E*h.elfee/100);
+  if(hint) hint.textContent='Equity investisseur : '+elFmt(E)+' · frais EquityLiving estimés : '+elFmt(E*h.elfee/100);
 };
 window.elbNeutral=function(){
-  /* cash-neutral : l'annuité du prêt = loyer d'usage perçu → % = (loyer/f − frais financés) / equity */
-  var h=elHyp(), bc=elN('elb-bc'), afIn=ELB_ST.inc?elN('elb-af'):0;
+  /* cash-neutral : annuité(prêt) = loyer d'usage → % = (1,7/12)/f − frais financés/E ; le cash se recale */
+  var h=elHyp(), pv=elN('elb-pv'), E=pv/2, afFin=ELB_ST.inc?elN('elb-af'):0;
   var f=elPay(1,h.rate,h.yrs);
-  var blCn=(h.elrent/100/12)/f*100;   /* % constant hors frais financés */
-  /* itération courte : E dépend de bl, et les frais financés décalent le % */
-  var bl=blCn;
-  for(var i=0;i<20;i++){ var E=bc/(1-bl/100); var t=blCn-(afIn>0?afIn/E*100:0); if(Math.abs(t-bl)<0.005) { bl=t; break; } bl=t; }
+  var bl=((h.elrent/100/12)/f - (E>0?afFin/E:0))*100;
   document.getElementById('elb-bl').value=Math.round(Math.max(0,Math.min(50,bl))*100)/100;
-  elbSync();
+  elbSync('bl');
 };
 window.elbCalc=function(){
-  var h=elHyp(), bc=elN('elb-bc'), bl=Math.max(0,Math.min(50,elN('elb-bl'))), afIn=elN('elb-af');
+  var h=elHyp(), pv=elN('elb-pv'), bc=elN('elb-bc'), bl=Math.max(0,Math.min(50,elN('elb-bl'))), afIn=elN('elb-af');
   var f=elPay(1,h.rate,h.yrs), ap=elApp10(h);
-  /* 1. achat locatif classique : levier 50 % (prêt = cash), taxe forfaitaire + annexes */
+  var E=pv/2;
+  /* 1. achat locatif classique : levier 50 % (prêt = cash) — forfait investisseur */
   var pvCl=2*bc, loanCl=bc, feesCl=pvCl*(h.flat+(h.annex||0))/100;
   var rentCl=pvCl*h.rent/100/12, payCl=loanCl*f, cfCl=rentCl-payCl;
   var gpCl=pvCl*ap+120*cfCl-feesCl;
-  /* 2. EquityLiving + prêt : equity = cash/(1−%), frais financés éventuels */
-  var E=bl<100?bc/(1-bl/100):bc;
+  /* 2. EquityLiving + prêt : position = le bien saisi, prêt = % × equity (+ frais financés) */
   var afFin=ELB_ST.inc?afIn:0;
   var loanEL=E*bl/100+afFin;
   var feesEL=(E+afFin)*h.elfee/100;
   var useEL=E*h.elrent/100/12, payEL=loanEL*f, cfEL=useEL-payEL;
   var gpEL=(2*E*ap)*h.promo/100+120*useEL-feesEL-120*payEL;
-  /* 3. EquityLiving sans prêt : equity = cash */
+  /* 3. EquityLiving sans prêt : le cash seul porte une position plus petite */
   var fees0=bc*h.elfee/100, use0=bc*h.elrent/100/12;
   var gp0=(2*bc*ap)*h.promo/100+120*use0-fees0;
   function pct(g){ return gpCl>0?((g/gpCl-1)*100):0; }
   function pfmt(x){ var v=Math.round(x*10)/10; return (v>0?'+':'')+v.toLocaleString('fr-FR')+'\u00a0%'; }
+  function cfFmtNeg(v){ return v>0?('\u2212'+elFmt(v).replace('\u2212','')):elFmt(0); }
   document.getElementById('elb-results').innerHTML=
     elTable(['Achat locatif classique','EquityLiving + pr\u00eat','EquityLiving'],[
       elRow('Cash d\u00e9ploy\u00e9', elFmt(bc), elFmt(bc), elFmt(bc)),
@@ -16216,10 +16239,9 @@ window.elbCalc=function(){
       elRow('Cash-flow mensuel', elFmt(cfCl), elFmt(cfEL), elFmt(use0), true),
       elRow('Profit brut (10 ans)', elFmt(gpCl), elFmt(gpEL), elFmt(gp0)),
       elRow('Surperformance vs achat classique', '\u2014', pfmt(pct(gpEL)), pfmt(pct(gp0)))])
-    +'<div style="font-size:11.5px;color:var(--gris-2);margin-top:10px;">Equity investie : '+elFmt(E)+' \u00b7 l\u2019investisseur per\u00e7oit le loyer d\u2019usage ('+h.elrent+'\u00a0%/an de sa part) et '+h.promo+'\u00a0% de la plus-value du bien (appr\u00e9ciation '+h.app+'\u00a0%/an sur 10 ans).</div>';
-  function cfFmtNeg(v){ return v>0?('\u2212'+elFmt(v).replace('\u2212','')):elFmt(0); }
+    +'<div style="font-size:11px;color:var(--gris-2);margin-top:8px;">Equity investie : '+elFmt(E)+' \u00b7 l\u2019investisseur per\u00e7oit le loyer d\u2019usage ('+h.elrent+'\u00a0%/an de sa part) et '+h.promo+'\u00a0% de la plus-value (appr\u00e9ciation '+h.app+'\u00a0%/an sur 10 ans).</div>';
 };
-(function(){ try{ elHypLoad(); var k=elCurKey(); if(k!=='ILS') elCur(k); else { elSync(); elbSync(); } }catch(e){} })();
+(function(){ try{ elHypLoad(); var k=elCurKey(); if(k!=='ILS') elCur(k); else { elSync(); elbSync('pv'); } }catch(e){} })();
 window.rentaTab=function(n){
   [1,2,3].forEach(function(i){
     var panel=document.getElementById('renta-panel-'+i);
