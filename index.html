@@ -1674,7 +1674,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     </div>
   </div>
   </div>
-  <div class="logo-ver app-ver">Achille App — v9.22</div>
+  <div class="logo-ver app-ver">Achille App — v9.23</div>
 </aside>
 <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Réduire la barre latérale">‹</button>
 
@@ -3778,7 +3778,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
       <div id="el-hyp-body" style="display:none;padding:14px 16px;font-size:13px;line-height:1.6;">
         <div style="margin-bottom:10px;"><b>Règles transcrites du simulateur d’origine</b> (recalibrées au shekel près sur vos captures du 15/09/2026).
         <b>Occupant</b> : part = 50 % du bien ; prêt = % choisi × sa part ; mensualité EquityLiving = annuité du prêt + loyer réduit à l’investisseur ; taxe israélienne : citoyen + 1er bien → barème progressif (0 / 3,5 / 5 %), sinon taux forfaitaire.
-        <b>Investisseur</b> : equity = cash ÷ (1 − % de prêt) ; position = 2 × equity ; frais EquityLiving = % dédié × (equity + frais financés) ; il perçoit le loyer d’usage de l’occupant et <b>75 % de la plus-value</b> ; en achat classique : levier 50 %, loyer de marché, taxe forfaitaire + annexes. Profit brut 10 ans = plus-value + loyers − frais − mensualités.</div>
+        <b>Investisseur</b> : equity = cash ÷ (1 − % de prêt) ; position = 2 × equity ; frais EquityLiving = % dédié × (equity + frais financés) ; il perçoit le loyer d’usage de l’occupant et <b>75 % de la plus-value</b> ; en achat classique : levier 50 %, loyer de marché, taxe forfaitaire + annexes. Profit brut 10 ans = plus-value + loyers − frais − mensualités. <b>Frais d’acquisition proposés</b> (grisés, modifiables) = ½ taxe du bien entier + 3 % du bien ; 0 si financés par le prêt.</div>
         <div class="el-row4">
           <div class="form-group"><label class="form-label">Loyer de marché (%/an du bien)</label><input class="form-input" id="el-h-rent" value="2.5" oninput="elHypSave()"></div>
           <div class="form-group"><label class="form-label">Taux du crédit (%/an)</label><input class="form-input" id="el-h-rate" value="5.17" oninput="elHypSave()"></div>
@@ -11357,7 +11357,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     startRealtime();
     var ov=document.getElementById('ach-login-overlay'); if(ov) ov.classList.add('ach-hidden');
     var ub=document.getElementById('ach-userbar'); if(ub) ub.style.display='none';
-    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v9.22';
+    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v9.23';
     flag('Synchronis\u00e9');
     // fin de l'init : on autorise la journalisation des actions
     setTimeout(function(){ installInterceptor._init=false; }, 1500);
@@ -16129,8 +16129,12 @@ window.elTab=function(t){
 function elDef(id){
   var ils=(elCurKey()==='ILS');
   var pv=ils?4000000:1000000;
-  var D={'el-pv':pv,'el-ec':Math.round(pv/2*0.7),'el-rl':30,'el-af':0,
-         'elb-pv':pv,'elb-bc':pv/2,'elb-bl':0,'elb-af':0};
+  /* v9.23 : frais d'acquisition PROPOSÉS automatiquement = ½ taxe du bien entier + 3 % du bien
+     (formule retrouvée sur les captures : 30 000 @ 1 M citoyen+1er bien · 85 269 @ 2,5 M). */
+  if(id==='el-af'){ var v=elN('el-pv'); return Math.round(elTax(v,EL_ST.cit===1,EL_ST.fst===1,elN('el-h-flat')||8)/2+v*0.03); }
+  if(id==='elb-af'){ var vb=elN('elb-pv'); return Math.round(elTax(vb,ELB_ST.cit===1,ELB_ST.fst===1,elN('el-h-flat')||8)/2+vb*0.03); }
+  var D={'el-pv':pv,'el-ec':Math.round(pv/2*0.7),'el-rl':30,
+         'elb-pv':pv,'elb-bc':pv/2,'elb-bl':0};
   return (id in D)?D[id]:0;
 }
 function elN(id){ var e=document.getElementById(id); if(!e) return 0;
@@ -16171,6 +16175,7 @@ window.elTog=function(k,v){ EL_ST[k]=v;
   elSync();
 };
 window.elSync=function(src){
+  elPlaceholders();   /* v9.23 : la proposition de frais suit la valeur saisie et les statuts */
   var pv=elN('el-pv'), share=pv/2;
   var rlEl=document.getElementById('el-rl'), ecEl=document.getElementById('el-ec');
   if(!rlEl||!ecEl) return;
@@ -16181,7 +16186,7 @@ window.elSync=function(src){
   var note=document.getElementById('el-cash-note');
   if(note) note.textContent='Cash total n\u00e9cessaire : '+elFmt(elN('el-ec')+af);
   var hint=document.getElementById('el-af-hint');
-  if(hint){ var h=elHyp(); hint.textContent='Estimation taxe sur la part occupant : '+elFmt(elTax(pv/2,EL_ST.cit===1,EL_ST.fst===1,h.flat)); }
+  if(hint) hint.textContent=EL_ST.inc?'Frais financés par le prêt':'Proposition auto : ½ taxe + 3 % du bien — modifiable';
 };
 window.elCalc=function(){
   var h=elHyp(), pv=elN('el-pv'), ec=elN('el-ec'), rl=Math.max(0,Math.min(50,elN('el-rl'))), afIn=elN('el-af');
@@ -16212,14 +16217,16 @@ window.elbTog=function(k,v){ ELB_ST[k]=v;
   elbSync();
 };
 window.elbSync=function(src){
+  elPlaceholders();   /* v9.23 */
   var h=elHyp(), pv=elN('elb-pv'), E=pv/2;
   var bcEl=document.getElementById('elb-bc'), blEl=document.getElementById('elb-bl');
   if(!bcEl||!blEl) return;
   var bl=Math.max(0,Math.min(50,elN('elb-bl')));
-  if(src==='bc' && E>0){ bl=Math.max(0,Math.min(50,(E-elN('elb-bc'))/E*100)); blEl.value=Math.round(bl*100)/100; }
+  if(src==='bc' && E>0){ var blRaw=(E-elN('elb-bc'))/E*100; bl=Math.max(0,Math.min(50,blRaw)); blEl.value=Math.round(bl*100)/100;
+    if(blRaw>50.001||blRaw<-0.001) bcEl.value=Math.round(E*(1-bl/100)).toLocaleString('fr-FR');   /* v9.23 : plafond 50 % — le cash est recalé plutôt qu'incohérent */ }
   else if(src==='pv'||src==='bl'){ bcEl.value=Math.round(E*(1-bl/100)).toLocaleString('fr-FR'); }
   var hint=document.getElementById('elb-af-hint');
-  if(hint) hint.textContent='Equity investisseur : '+elFmt(E)+' · frais EquityLiving estimés : '+elFmt(E*h.elfee/100);
+  if(hint) hint.textContent=(ELB_ST.inc?'Frais financés par le prêt · ':'Proposition auto : ½ taxe + 3 % du bien · ')+'frais EquityLiving : '+elFmt(E*h.elfee/100);
 };
 window.elbNeutral=function(){
   /* cash-neutral : annuité(prêt) = loyer d'usage → % = (1,7/12)/f − frais financés/E ; le cash se recale */
