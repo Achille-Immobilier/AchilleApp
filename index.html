@@ -659,6 +659,8 @@ body.sb-collapsed .sidebar::-webkit-scrollbar{width:3px;}
 /* v9.04 : présences de Liloé (calendrier d'alternance ESPI) */
 .plan-lil{font-size:10.5px;padding:1.5px 6px;border-radius:3px;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:500;font-family:'Jost',sans-serif;}
 .pl-ecole{background:#eae3f4;color:#5c4a7c;} .pl-dist{background:#dfe9f0;color:#46687e;} .pl-exam{background:#f4dce6;color:#8c3a5e;} .pl-rattrap{background:#f4dce6;color:#8c3a5e;border:1px dashed #c78aa6;}
+/* v9.17 : vacances scolaires zone C — bande sable discrète, même gabarit que les repères Liloé */
+.plan-vac{font-size:10.5px;padding:1.5px 6px;border-radius:3px;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:500;font-family:'Jost',sans-serif;background:#f2ead9;color:#8a6d3b;cursor:help;}
 /* v8.52 : fêtes religieuses dans le Planning */
 /* v8.55 : pastilles de retard des opérations à venir (Finances) */
 .fin-op-dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:7px;vertical-align:1px;flex:none;cursor:help;}
@@ -1671,7 +1673,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     </div>
   </div>
   </div>
-  <div class="logo-ver app-ver">Achille App — v9.16</div>
+  <div class="logo-ver app-ver">Achille App — v9.17</div>
 </aside>
 <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Réduire la barre latérale">‹</button>
 
@@ -6060,6 +6062,26 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     return M;
   })();
   var LILOE_LBL={ecole:'\ud83c\udf93 Lilo\u00e9 \u2014 \u00e9cole', dist:'\ud83d\udcbb Lilo\u00e9 \u2014 distanciel', exam:'\ud83d\udcdd Lilo\u00e9 \u2014 examens', rattrap:'\ud83d\udcdd Lilo\u00e9 \u2014 rattrapages (si \u00e9chec)'};
+  /* v9.17 : VACANCES SCOLAIRES — zone C (Paris, Créteil, Versailles ; + Montpellier, Toulouse).
+     Calendrier officiel 2026-2027 (vérifié le 15/09/2026, deux sources concordantes).
+     Convention : on marque du 1er samedi (fin des cours) à la veille de la reprise. */
+  var VAC_C=(function(){
+    var M={};
+    function range(from,to,n,rep){ var d=new Date(from+'T12:00:00'), e=new Date(to+'T12:00:00');
+      while(d<=e){ M[d.toISOString().slice(0,10)]={n:n,rep:rep}; d.setDate(d.getDate()+1); } }
+    range('2026-10-17','2026-11-01','Vacances de la Toussaint','02/11/2026');
+    range('2026-12-19','2027-01-03','Vacances de No\u00ebl','04/01/2027');
+    range('2027-02-06','2027-02-21','Vacances d\u2019hiver (zone C)','22/02/2027');
+    range('2027-04-03','2027-04-18','Vacances de printemps (zone C)','19/04/2027');
+    range('2027-05-06','2027-05-09','Pont de l\u2019Ascension','10/05/2027');
+    range('2027-07-03','2027-09-01','Vacances d\u2019\u00e9t\u00e9','02/09/2027');
+    return M;
+  })();
+  function planVacMark(ds){
+    if(!planFetesAllowed()) return '';   /* jamais sur le compte Agence */
+    var v=VAC_C[ds]; if(!v) return '';
+    return '<div class="plan-vac" title="'+v.n+' \u2014 zone C (Paris / Cr\u00e9teil / Versailles) \u00b7 reprise des cours le '+v.rep+'">\ud83c\udfd6 Vacances scolaires</div>';   /* v9.17 : libellé court (le nom précis + la reprise sont dans l'infobulle) */
+  }
   function planLiloeMark(ds){
     if(!planFetesAllowed()) return '';
     if(planActiveUsers && planActiveUsers.alternant===false) return '';   /* v9.05 : décocher la puce « Liloé P. » masque aussi son calendrier (demande Laurent) */
@@ -6187,7 +6209,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
         if(planVisib(e)==='masked') return '<div class="month-event et-masked" onclick="planPrivateInfo(event)" style="font-size:10px;">🔒 Privé</div>';
         return '<div class="month-event '+t.cls+'" onclick="planEditEvent(\''+e.id+'\')" style="font-size:10px;">'+t.icon+' '+escH(e.title)+'</div>';
       }).join('');
-      hdr+='<div class="week-allday-cell" onclick="if(event.target===this)planQuickAddAllDay(\''+ds+'\')" title="Cliquez pour créer un événement sur toute la journée">'+planFetesDot(ds)+planFetesBands(ds,true)+planLiloeMark(ds)+cells+'</div>';
+      hdr+='<div class="week-allday-cell" onclick="if(event.target===this)planQuickAddAllDay(\''+ds+'\')" title="Cliquez pour créer un événement sur toute la journée">'+planFetesDot(ds)+planFetesBands(ds,true)+planVacMark(ds)+planLiloeMark(ds)+cells+'</div>';
     });
     hdr+='</div>';
 
@@ -6255,6 +6277,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
       h+='<div class="month-cell'+(cell.other?' other-month':'')+(isToday?' today':'')+'" onclick="planQuickAdd(\''+ds+'\',9)">';
       h+='<div class="month-cell-num">'+cell.d.getDate()+'</div>';
       h+=planFetesDot(ds)+planFetesBands(ds);   /* v8.52 */
+      h+=planVacMark(ds);   /* v9.17 : vacances scolaires zone C */
       h+=planLiloeMark(ds);   /* v9.04 */
       dayEvs.slice(0,3).forEach(function(e){
         var t=PLAN_TYPES[e.type]||PLAN_TYPES.visite;
@@ -11204,7 +11227,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     startRealtime();
     var ov=document.getElementById('ach-login-overlay'); if(ov) ov.classList.add('ach-hidden');
     var ub=document.getElementById('ach-userbar'); if(ub) ub.style.display='none';
-    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v9.16';
+    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v9.17';
     flag('Synchronis\u00e9');
     // fin de l'init : on autorise la journalisation des actions
     setTimeout(function(){ installInterceptor._init=false; }, 1500);
@@ -14822,6 +14845,17 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
    ['Florence','Viviane','François-Xavier','Barbara','Gérald','Nicolas','Ambroise','Immaculée Conception','Pierre Fourier','Romaric','Daniel','Jeanne de Chantal','Lucie','Odile','Ninon','Alice','Gaël','Gatien','Urbain','Théophile','Hiver / Pierre C.','Françoise-Xavière','Armand','Adèle','Noël','Étienne','Jean l\u2019Évangéliste','Innocents','David','Roger','Sylvestre']];
   /* v8.38 : fêtes nationales, mondiales et « journées de » les plus connues — clé 'mois-jour' */
   var V_JOURNEES={'1-1':'Jour de l\u2019An','1-6':'\u00c9piphanie','2-2':'Chandeleur','2-4':'Journée mondiale contre le cancer','2-14':'Saint-Valentin','3-8':'Journée internationale des droits des femmes','3-20':'Journée internationale de la francophonie','3-21':'Journée internationale des forêts','3-22':'Journée mondiale de l\u2019eau','4-1':'1er avril \u2014 jour des farces','4-7':'Journée mondiale de la santé','4-22':'Journée mondiale de la Terre','4-23':'Journée mondiale du livre','5-1':'Fête du Travail','5-8':'Victoire 1945','5-9':'Journée de l\u2019Europe','5-15':'Journée internationale des familles','6-1':'Journée mondiale des parents','6-5':'Journée mondiale de l\u2019environnement','6-8':'Journée mondiale de l\u2019océan','6-21':'Fête de la Musique','7-14':'Fête nationale','7-30':'Journée internationale de l\u2019amitié','8-12':'Journée internationale de la jeunesse','8-19':'Journée mondiale de la photographie','9-13':'Journée mondiale de la gentillesse (France)','9-21':'Journée internationale de la paix','10-1':'Journée internationale des personnes âgées','10-4':'Journée mondiale des animaux','10-5':'Journée mondiale des enseignants','10-16':'Journée mondiale de l\u2019alimentation','11-11':'Armistice 1918','11-13':'Journée mondiale de la gentillesse','11-20':'Journée internationale des droits de l\u2019enfant','11-25':'Journée contre les violences faites aux femmes','12-3':'Journée internationale du handicap','12-5':'Journée mondiale du bénévolat','12-10':'Journée des droits de l\u2019Homme','12-25':'Noël','12-31':'Saint-Sylvestre'};
+  /* v9.17 (correctif en attente de livraison, repéré le 14/09 sur l'écran réel) : certaines entrées
+     du calendrier ne sont pas des prénoms mais des FÊTES (« La Sainte-Croix », « Toussaint »,
+     « Assomption »… ) — « Nous fêtons les La Sainte-Croix » était incorrect. La tournure s'adapte. */
+  function _vFeteTxt(nm){
+    if(!nm) return '';
+    var EV={'La Sainte-Croix':'la Sainte-Croix','Nativit\u00e9 de Marie':'la Nativit\u00e9 de Marie','Pr\u00e9sentation de Marie':'la Pr\u00e9sentation de Marie','Pr\u00e9sentation':'la Pr\u00e9sentation','Toussaint':'la Toussaint','D\u00e9funts':'les D\u00e9funts','Assomption':'l\u2019Assomption','Immacul\u00e9e Conception':'l\u2019Immacul\u00e9e Conception','No\u00ebl':'No\u00ebl','Hiver / Pierre C.':'les Pierre C.'};
+    if(EV[nm]) return 'Nous f\u00eatons '+EV[nm];
+    if(/^(La|Le|L\u2019|L')\s*/.test(nm)) return 'Nous f\u00eatons '+nm.charAt(0).toLowerCase()+nm.slice(1);
+    return 'Nous f\u00eatons les '+nm;
+  }
+  window._vFeteTxt=_vFeteTxt;   /* exposé pour les tests */
   function _vTick(){
     var t=new Date(), c=document.querySelector('#ach-veille .v-clock'), d=document.querySelector('#ach-veille .v-date');
     if(c) c.textContent=t.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
@@ -14831,7 +14865,7 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
       if(f){
         var nm=(V_FETES[t.getMonth()]||[])[t.getDate()-1]||'';
         var jn=V_JOURNEES[(t.getMonth()+1)+'-'+t.getDate()]||'';
-        f.innerHTML=(nm?('Nous f\u00eatons les '+_vEsc(nm)):'')+(jn?('<span class="fj">'+_vEsc(jn)+'</span>'):'');
+        f.innerHTML=(nm?_vEsc(_vFeteTxt(nm)):'')+(jn?('<span class="fj">'+_vEsc(jn)+'</span>'):'');
       }
     }catch(e){}
   }
