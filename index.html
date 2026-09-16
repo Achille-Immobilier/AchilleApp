@@ -1674,7 +1674,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     </div>
   </div>
   </div>
-  <div class="logo-ver app-ver">Achille App — v9.27</div>
+  <div class="logo-ver app-ver">Achille App — v9.28</div>
 </aside>
 <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Réduire la barre latérale">‹</button>
 
@@ -3686,54 +3686,81 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     @media (max-width:1100px){ #page-equityliving .el-row4{grid-template-columns:1fr 1fr;} #page-equityliving .el-row3{grid-template-columns:1fr 1fr;} }
   </style>
   <div class="comm-page">
-    <div class="comm-tabs-bar" style="align-items:center;">
-      <img src="data:image/png;base64,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" alt="EquityLiving" style="height:26px;width:26px;margin:0 8px 0 18px;flex:none;">
-      <button class="comm-tab active" id="el-top-p" onclick="elTopTab('p')">Equity Living</button>
+    <div class="comm-tabs-bar">
+      <button class="comm-tab active" id="el-top-p" onclick="elTopTab('p')">Présentation</button>
       <button class="comm-tab" id="el-top-s" onclick="elTopTab('s')">📊 Simulations</button>
-      <span style="margin-left:auto;display:inline-flex;gap:6px;align-items:center;padding-right:18px;">
-        <span style="font-size:12px;color:var(--gris-2);">Devise</span>
-        <button class="std-tab" id="el-cur-eur" onclick="elCur('EUR')">€</button>
-        <button class="std-tab" id="el-cur-usd" onclick="elCur('USD')">$</button>
-        <button class="std-tab on" id="el-cur-ils" onclick="elCur('ILS')">₪</button>
-      </span>
     </div>
     <div class="comm-panels"><div style="flex:1;overflow-y:auto;padding:14px 24px 30px;">
 
     <!-- ═══ v9.26 : PRÉSENTATION (texte d'analyse retouché par Laurent, 16/09) ═══ -->
     <div class="comm-panel active" id="el-panel-pres">
       <style>
-        #el-panel-pres .elp-card{margin-top:12px;}
-        #el-panel-pres .elp-t{font-family:'Cormorant Garamond',serif;font-size:19px;color:var(--terra);margin:0 0 8px;}
+        #el-panel-pres .elp-wrap{max-width:1000px;margin:0 auto;}
+        #el-panel-pres .elp-card{margin-top:14px;}
+        #el-panel-pres .elp-t{font-family:'Cormorant Garamond',serif;font-size:20px;color:var(--terra);margin:0 0 8px;}
         #el-panel-pres p{font-size:13.5px;line-height:1.7;color:var(--noir);margin:0 0 10px;text-align:justify;}
         #el-panel-pres .elp-quote{border-left:3px solid var(--terra);background:var(--terra-p);border-radius:0 8px 8px 0;padding:12px 16px;margin:10px 0;font-family:'Cormorant Garamond',serif;font-style:italic;font-size:15.5px;line-height:1.65;color:var(--noir);}
-        #el-panel-pres .elp-q3{background:var(--beige-2,#efe9de);border-radius:8px;padding:12px 16px;font-size:13px;line-height:1.65;}
+        #el-panel-pres .elp-brand{font-family:'Jost',sans-serif;font-size:22px;letter-spacing:5px;font-weight:600;color:var(--noir);}
+        #el-panel-pres .elp-brand b{color:#bda670;font-weight:600;}
+        #el-panel-pres .elp-tag{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:17.5px;color:var(--gris);margin-top:5px;}
+        #el-panel-pres .elp-hero{text-align:center;padding:24px 0 4px;}
+        #el-panel-pres .elp-hero img{height:46px;width:46px;margin-bottom:8px;}
+        #el-panel-pres .elp-2col{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px;}
+        #el-panel-pres .elp-li{display:flex;gap:9px;margin:9px 0;font-size:13.5px;line-height:1.6;color:var(--noir);}
+        #el-panel-pres .elp-li .ck{color:var(--terra);font-weight:700;flex:none;}
+        @media (max-width:1100px){ #el-panel-pres .elp-2col{grid-template-columns:1fr;} }
       </style>
+      <!-- v9.28 : présentation commerciale (maquette A validée par Laurent, 16/09) -->
+      <div class="elp-wrap">
+      <div class="elp-hero">
+        <img src="data:image/png;base64,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" alt="EquityLiving">
+        <div class="elp-brand">EQUITY<b>LIVING</b></div>
+        <div class="elp-tag">Habiter aujourd’hui, partager la plus-value demain.</div>
+      </div>
       <div class="v2-card elp-card"><div class="el-pad">
         <div class="elp-t">Le principe</div>
-        <p>L’occupant achète 50&nbsp;% de son logement&nbsp;; un investisseur (le backer) achète l’autre moitié. L’occupant vit dans le bien comme chez lui et ne paie qu’un loyer réduit sur la moitié qui n’est pas à lui — 1,7&nbsp;%/an au lieu des 2,5&nbsp;% du marché, soit un tiers de moins. Le prix de cet avantage est différé et invisible au quotidien&nbsp;: à la revente, l’investisseur capte <b>75&nbsp;% de la plus-value totale</b> alors qu’il ne détient que la moitié des murs. C’est l’échange fondateur&nbsp;: <b>du confort de trésorerie aujourd’hui contre du patrimoine demain</b>.</p>
-        <p>En tant qu’humain, l’idée est séduisante et elle parle aux gens&nbsp;: elle s’adresse à la frustration très réelle de qui gagne bien sa vie mais ne peut plus acheter dans les grandes villes. Payer 1&nbsp;529 quand la location coûte 2&nbsp;083 et le crédit 3&nbsp;558, tout en étant «&nbsp;propriétaire&nbsp;», c’est un soulagement émotionnel puissant — on est chez soi, on n’enrichit plus un bailleur, on ne craint plus le congé.</p>
+        <p>L’occupant achète 50 % de son logement ; un investisseur — le backer — achète l’autre moitié. L’occupant vit dans le bien comme chez lui et ne paie qu’un loyer réduit sur la moitié qui n’est pas encore à lui : environ un tiers de moins qu’une location classique. En échange, le jour de la revente, l’investisseur prend une part plus grande de la hausse du prix. C’est l’échange fondateur : <b>du confort de trésorerie aujourd’hui contre une partie de la plus-value de demain</b>.</p>
+        <p>L’idée parle à tout le monde : elle répond à la frustration très réelle de qui gagne bien sa vie mais ne peut plus acheter dans les grandes villes. Payer 1 529 quand la location coûte 2 083 et le crédit 3 558, tout en étant chez soi — on n’enrichit plus un bailleur, on ne craint plus le congé.</p>
       </div></div>
-      <div class="v2-card elp-card"><div class="el-pad">
-        <div class="elp-t">Le regard métier</div>
-        <p>Des acquéreurs à 350&nbsp;000 d’apport qui ne pouvaient viser que 1&nbsp;M peuvent habiter un bien de 1&nbsp;M en n’en finançant que la moitié. L’alignement des intérêts est également&nbsp;: l’«&nbsp;occupant-copropriétaire&nbsp;» entretient le bien comme le sien et ne fait pas défaut comme un locataire — le backer n’a ni vacance, ni dégradation, ni impayés typiques. Les faiblesses côté métier&nbsp;: la revente d’une quote-part est illiquide et complexe&nbsp;; la gouvernance (travaux, charges, assurance, valorisation au terme — qui expertise, qui arbitre&nbsp;?) dépend entièrement de l’opérateur&nbsp;; et tout repose sur la solidité de cet opérateur, jeune par définition.</p>
-      </div></div>
-      <div class="v2-card elp-card"><div class="el-pad">
-        <div class="elp-t">Le regard financier</div>
-        <p>La mécanique est astucieuse mais les chiffres du simulateur méritent d’être lus froidement. Pour le backer, la position équivaut à une exposition de 1,5× son capital à la hausse des prix (75&nbsp;% de la plus-value d’un bien qui vaut 2× sa mise), payée par un rendement courant sacrifié (1,7&nbsp;% contre 2,5&nbsp;%) et des frais d’entrée de 14&nbsp;% de l’equity — c’est considérable. Résultat&nbsp;: selon leur propre tableau, sans levier, la surperformance face à un investissement locatif classique n’est que de <b>+2,7&nbsp;% sur dix ans</b> — et elle est calculée avec une hypothèse d’appréciation de <b>6&nbsp;%/an</b>. C’est l’hypothèse qui porte tout l’édifice&nbsp;: à 3&nbsp;%/an, la surperformance s’inverse, et le produit ne redevient vraiment attractif qu’avec du levier (+19 à +50&nbsp;% dans les scénarios), c’est-à-dire en réintroduisant précisément le risque bancaire qu’on prétendait éviter. Pour l’occupant, la lecture symétrique est rarement dite&nbsp;: il détient 50&nbsp;% des murs mais ne garde que <b>25&nbsp;% de la plus-value totale</b> — sur un marché qui monte fort, il s’appauvrit relativement à un acheteur classique endetté&nbsp;; son vrai gain est le cash-flow et l’accès, pas l’enrichissement. C’est un excellent produit de <b>pouvoir d’habiter</b>, un produit moyen de <b>création de patrimoine</b>.</p>
-      </div></div>
+      <div class="elp-2col">
+        <div class="v2-card"><div class="v2-card-hd kaki"><div class="v2-card-hd-title">Pour l’occupant</div><div class="v2-card-hd-sub">Habiter mieux, tout de suite</div></div><div class="v2-card-body">
+          <div class="elp-li"><span class="ck">✓</span><span>Avec le même apport, viser un bien deux fois plus ambitieux — en n’en finançant que la moitié.</span></div>
+          <div class="elp-li"><span class="ck">✓</span><span>Des mensualités environ un tiers de moins qu’une location — loin d’un crédit classique.</span></div>
+          <div class="elp-li"><span class="ck">✓</span><span>Chez soi, vraiment : ni bailleur, ni congé, ni préavis.</span></div>
+          <div class="elp-li"><span class="ck">✓</span><span>Une contrepartie simple et unique, connue dès le départ : une part plus grande de la hausse revient à l’investisseur à la revente.</span></div>
+        </div></div>
+        <div class="v2-card"><div class="v2-card-hd terra"><div class="v2-card-hd-title">Pour l’investisseur</div><div class="v2-card-hd-sub">De la plus-value, sans gestion</div></div><div class="v2-card-body">
+          <div class="elp-li"><span class="ck">✓</span><span>Un occupant copropriétaire, qui entretient le bien comme SA maison.</span></div>
+          <div class="elp-li"><span class="ck">✓</span><span>Ni vacance locative, ni dégradations, ni impayés typiques d’un locataire.</span></div>
+          <div class="elp-li"><span class="ck">✓</span><span>Un loyer régulier, et <b>75 % de la hausse du prix</b> à la revente.</span></div>
+          <div class="elp-li"><span class="ck">✓</span><span>Zéro gestion au quotidien : vous troquez du loyer contre de la plus-value.</span></div>
+        </div></div>
+      </div>
       <div class="v2-card elp-card"><div class="el-pad">
         <div class="elp-t">Comment le présenter</div>
-        <div class="elp-quote">À l’occupant&nbsp;: «&nbsp;Vous achetez la moitié de votre appartement, un investisseur achète l’autre moitié — et vous vivez dedans comme chez vous. Chaque mois, au lieu de rembourser un gros crédit, vous payez seulement un petit loyer sur la moitié qui n’est pas encore à vous&nbsp;: environ un tiers de moins qu’une location. La contrepartie est simple et unique&nbsp;: le jour de la revente, l’investisseur prend une part plus grande de la hausse du prix. Vous échangez donc une partie de la plus-value de demain contre des mensualités légères aujourd’hui — c’est fait pour habiter mieux tout de suite, pas pour spéculer.&nbsp;»</div>
-        <div class="elp-quote">À l’investisseur&nbsp;: «&nbsp;Vous achetez la moitié d’un bien dont l’occupant possède l’autre moitié&nbsp;: il l’entretient comme SA maison, ne part pas du jour au lendemain et ne vous fait pas d’impayés de locataire. Vous touchez un loyer plus faible qu’en location classique, mais à la revente vous prenez 75&nbsp;% de la hausse — vous troquez du loyer contre de la plus-value, sans les soucis de gestion.&nbsp;»</div>
-        <div class="elp-q3"><b>Les trois questions à poser avant de signer&nbsp;:</b> sur quelle hypothèse de hausse repose la simulation&nbsp;? Que valent les frais d’entrée&nbsp;? Et comment sort-on — quand, à quel prix, décidé par qui&nbsp;?</div>
+        <div class="elp-quote">À l’occupant : « Vous achetez la moitié de votre appartement, un investisseur achète l’autre moitié — et vous vivez dedans comme chez vous. Chaque mois, au lieu de rembourser un gros crédit, vous payez seulement un petit loyer sur la moitié qui n’est pas encore à vous : environ un tiers de moins qu’une location. La contrepartie est simple et unique : le jour de la revente, l’investisseur prend une part plus grande de la hausse du prix. Vous échangez donc une partie de la plus-value de demain contre des mensualités légères aujourd’hui — c’est fait pour habiter mieux tout de suite, pas pour spéculer. »</div>
+        <div class="elp-quote">À l’investisseur : « Vous achetez la moitié d’un bien dont l’occupant possède l’autre moitié : il l’entretient comme SA maison, ne part pas du jour au lendemain et ne vous fait pas d’impayés de locataire. Vous touchez un loyer plus faible qu’en location classique, mais à la revente vous prenez 75 % de la hausse — vous troquez du loyer contre de la plus-value, sans les soucis de gestion. »</div>
       </div></div>
+      <div class="v2-card elp-card"><div class="el-pad">
+        <div class="elp-t">Notre rôle de conseil</div>
+        <p style="margin:0;">Achille Immobilier vous accompagne pour valider les trois points clés avant tout engagement : l’hypothèse de hausse sur laquelle repose la simulation, ce que représentent les frais d’entrée, et l’organisation de la sortie — quand, à quel prix, décidé par qui.</p>
+      </div></div>
+      </div>
     </div>
 
     <!-- ═══ SIMULATIONS (Occupant + Investisseur) ═══ -->
     <div class="comm-panel" id="el-panel-sim">
-    <div class="std-tabs" style="margin-top:2px;">
-      <button class="std-tab on" id="el-tab-r" onclick="elTab('r')" data-eli="tabR">🏠 Occupant (Resident)</button>
-      <button class="std-tab" id="el-tab-b" onclick="elTab('b')" data-eli="tabB">💼 Investisseur (Backer)</button>
+    <div style="display:flex;align-items:center;gap:8px;margin-top:2px;flex-wrap:wrap;">
+      <div class="std-tabs" style="margin:0;">
+        <button class="std-tab on" id="el-tab-r" onclick="elTab('r')" data-eli="tabR">🏠 Occupant (Resident)</button>
+        <button class="std-tab" id="el-tab-b" onclick="elTab('b')" data-eli="tabB">💼 Investisseur (Backer)</button>
+      </div>
+      <span style="margin-left:auto;display:inline-flex;gap:6px;align-items:center;">
+        <span style="font-size:12px;color:var(--gris-2);">Devise</span>
+        <button class="std-tab" id="el-cur-eur" onclick="elCur('EUR')">€</button>
+        <button class="std-tab" id="el-cur-usd" onclick="elCur('USD')">$</button>
+        <button class="std-tab on" id="el-cur-ils" onclick="elCur('ILS')">₪</button>
+      </span>
     </div>
 
     <!-- ═══ VOLET OCCUPANT ═══ -->
@@ -11395,7 +11422,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     startRealtime();
     var ov=document.getElementById('ach-login-overlay'); if(ov) ov.classList.add('ach-hidden');
     var ub=document.getElementById('ach-userbar'); if(ub) ub.style.display='none';
-    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v9.27';
+    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v9.28';
     flag('Synchronis\u00e9');
     // fin de l'init : on autorise la journalisation des actions
     setTimeout(function(){ installInterceptor._init=false; }, 1500);
