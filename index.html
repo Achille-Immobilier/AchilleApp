@@ -1674,7 +1674,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     </div>
   </div>
   </div>
-  <div class="logo-ver app-ver">Achille App — v9.35</div>
+  <div class="logo-ver app-ver">Achille App — v9.36</div>
 </aside>
 <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Réduire la barre latérale">‹</button>
 
@@ -3842,14 +3842,13 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
             <div style="display:flex;gap:8px;"><button class="std-tab on" id="el-cit-y" onclick="elTog('cit',1)" data-eli="yes">Oui</button><button class="std-tab" id="el-cit-n" onclick="elTog('cit',0)" data-eli="no">Non</button></div></div>
           <div class="form-group"><label class="form-label" data-eli="fst">Premier bien en Israël ?</label>
             <div style="display:flex;gap:8px;"><button class="std-tab on" id="el-fst-y" onclick="elTog('fst',1)" data-eli="yes">Oui</button><button class="std-tab" id="el-fst-n" onclick="elTog('fst',0)" data-eli="no">Non</button></div></div>
-          <div class="form-group"><button class="btn btn-terra" onclick="elCalc()" data-eli="calc">Calculer</button></div>
         </div>
         <div id="el-cur-warn" style="display:none;font-size:11px;color:var(--gris-2);margin-top:4px;"><span data-eli="warn">⚠ Barème de taxe israélien (exprimé en shekels) — en € ou $ le calcul de taxe reste indicatif.</span></div>
       </div>
     </div>
     <div class="v2-card">
       <div class="v2-card-hd kaki" style="padding-top:10px;padding-bottom:10px;"><div class="v2-card-hd-title" data-eli="cmpR">Comparatif occupant — 10 ans</div></div>
-      <div class="el-pad" style="overflow-x:auto;" id="el-results"><div style="color:var(--gris-2);font-size:13px;" data-eli="fill">Renseignez les champs puis « Calculer ».</div></div>
+      <div class="el-pad" style="overflow-x:auto;" id="el-results"></div>
     </div>
     </div>
 
@@ -3878,14 +3877,13 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
             <div style="display:flex;gap:8px;"><button class="std-tab on" id="elb-cit-y" onclick="elbTog('cit',1)" data-eli="yes">Oui</button><button class="std-tab" id="elb-cit-n" onclick="elbTog('cit',0)" data-eli="no">Non</button></div></div>
           <div class="form-group"><label class="form-label" data-eli="fst">Premier bien en Israël ?</label>
             <div style="display:flex;gap:8px;"><button class="std-tab on" id="elb-fst-y" onclick="elbTog('fst',1)" data-eli="yes">Oui</button><button class="std-tab" id="elb-fst-n" onclick="elbTog('fst',0)" data-eli="no">Non</button></div></div>
-          <div class="form-group"><button class="btn btn-terra" onclick="elbCalc()" data-eli="calc">Calculer</button></div>
         </div>
         <div class="el-hint" style="margin-top:4px;" data-eli="noteB">Comme sur le simulateur d’origine, l’achat classique de l’investisseur reste taxé au forfait investisseur (taxe + frais annexes) — les deux derniers choix sont affichés à l’identique des photos et n’influent pas sur ce forfait (vérifié sur vos captures : 12 % même en « citoyen + 1er bien »).</div>
       </div>
     </div>
     <div class="v2-card">
       <div class="v2-card-hd kaki" style="padding-top:10px;padding-bottom:10px;"><div class="v2-card-hd-title" data-eli="cmpB">Comparatif investisseur — 10 ans</div></div>
-      <div class="el-pad" style="overflow-x:auto;" id="elb-results"><div style="color:var(--gris-2);font-size:13px;" data-eli="fill">Renseignez les champs puis « Calculer ».</div></div>
+      <div class="el-pad" style="overflow-x:auto;" id="elb-results"></div>
     </div>
     </div>
 
@@ -11511,7 +11509,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     startRealtime();
     var ov=document.getElementById('ach-login-overlay'); if(ov) ov.classList.add('ach-hidden');
     var ub=document.getElementById('ach-userbar'); if(ub) ub.style.display='none';
-    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v9.35';
+    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v9.36';
     flag('Synchronis\u00e9');
     // fin de l'init : on autorise la journalisation des actions
     setTimeout(function(){ installInterceptor._init=false; }, 1500);
@@ -16528,7 +16526,9 @@ function elPlaceholders(){
 function elFmt(v){ var neg=v<0; var t=EL_CUR[elCurKey()].s+Math.round(Math.abs(v)).toLocaleString(elLoc()); return neg?('\u2212'+t):t; }   /* v9.24 : 1,000,000 en anglais */
 function elHyp(){ return { rent:elN('el-h-rent')||2.5, rate:elN('el-h-rate')||5.17, yrs:elN('el-h-yrs')||30, elrent:elN('el-h-elrent')||1.7, annex:elN('el-h-annex'), flat:elN('el-h-flat')||8, app:elN('el-h-app')||6, promo:elN('el-h-promo')||75, elfee:elN('el-h-elfee')||14, mash:elN('el-h-mash')||3.5, mpar:elN('el-h-mpar')||3.25, appfr:elN('el-h-appfr')||4.8 }; }
 var EL_HKEYS=['rent','rate','yrs','elrent','annex','flat','app','promo','elfee','mash','mpar','appfr'];
-window.elHypSave=function(){ try{ var o={}; EL_HKEYS.forEach(function(k){ var e=document.getElementById('el-h-'+k); if(e) o[k]=e.value; }); localStorage.setItem('ach_el_hyp',JSON.stringify(o)); }catch(e){} };
+window.elHypSave=function(){ try{ var o={}; EL_HKEYS.forEach(function(k){ var e=document.getElementById('el-h-'+k); if(e) o[k]=e.value; }); localStorage.setItem('ach_el_hyp',JSON.stringify(o)); }catch(e){}
+  try{ elCalc(); elbCalc(); elvCalc(); }catch(e){}   /* v9.36 : les hypotheses recalculent en direct */
+};
 function elHypLoad(){ try{ var o=JSON.parse(localStorage.getItem('ach_el_hyp')||'null'); if(o) EL_HKEYS.forEach(function(k){ var e=document.getElementById('el-h-'+k); if(e&&o[k]!==undefined) e.value=o[k]; }); }catch(e){} }
 function elPay(P,ratePct,years){ if(P<=0) return 0; var r=ratePct/100/12, n=Math.max(1,Math.round(years*12)); if(!r) return P/n; return P*r/(1-Math.pow(1+r,-n)); }
 function elApp10(h){ return Math.pow(1+h.app/100,10)-1; }
@@ -16564,6 +16564,7 @@ window.elSync=function(src){
   if(note) note.textContent=elT('dCashTot')+elFmt(elNRaw('el-ec')+(EL_ST.inc?0:elN('el-af')));   /* v9.25 : apport SAISI + frais effectifs (la proposition compte, comme le site : vierge → ₪0 ; 350 000 saisis + 30 000 proposés → 380 000) */
   var hint=document.getElementById('el-af-hint');
   if(hint) hint.textContent=EL_ST.inc?elT('dFin'):elT('dProp');
+  elCalc();   /* v9.36 : calcul en direct, comme le volet Vendeur */
 };
 window.elCalc=function(){
   var h=elHyp(), pv=elN('el-pv'), ec=elN('el-ec'), rl=Math.max(0,Math.min(50,elN('el-rl'))), afIn=elN('el-af');
@@ -16604,6 +16605,7 @@ window.elbSync=function(src){
   else if(src==='pv'||src==='bl'){ bcEl.value=Math.round(E*(1-bl/100)).toLocaleString(elLoc()); }
   var hint=document.getElementById('elb-af-hint');
   if(hint) hint.textContent=(ELB_ST.inc?elT('dFinB'):elT('dPropB'))+elT('dElFee')+elFmt(E*h.elfee/100);
+  elbCalc();   /* v9.36 : calcul en direct */
 };
 window.elbNeutral=function(){
   /* cash-neutral : annuité(prêt) = loyer d'usage → % = (1,7/12)/f − frais financés/E ; le cash se recale */
