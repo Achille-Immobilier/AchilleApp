@@ -1674,7 +1674,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     </div>
   </div>
   </div>
-  <div class="logo-ver app-ver">Achille App — v9.30</div>
+  <div class="logo-ver app-ver">Achille App — v9.33</div>
 </aside>
 <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Réduire la barre latérale">‹</button>
 
@@ -3690,6 +3690,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     <div class="comm-tabs-bar">
       <button class="comm-tab active" id="el-top-p" onclick="elTopTab('p')">Présentation</button>
       <button class="comm-tab" id="el-top-s" onclick="elTopTab('s')">📊 Simulations</button>
+      <button class="comm-tab" id="el-top-f" onclick="elTopTab('f')">❓ FAQ</button>
     </div>
     <div class="comm-panels"><div style="flex:1;overflow-y:auto;padding:0;">
 
@@ -3706,6 +3707,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
         #el-panel-pres .elp-tag{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:16px;color:var(--gris);margin-top:3px;}
         #el-panel-pres .elp-hero{text-align:center;padding:10px 0 2px;}
         #el-panel-pres .elp-hero img{height:40px;width:40px;margin-bottom:5px;}
+        #el-panel-pres .elp-link{display:block;text-decoration:none;color:inherit;}
         #el-panel-pres .elp-hero .elp-brand,#el-panel-pres .elp-hero .elp-tag{display:block;}
         #el-panel-pres .elp-2col{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px;}
         #el-panel-pres .elp-li{display:flex;gap:8px;margin:6px 0;font-size:13px;line-height:1.5;color:var(--noir);}
@@ -3718,40 +3720,74 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
       </style>
       <!-- v9.29 : présentation commerciale compacte pleine largeur (une page, sans grandes marges) -->
       <div class="elp-hero">
-        <img src="data:image/png;base64,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" alt="EquityLiving">
-        <span class="elp-brand">EQUITY<b>LIVING</b></span>
-        <span class="elp-tag">Habiter aujourd’hui, partager la plus-value demain.</span>
+        <a class="elp-link" href="https://equity-living.com/il/en" target="_blank" rel="noopener" title="equity-living.com — site officiel">
+        <img src="data:image/png;base64,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" alt="EquityLiving">
+        <span class="elp-brand">EQUITY<b>LIVING</b></span></a>
+        <span class="elp-tag" data-eli="pTag">Vivre plus grand, payer moins, construire son patrimoine.</span>
       </div>
       <div class="v2-card elp-card"><div class="el-pad">
-        <div class="elp-t">Le principe</div>
-        <p>L’occupant achète 50 % de son logement ; un investisseur — le backer — achète l’autre moitié. L’occupant vit dans le bien comme chez lui et ne paie qu’un loyer réduit sur la moitié qui n’est pas encore à lui : environ un tiers de moins qu’une location classique. En échange, le jour de la revente, l’investisseur prend une part plus grande de la hausse du prix. C’est l’échange fondateur : <b>du confort de trésorerie aujourd’hui contre une partie de la plus-value de demain</b>.</p>
-        <p>L’idée parle à tout le monde : elle répond à la frustration très réelle de qui gagne bien sa vie mais ne peut plus acheter dans les grandes villes. Payer 1 529 quand la location coûte 2 083 et le crédit 3 558, tout en étant chez soi — on n’enrichit plus un bailleur, on ne craint plus le congé.</p>
+        <div class="elp-t" data-eli="pT1">Le principe</div>
+        <p data-eli="pP1">L’occupant achète 50 % de son logement ; un investisseur — le backer — achète l’autre moitié. L’occupant vit dans le bien comme chez lui et ne paie qu’un loyer réduit sur la moitié qui n’est pas encore à lui : environ un tiers de moins qu’une location classique. En échange, le jour de la revente, l’investisseur prend une part plus grande de la hausse du prix. C’est l’échange fondateur : <b>du confort de trésorerie aujourd’hui contre une partie de la plus-value de demain</b>.</p>
+        <p data-eli="pP2">L’idée parle à tout le monde : elle répond à la frustration très réelle de qui gagne bien sa vie mais ne peut plus acheter dans les grandes villes. Payer 1 529 quand la location coûte 2 083 et le crédit 3 558, tout en étant chez soi — on n’enrichit plus un bailleur, on ne craint plus le congé.</p>
       </div></div>
       <div class="elp-2col">
-        <div class="v2-card"><div class="v2-card-hd kaki"><div class="v2-card-hd-title">Pour l’occupant</div><div class="v2-card-hd-sub">Habiter mieux, tout de suite</div></div><div class="v2-card-body">
-          <div class="elp-li"><span class="ck">✓</span><span>Avec le même apport, viser un bien deux fois plus ambitieux — en n’en finançant que la moitié.</span></div>
-          <div class="elp-li"><span class="ck">✓</span><span>Des mensualités environ un tiers de moins qu’une location — loin d’un crédit classique.</span></div>
-          <div class="elp-li"><span class="ck">✓</span><span>Chez soi, vraiment : ni bailleur, ni congé, ni préavis.</span></div>
-          <div class="elp-li"><span class="ck">✓</span><span>Une contrepartie simple et unique, connue dès le départ : une part plus grande de la hausse revient à l’investisseur à la revente.</span></div>
+        <div class="v2-card"><div class="v2-card-hd kaki"><div class="v2-card-hd-title" data-eli="pRt">Pour l’occupant</div><div class="v2-card-hd-sub" data-eli="pRs">Habiter mieux, tout de suite</div></div><div class="v2-card-body">
+          <div class="elp-li"><span class="ck">✓</span><span data-eli="pR1">Avec le même apport, viser un bien deux fois plus ambitieux — en n’en finançant que la moitié.</span></div>
+          <div class="elp-li"><span class="ck">✓</span><span data-eli="pR2">Des mensualités environ un tiers de moins qu’une location — loin d’un crédit classique.</span></div>
+          <div class="elp-li"><span class="ck">✓</span><span data-eli="pR3">Chez soi, vraiment : ni bailleur, ni congé, ni préavis.</span></div>
+          <div class="elp-li"><span class="ck">✓</span><span data-eli="pR4">Une contrepartie simple et unique, connue dès le départ : une part plus grande de la hausse revient à l’investisseur à la revente.</span></div>
         </div></div>
-        <div class="v2-card"><div class="v2-card-hd terra"><div class="v2-card-hd-title">Pour l’investisseur</div><div class="v2-card-hd-sub">De la plus-value, sans gestion</div></div><div class="v2-card-body">
-          <div class="elp-li"><span class="ck">✓</span><span>Un occupant copropriétaire, qui entretient le bien comme SA maison.</span></div>
-          <div class="elp-li"><span class="ck">✓</span><span>Ni vacance locative, ni dégradations, ni impayés typiques d’un locataire.</span></div>
-          <div class="elp-li"><span class="ck">✓</span><span>Un loyer régulier, et <b>75 % de la hausse du prix</b> à la revente.</span></div>
-          <div class="elp-li"><span class="ck">✓</span><span>Zéro gestion au quotidien : vous troquez du loyer contre de la plus-value.</span></div>
+        <div class="v2-card"><div class="v2-card-hd terra"><div class="v2-card-hd-title" data-eli="pBt">Pour l’investisseur</div><div class="v2-card-hd-sub" data-eli="pBs">De la plus-value, sans gestion</div></div><div class="v2-card-body">
+          <div class="elp-li"><span class="ck">✓</span><span data-eli="pB1">Un occupant copropriétaire, qui entretient le bien comme SA maison.</span></div>
+          <div class="elp-li"><span class="ck">✓</span><span data-eli="pB2">Ni vacance locative, ni dégradations, ni impayés typiques d’un locataire.</span></div>
+          <div class="elp-li"><span class="ck">✓</span><span data-eli="pB3">Un loyer régulier, et <b>75 % de la hausse du prix</b> à la revente.</span></div>
+          <div class="elp-li"><span class="ck">✓</span><span data-eli="pB4">Zéro gestion au quotidien : vous troquez du loyer contre de la plus-value.</span></div>
         </div></div>
       </div>
       <div class="v2-card elp-card"><div class="el-pad">
-        <div class="elp-t">Comment le présenter</div>
+        <div class="elp-t" data-eli="pT4">Comment le présenter</div>
         <div class="elp-2col" style="margin-top:0;">
-        <div class="elp-quote">À l’occupant : « Vous achetez la moitié de votre appartement, un investisseur achète l’autre moitié — et vous vivez dedans comme chez vous. Chaque mois, au lieu de rembourser un gros crédit, vous payez seulement un petit loyer sur la moitié qui n’est pas encore à vous : environ un tiers de moins qu’une location. La contrepartie est simple et unique : le jour de la revente, l’investisseur prend une part plus grande de la hausse du prix. Vous échangez donc une partie de la plus-value de demain contre des mensualités légères aujourd’hui — c’est fait pour habiter mieux tout de suite, pas pour spéculer. »</div>
-        <div class="elp-quote">À l’investisseur : « Vous achetez la moitié d’un bien dont l’occupant possède l’autre moitié : il l’entretient comme SA maison, ne part pas du jour au lendemain et ne vous fait pas d’impayés de locataire. Vous touchez un loyer plus faible qu’en location classique, mais à la revente vous prenez 75 % de la hausse — vous troquez du loyer contre de la plus-value, sans les soucis de gestion. »</div>
+        <div class="elp-quote" data-eli="pQ1">À l’occupant : « Vous achetez la moitié de votre appartement, un investisseur achète l’autre moitié — et vous vivez dedans comme chez vous. Chaque mois, au lieu de rembourser un gros crédit, vous payez seulement un petit loyer sur la moitié qui n’est pas encore à vous : environ un tiers de moins qu’une location. La contrepartie est simple et unique : le jour de la revente, l’investisseur prend une part plus grande de la hausse du prix. Vous échangez donc une partie de la plus-value de demain contre des mensualités légères aujourd’hui — c’est fait pour habiter mieux tout de suite, pas pour spéculer. »</div>
+        <div class="elp-quote" data-eli="pQ2">À l’investisseur : « Vous achetez la moitié d’un bien dont l’occupant possède l’autre moitié : il l’entretient comme SA maison, ne part pas du jour au lendemain et ne vous fait pas d’impayés de locataire. Vous touchez un loyer plus faible qu’en location classique, mais à la revente vous prenez 75 % de la hausse — vous troquez du loyer contre de la plus-value, sans les soucis de gestion. »</div>
         </div>
       </div></div>
       <div class="v2-card elp-card"><div class="el-pad">
-        <div class="elp-t">Notre rôle de conseil</div>
-        <p style="margin:0;">Achille Immobilier vous accompagne pour valider les trois points clés avant tout engagement : l’hypothèse de hausse sur laquelle repose la simulation, ce que représentent les frais d’entrée, et l’organisation de la sortie — quand, à quel prix, décidé par qui.</p>
+        <div class="elp-t" data-eli="pT5">Notre rôle de conseil</div>
+        <p style="margin:0;" data-eli="pC1">Achille Immobilier vous accompagne pour valider les trois points clés avant tout engagement : l’hypothèse de hausse sur laquelle repose la simulation, ce que représentent les frais d’entrée, et l’organisation de la sortie — quand, à quel prix, décidé par qui.</p>
       </div></div>
+    </div>
+
+    <div class="comm-panel" id="el-panel-faq">
+      <style>
+        #el-panel-faq .elf-step{font-size:10.5px;letter-spacing:2px;color:#bda670;font-weight:600;}
+        #el-panel-faq .elf-st{font-family:'Cormorant Garamond',serif;font-size:17px;color:var(--noir);margin:3px 0 4px;font-weight:600;}
+        #el-panel-faq .elf-sp{font-size:12.5px;line-height:1.55;color:var(--gris);margin:0;}
+        #el-panel-faq .elf-3col{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;}
+        #el-panel-faq .elf-2col{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px;align-items:start;}
+        #el-panel-faq .elp-t{font-family:'Cormorant Garamond',serif;font-size:18px;color:var(--terra);margin:0 0 8px;}
+        #el-panel-faq .el-pad{padding:10px 14px;}
+        #el-panel-faq .v2-card-body{padding:2px 14px 8px;}
+        #el-panel-faq .v2-card-hd{padding:8px 14px 7px;}
+        #el-panel-faq .v2-card-hd-title{font-size:17px;}
+        #el-panel-faq .elf-q{border-bottom:1px solid var(--beige-2);}
+        #el-panel-faq .elf-q:last-child{border-bottom:none;}
+        #el-panel-faq .elf-q summary{cursor:pointer;font-size:12.8px;font-weight:600;color:var(--noir);padding:8px 0;list-style-position:outside;}
+        #el-panel-faq .elf-q summary:hover{color:var(--terra);}
+        #el-panel-faq .elf-a{padding:0 0 9px 14px;}
+        #el-panel-faq .elf-a p{font-size:12.5px;line-height:1.6;color:var(--noir);margin:0 0 7px;text-align:justify;}
+        #el-panel-faq .elf-a p:last-child{margin-bottom:0;}
+        #el-panel-faq .elf-src{font-size:11px;color:var(--gris-2);margin-top:10px;text-align:center;}
+        @media (max-width:1100px){ #el-panel-faq .elf-3col,#el-panel-faq .elf-2col{grid-template-columns:1fr;} }
+      </style>
+      <!-- v9.33 : parcours 3 étapes + FAQ officielle traduite (validé sur maquette — EN verbatim via $) -->
+      <div class="elp-t" style="margin-bottom:8px;" data-eli="fH1">Le parcours, en 3 étapes</div>
+      <div class="elf-3col"><div class="v2-card"><div class="el-pad"><div class="elf-step" data-eli="fS1l">ÉTAPE 01</div><div class="elf-st" data-eli="fS1t">Vous trouvez le bien que vous voulez.</div><p class="elf-sp" data-eli="fS1p">Vous choisissez un bien que vous aimez en Israël. EquityLiving vous met en relation avec un Backer qui l’achète avec vous.</p></div></div><div class="v2-card"><div class="el-pad"><div class="elf-step" data-eli="fS2l">ÉTAPE 02</div><div class="elf-st" data-eli="fS2t">Vous emménagez. Il investit.</div><p class="elf-sp" data-eli="fS2p">Votre Backer co-investit les autres 50 % et vous donne accès au logement que vous voulez vraiment. Il perçoit un revenu locatif ; vous, vous y vivez.</p></div></div><div class="v2-card"><div class="el-pad"><div class="elf-step" data-eli="fS3l">ÉTAPE 03</div><div class="elf-st" data-eli="fS3t">Tout le monde sort gagnant.</div><p class="elf-sp" data-eli="fS3p">Après 10 ans, le bien est vendu. Chacun récupère son capital, plus une part de toute la valeur prise par le bien.</p></div></div></div>
+      <div class="elp-t" style="margin:16px 0 8px;" data-eli="fH2">Questions fréquentes</div>
+      <div class="elf-2col" style="margin-top:0;">
+        <div style="display:grid;gap:10px;"><div class="v2-card"><div class="v2-card-hd kaki"><div class="v2-card-hd-title" data-eli="fRt">Côté occupants</div><div class="v2-card-hd-sub" data-eli="fRs">Vivre dans un bien EquityLiving</div></div><div class="v2-card-body"><details class="elf-q"><summary data-eli="fR1q">Pourquoi choisir EquityLiving plutôt qu’un crédit classique ?</summary><div class="elf-a" data-eli="fR1a"><p>Avec un crédit, vous empruntez la totalité et payez des intérêts à une banque pendant des décennies. Avec EquityLiving, un Backer détient 50 % du bien avec vous : pas de banque, pas d’intérêts, pas de dette de votre côté. Vous payez un loyer d’occupation mensuel — une fraction d’un crédit ou d’un loyer de marché — et vous conservez 25 % de la plus-value du bien à la sortie.</p></div></details><details class="elf-q"><summary data-eli="fR2q">Quelle différence entre Cash Saver, Dream Bigger et Cash Unlock ?</summary><div class="elf-a" data-eli="fR2a"><p>Trois façons d’accéder à l’immobilier israélien, selon votre point de départ :</p><p><b>Cash Saver</b> — vous apportez 50 % en cash, pour la mensualité la plus basse possible.<br><b>Dream Bigger</b> — vous apportez 25 % en cash et financez les 25 % restants via un partenaire financier : un logement plus grand pour la même mensualité qu’un petit crédit.<br><b>Cash Unlock</b> — si vous êtes déjà propriétaire, vous vendez 50 % de votre bien, soldez votre crédit éventuel et continuez d’y vivre.</p></div></details><details class="elf-q"><summary data-eli="fR3q">Y a-t-il un capital minimum requis ?</summary><div class="elf-a" data-eli="fR3a"><p>Cela dépend du bien et de l’offre. Cash Saver demande 50 % de la valeur du bien en cash ; Dream Bigger, 25 % en cash plus un accord de financement pour le reste. Chiffres indicatifs : les conditions réelles dépendent du bien et de l’accord du partenaire financier.</p></div></details><details class="elf-q"><summary data-eli="fR4q">Et si je veux partir avant la fin des 10 ans ?</summary><div class="elf-a" data-eli="fR4a"><p>Vous pouvez sortir à tout moment. Partir dans les 5 premières années entraîne une petite pénalité ; ensuite, la sortie est libre. À 10 ans, une sortie obligatoire est prévue dans la structure.</p></div></details><details class="elf-q"><summary data-eli="fR5q">Suis-je protégé si mon Backer a des difficultés financières ?</summary><div class="elf-a" data-eli="fR5a"><p>Oui. Le bien lui-même est la garantie, et vous êtes inscrit comme copropriétaire légal au Tabou (le registre foncier israélien), indépendamment de la situation personnelle de votre Backer. Votre droit d’occuper le bien n’est pas affecté par ses finances.</p></div></details><details class="elf-q"><summary data-eli="fR6q">Puis-je rénover ou personnaliser le bien ?</summary><div class="elf-a" data-eli="fR6a"><p>Oui. Vous êtes le seul occupant et vous y vivez exactement comme vous l’entendez.</p></div></details></div></div><div class="v2-card"><div class="v2-card-hd kaki"><div class="v2-card-hd-title" data-eli="fCt">Cash Unlock</div><div class="v2-card-hd-sub" data-eli="fCs">Libérer du cash d’un bien que vous possédez déjà</div></div><div class="v2-card-body"><details class="elf-q"><summary data-eli="fC1q">Qu’est-ce que Cash Unlock ?</summary><div class="elf-a" data-eli="fC1a"><p>Le moyen, pour un propriétaire existant, de vendre 50 % de son bien, récupérer du cash et solder son crédit éventuel : soit en restant occupant, soit en partant et en devenant Backer à son tour.</p></div></details><details class="elf-q"><summary data-eli="fC2q">Est-ce que cela m’empêche de vendre le bien en totalité ?</summary><div class="elf-a" data-eli="fC2a"><p>Non. Vous pouvez garder votre bien en vente partout — plateformes, agences, direct — en parallèle. La première offre qui aboutit l’emporte ; l’autre est simplement annulée.</p></div></details><details class="elf-q"><summary data-eli="fC3q">Comment le bien est-il valorisé ?</summary><div class="elf-a" data-eli="fC3a"><p>Sur la base d’une expertise de marché indépendante au moment de l’opération, conforme aux pratiques standards de l’immobilier israélien.</p></div></details></div></div></div>
+        <div style="display:grid;gap:10px;"><div class="v2-card"><div class="v2-card-hd terra"><div class="v2-card-hd-title" data-eli="fIt">Côté investisseurs (Backers)</div><div class="v2-card-hd-sub" data-eli="fIs">Investir via le modèle EquityLiving</div></div><div class="v2-card-body"><details class="elf-q"><summary data-eli="fI1q">Quel rendement puis-je espérer ?</summary><div class="elf-a" data-eli="fI1a"><p>Cela dépend du marché : inflation, taux, hausse des prix. Ce qui est structurel : vous déployez 50 % de la valeur du bien et captez 75 % de la plus-value à la sortie, avec un revenu mensuel pendant toute la durée et zéro gestion. Cette asymétrie, combinée à une sortie définie à 10 ans, est le cœur du profil de rendement.</p></div></details><details class="elf-q"><summary data-eli="fI2q">Qui gère l’entretien et la gestion du bien ?</summary><div class="elf-a" data-eli="fI2a"><p>EquityLiving. Vous n’avez jamais affaire à un locataire, une réparation ou une agence : votre occupant utilise et entretient le bien au quotidien, et EquityLiving gère la relation.</p></div></details><details class="elf-q"><summary data-eli="fI3q">Mon investissement est-il sécurisé juridiquement ?</summary><div class="elf-a" data-eli="fI3a"><p>Vous êtes inscrit comme copropriétaire légal du bien au Tabou (le registre foncier israélien) : ni actionnaire d’un fonds, ni prêteur. Votre part est adossée à un actif physique, avec titre de propriété.</p></div></details><details class="elf-q"><summary data-eli="fI4q">Puis-je sortir avant 10 ans ?</summary><div class="elf-a" data-eli="fI4a"><p>Oui. EquityLiving vous remplace par un autre Backer selon la liquidité disponible, ou l’occupant peut racheter directement votre part. Votre sortie ne dépend pas de la vente du bien.</p></div></details><details class="elf-q"><summary data-eli="fI5q">Backer via un nouvel achat ou via Cash Unlock : quelle différence ?</summary><div class="elf-a" data-eli="fI5a"><p>Mécaniquement, aucune : même part de 50 %, mêmes 75 % de la plus-value, mêmes protections. Seule la source change : via un nouvel achat, vous co-investissez dans un bien qu’un occupant achète ; via Cash Unlock, un propriétaire existant vous vend 50 % d’un bien qu’il détient déjà.</p></div></details><details class="elf-q"><summary data-eli="fI6q">Puis-je utiliser un levier en tant que Backer ?</summary><div class="elf-a" data-eli="fI6a"><p>Oui : jusqu’à 25 % de votre part de 50 % peut être financée via un partenaire financier, pour les mêmes 75 % de la plus-value et nettement plus d’exposition immobilière par shekel investi.</p></div></details></div></div><div class="v2-card"><div class="v2-card-hd terra"><div class="v2-card-hd-title" data-eli="fLt">Structure &amp; légal</div><div class="v2-card-hd-sub" data-eli="fLs">Propriété, sortie, protections</div></div><div class="v2-card-body"><details class="elf-q"><summary data-eli="fL1q">Qui possède réellement le bien ?</summary><div class="elf-a" data-eli="fL1a"><p>Les deux parties : occupant et Backer sont inscrits ensemble comme copropriétaires légaux au Tabou, le registre foncier officiel israélien. C’est une vraie copropriété structurée juridiquement, pas un fonds ni un prêt.</p></div></details><details class="elf-q"><summary data-eli="fL2q">Que se passe-t-il au terme des 10 ans ?</summary><div class="elf-a" data-eli="fL2a"><p>Le bien est vendu (ou refinancé/renouvelé d’un commun accord), et chaque partie récupère son capital plus sa part contractuelle de la plus-value : 25 % pour l’occupant, 75 % pour le Backer.</p></div></details><details class="elf-q"><summary data-eli="fL3q">Comment la valeur du bien est-elle déterminée à la sortie ?</summary><div class="elf-a" data-eli="fL3a"><p>Par une expertise de marché indépendante au moment de la vente ou de la sortie, conforme aux pratiques standards pour l’immobilier israélien détenu en copropriété.</p></div></details><details class="elf-q"><summary data-eli="fL4q">Que se passe-t-il en cas de décès ou de divorce ?</summary><div class="elf-a" data-eli="fL4a"><p>La structure de copropriété est documentée dès le premier jour pour couvrir ces scénarios : en général, la part concernée passe aux héritiers ou est réglée selon le contrat, sans perturber la part de l’autre partie ni le statut du bien.</p></div></details><details class="elf-q"><summary data-eli="fL5q">Faut-il être israélien pour participer ?</summary><div class="elf-a" data-eli="fL5a"><p>Non — ni pour les occupants, ni pour les Backers. EquityLiving gère toute la structure juridique, où que vous viviez.</p></div></details></div></div></div>
+      </div>
+      <div class="elf-src" data-eli="fSrc">Contenu traduit de la FAQ officielle — <a href="https://equity-living.com/il/en" target="_blank" rel="noopener" style="color:var(--gris-2);">equity-living.com</a></div>
     </div>
 
     <!-- ═══ SIMULATIONS (Occupant + Investisseur) ═══ -->
@@ -11428,7 +11464,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     startRealtime();
     var ov=document.getElementById('ach-login-overlay'); if(ov) ov.classList.add('ach-hidden');
     var ub=document.getElementById('ach-userbar'); if(ub) ub.style.display='none';
-    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v9.30';
+    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v9.33';
     flag('Synchronis\u00e9');
     // fin de l'init : on autorise la journalisation des actions
     setTimeout(function(){ installInterceptor._init=false; }, 1500);
@@ -16185,6 +16221,87 @@ var EL_I18N={
  fr:{}, /* le français est déjà dans le HTML — seul l'anglais remplace, et on restaure depuis EL_FR */
  en:{
   tabR:'\ud83c\udfe0 Resident', tabB:'\ud83d\udcbc Backer',
+  /* v9.32 : onglet Presentation en anglais quand $ (termes officiels du site) */
+  pTag:'Live bigger. Pay less. Build wealth.',
+  pT1:'The concept',
+  pP1:'The resident buys 50% of their home; an investor — the backer — buys the other half. The resident lives in the property as their own and only pays a reduced rent on the half they don’t own yet: about a third less than a classic rental. In exchange, when the property is sold, the backer takes a larger share of the price increase. That is the founding trade-off: <b>cash-flow comfort today in exchange for part of tomorrow’s appreciation</b>.',
+  pP2:'The idea speaks to everyone: it answers the very real frustration of people who earn a good living but can no longer buy in major cities. Paying 1,529 when renting costs 2,083 and a classic mortgage 3,558 — while being home: no more enriching a landlord, no more fear of losing the lease.',
+  pRt:'For the resident', pRs:'Live better, right now',
+  pR1:'With the same down payment, aim for a property twice as ambitious — while financing only half of it.',
+  pR2:'Monthly payments about a third below a classic rental — far below a classic mortgage.',
+  pR3:'Truly home: no landlord, no termination, no notice.',
+  pR4:'One simple, single trade-off, known from day one: a larger share of the price increase goes to the backer at resale.',
+  pBt:'For the backer', pBs:'Appreciation, without management',
+  pB1:'A co-owner resident, who maintains the property as THEIR own home.',
+  pB2:'No vacancy, no damage, no typical tenant defaults.',
+  pB3:'A regular rent, plus <b>75% of the price increase</b> at resale.',
+  pB4:'Zero day-to-day management: you trade rent for appreciation.',
+  pT4:'How to present it',
+  pQ1:'To the resident: “You buy half of your apartment, an investor buys the other half — and you live in it as your own home. Every month, instead of repaying a large mortgage, you only pay a small rent on the half that isn’t yours yet: about a third less than renting. The trade-off is simple and unique: on resale, the investor takes a larger share of the price increase. You are trading part of tomorrow’s appreciation for light monthly payments today — it’s made for living better right away, not for speculating.”',
+  pQ2:'To the backer: “You buy half of a property whose resident owns the other half: they maintain it as THEIR home, won’t leave overnight and won’t default like a tenant. You receive a lower rent than a classic rental, but on resale you take 75% of the increase — you trade rent for appreciation, without any management worries.”',
+  pT5:'Our advisory role',
+  pC1:'Achille Immobilier helps you validate the three key points before any commitment: the appreciation assumption behind the simulation, what the entry fees represent, and how the exit is organised — when, at what price, decided by whom.',
+  /* v9.33 : FAQ officielle — anglais verbatim du site quand $ */
+  fH1:"How it works, in 3 steps",
+  fH2:"Frequently asked questions",
+  fSrc:"Official FAQ content — <a href=\"https://equity-living.com/il/en\" target=\"_blank\" rel=\"noopener\" style=\"color:var(--gris-2);\">equity-living.com</a>",
+  fS1l:"STEP 01",
+  fS1t:"You find the property you want.",
+  fS1p:"You pick a property you love in Israel. EquityLiving matches you with a Backer who co-buys it with you.",
+  fS2l:"STEP 02",
+  fS2t:"You move in. They invest.",
+  fS2p:"Your Backer co-invests the other 50% and gives you access to the home you actually want. They receive guaranteed rental income: you live there.",
+  fS3l:"STEP 03",
+  fS3t:"Everyone exits with more.",
+  fS3p:"After 10 years, the property sells. Both sides get their capital back, plus a share of everything the property gained in value.",
+  fRt:"For Residents",
+  fRs:"Questions about living in an EquityLiving property",
+  fR1q:"Why choose EquityLiving over a traditional mortgage?",
+  fR1a:"<p>With a mortgage, you borrow the full amount and pay interest to a bank for decades. With EquityLiving, a Backer co-owns 50% of the property with you: no bank, no interest, no debt on your side. You pay a monthly usage fee, a fraction of what a mortgage or market rent would cost, and you keep 25% of the property’s appreciation at exit.</p>",
+  fR2q:"What’s the difference between Cash Saver, Dream Bigger, and Cash Unlock?",
+  fR2a:"<p>Three ways to access Israeli real estate, depending on your starting point:</p><p><b>Cash Saver</b> — You bring 50% in cash for the lowest possible monthly cost.<br><b>Dream Bigger</b> — You bring 25% in cash and finance the other 25% through a financing partner, reaching a bigger home for the same monthly cost as a smaller mortgage.<br><b>Cash Unlock</b> — If you already own a property, you sell 50% of it, pay off any existing mortgage, and keep living there.</p>",
+  fR3q:"Is there a minimum amount of capital required?",
+  fR3a:"<p>It depends on the property and the offer. Cash Saver requires 50% of the property value in cash; Dream Bigger requires 25% cash plus financing approval for the rest. Figures are illustrative: actual terms depend on the property and financing partner approval.</p>",
+  fR4q:"What happens if I want to move out before the 10-year term ends?",
+  fR4a:"<p>You can exit at any time. Leaving within the first 5 years comes with a small penalty; after that, you can exit freely. At year 10, there is a mandatory exit built into the structure.</p>",
+  fR5q:"Am I protected if my Backer runs into financial trouble?",
+  fR5a:"<p>Yes. The property itself is the collateral, and you’re registered as a legal co-owner at the Tabu, independent of your Backer’s personal situation. Your right to occupy the property isn’t affected by their finances.</p>",
+  fR6q:"Can I renovate or personalize the property?",
+  fR6a:"<p>Yes. You’re the sole occupant and you live in it exactly as you want.</p>",
+  fCt:"Cash Unlock",
+  fCs:"Questions about unlocking equity from a property you already own",
+  fC1q:"What is Cash Unlock?",
+  fC1a:"<p>A way for an existing property owner to sell 50% of their property, cash out, and pay off any existing mortgage: either staying on as Resident, or moving out and becoming a Backer themselves.</p>",
+  fC2q:"Does this stop me from selling the property fully?",
+  fC2a:"<p>No. You can keep your property listed everywhere: platforms, brokers, direct: in parallel. Whichever offer closes first wins; the other is simply cancelled.</p>",
+  fC3q:"How is the property valued?",
+  fC3a:"<p>Based on independent market valuation at the time of the deal, consistent with standard Israeli real estate practice.</p>",
+  fIt:"For Investors (Backers)",
+  fIs:"Questions about investing through the EquityLiving model",
+  fI1q:"What kind of returns can I expect?",
+  fI1a:"<p>It depends on market conditions: inflation, rates, price growth. What’s structural: you deploy 50% of the property value and capture 75% of the capital gain at exit, with monthly income throughout and zero management. That asymmetry, combined with a defined 10-year exit, is the core of the return profile.</p>",
+  fI2q:"Who handles property maintenance and management?",
+  fI2a:"<p>EquityLiving does. You never deal with a tenant, a repair, or a letting agent: your Resident occupies and maintains day-to-day use of the property, and EquityLiving manages the relationship.</p>",
+  fI3q:"How secure is my investment, legally?",
+  fI3a:"<p>You’re registered as a legal co-owner of the property at the Tabu (Israel’s land registry): not a shareholder in a fund, not a lender. Your stake is backed by a physical, titled asset.</p>",
+  fI4q:"Can I exit before year 10?",
+  fI4a:"<p>Yes. We replace you with another Backer based on available liquidity, or the Resident can buy back your share directly. Your exit isn’t dependent on the property being sold.</p>",
+  fI5q:"What’s the difference between becoming a Backer through a new purchase and through Cash Unlock?",
+  fI5a:"<p>Mechanically, none: same 50% stake, same 75% of the capital gain, same protections. The only difference is sourcing: through a new purchase you co-invest in a property a Resident is buying; through Cash Unlock, an existing owner sells you 50% of a property they already hold.</p>",
+  fI6q:"Can I use leverage as a Backer?",
+  fI6a:"<p>Yes: up to 25% of your 50% stake can be financed through a financing partner, for the same 75% share of the capital gain and materially more property exposure per shekel deployed.</p>",
+  fLt:"Structure &amp; Legal",
+  fLs:"Questions about ownership, exit, and legal protections",
+  fL1q:"Who actually owns the property?",
+  fL1a:"<p>Both parties: Resident and Backer are registered together as legal co-owners at the Tabu, Israel’s official land registry. It’s a real, legally structured co-ownership, not a fund or a loan.</p>",
+  fL2q:"What happens at the end of the 10-year term?",
+  fL2a:"<p>The property is sold (or refinanced/renewed by mutual agreement), and both parties receive their capital back plus their contractually defined share of the appreciation: 25% for the Resident, 75% for the Backer.</p>",
+  fL3q:"How is the property’s value determined at exit?",
+  fL3a:"<p>Through an independent market valuation at the time of sale or exit, consistent with standard practice for jointly-owned Israeli real estate.</p>",
+  fL4q:"What happens in the event of death or divorce?",
+  fL4a:"<p>The co-ownership structure is documented from day one to address these scenarios: typically, the affected party’s share passes to their heirs or is settled per the agreement, without disrupting the other party’s stake or the property’s status.</p>",
+  fL5q:"Do I need to be Israeli to participate?",
+  fL5a:"<p>No: for both Residents and Backers. EquityLiving handles the entire legal structure regardless of where you live.</p>",
   head:'The resident buys 50% of the home \u2014 a backer funds the other half',
   pv:'Property Value', ec:'Equity Contribution', rl:'Resident Loan on Contribution (%)',
   bc:'Backer\u2019s Available Cash', bl:'Loan on Backer\u2019s Equity (%)',
@@ -16234,6 +16351,9 @@ function elLang(){
     if(L==='en'&&sym){ el.innerHTML=t+' (<span class="el-sym">'+EL_CUR[elCurKey()].s+'</span>)'; }
     else el.innerHTML=t;
   });
+  /* v9.32 : re-normaliser tous les symboles apres le swap — sans quoi un symbole fige
+     au moment de la memorisation (ex. $) reapparaissait en revenant en € ou ₪ */
+  document.querySelectorAll('#page-equityliving .el-sym').forEach(function(e){ e.textContent=EL_CUR[elCurKey()].s; });
 }
 function elCurKey(){ try{ return localStorage.getItem('ach_el_cur')||'ILS'; }catch(e){ return 'ILS'; } }
 window.elCur=function(k){
@@ -16247,11 +16367,13 @@ window.elCur=function(k){
   if(document.querySelector('#el-results table')) elCalc();
   if(document.querySelector('#elb-results table')) elbCalc();
 };
-window.elTopTab=function(t){   /* v9.27 : bascule façon Honoraires (comm-tab/comm-panel) */
+window.elTopTab=function(t){   /* v9.27/v9.33 : bascule façon Honoraires (comm-tab/comm-panel) */
   document.getElementById('el-top-p').classList.toggle('active',t==='p');
   document.getElementById('el-top-s').classList.toggle('active',t==='s');
+  var f=document.getElementById('el-top-f'); if(f) f.classList.toggle('active',t==='f');
   document.getElementById('el-panel-pres').classList.toggle('active',t==='p');
   document.getElementById('el-panel-sim').classList.toggle('active',t==='s');
+  var fp=document.getElementById('el-panel-faq'); if(fp) fp.classList.toggle('active',t==='f');
 };
 window.elTab=function(t){
   document.getElementById('el-tab-r').classList.toggle('on',t==='r');
