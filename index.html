@@ -1674,7 +1674,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     </div>
   </div>
   </div>
-  <div class="logo-ver app-ver">Achille App — v9.28</div>
+  <div class="logo-ver app-ver">Achille App — v9.29</div>
 </aside>
 <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Réduire la barre latérale">‹</button>
 
@@ -3682,6 +3682,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     #page-equityliving .el-row3 .btn{margin-top:0;}
     #page-equityliving .v2-card{margin-top:10px;}
     #page-equityliving .el-pad{padding:12px 16px;}
+    #page-equityliving .comm-panel{padding:12px 20px 16px;}
     #page-equityliving .el-hint{font-size:11px;color:var(--gris-2);margin-top:3px;line-height:1.4;}
     @media (max-width:1100px){ #page-equityliving .el-row4{grid-template-columns:1fr 1fr;} #page-equityliving .el-row3{grid-template-columns:1fr 1fr;} }
   </style>
@@ -3690,32 +3691,35 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
       <button class="comm-tab active" id="el-top-p" onclick="elTopTab('p')">Présentation</button>
       <button class="comm-tab" id="el-top-s" onclick="elTopTab('s')">📊 Simulations</button>
     </div>
-    <div class="comm-panels"><div style="flex:1;overflow-y:auto;padding:14px 24px 30px;">
+    <div class="comm-panels"><div style="flex:1;overflow-y:auto;padding:0;">
 
     <!-- ═══ v9.26 : PRÉSENTATION (texte d'analyse retouché par Laurent, 16/09) ═══ -->
     <div class="comm-panel active" id="el-panel-pres">
       <style>
-        #el-panel-pres .elp-wrap{max-width:1000px;margin:0 auto;}
-        #el-panel-pres .elp-card{margin-top:14px;}
-        #el-panel-pres .elp-t{font-family:'Cormorant Garamond',serif;font-size:20px;color:var(--terra);margin:0 0 8px;}
-        #el-panel-pres p{font-size:13.5px;line-height:1.7;color:var(--noir);margin:0 0 10px;text-align:justify;}
-        #el-panel-pres .elp-quote{border-left:3px solid var(--terra);background:var(--terra-p);border-radius:0 8px 8px 0;padding:12px 16px;margin:10px 0;font-family:'Cormorant Garamond',serif;font-style:italic;font-size:15.5px;line-height:1.65;color:var(--noir);}
-        #el-panel-pres .elp-brand{font-family:'Jost',sans-serif;font-size:22px;letter-spacing:5px;font-weight:600;color:var(--noir);}
+        #el-panel-pres .elp-card{margin-top:10px;}
+        #el-panel-pres .elp-t{font-family:'Cormorant Garamond',serif;font-size:18px;color:var(--terra);margin:0 0 6px;}
+        #el-panel-pres p{font-size:13px;line-height:1.55;color:var(--noir);margin:0 0 8px;text-align:justify;}
+        #el-panel-pres p:last-child{margin-bottom:0;}
+        #el-panel-pres .elp-quote{border-left:3px solid var(--terra);background:var(--terra-p);border-radius:0 8px 8px 0;padding:10px 14px;margin:0;font-family:'Cormorant Garamond',serif;font-style:italic;font-size:14.5px;line-height:1.55;color:var(--noir);}
+        #el-panel-pres .elp-brand{font-family:'Jost',sans-serif;font-size:17px;letter-spacing:4px;font-weight:600;color:var(--noir);}
         #el-panel-pres .elp-brand b{color:#bda670;font-weight:600;}
-        #el-panel-pres .elp-tag{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:17.5px;color:var(--gris);margin-top:5px;}
-        #el-panel-pres .elp-hero{text-align:center;padding:24px 0 4px;}
-        #el-panel-pres .elp-hero img{height:46px;width:46px;margin-bottom:8px;}
-        #el-panel-pres .elp-2col{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px;}
-        #el-panel-pres .elp-li{display:flex;gap:9px;margin:9px 0;font-size:13.5px;line-height:1.6;color:var(--noir);}
+        #el-panel-pres .elp-tag{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:15px;color:var(--gris);}
+        #el-panel-pres .elp-hero{display:flex;align-items:center;justify-content:center;gap:12px;padding:4px 0 0;}
+        #el-panel-pres .elp-hero img{height:28px;width:28px;}
+        #el-panel-pres .elp-2col{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px;}
+        #el-panel-pres .elp-li{display:flex;gap:8px;margin:6px 0;font-size:13px;line-height:1.5;color:var(--noir);}
         #el-panel-pres .elp-li .ck{color:var(--terra);font-weight:700;flex:none;}
+        #el-panel-pres .el-pad{padding:10px 14px;}
+        #el-panel-pres .v2-card-body{padding:9px 14px;}
+        #el-panel-pres .v2-card-hd{padding:8px 14px 7px;}
+        #el-panel-pres .v2-card-hd-title{font-size:18px;}
         @media (max-width:1100px){ #el-panel-pres .elp-2col{grid-template-columns:1fr;} }
       </style>
-      <!-- v9.28 : présentation commerciale (maquette A validée par Laurent, 16/09) -->
-      <div class="elp-wrap">
+      <!-- v9.29 : présentation commerciale compacte pleine largeur (une page, sans grandes marges) -->
       <div class="elp-hero">
         <img src="data:image/png;base64,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" alt="EquityLiving">
-        <div class="elp-brand">EQUITY<b>LIVING</b></div>
-        <div class="elp-tag">Habiter aujourd’hui, partager la plus-value demain.</div>
+        <span class="elp-brand">EQUITY<b>LIVING</b></span>
+        <span class="elp-tag">— Habiter aujourd’hui, partager la plus-value demain.</span>
       </div>
       <div class="v2-card elp-card"><div class="el-pad">
         <div class="elp-t">Le principe</div>
@@ -3738,14 +3742,15 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
       </div>
       <div class="v2-card elp-card"><div class="el-pad">
         <div class="elp-t">Comment le présenter</div>
+        <div class="elp-2col" style="margin-top:0;">
         <div class="elp-quote">À l’occupant : « Vous achetez la moitié de votre appartement, un investisseur achète l’autre moitié — et vous vivez dedans comme chez vous. Chaque mois, au lieu de rembourser un gros crédit, vous payez seulement un petit loyer sur la moitié qui n’est pas encore à vous : environ un tiers de moins qu’une location. La contrepartie est simple et unique : le jour de la revente, l’investisseur prend une part plus grande de la hausse du prix. Vous échangez donc une partie de la plus-value de demain contre des mensualités légères aujourd’hui — c’est fait pour habiter mieux tout de suite, pas pour spéculer. »</div>
         <div class="elp-quote">À l’investisseur : « Vous achetez la moitié d’un bien dont l’occupant possède l’autre moitié : il l’entretient comme SA maison, ne part pas du jour au lendemain et ne vous fait pas d’impayés de locataire. Vous touchez un loyer plus faible qu’en location classique, mais à la revente vous prenez 75 % de la hausse — vous troquez du loyer contre de la plus-value, sans les soucis de gestion. »</div>
+        </div>
       </div></div>
       <div class="v2-card elp-card"><div class="el-pad">
         <div class="elp-t">Notre rôle de conseil</div>
         <p style="margin:0;">Achille Immobilier vous accompagne pour valider les trois points clés avant tout engagement : l’hypothèse de hausse sur laquelle repose la simulation, ce que représentent les frais d’entrée, et l’organisation de la sortie — quand, à quel prix, décidé par qui.</p>
       </div></div>
-      </div>
     </div>
 
     <!-- ═══ SIMULATIONS (Occupant + Investisseur) ═══ -->
@@ -11422,7 +11427,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     startRealtime();
     var ov=document.getElementById('ach-login-overlay'); if(ov) ov.classList.add('ach-hidden');
     var ub=document.getElementById('ach-userbar'); if(ub) ub.style.display='none';
-    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v9.28';
+    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v9.29';
     flag('Synchronis\u00e9');
     // fin de l'init : on autorise la journalisation des actions
     setTimeout(function(){ installInterceptor._init=false; }, 1500);
