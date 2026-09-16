@@ -1674,7 +1674,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     </div>
   </div>
   </div>
-  <div class="logo-ver app-ver">Achille App — v9.24</div>
+  <div class="logo-ver app-ver">Achille App — v9.25</div>
 </aside>
 <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Réduire la barre latérale">‹</button>
 
@@ -3710,7 +3710,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
           <div class="form-group"><label class="form-label" data-eli="ec">Apport de l’occupant (<span class="el-sym">₪</span>)</label>
             <input class="form-input js-thousands" id="el-ec" inputmode="decimal" value="" oninput="elSync('ec')"></div>
           <div class="form-group"><label class="form-label" data-eli="rl">Prêt occupant sur sa part (%)</label>
-            <input class="form-input" id="el-rl" inputmode="decimal" value="" placeholder="30" oninput="elSync('rl')" title="0 = sans prêt · 50 % maximum">
+            <input class="form-input" id="el-rl" inputmode="decimal" value="0" oninput="elSync('rl')" title="0 = sans prêt · 50 % maximum">
             <div class="el-hint" data-eli="h50">0 = sans prêt · 50 % maximum</div>
             <div class="el-hint" id="el-cash-note" style="color:var(--terra);"></div></div>
           <div class="form-group"><label class="form-label" data-eli="af">Frais d’acquisition cash (<span class="el-sym">₪</span>)</label>
@@ -3746,7 +3746,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
           <div class="form-group"><label class="form-label" data-eli="bc">Cash disponible de l’investisseur (<span class="el-sym">₪</span>)</label>
             <input class="form-input js-thousands" id="elb-bc" inputmode="decimal" value="" oninput="elbSync('bc')"></div>
           <div class="form-group"><label class="form-label" data-eli="bl">Prêt sur l’equity de l’investisseur (%)</label>
-            <input class="form-input" id="elb-bl" inputmode="decimal" value="" placeholder="0" oninput="elbSync('bl')" title="0 = sans prêt · 50 % maximum">
+            <input class="form-input" id="elb-bl" inputmode="decimal" value="0" oninput="elbSync('bl')" title="0 = sans prêt · 50 % maximum">
             <div class="el-hint" data-eli="h50">0 = sans prêt · 50 % maximum</div>
             <button class="std-tab" style="margin-top:2px;font-size:11px;" onclick="elbNeutral()" data-eli="cn">⚖ Régler à l’équilibre (cash-neutral)</button></div>
           <div class="form-group"><label class="form-label" data-eli="af">Frais d’acquisition cash (<span class="el-sym">₪</span>)</label>
@@ -11357,7 +11357,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     startRealtime();
     var ov=document.getElementById('ach-login-overlay'); if(ov) ov.classList.add('ach-hidden');
     var ub=document.getElementById('ach-userbar'); if(ub) ub.style.display='none';
-    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v9.24';
+    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v9.25';
     flag('Synchronis\u00e9');
     // fin de l'init : on autorise la journalisation des actions
     setTimeout(function(){ installInterceptor._init=false; }, 1500);
@@ -16190,12 +16190,18 @@ function elDef(id){
   var pv=ils?4000000:1000000;
   /* v9.23 : frais d'acquisition PROPOSÉS automatiquement = ½ taxe du bien entier + 3 % du bien
      (formule retrouvée sur les captures : 30 000 @ 1 M citoyen+1er bien · 85 269 @ 2,5 M). */
-  if(id==='el-af'){ var v=elN('el-pv'); return Math.round(elTax(v,EL_ST.cit===1,EL_ST.fst===1,elN('el-h-flat')||8)/2+v*0.03); }
-  if(id==='elb-af'){ var vb=elN('elb-pv'); return Math.round(elTax(vb,ELB_ST.cit===1,ELB_ST.fst===1,elN('el-h-flat')||8)/2+vb*0.03); }
-  var D={'el-pv':pv,'el-ec':Math.round(pv/2*0.7),'el-rl':30,
+  /* v9.25 : comme le site — frais proposés à 0 tant que la valeur du bien n'est pas SAISIE,
+     puis ½ taxe + 3 % dès qu'on tape ; % de prêt à 0 en clair ; apport/cash proposés = part entière. */
+  if(id==='el-af'){ var v=elNRaw('el-pv'); if(!v) return 0; return Math.round(elTax(v,EL_ST.cit===1,EL_ST.fst===1,elN('el-h-flat')||8)/2+v*0.03); }
+  if(id==='elb-af'){ var vb=elNRaw('elb-pv'); if(!vb) return 0; return Math.round(elTax(vb,ELB_ST.cit===1,ELB_ST.fst===1,elN('el-h-flat')||8)/2+vb*0.03); }
+  if(id==='el-ec'){ return Math.round(pv/2*(1-Math.max(0,Math.min(50,elN('el-rl')))/100)); }
+  var D={'el-pv':pv,'el-rl':0,
          'elb-pv':pv,'elb-bc':pv/2,'elb-bl':0};
   return (id in D)?D[id]:0;
 }
+function elNRaw(id){ var e=document.getElementById(id); if(!e) return 0;
+  var v=(''+e.value).replace(/[\s\u00a0\u202f]/g,'').replace(',','.');
+  return v===''?0:(parseFloat(v)||0); }
 function elN(id){ var e=document.getElementById(id); if(!e) return 0;
   var v=(''+e.value).replace(/[\s\u00a0\u202f]/g,'').replace(',','.');
   if(v==='') return elDef(id);
@@ -16243,7 +16249,7 @@ window.elSync=function(src){
   else if(src==='pv'||src==='rl'){ ecEl.value=Math.round(share*(1-rl/100)).toLocaleString(elLoc()); }   /* v9.22 : uniquement sur saisie */
   var af=EL_ST.inc?0:elN('el-af');
   var note=document.getElementById('el-cash-note');
-  if(note) note.textContent=elT('dCashTot')+elFmt(elN('el-ec')+af);
+  if(note) note.textContent=elT('dCashTot')+elFmt(elNRaw('el-ec')+(EL_ST.inc?0:elN('el-af')));   /* v9.25 : apport SAISI + frais effectifs (la proposition compte, comme le site : vierge → ₪0 ; 350 000 saisis + 30 000 proposés → 380 000) */
   var hint=document.getElementById('el-af-hint');
   if(hint) hint.textContent=EL_ST.inc?elT('dFin'):elT('dProp');
 };
