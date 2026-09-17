@@ -1678,7 +1678,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     </div>
   </div>
   </div>
-  <div class="logo-ver app-ver">Achille App — v9.40</div>
+  <div class="logo-ver app-ver">Achille App — v9.41</div>
 </aside>
 <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Réduire la barre latérale">‹</button>
 
@@ -3678,7 +3678,8 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     #page-equityliving .el-row4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;}
     #page-equityliving .el-row5{display:grid;grid-template-columns:1.06fr 1fr 1fr 1fr 1fr;gap:12px;}
     #page-equityliving .el-row5 .form-label{min-height:30px;display:flex;align-items:flex-end;line-height:1.3;}
-    #page-equityliving .el-flag{padding:6px 8px!important;font-size:15px;line-height:1;display:inline-flex;align-items:center;}
+    #page-equityliving .el-flag{padding:6px 8px!important;font-size:11px;font-weight:600;letter-spacing:.4px;line-height:1;display:inline-flex;align-items:center;gap:5px;}
+    #page-equityliving .el-flag svg{flex:none;display:block;}
     #page-equityliving .el-row3{display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:12px;align-items:end;}
     #page-equityliving .form-group{margin-bottom:6px;}
     #page-equityliving .form-label{margin-bottom:4px;font-size:11.5px;}
@@ -3829,10 +3830,10 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     <div class="v2-card">
       <div class="el-pad">
         <div class="el-row5">
-          <div class="form-group"><label class="form-label" data-eli="vLoc">Pays · Ville</label>
+<div class="form-group"><label class="form-label" data-eli="vLoc">Pays · Ville</label>
             <div style="display:flex;gap:5px;align-items:stretch;">
-              <button class="std-tab on el-flag" id="el-c-il" onclick="elCty('r','IL')" title="Israël">🇮🇱</button>
-              <button class="std-tab el-flag" id="el-c-fr" onclick="elCty('r','FR')" title="France">🇫🇷</button>
+              <button class="std-tab on el-flag" id="el-c-il" onclick="elCty('r','IL')" title="Israël"><svg width="18" height="13" viewBox="0 0 18 13" aria-hidden="true"><rect width="18" height="13" rx="1.5" fill="#fff" stroke="#c9c2b6" stroke-width=".5"/><rect x="0" y="1.4" width="18" height="1.7" fill="#0038b8"/><rect x="0" y="9.9" width="18" height="1.7" fill="#0038b8"/><path d="M9 3.9 11.25 7.8 6.75 7.8Z M9 9.1 6.75 5.2 11.25 5.2Z" fill="none" stroke="#0038b8" stroke-width=".75"/></svg><span>IL</span></button>
+              <button class="std-tab el-flag" id="el-c-fr" onclick="elCty('r','FR')" title="France"><svg width="18" height="13" viewBox="0 0 18 13" aria-hidden="true"><rect width="18" height="13" rx="1.5" fill="#fff" stroke="#c9c2b6" stroke-width=".5"/><rect x="0" y="0" width="6" height="13" fill="#0055A4"/><rect x="12" y="0" width="6" height="13" fill="#EF4135"/><rect width="18" height="13" rx="1.5" fill="none" stroke="#c9c2b6" stroke-width=".5"/></svg><span>FR</span></button>
               <select class="form-select" id="el-city" onchange="elSync()" style="flex:1;min-width:0;"></select>
             </div></div>
           <div class="form-group"><label class="form-label" data-eli="pv">Valeur du bien (<span class="el-sym">₪</span>)</label>
@@ -3870,10 +3871,10 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     <div class="v2-card">
       <div class="el-pad">
         <div class="el-row5">
-          <div class="form-group"><label class="form-label" data-eli="vLoc">Pays · Ville</label>
+<div class="form-group"><label class="form-label" data-eli="vLoc">Pays · Ville</label>
             <div style="display:flex;gap:5px;align-items:stretch;">
-              <button class="std-tab on el-flag" id="elb-c-il" onclick="elCty('b','IL')" title="Israël">🇮🇱</button>
-              <button class="std-tab el-flag" id="elb-c-fr" onclick="elCty('b','FR')" title="France">🇫🇷</button>
+              <button class="std-tab on el-flag" id="elb-c-il" onclick="elCty('b','IL')" title="Israël"><svg width="18" height="13" viewBox="0 0 18 13" aria-hidden="true"><rect width="18" height="13" rx="1.5" fill="#fff" stroke="#c9c2b6" stroke-width=".5"/><rect x="0" y="1.4" width="18" height="1.7" fill="#0038b8"/><rect x="0" y="9.9" width="18" height="1.7" fill="#0038b8"/><path d="M9 3.9 11.25 7.8 6.75 7.8Z M9 9.1 6.75 5.2 11.25 5.2Z" fill="none" stroke="#0038b8" stroke-width=".75"/></svg><span>IL</span></button>
+              <button class="std-tab el-flag" id="elb-c-fr" onclick="elCty('b','FR')" title="France"><svg width="18" height="13" viewBox="0 0 18 13" aria-hidden="true"><rect width="18" height="13" rx="1.5" fill="#fff" stroke="#c9c2b6" stroke-width=".5"/><rect x="0" y="0" width="6" height="13" fill="#0055A4"/><rect x="12" y="0" width="6" height="13" fill="#EF4135"/><rect width="18" height="13" rx="1.5" fill="none" stroke="#c9c2b6" stroke-width=".5"/></svg><span>FR</span></button>
               <select class="form-select" id="elb-city" onchange="elbSync()" style="flex:1;min-width:0;"></select>
             </div></div>
           <div class="form-group"><label class="form-label" data-eli="pv">Valeur du bien (<span class="el-sym">₪</span>)</label>
@@ -3910,11 +3911,13 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     <div id="el-panel-v" style="display:none;">
     <div class="v2-card">
       <div class="el-pad">
-        <div class="el-row4">
-          <div class="form-group"><label class="form-label" data-eli="vCty">Pays</label>
-            <div style="display:flex;gap:8px;"><button class="std-tab on" id="elv-c-il" onclick="elvC('IL')" data-eli="vIl">🇮🇱 Israël</button><button class="std-tab" id="elv-c-fr" onclick="elvC('FR')" data-eli="vFr">🇫🇷 France</button></div></div>
-          <div class="form-group"><label class="form-label" data-eli="vCity">Ville</label>
-            <select class="form-select" id="elv-city" onchange="elvCalc()"></select></div>
+        <div class="el-row5">
+<div class="form-group"><label class="form-label" data-eli="vLoc">Pays · Ville</label>
+            <div style="display:flex;gap:5px;align-items:stretch;">
+              <button class="std-tab on el-flag" id="elv-c-il" onclick="elvC('IL')" title="Israël"><svg width="18" height="13" viewBox="0 0 18 13" aria-hidden="true"><rect width="18" height="13" rx="1.5" fill="#fff" stroke="#c9c2b6" stroke-width=".5"/><rect x="0" y="1.4" width="18" height="1.7" fill="#0038b8"/><rect x="0" y="9.9" width="18" height="1.7" fill="#0038b8"/><path d="M9 3.9 11.25 7.8 6.75 7.8Z M9 9.1 6.75 5.2 11.25 5.2Z" fill="none" stroke="#0038b8" stroke-width=".75"/></svg><span>IL</span></button>
+              <button class="std-tab el-flag" id="elv-c-fr" onclick="elvC('FR')" title="France"><svg width="18" height="13" viewBox="0 0 18 13" aria-hidden="true"><rect width="18" height="13" rx="1.5" fill="#fff" stroke="#c9c2b6" stroke-width=".5"/><rect x="0" y="0" width="6" height="13" fill="#0055A4"/><rect x="12" y="0" width="6" height="13" fill="#EF4135"/><rect width="18" height="13" rx="1.5" fill="none" stroke="#c9c2b6" stroke-width=".5"/></svg><span>FR</span></button>
+              <select class="form-select" id="elv-city" onchange="elvCalc()" style="flex:1;min-width:0;"></select>
+            </div></div>
           <div class="form-group"><label class="form-label" data-eli="vPv">Valeur du bien (<span class="el-sym">₪</span>)</label>
             <input class="form-input js-thousands" id="elv-pv" inputmode="decimal" value="" oninput="elvCalc()"></div>
           <div class="form-group"><label class="form-label" data-eli="vMb">Capital restant dû (<span class="el-sym">₪</span>)</label>
@@ -11542,7 +11545,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     startRealtime();
     var ov=document.getElementById('ach-login-overlay'); if(ov) ov.classList.add('ach-hidden');
     var ub=document.getElementById('ach-userbar'); if(ub) ub.style.display='none';
-    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v9.40';
+    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v9.41';
     flag('Synchronis\u00e9');
     // fin de l'init : on autorise la journalisation des actions
     setTimeout(function(){ installInterceptor._init=false; }, 1500);
@@ -16518,6 +16521,12 @@ window.elTopTab=function(t){   /* v9.27/v9.33 : bascule façon Honoraires (comm-
   document.getElementById('el-panel-sim').classList.toggle('active',t==='s');
   var fp=document.getElementById('el-panel-faq'); if(fp) fp.classList.toggle('active',t==='f');
   var lg=document.getElementById('el-lang-tog'); if(lg) lg.style.display=(t==='s')?'none':'';   /* v9.34 : sur Simulations, le $ suffit */
+  /* v9.41 : filet de securite — si un menu Ville est vide (init interrompue), on le re-remplit ici */
+  if(t==='s') try{
+    var _c=document.getElementById('el-city');  if(_c && !_c.options.length)  elCty('r', EL_CTY.r);
+    var _cb=document.getElementById('elb-city'); if(_cb && !_cb.options.length) elCty('b', EL_CTY.b);
+    var _cv=document.getElementById('elv-city'); if(_cv && !_cv.options.length) elvC(elvCountry);
+  }catch(e){}
 };
 window.elTab=function(t){
   document.getElementById('el-tab-r').classList.toggle('on',t==='r');
@@ -16741,7 +16750,7 @@ window.elbCalc=function(){
       elRow(elT('bOver'), '\u2014', pfmt(pct(gpEL)), pfmt(pct(gp0)))])
     +'<div style="font-size:11px;color:var(--gris-2);margin-top:8px;">'+elT('fnB')(elFmt(E),Math.round(elGeo('b').elr*100)/100,h.promo,elGeo('b').app)+'</div>';
 };
-(function(){ try{ elHypLoad(); elPlaceholders(); elvC('IL'); elCty('r','IL'); elCty('b','IL'); var k=elCurKey(); if(k!=='ILS') elCur(k); else { elLang(); elSync(); elbSync(); } }catch(e){} })();
+(function(){ try{ elCty('r','IL'); elCty('b','IL'); elvC('IL'); }catch(e){} try{ elHypLoad(); elPlaceholders(); }catch(e){} try{ var k=elCurKey(); if(k!=='ILS') elCur(k); else { elLang(); elSync(); elbSync(); } }catch(e){} })();
 window.rentaTab=function(n){
   [1,2,3].forEach(function(i){
     var panel=document.getElementById('renta-panel-'+i);
