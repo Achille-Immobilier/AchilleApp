@@ -1678,7 +1678,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     </div>
   </div>
   </div>
-  <div class="logo-ver app-ver">Achille App — v9.38</div>
+  <div class="logo-ver app-ver">Achille App — v9.39</div>
 </aside>
 <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Réduire la barre latérale">‹</button>
 
@@ -3825,13 +3825,19 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     <div id="el-panel-r">
     <div class="v2-card">
       <div class="el-pad">
+        <div class="el-row3" style="margin-bottom:6px;">
+          <div class="form-group"><label class="form-label" data-eli="vCty">Pays</label>
+            <div style="display:flex;gap:8px;"><button class="std-tab on" id="el-c-il" onclick="elCty('r','IL')" data-eli="vIl">🇮🇱 Israël</button><button class="std-tab" id="el-c-fr" onclick="elCty('r','FR')" data-eli="vFr">🇫🇷 France</button></div></div>
+          <div class="form-group"><label class="form-label" data-eli="vCity">Ville</label>
+            <select class="form-select" id="el-city" onchange="elSync()"></select></div>
+        </div>
         <div class="el-row4">
           <div class="form-group"><label class="form-label" data-eli="pv">Valeur du bien (<span class="el-sym">₪</span>)</label>
             <input class="form-input js-thousands" id="el-pv" inputmode="decimal" value="" oninput="elSync('pv')"></div>
           <div class="form-group"><label class="form-label" data-eli="ec">Apport de l’occupant (<span class="el-sym">₪</span>)</label>
             <input class="form-input js-thousands" id="el-ec" inputmode="decimal" value="" oninput="elSync('ec')"></div>
           <div class="form-group"><label class="form-label" data-eli="rl">Prêt occupant sur sa part (%)</label>
-            <input class="form-input" id="el-rl" inputmode="decimal" value="0" oninput="elSync('rl')" title="0 = sans prêt · 50 % maximum">
+            <input class="form-input" id="el-rl" inputmode="decimal" value="50" oninput="elSync('rl')" title="0 = sans prêt · 50 % maximum">
             <div class="el-hint" data-eli="h50">0 = sans prêt · 50 % maximum</div>
             <div class="el-hint" id="el-cash-note" style="color:var(--terra);"></div></div>
           <div class="form-group"><label class="form-label" data-eli="af">Frais d’acquisition cash (<span class="el-sym">₪</span>)</label>
@@ -3842,9 +3848,9 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
         <div class="el-row3" style="margin-top:6px;">
           <div class="form-group"><label class="form-label" data-eli="inc">Inclure les frais dans le prêt ?</label>
             <div style="display:flex;gap:8px;"><button class="std-tab" id="el-inc-y" onclick="elTog('inc',1)" data-eli="yes">Oui</button><button class="std-tab on" id="el-inc-n" onclick="elTog('inc',0)" data-eli="no">Non</button></div></div>
-          <div class="form-group"><label class="form-label" data-eli="cit">Citoyen israélien ?</label>
+          <div class="form-group" id="el-g-cit"><label class="form-label" data-eli="cit">Citoyen israélien ?</label>
             <div style="display:flex;gap:8px;"><button class="std-tab on" id="el-cit-y" onclick="elTog('cit',1)" data-eli="yes">Oui</button><button class="std-tab" id="el-cit-n" onclick="elTog('cit',0)" data-eli="no">Non</button></div></div>
-          <div class="form-group"><label class="form-label" data-eli="fst">Premier bien en Israël ?</label>
+          <div class="form-group" id="el-g-fst"><label class="form-label" data-eli="fst">Premier bien en Israël ?</label>
             <div style="display:flex;gap:8px;"><button class="std-tab on" id="el-fst-y" onclick="elTog('fst',1)" data-eli="yes">Oui</button><button class="std-tab" id="el-fst-n" onclick="elTog('fst',0)" data-eli="no">Non</button></div></div>
         </div>
         <div id="el-cur-warn" style="display:none;font-size:11px;color:var(--gris-2);margin-top:4px;"><span data-eli="warn">⚠ Barème de taxe israélien (exprimé en shekels) — en € ou $ le calcul de taxe reste indicatif.</span></div>
@@ -3860,6 +3866,12 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     <div id="el-panel-b" style="display:none;">
     <div class="v2-card">
       <div class="el-pad">
+        <div class="el-row3" style="margin-bottom:6px;">
+          <div class="form-group"><label class="form-label" data-eli="vCty">Pays</label>
+            <div style="display:flex;gap:8px;"><button class="std-tab on" id="elb-c-il" onclick="elCty('b','IL')" data-eli="vIl">🇮🇱 Israël</button><button class="std-tab" id="elb-c-fr" onclick="elCty('b','FR')" data-eli="vFr">🇫🇷 France</button></div></div>
+          <div class="form-group"><label class="form-label" data-eli="vCity">Ville</label>
+            <select class="form-select" id="elb-city" onchange="elbSync()"></select></div>
+        </div>
         <div class="el-row4">
           <div class="form-group"><label class="form-label" data-eli="pv">Valeur du bien (<span class="el-sym">₪</span>)</label>
             <input class="form-input js-thousands" id="elb-pv" inputmode="decimal" value="" oninput="elbSync('pv')"></div>
@@ -3877,9 +3889,9 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
         <div class="el-row3" style="margin-top:6px;">
           <div class="form-group"><label class="form-label" data-eli="inc">Inclure les frais dans le prêt ?</label>
             <div style="display:flex;gap:8px;"><button class="std-tab" id="elb-inc-y" onclick="elbTog('inc',1)" data-eli="yes">Oui</button><button class="std-tab on" id="elb-inc-n" onclick="elbTog('inc',0)" data-eli="no">Non</button></div></div>
-          <div class="form-group"><label class="form-label" data-eli="cit">Citoyen israélien ?</label>
+          <div class="form-group" id="elb-g-cit"><label class="form-label" data-eli="cit">Citoyen israélien ?</label>
             <div style="display:flex;gap:8px;"><button class="std-tab on" id="elb-cit-y" onclick="elbTog('cit',1)" data-eli="yes">Oui</button><button class="std-tab" id="elb-cit-n" onclick="elbTog('cit',0)" data-eli="no">Non</button></div></div>
-          <div class="form-group"><label class="form-label" data-eli="fst">Premier bien en Israël ?</label>
+          <div class="form-group" id="elb-g-fst"><label class="form-label" data-eli="fst">Premier bien en Israël ?</label>
             <div style="display:flex;gap:8px;"><button class="std-tab on" id="elb-fst-y" onclick="elbTog('fst',1)" data-eli="yes">Oui</button><button class="std-tab" id="elb-fst-n" onclick="elbTog('fst',0)" data-eli="no">Non</button></div></div>
         </div>
         <div class="el-hint" style="margin-top:4px;" data-eli="noteB">Comme sur le simulateur d’origine, l’achat classique de l’investisseur reste taxé au forfait investisseur (taxe + frais annexes) — les deux derniers choix sont affichés à l’identique des photos et n’influent pas sur ce forfait (vérifié sur vos captures : 12 % même en « citoyen + 1er bien »).</div>
@@ -3930,8 +3942,8 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
         <b>Investisseur</b> : equity = cash ÷ (1 − % de prêt) ; position = 2 × equity ; frais EquityLiving = % dédié × (equity + frais financés) ; il perçoit le loyer d’usage de l’occupant et <b>75 % de la plus-value</b> ; en achat classique : levier 50 %, loyer de marché, taxe forfaitaire + annexes. Profit brut 10 ans = plus-value + loyers − frais − mensualités. <b>Frais d’acquisition proposés</b> (grisés, modifiables) = ½ taxe du bien entier + 3 % du bien ; 0 si financés par le prêt.</div>
         <div class="el-row4">
           <div class="form-group"><label class="form-label" data-eli="hRent">Loyer de marché (%/an du bien)</label><input class="form-input" id="el-h-rent" value="2.5" oninput="elHypSave()"></div>
-          <div class="form-group"><label class="form-label" data-eli="hRate">Taux du crédit (%/an)</label><input class="form-input" id="el-h-rate" value="5.17" oninput="elHypSave()"></div>
-          <div class="form-group"><label class="form-label" data-eli="hYrs">Durée du crédit (ans)</label><input class="form-input" id="el-h-yrs" value="30" oninput="elHypSave()"></div>
+          <div class="form-group"><label class="form-label" data-eli="hRate">Taux du crédit (%/an)</label><input class="form-input" id="el-h-rate" value="4.35" oninput="elHypSave()"></div>
+          <div class="form-group"><label class="form-label" data-eli="hYrs">Durée du crédit (ans)</label><input class="form-input" id="el-h-yrs" value="25" oninput="elHypSave()"></div>
           <div class="form-group"><label class="form-label" data-eli="hElr">Loyer occupant EL (%/an part investisseur)</label><input class="form-input" id="el-h-elrent" value="1.7" oninput="elHypSave()"></div>
         </div>
         <div class="el-row4">
@@ -3944,6 +3956,11 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
           <div class="form-group"><label class="form-label" data-eli="hMash">Rendement marché Ashkelon (%/an)</label><input class="form-input" id="el-h-mash" value="3.5" oninput="elHypSave()"></div>
           <div class="form-group"><label class="form-label" data-eli="hMpar">Rendement marché Paris (%/an)</label><input class="form-input" id="el-h-mpar" value="3.25" oninput="elHypSave()"></div>
           <div class="form-group"><label class="form-label" data-eli="hAppFr">Appréciation France (%/an)</label><input class="form-input" id="el-h-appfr" value="4.8" oninput="elHypSave()"></div>
+        </div>
+        <div class="el-row3">
+          <div class="form-group"><label class="form-label" data-eli="hRateFr">Taux du crédit France (%/an)</label><input class="form-input" id="el-h-ratefr" value="3.8" oninput="elHypSave()"></div>
+          <div class="form-group"><label class="form-label" data-eli="hYrsFr">Durée du crédit France (ans)</label><input class="form-input" id="el-h-yrsfr" value="25" oninput="elHypSave()"></div>
+          <div class="form-group"><label class="form-label" data-eli="hFeesFr">Frais France (% du bien / de l’equity)</label><input class="form-input" id="el-h-feesfr" value="8.5" oninput="elHypSave()"></div>
         </div>
         <div style="font-size:11px;color:var(--gris-2);" data-eli="rulesL">Barème 1er bien (seuils ₪) : 0 % jusqu’à 1 978 745 · 3,5 % jusqu’à 2 347 040 · 5 % au-delà. Horizon des profits : 10 ans. Hypothèses mémorisées sur ce poste.</div>
       </div>
@@ -11522,7 +11539,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     startRealtime();
     var ov=document.getElementById('ach-login-overlay'); if(ov) ov.classList.add('ach-hidden');
     var ub=document.getElementById('ach-userbar'); if(ub) ub.style.display='none';
-    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v9.38';
+    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v9.39';
     flag('Synchronis\u00e9');
     // fin de l'init : on autorise la journalisation des actions
     setTimeout(function(){ installInterceptor._init=false; }, 1500);
@@ -16290,6 +16307,30 @@ window.prospScript=function(which){
    part investisseur · taxe 1er bien 0/3,5/5 % (seuils 1 978 745 / 2 347 040) sinon 8 % · frais annexes 4 % ·
    appréciation 6 %/an · part de plus-value investisseur 75 % · frais EquityLiving 14 % de l'equity · levier classique 50 %. */
 var EL_CUR={ILS:{s:'\u20aa'},EUR:{s:'\u20ac'},USD:{s:'$'}};
+/* v9.39 : pays/ville par volet (r=occupant, b=investisseur) — vérifié en direct sur le simulateur officiel */
+var EL_CTY={r:'IL',b:'IL'};
+function elGeo(w){
+  var cty=EL_CTY[w]||'IL', list=ELV_CITIES[cty], h=elHyp();
+  var sel=document.getElementById(w==='r'?'el-city':'elb-city');
+  var city=(sel&&sel.value)||list[0][0];
+  var row=list.filter(function(x){return x[0]===city;})[0]||list[0];
+  return { cty:cty, fr:cty!=='IL', rent:h[row[2]],
+           rate:(cty==='IL')?h.rate:h.ratefr, yrs:(cty==='IL')?h.yrs:h.yrsfr,
+           app:(cty==='IL')?h.app:h.appfr,
+           elr:h[row[2]]*(h.elrent/h.rent) };   /* loyer EL effectif = rendement ville \u00d7 d\u00e9cote (1,7/2,5) */
+}
+window.elCty=function(w,c){
+  EL_CTY[w]=c;
+  var pre=(w==='r')?'el-c-':'elb-c-';
+  var bi=document.getElementById(pre+'il'), bf=document.getElementById(pre+'fr');
+  if(bi) bi.classList.toggle('on',c==='IL');
+  if(bf) bf.classList.toggle('on',c==='FR');
+  var sel=document.getElementById(w==='r'?'el-city':'elb-city');
+  if(sel) sel.innerHTML=ELV_CITIES[c].map(function(x){return '<option value="'+x[0]+'">'+x[1]+'</option>';}).join('');
+  /* en France : ni bar\u00e8me isra\u00e9lien, ni bascules citoyen/1er bien (comme le simulateur) */
+  ['cit','fst'].forEach(function(k){ var g=document.getElementById((w==='r'?'el-g-':'elb-g-')+k); if(g) g.style.display=(c==='FR')?'none':''; });
+  if(w==='r') elSync(); else elbSync();
+};
 /* v9.24 : la page bascule INTÉGRALEMENT en anglais quand la devise $ est choisie — termes EXACTS
    du simulateur d'origine (captures Laurent) ; € et ₪ restent en français. */
 function elLangKey(){ return elCurKey()==='USD'?'en':'fr'; }
@@ -16321,6 +16362,9 @@ var EL_I18N={
   pQ2:'To the backer: “You buy half of a property whose resident owns the other half: they maintain it as THEIR home, won’t leave overnight and won’t default like a tenant. You receive a lower rent than a classic rental, but on resale you take 75% of the increase — you trade rent for appreciation, without any management worries.”',
   pT5:'Our advisory role',
   pC1:'Achille Immobilier helps you validate the three key points before any commitment: the appreciation assumption behind the simulation, what the entry fees represent, and how the exit is organised — when, at what price, decided by whom.',
+  /* v9.39 : France sur Occupant/Investisseur + hyps crédit France */
+  hRateFr:'France loan rate (%/yr)', hYrsFr:'France loan term (years)', hFeesFr:'France fees (% of property / of equity)',
+  fnPropF:function(p){ return 'Auto-suggested: France fees '+p+'% of property — editable'; },
   /* v9.35 : volet Vendeur (Seller) — termes officiels du nouveau sous-onglet */
   tabV:'🏷 Seller', vCty:'Country', vCity:'City', vPv:'Property Value', vMb:'Current Mortgage Balance',
   vMbH:'Outstanding loan, repaid when you sell the 50%', vIl:'🇮🇱 Israel', vFr:'🇫🇷 France',
@@ -16430,6 +16474,7 @@ function elT(k){ var L=elLangKey(); if(L==='en'&&EL_I18N.en[k]!==undefined) retu
     fnR:function(sh,bk,pay,use){ return 'Part occupant : '+sh+' (50 % du bien) \u00b7 part investisseur : '+bk+' \u00b7 mensualit\u00e9 EquityLiving = annuit\u00e9 du pr\u00eat ('+pay+') + loyer occupant ('+use+').'; },
     fnB:function(E,elr,promo,app){ return 'Equity investie : '+E+' \u00b7 l\u2019investisseur per\u00e7oit le loyer d\u2019usage ('+elr+'\u00a0%/an de sa part) et '+promo+'\u00a0% de la plus-value (appr\u00e9ciation '+app+'\u00a0%/an sur 10 ans).'; },
     vRecd:'PERÇU PENDANT LES 10 ANS', vFees:'10 ans de loyers d’occupation', vExit:'PERÇU À LA SORTIE (ANNÉE 10)', vOwn:'50 % restants (votre capital)', vTot:'Total estimé sur 10 ans',
+    fnPropF:function(p){ return 'Proposition auto : frais France '+(''+p).replace('.',',')+'\u00a0% du bien \u2014 modifiable'; },
     fnVShare:function(p){ return p+' % de la plus-value estimée'; },
     fnVDisc:function(g,p){ return 'Simulation illustrative, fondée sur une hypothèse d’appréciation de '+(''+g).replace('.',',')+' %/an sur 10 ans et une part de plus-value de '+p+' %. Chiffres estimatifs — ni offre, ni expertise, ni conseil financier : le résultat réel dépendra du marché et des termes finaux de votre contrat.'; }};
   return F[k]!==undefined?F[k]:k; }
@@ -16534,10 +16579,14 @@ function elDef(id){
      (formule retrouvée sur les captures : 30 000 @ 1 M citoyen+1er bien · 85 269 @ 2,5 M). */
   /* v9.25 : comme le site — frais proposés à 0 tant que la valeur du bien n'est pas SAISIE,
      puis ½ taxe + 3 % dès qu'on tape ; % de prêt à 0 en clair ; apport/cash proposés = part entière. */
-  if(id==='el-af'){ var v=elNRaw('el-pv'); if(!v) return 0; return Math.round(elTax(v,EL_ST.cit===1,EL_ST.fst===1,elN('el-h-flat')||8)/2+v*0.03); }
-  if(id==='elb-af'){ var vb=elNRaw('elb-pv'); if(!vb) return 0; return Math.round(elTax(vb,ELB_ST.cit===1,ELB_ST.fst===1,elN('el-h-flat')||8)/2+vb*0.03); }
+  if(id==='el-af'){ var v=elNRaw('el-pv'); if(!v) return 0;
+    if(EL_CTY.r==='FR') return Math.round(v*((elN('el-h-feesfr')||8.5)/100));   /* v9.39 : France = frais uniques */
+    return Math.round(elTax(v,EL_ST.cit===1,EL_ST.fst===1,elN('el-h-flat')||8)/2+v*0.03); }
+  if(id==='elb-af'){ var vb=elNRaw('elb-pv'); if(!vb) return 0;
+    if(EL_CTY.b==='FR') return Math.round(vb*((elN('el-h-feesfr')||8.5)/100));
+    return Math.round(elTax(vb,ELB_ST.cit===1,ELB_ST.fst===1,elN('el-h-flat')||8)/2+vb*0.03); }
   if(id==='el-ec'){ return Math.round(pv/2*(1-Math.max(0,Math.min(50,elN('el-rl')))/100)); }
-  var D={'el-pv':pv,'el-rl':0,
+  var D={'el-pv':pv,'el-rl':50,   /* v9.39 : défaut 50 comme le simulateur live */
          'elb-pv':pv,'elb-bc':pv/2,'elb-bl':0};
   return (id in D)?D[id]:0;
 }
@@ -16560,12 +16609,15 @@ function elPlaceholders(){
   var b=document.getElementById('elb-bl'); if(b) b.placeholder=''+elDef('elb-bl');
 }
 function elFmt(v){ var neg=v<0; var t=EL_CUR[elCurKey()].s+Math.round(Math.abs(v)).toLocaleString(elLoc()); return neg?('\u2212'+t):t; }   /* v9.24 : 1,000,000 en anglais */
-function elHyp(){ return { rent:elN('el-h-rent')||2.5, rate:elN('el-h-rate')||5.17, yrs:elN('el-h-yrs')||30, elrent:elN('el-h-elrent')||1.7, annex:elN('el-h-annex'), flat:elN('el-h-flat')||8, app:elN('el-h-app')||6, promo:elN('el-h-promo')||75, elfee:elN('el-h-elfee')||14, mash:elN('el-h-mash')||3.5, mpar:elN('el-h-mpar')||3.25, appfr:elN('el-h-appfr')||4.8 }; }
-var EL_HKEYS=['rent','rate','yrs','elrent','annex','flat','app','promo','elfee','mash','mpar','appfr'];
+function elHyp(){ return { rent:elN('el-h-rent')||2.5, rate:elN('el-h-rate')||4.35, yrs:elN('el-h-yrs')||25, elrent:elN('el-h-elrent')||1.7, annex:elN('el-h-annex'), flat:elN('el-h-flat')||8, app:elN('el-h-app')||6, promo:elN('el-h-promo')||75, elfee:elN('el-h-elfee')||14, mash:elN('el-h-mash')||3.5, mpar:elN('el-h-mpar')||3.25, appfr:elN('el-h-appfr')||4.8, ratefr:elN('el-h-ratefr')||3.8, yrsfr:elN('el-h-yrsfr')||25, feesfr:elN('el-h-feesfr')||8.5 }; }
+var EL_HKEYS=['rent','rate','yrs','elrent','annex','flat','app','promo','elfee','mash','mpar','appfr','ratefr','yrsfr','feesfr'];
 window.elHypSave=function(){ try{ var o={}; EL_HKEYS.forEach(function(k){ var e=document.getElementById('el-h-'+k); if(e) o[k]=e.value; }); localStorage.setItem('ach_el_hyp',JSON.stringify(o)); }catch(e){}
   try{ elCalc(); elbCalc(); elvCalc(); }catch(e){}   /* v9.36 : les hypotheses recalculent en direct */
 };
-function elHypLoad(){ try{ var o=JSON.parse(localStorage.getItem('ach_el_hyp')||'null'); if(o) EL_HKEYS.forEach(function(k){ var e=document.getElementById('el-h-'+k); if(e&&o[k]!==undefined) e.value=o[k]; }); }catch(e){} }
+function elHypLoad(){ try{ var o=JSON.parse(localStorage.getItem('ach_el_hyp')||'null');
+  /* v9.39 : le taux Israël réel du simulateur est 4,35 %/25 ans — migrer nos ANCIENS défauts mémorisés (5,17/30) */
+  if(o && (''+o.rate)==='5.17' && (''+o.yrs)==='30'){ o.rate='4.35'; o.yrs='25'; try{ localStorage.setItem('ach_el_hyp',JSON.stringify(o)); }catch(e){} }
+  if(o) EL_HKEYS.forEach(function(k){ var e=document.getElementById('el-h-'+k); if(e&&o[k]!==undefined) e.value=o[k]; }); }catch(e){} }
 function elPay(P,ratePct,years){ if(P<=0) return 0; var r=ratePct/100/12, n=Math.max(1,Math.round(years*12)); if(!r) return P/n; return P*r/(1-Math.pow(1+r,-n)); }
 function elApp10(h){ return Math.pow(1+h.app/100,10)-1; }
 function elTax(pv,cit,fst,flatPct){
@@ -16599,24 +16651,24 @@ window.elSync=function(src){
   var note=document.getElementById('el-cash-note');
   if(note) note.textContent=elT('dCashTot')+elFmt(elNRaw('el-ec')+(EL_ST.inc?0:elN('el-af')));   /* v9.25 : apport SAISI + frais effectifs (la proposition compte, comme le site : vierge → ₪0 ; 350 000 saisis + 30 000 proposés → 380 000) */
   var hint=document.getElementById('el-af-hint');
-  if(hint) hint.textContent=EL_ST.inc?elT('dFin'):elT('dProp');
+  if(hint) hint.textContent=EL_ST.inc?elT('dFin'):(EL_CTY.r==='FR'?elT('fnPropF')(elHyp().feesfr):elT('dProp'));
   elCalc();   /* v9.36 : calcul en direct, comme le volet Vendeur */
 };
 window.elCalc=function(){
-  var h=elHyp(), pv=elN('el-pv'), ec=elN('el-ec'), rl=Math.max(0,Math.min(50,elN('el-rl'))), afIn=elN('el-af');
+  var h=elHyp(), g=elGeo('r'), pv=elN('el-pv'), ec=elN('el-ec'), rl=Math.max(0,Math.min(50,elN('el-rl'))), afIn=elN('el-af');
   var share=pv/2, loanBase=share*rl/100;
   var af=EL_ST.inc?0:afIn, loanEL=loanBase+(EL_ST.inc?afIn:0);
   var loanCl=Math.max(0,pv-ec);
-  var feesCl=elTax(pv,EL_ST.cit===1,EL_ST.fst===1,h.flat)+pv*(h.annex||0)/100;
+  var feesCl=g.fr ? pv*h.feesfr/100 : (elTax(pv,EL_ST.cit===1,EL_ST.fst===1,h.flat)+pv*(h.annex||0)/100);
   var backer=Math.max(0,pv-ec-loanBase);
-  var rent=pv*h.rent/100/12, mCl=elPay(loanCl,h.rate,h.yrs), mEL=elPay(loanEL,h.rate,h.yrs)+backer*h.elrent/100/12;
+  var rent=pv*g.rent/100/12, mCl=elPay(loanCl,g.rate,g.yrs), mEL=elPay(loanEL,g.rate,g.yrs)+backer*g.elr/100/12;
   document.getElementById('el-results').innerHTML=
     elTable([elT('tLoc'),elT('tCl'),elT('tEL')],[
       elRow(elT('rDown'), elFmt(0), elFmt(ec), elFmt(ec)),
       elRow(elT('rFees'), elFmt(0), elFmt(feesCl), elFmt(af)),
       elRow(elT('rLoan'), elFmt(0), elFmt(loanCl), elFmt(loanEL)),
       elRow(elT('rMens'), elFmt(rent), elFmt(mCl), elFmt(mEL), true)])
-    +'<div style="font-size:11.5px;color:var(--gris-2);margin-top:10px;">'+elT('fnR')(elFmt(share),elFmt(backer),elFmt(elPay(loanEL,h.rate,h.yrs)),elFmt(backer*h.elrent/100/12))+'</div>';
+    +'<div style="font-size:11.5px;color:var(--gris-2);margin-top:10px;">'+elT('fnR')(elFmt(share),elFmt(backer),elFmt(elPay(loanEL,g.rate,g.yrs)),elFmt(backer*g.elr/100/12))+'</div>';
 };
 
 /* ── volet INVESTISSEUR (backer) — v9.21 : E = valeur du bien / 2 (captures : cash-neutral recale le CASH,
@@ -16640,33 +16692,35 @@ window.elbSync=function(src){
     if(blRaw>50.001||blRaw<-0.001) bcEl.value=Math.round(E*(1-bl/100)).toLocaleString(elLoc());   /* v9.23 : plafond 50 % — le cash est recalé plutôt qu'incohérent */ }
   else if(src==='pv'||src==='bl'){ bcEl.value=Math.round(E*(1-bl/100)).toLocaleString(elLoc()); }
   var hint=document.getElementById('elb-af-hint');
-  if(hint) hint.textContent=(ELB_ST.inc?elT('dFinB'):elT('dPropB'))+elT('dElFee')+elFmt(E*h.elfee/100);
+  var _gB=elGeo('b');
+  if(hint) hint.textContent=(ELB_ST.inc?elT('dFinB'):(_gB.fr?elT('fnPropF')(h.feesfr)+' \u00b7 ':elT('dPropB')))+elT('dElFee')+elFmt(E*(_gB.fr?h.feesfr:h.elfee)/100);
   elbCalc();   /* v9.36 : calcul en direct */
 };
 window.elbNeutral=function(){
-  /* cash-neutral : annuité(prêt) = loyer d'usage → % = (1,7/12)/f − frais financés/E ; le cash se recale */
-  var h=elHyp(), pv=elN('elb-pv'), E=pv/2, afFin=ELB_ST.inc?elN('elb-af'):0;
-  var f=elPay(1,h.rate,h.yrs);
-  var bl=((h.elrent/100/12)/f - (E>0?afFin/E:0))*100;
+  /* cash-neutral : annuité(prêt) = loyer d'usage → % = (loyer EL ville/12)/f − frais financés/E ; le cash se recale */
+  var h=elHyp(), g=elGeo('b'), pv=elN('elb-pv'), E=pv/2, afFin=ELB_ST.inc?elN('elb-af'):0;
+  var f=elPay(1,g.rate,g.yrs);
+  var bl=((g.elr/100/12)/f - (E>0?afFin/E:0))*100;
   document.getElementById('elb-bl').value=Math.round(Math.max(0,Math.min(50,bl))*100)/100;
   elbSync('bl');
 };
 window.elbCalc=function(){
-  var h=elHyp(), pv=elN('elb-pv'), bc=elN('elb-bc'), bl=Math.max(0,Math.min(50,elN('elb-bl'))), afIn=elN('elb-af');
-  var f=elPay(1,h.rate,h.yrs), ap=elApp10(h);
+  var h=elHyp(), g=elGeo('b'), pv=elN('elb-pv'), bc=elN('elb-bc'), bl=Math.max(0,Math.min(50,elN('elb-bl'))), afIn=elN('elb-af');
+  var f=elPay(1,g.rate,g.yrs), ap=Math.pow(1+g.app/100,10)-1;
   var E=pv/2;
-  /* 1. achat locatif classique : levier 50 % (prêt = cash) — forfait investisseur */
-  var pvCl=2*bc, loanCl=bc, feesCl=pvCl*(h.flat+(h.annex||0))/100;
-  var rentCl=pvCl*h.rent/100/12, payCl=loanCl*f, cfCl=rentCl-payCl;
+  var feeEL_pct=g.fr?h.feesfr:h.elfee;   /* v9.39 : en France, l'entrée EquityLiving = frais uniques 8,5 % (vérifié live) */
+  /* 1. achat locatif classique : levier 50 % (prêt = cash) — forfait investisseur (IL) ou frais uniques (FR) */
+  var pvCl=2*bc, loanCl=bc, feesCl=g.fr ? pvCl*h.feesfr/100 : pvCl*(h.flat+(h.annex||0))/100;
+  var rentCl=pvCl*g.rent/100/12, payCl=loanCl*f, cfCl=rentCl-payCl;
   var gpCl=pvCl*ap+120*cfCl-feesCl;
   /* 2. EquityLiving + prêt : position = le bien saisi, prêt = % × equity (+ frais financés) */
   var afFin=ELB_ST.inc?afIn:0;
   var loanEL=E*bl/100+afFin;
-  var feesEL=(E+afFin)*h.elfee/100;
-  var useEL=E*h.elrent/100/12, payEL=loanEL*f, cfEL=useEL-payEL;
+  var feesEL=(E+afFin)*feeEL_pct/100;
+  var useEL=E*g.elr/100/12, payEL=loanEL*f, cfEL=useEL-payEL;
   var gpEL=(2*E*ap)*h.promo/100+120*useEL-feesEL-120*payEL;
   /* 3. EquityLiving sans prêt : le cash seul porte une position plus petite */
-  var fees0=bc*h.elfee/100, use0=bc*h.elrent/100/12;
+  var fees0=bc*feeEL_pct/100, use0=bc*g.elr/100/12;
   var gp0=(2*bc*ap)*h.promo/100+120*use0-fees0;
   function pct(g){ return gpCl>0?((g/gpCl-1)*100):0; }
   function pfmt(x){ var v=Math.round(x*10)/10; return (v>0?'+':'')+v.toLocaleString(elLoc())+(elLangKey()==='en'?'%':'\u00a0%'); }
@@ -16682,9 +16736,9 @@ window.elbCalc=function(){
       elRow(elT('bCF'), elFmt(cfCl), elFmt(cfEL), elFmt(use0), true),
       elRow(elT('bGP'), elFmt(gpCl), elFmt(gpEL), elFmt(gp0)),
       elRow(elT('bOver'), '\u2014', pfmt(pct(gpEL)), pfmt(pct(gp0)))])
-    +'<div style="font-size:11px;color:var(--gris-2);margin-top:8px;">'+elT('fnB')(elFmt(E),h.elrent,h.promo,h.app)+'</div>';
+    +'<div style="font-size:11px;color:var(--gris-2);margin-top:8px;">'+elT('fnB')(elFmt(E),Math.round(elGeo('b').elr*100)/100,h.promo,elGeo('b').app)+'</div>';
 };
-(function(){ try{ elHypLoad(); elPlaceholders(); elvC('IL'); var k=elCurKey(); if(k!=='ILS') elCur(k); else { elLang(); elSync(); elbSync(); } }catch(e){} })();
+(function(){ try{ elHypLoad(); elPlaceholders(); elvC('IL'); elCty('r','IL'); elCty('b','IL'); var k=elCurKey(); if(k!=='ILS') elCur(k); else { elLang(); elSync(); elbSync(); } }catch(e){} })();
 window.rentaTab=function(n){
   [1,2,3].forEach(function(i){
     var panel=document.getElementById('renta-panel-'+i);
