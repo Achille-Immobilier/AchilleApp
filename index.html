@@ -1678,7 +1678,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     </div>
   </div>
   </div>
-  <div class="logo-ver app-ver">Achille App — v9.45</div>
+  <div class="logo-ver app-ver">Achille App — v9.46</div>
 </aside>
 <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Réduire la barre latérale">‹</button>
 
@@ -11545,7 +11545,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     startRealtime();
     var ov=document.getElementById('ach-login-overlay'); if(ov) ov.classList.add('ach-hidden');
     var ub=document.getElementById('ach-userbar'); if(ub) ub.style.display='none';
-    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v9.45';
+    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v9.46';
     flag('Synchronis\u00e9');
     // fin de l'init : on autorise la journalisation des actions
     setTimeout(function(){ installInterceptor._init=false; }, 1500);
@@ -13911,13 +13911,17 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
     var line = chips.length? ('<span class="pg-srcchips">'+chips.join('')+'</span>') : '<span style="color:var(--gris-2);">Aucun lien — ajoutez-en un ci-dessous</span>';
     return line+' <span style="color:var(--gris-2);white-space:nowrap;">· créée le '+dstr(r.created)+'</span>';
   }
+  function pgSrcLogo(k,c){   /* v9.46 : monogramme SVG aux couleurs de la marque (pas de fichier externe) */
+    var L={seloger:'S',pap:'P',lbc:'b',bd:'B',fipac:'F',manuel:'M'}[k]||'↗';
+    return '<svg width="15" height="15" viewBox="0 0 16 16" style="flex:none;display:block;" aria-hidden="true"><rect width="16" height="16" rx="4.5" fill="'+c+'"/><text x="8" y="11.8" text-anchor="middle" font-family="Jost,Arial,sans-serif" font-size="11" font-weight="700" fill="#fff">'+L+'</text></svg>';
+  }
   function srcLinkBtns(r){
     var out='';
-    var _ord={fipac:0,pap:1,seloger:2,leboncoin:3};   /* v9.45 : ordre voulu par Laurent, le reste après */
+    var _ord={fipac:0,pap:1,seloger:2,lbc:3};   /* v9.45/46 : ordre voulu par Laurent (cle 'lbc' !), le reste après */
     pigeMainSources(r).slice().sort(function(a,b){ return (_ord[a.src]!==undefined?_ord[a.src]:9)-(_ord[b.src]!==undefined?_ord[b.src]:9); }).forEach(function(l){
       if(!l.url) return;
       var s=SRC[l.src]||SRC.autre;
-      out+='<button class="pg-mini" style="border-color:'+s[1]+'55;color:'+s[1]+';" onclick="event.stopPropagation();window.open(\''+esc(l.url)+'\',\'_blank\')">🔗 '+s[0]+'</button>';
+      out+='<button class="pg-srcpill" style="border-color:'+s[1]+'55;color:'+s[1]+';" onclick="event.stopPropagation();window.open(\''+esc(l.url)+'\',\'_blank\')">'+pgSrcLogo(l.src,s[1])+s[0]+'</button>';
     });
     return out;
   }
@@ -14156,7 +14160,7 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
         +(pm2v?'<span class="pg-pm2">'+pm2v+'</span>':'')
         +'</span>'
         +ub
-        +'</div>'+'<div class="pg-links">'+((function(){var fl=pigeFipacLink(r);return fl?'<button class="pg-mini pg-mini-fipac" onclick="event.stopPropagation();window.open(\''+esc(fl)+'\',\'_blank\')">Fipac</button>':'';})())+srcLinkBtns(r)+'</div><div class="pg-foot-r">'+(r.called?'<button class="pg-mini pg-mini-called on" title="Appelée le '+dstr(r.called.d)+(r.called.u?(' par '+esc(r.called.u)):'')+' — re-cliquez pour retirer le tampon" onclick="pgCalledToggle(\''+r.id+'\',event)">📞 Appelée ✓</button>':(r.suivi?'':'<button class="pg-mini pg-mini-called" title="Un clic = j\u2019ai appelé, sans réponse / rien à noter — la fiche passe dans « En attente »" onclick="pgCalledToggle(\''+r.id+'\',event)">📞 Appelé</button>'))+(telMulti(r)?'<button class="pg-mini pg-mini-pro on" title="'+(r.pro?'Fiche classée à la main dans les Pros':'Fiche repérée automatiquement comme professionnelle')+' — cliquez pour l\'en retirer" onclick="pigeProToggle(\''+r.id+'\',event)">🏢 Pros ✓</button>':'<button class="pg-mini pg-mini-pro'+(r.nopro?' off':'')+'" title="'+(r.nopro?'Fiche retirée des Pros à la main — cliquez pour l\'y remettre':'C\'est la fiche d\'un confrère ou d\'un professionnel : la classer dans « Pros »')+'" onclick="pigeProToggle(\''+r.id+'\',event)">🏢 Pros</button>')+'<button class="pg-mini pg-mini-arch" title="Sortir du stock actif sans rien perdre" onclick="pigeArchAsk(\''+r.id+'\',event)">⤵ Archiver</button></div></div></div>';
+        +'</div>'+'<div class="pg-links">'+((function(){var fl=pigeFipacLink(r);return fl?'<button class="pg-srcpill" style="border-color:'+SRC.fipac[1]+'55;color:'+SRC.fipac[1]+';" onclick="event.stopPropagation();window.open(\''+esc(fl)+'\',\'_blank\')">'+pgSrcLogo('fipac',SRC.fipac[1])+'Fipac</button>':'';})())+srcLinkBtns(r)+'</div><div class="pg-foot-r">'+(r.called?'<button class="pg-mini pg-mini-called on" title="Appelée le '+dstr(r.called.d)+(r.called.u?(' par '+esc(r.called.u)):'')+' — re-cliquez pour retirer le tampon" onclick="pgCalledToggle(\''+r.id+'\',event)">📞 Appelée ✓</button>':(r.suivi?'':'<button class="pg-mini pg-mini-called" title="Un clic = j\u2019ai appelé, sans réponse / rien à noter — la fiche passe dans « En attente »" onclick="pgCalledToggle(\''+r.id+'\',event)">📞 Appelé</button>'))+(telMulti(r)?'<button class="pg-mini pg-mini-pro on" title="'+(r.pro?'Fiche classée à la main dans les Pros':'Fiche repérée automatiquement comme professionnelle')+' — cliquez pour l\'en retirer" onclick="pigeProToggle(\''+r.id+'\',event)">🏢 Pros ✓</button>':'<button class="pg-mini pg-mini-pro'+(r.nopro?' off':'')+'" title="'+(r.nopro?'Fiche retirée des Pros à la main — cliquez pour l\'y remettre':'C\'est la fiche d\'un confrère ou d\'un professionnel : la classer dans « Pros »')+'" onclick="pigeProToggle(\''+r.id+'\',event)">🏢 Pros</button>')+'<button class="pg-mini pg-mini-arch" title="Sortir du stock actif sans rien perdre" onclick="pigeArchAsk(\''+r.id+'\',event)">⤵ Archiver</button></div></div></div>';
     }
     if(inMulti){
       /* v7.34 : vue groupée par numéro — un groupe repliable par téléphone, plus gros suspects d'abord */
@@ -15588,6 +15592,8 @@ select.pg-chip{padding:6px 10px;}
 .pg-prixbox{display:inline-flex;align-items:baseline;gap:9px;border:1.5px solid var(--terra);border-radius:9px;padding:5px 13px;background:#fff;}
 .pg-secto{border:1px solid rgba(180,85,45,.4);color:var(--terra);background:#fff;border-radius:999px;padding:3px 13px;font-family:'Jost',sans-serif;font-size:11px;font-weight:500;letter-spacing:.03em;cursor:pointer;margin-left:8px;vertical-align:4px;box-shadow:0 1px 3px rgba(0,0,0,.06);white-space:nowrap;}
 .pg-secto:hover{background:rgba(180,85,45,.09);}
+.pg-srcpill{display:inline-flex;align-items:center;gap:6px;border-radius:999px;background:#fff;border:1px solid;padding:3px 12px 3px 5px;font-family:'Jost',sans-serif;font-size:11.5px;font-weight:500;letter-spacing:.02em;cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,.06);white-space:nowrap;}
+.pg-srcpill:hover{filter:brightness(.96);background:#faf7f2;}
 .pg-apimo{display:inline-block;background:rgba(76,83,59,.08);border:1px solid rgba(76,83,59,.28);color:var(--kaki);font-family:'Jost',sans-serif;font-size:10.5px;font-weight:600;letter-spacing:.04em;border-radius:9px;padding:2px 8px;white-space:nowrap;}
 .pg-foot-l .pg-prix{font-size:25px;line-height:1;}
 .pg-foot-l .pg-pm2{margin-top:0;font-size:12.5px;}
