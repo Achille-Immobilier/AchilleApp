@@ -1678,7 +1678,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     </div>
   </div>
   </div>
-  <div class="logo-ver app-ver">Achille App — v9.44</div>
+  <div class="logo-ver app-ver">Achille App — v9.45</div>
 </aside>
 <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Réduire la barre latérale">‹</button>
 
@@ -11545,7 +11545,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     startRealtime();
     var ov=document.getElementById('ach-login-overlay'); if(ov) ov.classList.add('ach-hidden');
     var ub=document.getElementById('ach-userbar'); if(ub) ub.style.display='none';
-    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v9.44';
+    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v9.45';
     flag('Synchronis\u00e9');
     // fin de l'init : on autorise la journalisation des actions
     setTimeout(function(){ installInterceptor._init=false; }, 1500);
@@ -13913,7 +13913,8 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
   }
   function srcLinkBtns(r){
     var out='';
-    pigeMainSources(r).forEach(function(l){
+    var _ord={fipac:0,pap:1,seloger:2,leboncoin:3};   /* v9.45 : ordre voulu par Laurent, le reste après */
+    pigeMainSources(r).slice().sort(function(a,b){ return (_ord[a.src]!==undefined?_ord[a.src]:9)-(_ord[b.src]!==undefined?_ord[b.src]:9); }).forEach(function(l){
       if(!l.url) return;
       var s=SRC[l.src]||SRC.autre;
       out+='<button class="pg-mini" style="border-color:'+s[1]+'55;color:'+s[1]+';" onclick="event.stopPropagation();window.open(\''+esc(l.url)+'\',\'_blank\')">🔗 '+s[0]+'</button>';
@@ -14125,12 +14126,12 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
         var _tt=r.adresse? esc(r.adresse) : esc(r.titre||'(sans adresse)');
         return '<div class="pg-fiche pg-arch" style="border-left:4px solid #c9c2b6;" onclick="pigeEdit(\''+r.id+'\')">'+ph
           +'<div class="pg-main"><div class="pg-top"><span class="pg-motif '+r.arch.m+'">'+_mm[0]+' '+_mm[1]+'</span><span class="pg-date">archivée le '+dstr(r.arch.d)+'</span>'+(r.apimoRef?'<span class="pg-apimo" title="Référence Apimo">Apimo · '+esc(r.apimoRef)+'</span>':'')+(r.arch.note?'<span class="pg-date">— '+esc(r.arch.note)+'</span>':'')+'</div>'
-          +'<div class="pg-titre"><span class="pg-mapspin" title="Voir sur Google Maps" onclick="pigeMaps(\''+r.id+'\',event)">📍</span> '+_tt+(r.ville?' <span class="pg-titre-ville">· '+esc(r.ville)+'</span>':'')+'</div>'
+          +'<div class="pg-titre"><span class="pg-mapspin" title="Voir sur Google Maps" onclick="pigeMaps(\''+r.id+'\',event)">📍</span> '+_tt+(r.ville?' <span class="pg-titre-ville">· '+esc(r.ville)+'</span>':'')+' <button class="pg-secto" title="Secteur, transports, écoles — sectorisation dans un nouvel onglet" onclick="event.stopPropagation();pgSectoTab(\''+r.id+'\')">🧭 Secteur</button>'+'</div>'
           +(m2line(r)?'<div class="pg-carac">'+m2line(r)+'</div>':'')
           +(_vd?'<div class="pg-vend">'+_vd+'</div>':'')
           +'<div class="pg-carac" style="color:var(--gris-2);font-size:11px;">journal, téléphone et photos conservés</div></div>'
           +'<div class="pg-obs"></div>'
-          +'<div class="pg-actions"><div class="pg-foot-l"><span class="pg-prix" style="color:var(--gris);">'+fmtP(r.prix)+'</span></div><button class="pg-mini" onclick="event.stopPropagation();pigeEdit(\''+r.id+'\')">👁 Consulter</button><button class="pg-mini" title="Secteur, transports, écoles — sectorisation dans un nouvel onglet" onclick="event.stopPropagation();pgSectoTab(\''+r.id+'\')">🧭 Secteur</button>'
+          +'<div class="pg-actions"><div class="pg-foot-l"><span class="pg-prix" style="color:var(--gris);">'+fmtP(r.prix)+'</span></div><button class="pg-mini" onclick="event.stopPropagation();pigeEdit(\''+r.id+'\')">👁 Consulter</button>'
           +'<button class="pg-mini pg-mini-react" onclick="pigeReactivate(\''+r.id+'\',event)">↩ Réactiver</button></div></div>';
       }
       var ub=r.user?'<span class="pg-ub" style="background:'+(UCOL[r.user]||'#777')+'22;color:'+(UCOL[r.user]||'#777')+';border:1px solid '+(UCOL[r.user]||'#777')+'55;" title="'+esc(roleName(r.user))+'">'+esc((function(){var R=window.ROLES&&ROLES[r.user];if(!R)return r.user;var p=(R.name||'').split(' ');return p[0]+(p[1]?' '+p[1].charAt(0)+'.':'');})())+'</span>':'<span class="pg-ub pg-ub-none">non attribuée</span>';
@@ -14145,16 +14146,17 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
       var plan=r.plan?' <span class="pg-planflag" title="Plan disponible">🗺️</span>':'';
       return '<div class="pg-fiche" style="border-left:4px solid '+_st.col+';" onclick="pigeEdit(\''+r.id+'\')">'+ph
         +'<div class="pg-main"><div class="pg-top"><span class="pg-statut-dot" title="'+_st.label+' — cliquez pour changer" style="background:'+_st.col+';" onclick="event.stopPropagation();pigeStatutMenu(\''+r.id+'\',event)"></span><span class="pg-date">'+dstr(r.created)+'</span>'+(r.apimoRef?'<span class="pg-apimo" title="Référence Apimo">Apimo · '+esc(r.apimoRef)+'</span>':'')+suiviBadge(r)+(window.rapTempChip?rapTempChip(r):'')+(window.rapRowChip?rapRowChip(r):'')+(window.pgNewChip?pgNewChip(r):'')+'</div>'
-        +'<div class="pg-titre"><span class="pg-mapspin" title="Voir sur Google Maps" onclick="pigeMaps(\''+r.id+'\',event)">📍</span> '+titre+(r.ville?' <span class="pg-titre-ville">· '+esc(r.ville)+'</span>':'')+plan+'</div>'
+        +'<div class="pg-titre"><span class="pg-mapspin" title="Voir sur Google Maps" onclick="pigeMaps(\''+r.id+'\',event)">📍</span> '+titre+(r.ville?' <span class="pg-titre-ville">· '+esc(r.ville)+'</span>':'')+plan+' <button class="pg-secto" title="Secteur, transports, écoles — sectorisation dans un nouvel onglet" onclick="event.stopPropagation();pgSectoTab(\''+r.id+'\')">🧭 Secteur</button>'+'</div>'
         +(ml?'<div class="pg-carac">'+ml+'</div>':'')
         +(clh?'<div class="pg-carac" style="color:var(--gris);">'+esc(clh)+'</div>':'')
         +(vend?'<div class="pg-vend">'+vend+'</div>':'')
         +(r.called?'<div class="pg-called-line">✓ Appelée le '+dstr(r.called.d)+(r.called.u?(' par '+esc(r.called.u)):'')+' — sans réponse</div>':'')
         +'</div>'+(nc?pgObsPreview(r,nc):'<div class="pg-obs"></div>')
-        +'<div class="pg-actions"><div class="pg-foot-l"><span class="pg-prix">'+fmtP(r.prix)+'</span>'
+        +'<div class="pg-actions"><div class="pg-foot-l"><span class="pg-prixbox"><span class="pg-prix">'+fmtP(r.prix)+'</span>'
         +(pm2v?'<span class="pg-pm2">'+pm2v+'</span>':'')
+        +'</span>'
         +ub
-        +'</div>'+srcLinkBtns(r)+((function(){var fl=pigeFipacLink(r);return fl?'<button class="pg-mini pg-mini-fipac" onclick="event.stopPropagation();window.open(\''+esc(fl)+'\',\'_blank\')">Fipac</button>':'';})())+'<button class="pg-mini" title="Secteur, transports, écoles — sectorisation dans un nouvel onglet" onclick="event.stopPropagation();pgSectoTab(\''+r.id+'\')">🧭 Secteur</button>'+(r.called?'<button class="pg-mini pg-mini-called on" title="Appelée le '+dstr(r.called.d)+(r.called.u?(' par '+esc(r.called.u)):'')+' — re-cliquez pour retirer le tampon" onclick="pgCalledToggle(\''+r.id+'\',event)">📞 Appelée ✓</button>':(r.suivi?'':'<button class="pg-mini pg-mini-called" title="Un clic = j\u2019ai appelé, sans réponse / rien à noter — la fiche passe dans « En attente »" onclick="pgCalledToggle(\''+r.id+'\',event)">📞 Appelé</button>'))+(telMulti(r)?'<button class="pg-mini pg-mini-pro on" title="'+(r.pro?'Fiche classée à la main dans les Pros':'Fiche repérée automatiquement comme professionnelle')+' — cliquez pour l\'en retirer" onclick="pigeProToggle(\''+r.id+'\',event)">🏢 Pros ✓</button>':'<button class="pg-mini pg-mini-pro'+(r.nopro?' off':'')+'" title="'+(r.nopro?'Fiche retirée des Pros à la main — cliquez pour l\'y remettre':'C\'est la fiche d\'un confrère ou d\'un professionnel : la classer dans « Pros »')+'" onclick="pigeProToggle(\''+r.id+'\',event)">🏢 Pros</button>')+'<button class="pg-mini pg-mini-arch" title="Sortir du stock actif sans rien perdre" onclick="pigeArchAsk(\''+r.id+'\',event)">⤵ Archiver</button></div></div>';
+        +'</div>'+'<div class="pg-links">'+((function(){var fl=pigeFipacLink(r);return fl?'<button class="pg-mini pg-mini-fipac" onclick="event.stopPropagation();window.open(\''+esc(fl)+'\',\'_blank\')">Fipac</button>':'';})())+srcLinkBtns(r)+'</div><div class="pg-foot-r">'+(r.called?'<button class="pg-mini pg-mini-called on" title="Appelée le '+dstr(r.called.d)+(r.called.u?(' par '+esc(r.called.u)):'')+' — re-cliquez pour retirer le tampon" onclick="pgCalledToggle(\''+r.id+'\',event)">📞 Appelée ✓</button>':(r.suivi?'':'<button class="pg-mini pg-mini-called" title="Un clic = j\u2019ai appelé, sans réponse / rien à noter — la fiche passe dans « En attente »" onclick="pgCalledToggle(\''+r.id+'\',event)">📞 Appelé</button>'))+(telMulti(r)?'<button class="pg-mini pg-mini-pro on" title="'+(r.pro?'Fiche classée à la main dans les Pros':'Fiche repérée automatiquement comme professionnelle')+' — cliquez pour l\'en retirer" onclick="pigeProToggle(\''+r.id+'\',event)">🏢 Pros ✓</button>':'<button class="pg-mini pg-mini-pro'+(r.nopro?' off':'')+'" title="'+(r.nopro?'Fiche retirée des Pros à la main — cliquez pour l\'y remettre':'C\'est la fiche d\'un confrère ou d\'un professionnel : la classer dans « Pros »')+'" onclick="pigeProToggle(\''+r.id+'\',event)">🏢 Pros</button>')+'<button class="pg-mini pg-mini-arch" title="Sortir du stock actif sans rien perdre" onclick="pigeArchAsk(\''+r.id+'\',event)">⤵ Archiver</button></div></div></div>';
     }
     if(inMulti){
       /* v7.34 : vue groupée par numéro — un groupe repliable par téléphone, plus gros suspects d'abord */
@@ -15580,7 +15582,12 @@ select.pg-chip{padding:6px 10px;}
 .pg-ub{font-size:11.5px;font-weight:700;padding:3px 10px;border-radius:11px;white-space:nowrap;}
 .pg-ub-none{background:var(--beige);color:var(--gris-2);border:1px solid var(--beige-2);font-weight:500;}
 .pg-actions{display:flex;gap:6px;grid-column:1/-1;justify-content:flex-end;align-items:center;flex-wrap:wrap;border-top:1px solid var(--beige-2);padding-top:9px;}
-.pg-foot-l{display:flex;align-items:center;gap:11px;margin-right:auto;min-width:0;flex-wrap:wrap;}
+.pg-foot-l{display:flex;align-items:center;gap:11px;flex:1;margin-right:auto;min-width:0;flex-wrap:wrap;}
+.pg-links{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;}
+.pg-foot-r{flex:1;display:flex;gap:6px;justify-content:flex-end;flex-wrap:wrap;}
+.pg-prixbox{display:inline-flex;align-items:baseline;gap:9px;border:1.5px solid var(--terra);border-radius:9px;padding:5px 13px;background:#fff;}
+.pg-secto{border:1px solid rgba(180,85,45,.4);color:var(--terra);background:#fff;border-radius:999px;padding:3px 13px;font-family:'Jost',sans-serif;font-size:11px;font-weight:500;letter-spacing:.03em;cursor:pointer;margin-left:8px;vertical-align:4px;box-shadow:0 1px 3px rgba(0,0,0,.06);white-space:nowrap;}
+.pg-secto:hover{background:rgba(180,85,45,.09);}
 .pg-apimo{display:inline-block;background:rgba(76,83,59,.08);border:1px solid rgba(76,83,59,.28);color:var(--kaki);font-family:'Jost',sans-serif;font-size:10.5px;font-weight:600;letter-spacing:.04em;border-radius:9px;padding:2px 8px;white-space:nowrap;}
 .pg-foot-l .pg-prix{font-size:25px;line-height:1;}
 .pg-foot-l .pg-pm2{margin-top:0;font-size:12.5px;}
