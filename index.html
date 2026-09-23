@@ -1685,7 +1685,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     </div>
   </div>
   </div>
-  <div class="logo-ver app-ver">Achille App — v10.00</div>
+  <div class="logo-ver app-ver">Achille App — v10.01</div>
 </aside>
 <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Réduire la barre latérale">‹</button>
 
@@ -4013,6 +4013,19 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     #page-mandats .md-mchips{display:flex;gap:5px;justify-content:flex-end;flex-wrap:wrap;margin-top:3px;}
     #page-mandats .md-mchip{font-size:10px;border:1px solid var(--beige-2);border-radius:8px;padding:2px 7px;color:var(--gris);}
     #page-mandats .md-toolbar{display:flex;gap:9px;align-items:center;padding:12px 16px 4px;}
+    #page-mandats .md-head{display:grid;grid-template-columns:86px minmax(0,1.5fr) 210px minmax(0,1fr) 170px;gap:8px 16px;align-items:center;padding:8px 31px 2px;}
+    #page-mandats .md-th{border:none;background:none;cursor:pointer;font-family:'Jost',sans-serif;font-size:10.5px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:var(--gris-2);padding:2px 3px;}
+    #page-mandats .md-th:hover{color:var(--terra);}
+    #page-mandats .md-th.on{color:var(--terra);}
+    #page-mandats .md-th.on:after{content:' 'attr(data-dir);font-size:9px;}
+    #page-mandats .md-th-sep{color:var(--beige-2);font-size:10px;}
+    #page-mandats .md-th-grp{display:flex;align-items:center;gap:3px;}
+    #page-mandats .md-th-lbl{font-family:'Jost',sans-serif;font-size:10.5px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:var(--gris-2);}
+    #page-mandats .md-docbtn{display:inline-flex;align-items:center;gap:5px;border:1px solid rgba(180,85,45,.4);color:var(--terra);background:#fff;border-radius:999px;padding:3px 12px;font-family:'Jost',sans-serif;font-size:11px;font-weight:500;cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,.06);white-space:nowrap;}
+    #page-mandats .md-docbtn:hover{background:rgba(180,85,45,.09);}
+    #md-docpop{position:fixed;z-index:1200;background:#fff;border:1px solid var(--border);border-radius:9px;box-shadow:0 10px 32px rgba(0,0,0,.2);padding:7px 6px;min-width:240px;max-width:360px;font-family:'Jost',sans-serif;}
+    #md-docpop a{display:block;padding:7px 11px;border-radius:6px;font-size:12.5px;color:var(--noir);cursor:pointer;text-decoration:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    #md-docpop a:hover{background:var(--terra-p);color:var(--terra);}
     #page-mandats .md-toolbar input{flex:1;max-width:430px;padding:9px 13px;border:1px solid var(--beige-2);border-radius:8px;font-family:'Jost',sans-serif;font-size:13px;background:#fff;outline:none;}
     #page-mandats .md-count{font-size:12px;color:var(--gris-2);margin-left:auto;}
     #page-mandats .md-empty{font-size:13px;color:var(--gris-2);font-style:italic;padding:26px 18px;}
@@ -4044,9 +4057,18 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
       <div class="md-toolbar">
         <input id="md-search" placeholder="Rechercher (n°, adresse, mandant, réf. produit, ville…)" oninput="mdRender()">
         <button class="btn btn-terra" onclick="mdNew()">+ Nouveau mandat</button>
+        <button class="btn btn-outline" onclick="document.getElementById('md-bulk').click()" title="Sélectionnez d'un coup tous vos PDF de mandats : chaque fichier est rattaché à sa fiche grâce au n° (« Mandat 152… ») ou à la réf. produit (MATxxx…) contenus dans son nom">📥 Joindre des PDF en lot</button>
+        <input type="file" id="md-bulk" multiple accept=".pdf,.jpg,.jpeg,.png" style="display:none;" onchange="mdBulk(this)">
         <span class="md-count" id="md-count"></span>
       </div>
-      <div id="md-list" style="padding:8px 16px 30px;"></div>
+      <div class="md-head">
+        <button class="md-th" data-k="num" onclick="mdSort('num')">N°</button>
+        <div class="md-th-grp"><button class="md-th" data-k="adresse" onclick="mdSort('adresse')">Bien</button><span class="md-th-sep">/</span><button class="md-th" data-k="mdt" onclick="mdSort('mdt')">Mandant</button></div>
+        <div class="md-th-grp"><button class="md-th" data-k="sign" onclick="mdSort('sign')">Signé</button><span class="md-th-sep">/</span><button class="md-th" data-k="fin" onclick="mdSort('fin')">Échéance</button></div>
+        <span class="md-th-lbl">Diffusion</span>
+        <button class="md-th" data-k="prix" style="justify-self:end;" onclick="mdSort('prix')">Prix</button>
+      </div>
+      <div id="md-list" style="padding:2px 16px 30px;"></div>
     </div></div>
   </div>
 </div>
@@ -4063,7 +4085,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     </div>
     <div class="md-grid4">
       <div class="form-group"><label class="form-label">Signé le</label><input class="form-input" type="date" id="md-sign" onchange="mdSignAuto()"></div>
-      <div class="form-group"><label class="form-label">Échéance <span style="font-weight:400;color:var(--gris-2);">(bouton = +3 mois)</span></label><div style="display:flex;gap:6px;"><input class="form-input" type="date" id="md-fin" style="flex:1;"><button class="std-tab" onclick="mdPlus3()" title="Échéance = signature + 3 mois">+3 m</button></div></div>
+      <div class="form-group"><label class="form-label">Échéance <span style="font-weight:400;color:var(--gris-2);">(bouton = +12 mois)</span></label><div style="display:flex;gap:6px;"><input class="form-input" type="date" id="md-fin" style="flex:1;"><button class="std-tab" onclick="mdPlus12()" title="Échéance = signature + 12 mois (durée par défaut de vos mandats — les 3 mois ne sont que la période irrévocable)">+12 m</button></div></div>
       <div class="form-group"><label class="form-label">Adresse du bien</label><input class="form-input" id="md-adr" placeholder="12 rue de Chézy"></div>
       <div class="form-group"><label class="form-label">Ville</label><input class="form-input" id="md-ville" placeholder="Neuilly-sur-Seine"></div>
     </div>
@@ -11712,7 +11734,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     startRealtime();
     var ov=document.getElementById('ach-login-overlay'); if(ov) ov.classList.add('ach-hidden');
     var ub=document.getElementById('ach-userbar'); if(ub) ub.style.display='none';
-    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v10.00';
+    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v10.01';
     flag('Synchronis\u00e9');
     // fin de l'init : on autorise la journalisation des actions
     setTimeout(function(){ installInterceptor._init=false; }, 1500);
@@ -12341,6 +12363,7 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
     uk=uk||curKey();
     if(uk==='public') return !!PUBLIC_ALLOW[sec] && (!action||action==='view');
     if(sec==='droits') return uk==='admin';
+    if(sec==='mandats') return uk==='admin'||uk==='gerant';   /* v10.01 : registre réservé à Laurent & Marine */
     if(uk==='admin') return true;
     if(sec==='dashboard' && (action==='view'||!action)) return true;
     var lvl=ORDER[userLevel(uk,sec)]||0;
@@ -20013,6 +20036,27 @@ textarea.rd-inp{resize:vertical;line-height:1.45;}
   function fmtP(v){ v=parseFloat(v)||0; return v? v.toLocaleString('fr-FR')+' €' : ''; }
   function b64ToBlob(b64,type){ var bin=atob(b64), a=new Uint8Array(bin.length); for(var i=0;i<bin.length;i++) a[i]=bin.charCodeAt(i); return new Blob([a],{type:type||'application/octet-stream'}); }
   var TAB='tous', DIFF={vit:0,rs:0,sit:0,por:0}, NONE=0, AV=[], PJ=[];
+  var MD_SORT={k:'sign',d:-1};   /* v10.01 : défaut = signature, plus récent d'abord */
+  function mdVal(m,k){
+    if(k==='num'){ var n=parseFloat(m.num); return n===n?n:''; }
+    if(k==='prix'){ var p=curPrice(m); return p||''; }
+    if(k==='sign') return m.sign||'';
+    if(k==='fin') return m.fin||'';
+    if(k==='adresse') return ((m.adresse||'')+' '+(m.ville||'')).trim().toLowerCase();
+    if(k==='mdt') return (m.mdt||'').toLowerCase();
+    return '';
+  }
+  function mdCmp(x,y){
+    var a=mdVal(x,MD_SORT.k), b=mdVal(y,MD_SORT.k);
+    if(a===''&&b==='') return 0; if(a==='') return 1; if(b==='') return -1;   /* vides toujours en bas */
+    if(a<b) return -MD_SORT.d; if(a>b) return MD_SORT.d;
+    return (parseFloat(y.num)||0)-(parseFloat(x.num)||0);
+  }
+  window.mdSort=function(k){
+    if(MD_SORT.k===k) MD_SORT.d=-MD_SORT.d;
+    else MD_SORT={k:k, d:(k==='adresse'||k==='mdt')?1:-1};
+    mdRender();
+  };
 
   /* ---------- pastille menu : mandats actifs expirant sous 30 j ou expirés ---------- */
   window.mdBadge=function(){ try{
@@ -20033,7 +20077,7 @@ textarea.rd-inp{resize:vertical;line-height:1.45;}
   window.mdRender=function(){
     var box=document.getElementById('md-list'); if(!box) return;
     var q=((document.getElementById('md-search')||{}).value||'').toLowerCase().trim();
-    var a=all().slice().sort(function(x,y){ return (parseFloat(x.num)||1e9)-(parseFloat(y.num)||1e9); });
+    var a=all().slice().sort(mdCmp);   /* v10.01 : tri par colonne choisi (défaut : plus récent d'abord) */
     var tot=a.filter(function(m){return !m.arch;}).length;
     a=a.filter(function(m){
       var d=days(m.fin);
@@ -20047,6 +20091,10 @@ textarea.rd-inp{resize:vertical;line-height:1.45;}
       return true;
     });
     var c=document.getElementById('md-count'); if(c) c.textContent=tot+' mandat'+(tot>1?'s':'')+' actif'+(tot>1?'s':'');
+    document.querySelectorAll('#page-mandats .md-th').forEach(function(b){
+      var k=b.getAttribute('data-k'); b.classList.toggle('on',k===MD_SORT.k);
+      b.setAttribute('data-dir', k===MD_SORT.k?(MD_SORT.d>0?'▲':'▼'):'');
+    });
     if(!a.length){ box.innerHTML='<div class="md-empty">Aucun mandat dans cette vue. « + Nouveau mandat » pour démarrer — ou joignez-moi vos PDF de mandats pour que je remplisse le registre.</div>'; return; }
     box.innerHTML=a.map(function(m){
       var d=days(m.fin), cls=m.arch?'arch':(d!=null&&d<0?'exp':(d!=null&&d<=30?'soon':''));
@@ -20060,7 +20108,7 @@ textarea.rd-inp{resize:vertical;line-height:1.45;}
       var hono=m.hono? (m.honou==='pct'? m.hono+' %' : (isNaN(_hv)||!/^[\d\s\u202f.,]+$/.test(''+m.hono)? esc(m.hono) : fmtP(_hv)))+(m.honoc?' · '+m.honoc:'') : '';   /* v10.00 : « 1 mois de loyer » reste en toutes lettres */
       var chips='';
       if(m.deleg) chips+='<span class="md-mchip" title="'+esc((m.deleg==='recue'?'Délégation reçue de ':'Mandat délégué à ')+(m.delegq||'')+' '+(m.delegn||''))+'">\u{1F91D} '+(m.deleg==='recue'?'Délég. reçue':'Délég. donnée')+'</span>';
-      if((m.pj||[]).length) chips+='<span class="md-mchip">\u{1F4CE} '+m.pj.length+'</span>';
+      if((m.pj||[]).length) chips+='<button class="md-docbtn" onclick="mdDocs(event,\''+m.id+'\')">\u{1F4C4} Documents ('+m.pj.length+')</button>';
       if((m.avenants||[]).length) chips+='<span class="md-mchip" title="'+esc(m.avenants.map(function(av){return dstr(av.d)+' — '+av.txt+(av.prix?' ('+fmtP(av.prix)+')':'');}).join('\n'))+'">✎ '+m.avenants.length+' avenant'+(m.avenants.length>1?'s':'')+'</span>';
       return '<div class="md-row '+cls+'" onclick="mdEdit(\''+m.id+'\')">'
         +'<div class="md-num">'+esc(m.num||'?')+'<small>mandat</small></div>'
@@ -20073,6 +20121,72 @@ textarea.rd-inp{resize:vertical;line-height:1.45;}
         +'</div>';
     }).join('');
   };
+  /* v10.01 : IMPORT GROUPÉ de PDF — rattachement par n° de mandat ou réf. produit dans le NOM du fichier */
+  window.mdBulkMatch=function(name){
+    var a=all().filter(function(m){return !m.arch;}).concat(all().filter(function(m){return m.arch;}));
+    var m=name.match(/mandat\D{0,30}?(\d{2,3})\b/i);   /* v10.01 : « Mandat Simple de vente 166 … » aussi */
+    if(m){ var r=a.filter(function(x){return (''+x.num)===m[1];})[0]; if(r) return r; }
+    m=name.match(/(MAT|LSE|LPI)\s?\d{3,6}/i);
+    if(m){ var ref=m[0].replace(/\s/g,'').toUpperCase();
+      var cand=a.filter(function(x){return (x.ref||'').toUpperCase()===ref;});
+      if(cand.length) return cand.sort(function(x,y){return (parseFloat(y.num)||0)-(parseFloat(x.num)||0);})[0]; }
+    return null;
+  };
+  window.mdBulk=function(inp){
+    var files=[].slice.call(inp.files||[]); inp.value='';
+    if(!files.length) return;
+    if(!window.achDocsUpload2){ alert('Cloud non connecté — impossible d’envoyer les fichiers pour l’instant.'); return; }
+    var okL=[], koL=[], i=0, a=all();
+    if(window.toast) toast('📥 Envoi de '+files.length+' fichier'+(files.length>1?'s':'')+'…');
+    (function next(){
+      if(i>=files.length){
+        save(a); mdRender();
+        alert('Import terminé :\n\u2713 '+okL.length+' rattaché(s)'+(okL.length?' :\n  \u2022 '+okL.join('\n  \u2022 '):'')+(koL.length?('\n\n\u2717 '+koL.length+' non reconnu(s) — à joindre à la main via la fiche :\n  \u2022 '+koL.join('\n  \u2022 ')):''));
+        return;
+      }
+      var f=files[i++];
+      var rec=mdBulkMatch(f.name);
+      if(!rec){ koL.push(f.name); return next(); }
+      if((rec.pj||[]).some(function(p){return p.name===f.name;})){ okL.push(f.name+' \u2192 n\u00b0 '+rec.num+' (d\u00e9j\u00e0 joint, ignor\u00e9)'); return next(); }
+      var r=new FileReader();
+      r.onload=function(){
+        var b64=(''+r.result).split(',')[1];
+        achDocsUpload2(f.name, f.type||'application/pdf', b64, {mandat:rec.num, themeId:'mandats'}).then(function(key){
+          if(!key){ koL.push(f.name+' (\u00e9chec d\u2019envoi)'); return next(); }
+          var live=a.filter(function(x){return x.id===rec.id;})[0]||rec;
+          live.pj=(live.pj||[]); live.pj.push({key:key, name:f.name, type:f.type||'application/pdf'});
+          okL.push(f.name+' \u2192 mandat n\u00b0 '+rec.num);
+          if(window.toast) toast('\u2713 '+okL.length+'/'+files.length+' \u2014 n\u00b0 '+rec.num);
+          next();
+        });
+      };
+      r.readAsDataURL(f);
+    })();
+  };
+  /* v10.01 : menu des documents de la ligne (mandat signé, avenants...) */
+  window.mdDocs=function(ev,id){
+    ev.stopPropagation();
+    var old=document.getElementById('md-docpop');
+    if(old){ var same=old._for===id; old.remove(); if(same) return; }
+    var m=all().filter(function(x){return x.id===id;})[0];
+    if(!m||!(m.pj||[]).length) return;
+    var p=document.createElement('div'); p.id='md-docpop'; p._for=id;
+    p.innerHTML=m.pj.map(function(x,i){ return '<a onclick="event.stopPropagation();mdDocOpen(\''+id+'\','+i+')">\u{1F4C4} '+esc(x.name)+'</a>'; }).join('');
+    document.body.appendChild(p);
+    var r=ev.target.getBoundingClientRect();
+    p.style.left=Math.max(8,Math.min(window.innerWidth-p.offsetWidth-12, r.left-40))+'px';
+    p.style.top=Math.min(window.innerHeight-p.offsetHeight-10, r.bottom+6)+'px';
+  };
+  window.mdDocOpen=function(id,i){
+    var m=all().filter(function(x){return x.id===id;})[0]; var pj=m&&(m.pj||[])[i]; if(!pj) return;
+    if(!window.achDocsFetchOne){ if(window.toast) toast('Cloud non connecté — document indisponible'); return; }
+    if(window.toast) toast('\u{1F4C4} Ouverture de « '+pj.name+' »…');
+    achDocsFetchOne(pj.key).then(function(v){
+      if(!v||!v.b64){ if(window.toast) toast('Document introuvable dans le cloud'); return; }
+      var u=URL.createObjectURL(b64ToBlob(v.b64,v.type||pj.type)); window.open(u,'_blank');
+    });
+  };
+  document.addEventListener('click',function(e){ var p=document.getElementById('md-docpop'); if(p&&!e.target.closest('#md-docpop')&&!e.target.closest('.md-docbtn')) p.remove(); });
   window.mdPop=function(id){ var p=document.getElementById('md-pop-'+id); if(!p) return; var vis=p.style.display==='block';
     document.querySelectorAll('#page-mandats .md-pop').forEach(function(x){x.style.display='none';});
     p.style.display=vis?'none':'block'; };
@@ -20204,9 +20318,9 @@ textarea.rd-inp{resize:vertical;line-height:1.45;}
     openModal('modal-mandat');
   }
   window.mdSignAuto=function(){ var sg=document.getElementById('md-sign').value, fn=document.getElementById('md-fin');
-    if(sg&&fn&&!fn.value){ var d=new Date(sg); d.setMonth(d.getMonth()+3); fn.value=d.toISOString().slice(0,10); } };
-  window.mdPlus3=function(){ var sg=document.getElementById('md-sign').value; if(!sg) return;
-    var d=new Date(sg); d.setMonth(d.getMonth()+3); document.getElementById('md-fin').value=d.toISOString().slice(0,10); };
+    if(sg&&fn&&!fn.value){ var d=new Date(sg); d.setMonth(d.getMonth()+12); fn.value=d.toISOString().slice(0,10); } };
+  window.mdPlus12=function(){ var sg=document.getElementById('md-sign').value; if(!sg) return;
+    var d=new Date(sg); d.setMonth(d.getMonth()+12); document.getElementById('md-fin').value=d.toISOString().slice(0,10); };
   window.mdNew=function(){ openM(null); };
   window.mdEdit=function(id){ var m=all().filter(function(x){return x.id===id;})[0]; if(m) openM(m); };
   window.mdModalSave=function(){
