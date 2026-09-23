@@ -1660,6 +1660,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     <div class="nav-item" onclick="navTo('equityliving',this)"><span class="nav-icon">🤝</span><span class="nav-item-label">Equity Living</span></div><!-- v9.19 -->
     <div class="nav-item" onclick="navTo('finances',this)"><span class="nav-icon">💶</span><span class="nav-item-label">Finances</span></div>
     <div class="nav-item" onclick="navTo('encours',this)"><span class="nav-icon">◈</span><span class="nav-item-label">Ventes / En cours</span></div>
+    <div class="nav-item" onclick="navTo('mandats',this)"><span class="nav-icon">📜</span><span class="nav-item-label">Mandats</span><span class="nav-badge" id="badge-mandats" style="display:none;"></span></div>
   </div>
   <div class="nav-section" id="nav-admin-section">
     <div class="nav-lbl">Administration</div>
@@ -1684,7 +1685,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     </div>
   </div>
   </div>
-  <div class="logo-ver app-ver">Achille App — v9.47</div>
+  <div class="logo-ver app-ver">Achille App — v10.00</div>
 </aside>
 <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Réduire la barre latérale">‹</button>
 
@@ -3981,7 +3982,151 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     </div></div><!-- /comm-panels -->
   </div><!-- /comm-page -->
   </div>
-  <div class="page" id="page-finances">
+  <div class="page" id="page-mandats">
+  <style>
+    #page-mandats .md-row{display:grid;grid-template-columns:86px minmax(0,1.5fr) 210px minmax(0,1fr) 170px;gap:8px 16px;align-items:center;background:#fff;border:1px solid var(--border);border-left:4px solid var(--kaki);border-radius:6px;box-shadow:0 1px 6px rgba(0,0,0,.05);padding:11px 15px;margin-bottom:10px;cursor:pointer;}
+    #page-mandats .md-row.exp{border-left-color:#a03222;background:#fdf6f5;}
+    #page-mandats .md-row.soon{border-left-color:#c07f28;}
+    #page-mandats .md-row.arch{border-left-color:#c9c2b6;opacity:.75;}
+    #page-mandats .md-num{font-family:'Cormorant Garamond',serif;font-size:27px;font-weight:600;color:var(--terra);text-align:center;line-height:1;}
+    #page-mandats .md-num small{display:block;font-family:'Jost',sans-serif;font-size:9px;letter-spacing:1.2px;color:var(--gris-2);text-transform:uppercase;margin-top:2px;}
+    #page-mandats .md-kind{display:inline-block;font-family:'Jost',sans-serif;font-size:10px;font-weight:700;letter-spacing:.08em;border-radius:9px;padding:2.5px 9px;color:#fff;}
+    #page-mandats .md-kind.v{background:var(--terra);} #page-mandats .md-kind.l{background:var(--kaki);}
+    #page-mandats .md-typ{display:inline-block;font-size:10px;font-weight:600;border:1px solid var(--beige-2);border-radius:9px;padding:2px 8px;color:var(--gris);background:var(--blanc);}
+    #page-mandats .md-adr{font-family:'Cormorant Garamond',serif;font-size:19px;color:var(--noir);line-height:1.15;margin:3px 0 2px;}
+    #page-mandats .md-adr .v{color:var(--terra);font-weight:700;}
+    #page-mandats .md-mdt{font-size:12.5px;color:var(--gris);position:relative;}
+    #page-mandats .md-mdt b{color:var(--noir);font-weight:600;cursor:pointer;border-bottom:1px dashed var(--beige-2);}
+    #page-mandats .md-pop{position:absolute;z-index:40;top:20px;left:0;background:#fff;border:1px solid var(--border);border-radius:8px;box-shadow:0 8px 26px rgba(0,0,0,.16);padding:9px 13px;font-size:12.5px;line-height:1.9;white-space:nowrap;display:none;}
+    #page-mandats .md-pop a{color:var(--terra);text-decoration:none;font-weight:500;}
+    #page-mandats .md-dates{font-size:12px;color:var(--gris);line-height:1.6;}
+    #page-mandats .md-dates b{color:var(--noir);font-weight:600;}
+    #page-mandats .md-due{display:inline-block;font-size:10px;font-weight:700;border-radius:9px;padding:2px 8px;margin-left:6px;}
+    #page-mandats .md-due.soon{background:rgba(192,127,40,.14);color:#a06a1c;border:1px solid rgba(192,127,40,.4);}
+    #page-mandats .md-due.exp{background:rgba(160,50,34,.12);color:#a03222;border:1px solid rgba(160,50,34,.4);}
+    #page-mandats .md-diff{display:flex;flex-wrap:wrap;gap:4px;}
+    #page-mandats .md-dchip{font-size:10px;border:1px solid var(--beige-2);border-radius:8px;padding:2px 7px;color:var(--kaki);background:var(--blanc);}
+    #page-mandats .md-dchip.on{background:rgba(76,83,59,.1);border-color:rgba(76,83,59,.35);font-weight:600;}
+    #page-mandats .md-dchip.none{color:#a03222;border-color:rgba(160,50,34,.35);font-weight:600;}
+    #page-mandats .md-right{text-align:right;font-size:12px;color:var(--gris);line-height:1.55;}
+    #page-mandats .md-prix{font-family:'Cormorant Garamond',serif;font-size:21px;font-weight:600;color:var(--terra);line-height:1;}
+    #page-mandats .md-mchips{display:flex;gap:5px;justify-content:flex-end;flex-wrap:wrap;margin-top:3px;}
+    #page-mandats .md-mchip{font-size:10px;border:1px solid var(--beige-2);border-radius:8px;padding:2px 7px;color:var(--gris);}
+    #page-mandats .md-toolbar{display:flex;gap:9px;align-items:center;padding:12px 16px 4px;}
+    #page-mandats .md-toolbar input{flex:1;max-width:430px;padding:9px 13px;border:1px solid var(--beige-2);border-radius:8px;font-family:'Jost',sans-serif;font-size:13px;background:#fff;outline:none;}
+    #page-mandats .md-count{font-size:12px;color:var(--gris-2);margin-left:auto;}
+    #page-mandats .md-empty{font-size:13px;color:var(--gris-2);font-style:italic;padding:26px 18px;}
+    #modal-mandat .form-label{font-size:11.5px;}
+    #modal-mandat .md-grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;}
+    #modal-mandat .md-grid4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;}
+    #modal-mandat .md-sec{font-size:10.5px;letter-spacing:1.4px;color:var(--kaki);font-weight:600;text-transform:uppercase;margin:13px 0 6px;border-top:1px solid var(--beige-2);padding-top:11px;}
+    #modal-mandat .md-diffbox{display:flex;flex-wrap:wrap;gap:7px;}
+    #modal-mandat .md-diffbox label{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--beige-2);border-radius:999px;padding:5px 13px;font-size:12px;cursor:pointer;background:#fff;user-select:none;}
+    #modal-mandat .md-diffbox label.on{border-color:var(--kaki);background:rgba(76,83,59,.08);font-weight:600;}
+    #modal-mandat .md-diffbox label.master.on{border-color:var(--terra);background:rgba(180,85,45,.09);}
+    #modal-mandat .md-diffbox label.nn.on{border-color:#a03222;background:rgba(160,50,34,.08);}
+    #modal-mandat .md-avrow,#modal-mandat .md-pjrow{display:flex;gap:8px;align-items:center;font-size:12.5px;padding:4px 0;border-bottom:1px solid var(--beige-2);}
+    #modal-mandat .md-avrow .d{color:var(--gris-2);white-space:nowrap;}
+    #modal-mandat .md-x{border:none;background:none;color:#a03222;cursor:pointer;font-size:13px;}
+    #modal-mandat .md-pjrow a{color:var(--terra);cursor:pointer;text-decoration:none;font-weight:500;}
+    @media(max-width:1100px){ #page-mandats .md-row{grid-template-columns:70px 1fr;} #page-mandats .md-right{text-align:left;} }
+  </style>
+  <div class="comm-page">
+    <div class="comm-tabs-bar">
+      <button class="comm-tab active" id="md-tab-tous" onclick="mdTab('tous')">Tous</button>
+      <button class="comm-tab" id="md-tab-vente" onclick="mdTab('vente')">Ventes</button>
+      <button class="comm-tab" id="md-tab-location" onclick="mdTab('location')">Locations</button>
+      <button class="comm-tab" id="md-tab-soon" onclick="mdTab('soon')">⏳ Échéance proche</button>
+      <button class="comm-tab" id="md-tab-exp" onclick="mdTab('exp')">Expirés</button>
+      <button class="comm-tab" id="md-tab-arch" onclick="mdTab('arch')">Archivés</button>
+    </div>
+    <div class="comm-panels"><div style="flex:1;overflow-y:auto;">
+      <div class="md-toolbar">
+        <input id="md-search" placeholder="Rechercher (n°, adresse, mandant, réf. produit, ville…)" oninput="mdRender()">
+        <button class="btn btn-terra" onclick="mdNew()">+ Nouveau mandat</button>
+        <span class="md-count" id="md-count"></span>
+      </div>
+      <div id="md-list" style="padding:8px 16px 30px;"></div>
+    </div></div>
+  </div>
+</div>
+<div class="modal-overlay" id="modal-mandat" onmousedown="this._d=(event.target===this)" onclick="if(event.target===this&&this._d)closeModal('modal-mandat');this._d=false;">
+  <div class="modal" style="max-width:1050px;width:94vw;max-height:94vh;overflow-y:auto;">
+    <button class="modal-close" onclick="closeModal('modal-mandat')">x</button>
+    <h3 style="font-family:'Cormorant Garamond',serif;font-size:24px;margin:0 0 12px;" id="md-m-title">Mandat</h3>
+    <input type="hidden" id="md-id">
+    <div class="md-grid4">
+      <div class="form-group"><label class="form-label">N° de mandat (registre)</label><input class="form-input" id="md-num" inputmode="numeric" placeholder="Ex : 47"></div>
+      <div class="form-group"><label class="form-label">Vente / Location</label><select class="form-select" id="md-kind"><option value="vente">Vente</option><option value="location">Location</option></select></div>
+      <div class="form-group"><label class="form-label">Type de mandat</label><select class="form-select" id="md-typ"><option value="exclusif">Exclusif</option><option value="semi">Semi-exclusif</option><option value="simple">Simple</option></select></div>
+      <div class="form-group"><label class="form-label">Réf. produit Apimo</label><input class="form-input" id="md-ref" placeholder="MATxxx · LSExxx · LPIxxx"></div>
+    </div>
+    <div class="md-grid4">
+      <div class="form-group"><label class="form-label">Signé le</label><input class="form-input" type="date" id="md-sign" onchange="mdSignAuto()"></div>
+      <div class="form-group"><label class="form-label">Échéance <span style="font-weight:400;color:var(--gris-2);">(bouton = +3 mois)</span></label><div style="display:flex;gap:6px;"><input class="form-input" type="date" id="md-fin" style="flex:1;"><button class="std-tab" onclick="mdPlus3()" title="Échéance = signature + 3 mois">+3 m</button></div></div>
+      <div class="form-group"><label class="form-label">Adresse du bien</label><input class="form-input" id="md-adr" placeholder="12 rue de Chézy"></div>
+      <div class="form-group"><label class="form-label">Ville</label><input class="form-input" id="md-ville" placeholder="Neuilly-sur-Seine"></div>
+    </div>
+    <div class="md-grid4">
+      <div class="form-group"><label class="form-label" id="md-prix-lbl">Prix demandé (€)</label><input class="form-input js-thousands" id="md-prix" inputmode="decimal"></div>
+      <div class="form-group"><label class="form-label">Honoraires</label><div style="display:flex;gap:6px;"><input class="form-input" id="md-hono" inputmode="decimal" style="flex:1;"><select class="form-select" id="md-honou" style="width:64px;flex:none;"><option value="pct">%</option><option value="eur">€</option></select></div></div>
+      <div class="form-group"><label class="form-label">À la charge de</label><select class="form-select" id="md-honoc"><option value="vendeur">Vendeur</option><option value="acquereur">Acquéreur</option><option value="bailleur">Bailleur</option><option value="locataire">Locataire</option></select></div>
+      <div class="form-group"><label class="form-label">Notes</label><input class="form-input" id="md-notes" placeholder="Libre"></div>
+    </div>
+
+    <div class="md-sec">Mandant</div>
+    <div class="md-grid3">
+      <div class="form-group"><label class="form-label">Identité</label><input class="form-input" id="md-mdt" placeholder="M. et Mme Dupont"></div>
+      <div class="form-group"><label class="form-label">Téléphone(s) <span style="font-weight:400;color:var(--gris-2);">(séparés par · ou ,)</span></label><input class="form-input" id="md-tels" placeholder="06 12 34 56 78, 01 47 22 00 00"></div>
+      <div class="form-group"><label class="form-label">Mail(s)</label><input class="form-input" id="md-mails" placeholder="dupont@mail.fr"></div>
+    </div>
+
+    <div class="md-sec">Autorisations de diffusion</div>
+    <div class="md-diffbox" id="md-diffbox">
+      <label class="master" id="md-d-all" onclick="mdDiffAll()"><span>★</span>Toutes publicités</label>
+      <label id="md-d-vit" onclick="mdDiffTog('vit')">Vitrine</label>
+      <label id="md-d-rs" onclick="mdDiffTog('rs')">Réseaux sociaux</label>
+      <label id="md-d-sit" onclick="mdDiffTog('sit')">Site Achille</label>
+      <label id="md-d-por" onclick="mdDiffTog('por')">Publicité sites immo</label>
+      <label class="nn" id="md-d-none" onclick="mdDiffNone()"><span>⊘</span>Aucune publicité</label>
+    </div>
+
+    <div class="md-sec">Délégation de mandat</div>
+    <div class="md-grid3">
+      <div class="form-group"><label class="form-label">Situation</label><select class="form-select" id="md-deleg"><option value="">— Aucune</option><option value="recue">Reçue d’un confrère (il a le mandat)</option><option value="donnee">Donnée à un confrère (notre mandat)</option></select></div>
+      <div class="form-group"><label class="form-label">Confrère / agence</label><input class="form-input" id="md-delegq" placeholder="Agence X (contact, tél…)"></div>
+      <div class="form-group"><label class="form-label">Conditions (partage honoraires…)</label><input class="form-input" id="md-delegn" placeholder="50/50…"></div>
+    </div>
+
+    <div class="md-sec">Avenants (baisse de prix, prolongation…)</div>
+    <div id="md-avlist"></div>
+    <div style="display:flex;gap:8px;margin-top:6px;">
+      <input class="form-input" type="date" id="md-av-d" style="width:150px;flex:none;">
+      <input class="form-input" id="md-av-t" placeholder="Ex : baisse de prix" style="flex:1;">
+      <input class="form-input js-thousands" id="md-av-p" placeholder="Nouveau prix (€, optionnel)" style="width:190px;flex:none;">
+      <button class="std-tab" onclick="mdAvAdd()">+ Ajouter</button>
+    </div>
+
+    <div class="md-sec">Pièces jointes (mandat signé, avenants, DPE…)</div>
+    <div id="md-pjlist"></div>
+    <div style="display:flex;gap:8px;align-items:center;margin-top:6px;flex-wrap:wrap;">
+      <input type="file" id="md-pj-file" accept=".pdf,.jpg,.jpeg,.png,.docx" style="font-size:12px;">
+      <button class="std-tab" onclick="mdPjAdd()">📎 Joindre au mandat</button>
+      <button class="std-tab" onclick="mdPdfFill()" title="Lit le PDF sélectionné ci-contre et pré-remplit les champs vides (PDF texte uniquement)">🔍 Pré-remplir depuis le PDF</button>
+      <span id="md-pj-st" style="font-size:11.5px;color:var(--gris-2);"></span>
+    </div>
+
+    <div class="modal-actions" style="margin-top:18px;display:flex;gap:9px;">
+      <button class="btn btn-outline" onclick="closeModal('modal-mandat')">Annuler</button>
+      <button class="btn btn-outline" id="md-btn-arch" onclick="mdArchive()" style="display:none;">⤵ Archiver</button>
+      <button class="btn btn-outline" id="md-btn-del" onclick="mdDelete()" style="display:none;color:#a03222;">Supprimer</button>
+      <button class="btn btn-terra" style="margin-left:auto;" onclick="mdModalSave()">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+
+<div class="page" id="page-finances">
     <div class="fin-page" id="fin-main">
 
       <!-- Écran verrou Collab -->
@@ -4401,6 +4546,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     encours:'Ventes / <span>En Cours</span>',
     honoraires:'Honoraires', communication:'<span>Communication</span>',
     pige:'Pige <span>&amp; Veille</span>',
+    mandats:'Registre des <span>Mandats</span>',
     routines:'Routines <span>&amp; Objectifs</span>',
     acces:'Gestion des <span>Accès</span>'
   };
@@ -4409,7 +4555,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
   var chartsOk=false;
 
   var FULLSCREEN_PAGES=['postits','visites','planning','finances','encours',
-    'sectorisation','lexique','documents','honoraires','communication','equityliving'];  /* v9.30 : barre d'onglets collee au titre comme Documents */
+    'sectorisation','lexique','documents','honoraires','communication','equityliving','mandats'];  /* v9.30 : barre d'onglets collee au titre comme Documents */
     /* v6.16 : 'prospection' retirée — la nouvelle page (v6.15) n'a plus de
        défilement interne, elle défile via .content comme la Pige ou la Renta. */
 
@@ -10234,7 +10380,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
 <script>
 (function(){
   var AUDIT_KEY='ach_audit_v1';
-  var LABELS={ach_pi_v4:'Post-its',ach_encours_v1:'Ventes (En cours)',ach_todos_v1:'To-dos',ach_plan_events:'Planning',ach_vt_v4:'Visites',ach_bv_obs:'Bons de visite (observations)',ach_bv_extra:'Bons de visite',ach_bv_pending:'Bons de visite (validation)',ach_bv_notifs:'Notifications',ach_bv_cr_v1:'Comptes rendus de visite',ach_fin_v3:'Finances',ach_prosp_v1:'Prospection',ach_lex_html_v1:'Lexique', ach_cr_crit_v1:'Comptes rendus (critères)',ach_lex_proposals:'Lexique (propositions)',ach_pige_v1:'Pige',ach_docaff_v1:'Documents par affaire',ach_docs_cfg_v1:'Documents (réglages)', ach_docgen_assets_v1:'Générateur (charte & polices)', ach_dghist_v1:'Documents (historique des générations)', ach_rappels_v1:'Rappels', ach_redac_v1:'Rédaction quotidienne', ach_routines_v1:'Routines & Objectifs'};
+  var LABELS={ach_pi_v4:'Post-its',ach_encours_v1:'Ventes (En cours)',ach_todos_v1:'To-dos',ach_plan_events:'Planning',ach_vt_v4:'Visites',ach_bv_obs:'Bons de visite (observations)',ach_bv_extra:'Bons de visite',ach_bv_pending:'Bons de visite (validation)',ach_bv_notifs:'Notifications',ach_bv_cr_v1:'Comptes rendus de visite',ach_fin_v3:'Finances',ach_prosp_v1:'Prospection',ach_lex_html_v1:'Lexique', ach_cr_crit_v1:'Comptes rendus (critères)',ach_lex_proposals:'Lexique (propositions)',ach_pige_v1:'Pige',ach_mandats_v1:'Mandats',ach_docaff_v1:'Documents par affaire',ach_docs_cfg_v1:'Documents (réglages)', ach_docgen_assets_v1:'Générateur (charte & polices)', ach_dghist_v1:'Documents (historique des générations)', ach_rappels_v1:'Rappels', ach_redac_v1:'Rédaction quotidienne', ach_routines_v1:'Routines & Objectifs'};
   var _orig=localStorage.setItem.bind(localStorage);
   function curName(){var e=document.getElementById('s-name');return e?e.textContent:'?';}
   function curRole(){var e=document.getElementById('s-role');return e?e.textContent:'';}
@@ -10872,7 +11018,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     ach_pi_v4:'Post-its', ach_plan_events:'Planning', ach_todos_v1:'To-do',
     ach_prosp_v1:'Prospection', ach_lex_html_v1:'Lexique', ach_lex_proposals:'Lexique (propositions)',
     ach_fin_hist_v3:'Honoraires', ach_fin_ops_v3:'Finances', ach_fin_lines_v1:'Finances',
-    ach_fin_solde_v3:'Finances', ach_encours_v1:'Affaires en cours', ach_audit_v1:'Journal', ach_pige_v1:'Pige', ach_docaff_v1:'Documents par affaire', ach_docs_cfg_v1:'Documents (réglages)', ach_docgen_assets_v1:'Générateur (charte & polices)', ach_dghist_v1:'Documents (historique des générations)', ach_rappels_v1:'Rappels', ach_evol_v1:'Évolutions', ach_redac_v1:'Rédaction quotidienne', ach_routines_v1:'Routines & Objectifs', ach_tomb_v2:'(technique) suppressions',
+    ach_fin_solde_v3:'Finances', ach_encours_v1:'Affaires en cours', ach_audit_v1:'Journal', ach_pige_v1:'Pige', ach_mandats_v1:'Mandats', ach_docaff_v1:'Documents par affaire', ach_docs_cfg_v1:'Documents (réglages)', ach_docgen_assets_v1:'Générateur (charte & polices)', ach_dghist_v1:'Documents (historique des générations)', ach_rappels_v1:'Rappels', ach_evol_v1:'Évolutions', ach_redac_v1:'Rédaction quotidienne', ach_routines_v1:'Routines & Objectifs', ach_tomb_v2:'(technique) suppressions',
     ach_affaires_v1:'Pipeline (affaires)', ach_aff_pins_v1:'Pipeline (épingles)', ach_conc_v1:'Honoraires (concurrence)',
     ach_perms_v1:'Droits & Accès', ach_vsb_v1:'Visites sans bon', ach_bv_accomp:'Bons de visite (accompagnateurs)',
     ach_bv_cr_v1:'Comptes rendus de visite'
@@ -11093,6 +11239,22 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
   window.achLog = logAction;
 
   // ── Documents partagés (app_data, clés doc_*, hors synchro localStorage) ──
+  /* v10.00 : variante d'upload qui RETOURNE LA CLE (pour lier une piece jointe a un mandat) */
+  window.achDocsUpload2 = function(name, type, b64, extra){
+    if(!db||!ME) return Promise.resolve(null);
+    var key='doc_'+Date.now()+'_'+Math.floor(Math.random()*1000);
+    var meta={name:name, type:type, b64:b64, by:ME.name, date:new Date().toISOString()};
+    if(extra && typeof extra==='object') Object.assign(meta, extra);
+    return db.from('app_data').upsert({key:key, value:meta, updated_by:ME.name}).then(function(r){ return r.error?null:key; });
+  };
+  window.achDocsFetchOne = function(key){
+    if(!db) return Promise.resolve(null);
+    return db.from('app_data').select('key,value').eq('key',key).then(function(r){
+      if(r.error||!r.data||!r.data[0]) return null;
+      var v=r.data[0].value; if(typeof v==='string'){ try{ v=JSON.parse(v); }catch(e){ return null; } }
+      return v;
+    });
+  };
   window.achDocsList = function(){
     if(!db) return Promise.resolve([]);
     return db.from('app_data').select('key,value').like('key','doc%').then(function(r){
@@ -11550,7 +11712,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     startRealtime();
     var ov=document.getElementById('ach-login-overlay'); if(ov) ov.classList.add('ach-hidden');
     var ub=document.getElementById('ach-userbar'); if(ub) ub.style.display='none';
-    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v9.47';
+    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v10.00';
     flag('Synchronis\u00e9');
     // fin de l'init : on autorise la journalisation des actions
     setTimeout(function(){ installInterceptor._init=false; }, 1500);
@@ -19836,6 +19998,255 @@ textarea.rd-inp{resize:vertical;line-height:1.45;}
   if(window.commSearch){ var _cq=window.commSearch; window.commSearch=function(v){ _cq(v); _q=v||''; if(window._commTabCur==='avenir'){ cavRender(); } }; }
   if(window.commAdd){ var _ca=window.commAdd; window.commAdd=function(){ if(window._commTabCur==='avenir'){ var e=document.getElementById('cav-titre'); if(e) e.focus(); return; } _ca(); }; }
   seed();
+})();
+</script>
+<script>
+/* ══════════ v10.00 : MANDATS — registre des mandats (vente & location) ══════════ */
+(function(){
+  'use strict';
+  var K='ach_mandats_v1';
+  function esc(t){ return (''+(t==null?'':t)).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+  function all(){ try{ return JSON.parse(localStorage.getItem(K)||'[]')||[]; }catch(e){ return []; } }
+  function save(a){ try{ localStorage.setItem(K, JSON.stringify(a)); }catch(e){window.achErr&&achErr(e)} try{ if(window.achLog) achLog('modification','Mandats','mise à jour du registre'); }catch(e){window.achErr&&achErr(e)} mdBadge(); }
+  function dstr(iso){ if(!iso) return ''; var d=new Date(iso); if(isNaN(d)) return ''+iso; return ('0'+d.getDate()).slice(-2)+'/'+('0'+(d.getMonth()+1)).slice(-2)+'/'+d.getFullYear(); }
+  function days(iso){ if(!iso) return null; var d=new Date(iso+'T23:59:59'); if(isNaN(d)) return null; return Math.ceil((d-new Date())/864e5); }
+  function fmtP(v){ v=parseFloat(v)||0; return v? v.toLocaleString('fr-FR')+' €' : ''; }
+  function b64ToBlob(b64,type){ var bin=atob(b64), a=new Uint8Array(bin.length); for(var i=0;i<bin.length;i++) a[i]=bin.charCodeAt(i); return new Blob([a],{type:type||'application/octet-stream'}); }
+  var TAB='tous', DIFF={vit:0,rs:0,sit:0,por:0}, NONE=0, AV=[], PJ=[];
+
+  /* ---------- pastille menu : mandats actifs expirant sous 30 j ou expirés ---------- */
+  window.mdBadge=function(){ try{
+    var n=all().filter(function(m){ if(m.arch) return false; var d=days(m.fin); return d!=null && d<=30; }).length;
+    var b=document.getElementById('badge-mandats'); if(!b) return;
+    b.textContent=n; b.style.display=n?'':'none';
+  }catch(e){window.achErr&&achErr(e)} };
+
+  /* ---------- liste ---------- */
+  function diffLbl(m){
+    if(m.none) return '<span class="md-dchip none">⊘ Aucune publicité</span>';
+    var d=m.diff||{}, L=[['vit','Vitrine'],['rs','Réseaux'],['sit','Site Achille'],['por','Sites immo']];
+    if(d.vit&&d.rs&&d.sit&&d.por) return '<span class="md-dchip on">★ Toutes publicités</span>';
+    var out=L.filter(function(x){return d[x[0]];}).map(function(x){return '<span class="md-dchip on">'+x[1]+'</span>';});
+    return out.length? out.join('') : '<span class="md-dchip">— non renseigné</span>';
+  }
+  function curPrice(m){ var p=parseFloat(m.prix)||0; (m.avenants||[]).forEach(function(a){ if(parseFloat(a.prix)) p=parseFloat(a.prix); }); return p; }
+  window.mdRender=function(){
+    var box=document.getElementById('md-list'); if(!box) return;
+    var q=((document.getElementById('md-search')||{}).value||'').toLowerCase().trim();
+    var a=all().slice().sort(function(x,y){ return (parseFloat(x.num)||1e9)-(parseFloat(y.num)||1e9); });
+    var tot=a.filter(function(m){return !m.arch;}).length;
+    a=a.filter(function(m){
+      var d=days(m.fin);
+      if(TAB==='arch') { if(!m.arch) return false; }
+      else { if(m.arch) return false;
+        if(TAB==='vente'&&m.kind!=='vente') return false;
+        if(TAB==='location'&&m.kind!=='location') return false;
+        if(TAB==='soon'&&!(d!=null&&d>=0&&d<=30)) return false;
+        if(TAB==='exp'&&!(d!=null&&d<0)) return false; }
+      if(q){ var blob=(m.num+' '+(m.adresse||'')+' '+(m.ville||'')+' '+(m.mdt||'')+' '+(m.ref||'')).toLowerCase(); if(blob.indexOf(q)<0) return false; }
+      return true;
+    });
+    var c=document.getElementById('md-count'); if(c) c.textContent=tot+' mandat'+(tot>1?'s':'')+' actif'+(tot>1?'s':'');
+    if(!a.length){ box.innerHTML='<div class="md-empty">Aucun mandat dans cette vue. « + Nouveau mandat » pour démarrer — ou joignez-moi vos PDF de mandats pour que je remplisse le registre.</div>'; return; }
+    box.innerHTML=a.map(function(m){
+      var d=days(m.fin), cls=m.arch?'arch':(d!=null&&d<0?'exp':(d!=null&&d<=30?'soon':''));
+      var due=(d==null||m.arch)?'':(d<0?'<span class="md-due exp">expiré depuis '+(-d)+' j</span>':(d<=30?'<span class="md-due soon">J-'+d+'</span>':''));
+      var tels=(m.tels||'').split(/[,;·]+/).map(function(t){return t.trim();}).filter(Boolean);
+      var mails=(m.mails||'').split(/[,;·\s]+/).map(function(t){return t.trim();}).filter(Boolean);
+      var pop=(tels.length||mails.length)? '<div class="md-pop" id="md-pop-'+m.id+'">'+tels.map(function(t){return '\u{1F4DE} <a href="tel:'+esc(t.replace(/\s/g,''))+'" onclick="event.stopPropagation()">'+esc(t)+'</a><br>';}).join('')+mails.map(function(t){return '✉ <a href="mailto:'+esc(t)+'" onclick="event.stopPropagation()">'+esc(t)+'</a><br>';}).join('')+'</div>' : '';
+      var typLbl={exclusif:'Exclusif',semi:'Semi-excl.',simple:'Simple'}[m.typ]||'';
+      var p=curPrice(m);
+      var _hv=parseFloat((''+m.hono).replace(/[\s\u202f]/g,'').replace(',','.'));
+      var hono=m.hono? (m.honou==='pct'? m.hono+' %' : (isNaN(_hv)||!/^[\d\s\u202f.,]+$/.test(''+m.hono)? esc(m.hono) : fmtP(_hv)))+(m.honoc?' · '+m.honoc:'') : '';   /* v10.00 : « 1 mois de loyer » reste en toutes lettres */
+      var chips='';
+      if(m.deleg) chips+='<span class="md-mchip" title="'+esc((m.deleg==='recue'?'Délégation reçue de ':'Mandat délégué à ')+(m.delegq||'')+' '+(m.delegn||''))+'">\u{1F91D} '+(m.deleg==='recue'?'Délég. reçue':'Délég. donnée')+'</span>';
+      if((m.pj||[]).length) chips+='<span class="md-mchip">\u{1F4CE} '+m.pj.length+'</span>';
+      if((m.avenants||[]).length) chips+='<span class="md-mchip" title="'+esc(m.avenants.map(function(av){return dstr(av.d)+' — '+av.txt+(av.prix?' ('+fmtP(av.prix)+')':'');}).join('\n'))+'">✎ '+m.avenants.length+' avenant'+(m.avenants.length>1?'s':'')+'</span>';
+      return '<div class="md-row '+cls+'" onclick="mdEdit(\''+m.id+'\')">'
+        +'<div class="md-num">'+esc(m.num||'?')+'<small>mandat</small></div>'
+        +'<div><div><span class="md-kind '+(m.kind==='location'?'l':'v')+'">'+(m.kind==='location'?'LOCATION':'VENTE')+'</span> '+(typLbl?'<span class="md-typ">'+typLbl+'</span> ':'')+(m.ref?'<span class="md-typ" title="Réf. produit Apimo">'+esc(m.ref)+'</span>':'')+'</div>'
+        +'<div class="md-adr">'+esc(m.adresse||'(sans adresse)')+(m.ville?' <span class="v">· '+esc(m.ville)+'</span>':'')+'</div>'
+        +'<div class="md-mdt">\u{1F464} <b onclick="event.stopPropagation();mdPop(\''+m.id+'\')" title="Voir les coordonnées">'+esc(m.mdt||'mandant ?')+'</b>'+pop+'</div></div>'
+        +'<div class="md-dates">Signé le <b>'+(dstr(m.sign)||'?')+'</b><br>Échéance <b>'+(dstr(m.fin)||'?')+'</b>'+due+'</div>'
+        +'<div class="md-diff">'+diffLbl(m)+'</div>'
+        +'<div class="md-right">'+(p?'<div class="md-prix">'+fmtP(p)+(m.kind==='location'?' <span style="font-size:11px;">/mois</span>':'')+'</div>':'')+(hono?'<div>Hono. '+esc(hono)+'</div>':'')+'<div class="md-mchips">'+chips+'</div></div>'
+        +'</div>';
+    }).join('');
+  };
+  window.mdPop=function(id){ var p=document.getElementById('md-pop-'+id); if(!p) return; var vis=p.style.display==='block';
+    document.querySelectorAll('#page-mandats .md-pop').forEach(function(x){x.style.display='none';});
+    p.style.display=vis?'none':'block'; };
+  document.addEventListener('click',function(e){ if(!e.target.closest('.md-mdt')) document.querySelectorAll('#page-mandats .md-pop').forEach(function(x){x.style.display='none';}); });
+  window.mdTab=function(t){ TAB=t; ['tous','vente','location','soon','exp','arch'].forEach(function(x){ var b=document.getElementById('md-tab-'+x); if(b) b.classList.toggle('active',x===t); }); mdRender(); };
+
+  /* ---------- diffusion ---------- */
+  function diffPaint(){
+    var allOn=DIFF.vit&&DIFF.rs&&DIFF.sit&&DIFF.por;
+    var m={vit:'md-d-vit',rs:'md-d-rs',sit:'md-d-sit',por:'md-d-por'};
+    Object.keys(m).forEach(function(k){ var el=document.getElementById(m[k]); if(el) el.classList.toggle('on', !!DIFF[k]&&!NONE); });
+    var a=document.getElementById('md-d-all'); if(a) a.classList.toggle('on', !!allOn&&!NONE);
+    var n=document.getElementById('md-d-none'); if(n) n.classList.toggle('on', !!NONE);
+  }
+  window.mdDiffTog=function(k){ NONE=0; DIFF[k]=DIFF[k]?0:1; diffPaint(); };
+  window.mdDiffAll=function(){ NONE=0; var on=!(DIFF.vit&&DIFF.rs&&DIFF.sit&&DIFF.por); DIFF={vit:on?1:0,rs:on?1:0,sit:on?1:0,por:on?1:0}; diffPaint(); };
+  window.mdDiffNone=function(){ NONE=NONE?0:1; if(NONE) DIFF={vit:0,rs:0,sit:0,por:0}; diffPaint(); };
+
+  /* ---------- avenants & PJ (dans la modale) ---------- */
+  function avPaint(){ var b=document.getElementById('md-avlist'); if(!b) return;
+    b.innerHTML=AV.length? AV.map(function(a,i){ return '<div class="md-avrow"><span class="d">'+dstr(a.d)+'</span><span style="flex:1;">'+esc(a.txt)+(a.prix?' — <b>'+fmtP(a.prix)+'</b>':'')+'</span><button class="md-x" onclick="mdAvDel('+i+')">✕</button></div>'; }).join('')
+      : '<div style="font-size:12px;color:var(--gris-2);">Aucun avenant.</div>'; }
+  window.mdAvAdd=function(){ var d=document.getElementById('md-av-d').value, t=(document.getElementById('md-av-t').value||'').trim(), p=NUMV(document.getElementById('md-av-p').value)||'';
+    if(!t){ if(window.toast) toast('Indiquez l’objet de l’avenant'); return; }
+    AV.push({d:d||new Date().toISOString().slice(0,10), txt:t, prix:p}); document.getElementById('md-av-t').value=''; document.getElementById('md-av-p').value=''; avPaint(); };
+  window.mdAvDel=function(i){ AV.splice(i,1); avPaint(); };
+  function pjPaint(){ var b=document.getElementById('md-pjlist'); if(!b) return;
+    b.innerHTML=PJ.length? PJ.map(function(p,i){ return '<div class="md-pjrow">\u{1F4CE} <a onclick="mdPjOpen('+i+')">'+esc(p.name)+'</a><span style="flex:1;"></span><button class="md-x" onclick="mdPjDel('+i+')">✕</button></div>'; }).join('')
+      : '<div style="font-size:12px;color:var(--gris-2);">Aucune pièce jointe.</div>'; }
+  window.mdPjAdd=function(){
+    var inp=document.getElementById('md-pj-file'), f=inp.files&&inp.files[0], st=document.getElementById('md-pj-st');
+    if(!f){ if(window.toast) toast('Choisissez d’abord un fichier'); return; }
+    if(!window.achDocsUpload2){ st.textContent='Cloud non connecté — pièce jointe impossible pour l’instant.'; return; }
+    st.textContent='Envoi…';
+    var r=new FileReader();
+    r.onload=function(){ var b64=(''+r.result).split(',')[1];
+      achDocsUpload2(f.name, f.type||'application/octet-stream', b64, {mandat:(document.getElementById('md-num').value||''), themeId:'mandats'}).then(function(key){
+        if(!key){ st.textContent='Échec de l’envoi.'; return; }
+        PJ.push({key:key,name:f.name,type:f.type||''}); st.textContent='✓ jointe'; inp.value=''; pjPaint();
+      }); };
+    r.readAsDataURL(f);
+  };
+  window.mdPjOpen=function(i){ var p=PJ[i]; if(!p) return;
+    if(!window.achDocsFetchOne){ if(window.toast) toast('Cloud non connecté'); return; }
+    achDocsFetchOne(p.key).then(function(v){ if(!v||!v.b64){ if(window.toast) toast('Fichier introuvable dans le cloud'); return; }
+      var u=URL.createObjectURL(b64ToBlob(v.b64,v.type||p.type)); window.open(u,'_blank'); }); };
+  window.mdPjDel=function(i){ if(!confirm('Retirer cette pièce jointe du mandat ? (le fichier reste dans le cloud Documents)')) return; PJ.splice(i,1); pjPaint(); };
+
+  /* ---------- pré-remplissage PDF (best effort, PDF texte) ---------- */
+  function pdfText(buf){ return new Promise(function(res){
+    try{
+      var u=new Uint8Array(buf), raw=''; for(var i=0;i<u.length;i++) raw+=String.fromCharCode(u[i]);
+      var jobs=[], re=/stream\r?\n/g, m;
+      while((m=re.exec(raw))){ var st=m.index+m[0].length, en=raw.indexOf('endstream',st); if(en<0) continue;
+        jobs.push(u.subarray(st,en)); if(jobs.length>80) break; }
+      if(!window.DecompressionStream||!jobs.length) return res(raw);
+      var out='', k=0;
+      (function next(){
+        if(k>=jobs.length) return res(out||raw);
+        var part=jobs[k++];
+        try{
+          new Response(new Blob([part]).stream().pipeThrough(new DecompressionStream('deflate'))).text()
+            .then(function(t){ out+='\n'+t; next(); }, function(){ next(); });
+        }catch(e){ next(); }
+      })();
+    }catch(e){ res(''); }
+  }); }
+  function pdfStrings(t){
+    var out=[], re=/\((?:\\.|[^()\\])*\)/g, m;
+    while((m=re.exec(t))){ var x=m[0].slice(1,-1).replace(/\\([()\\])/g,'$1').replace(/\\(\d{3})/g,function(_,o){return String.fromCharCode(parseInt(o,8));}); if(/[A-Za-z0-9]/.test(x)) out.push(x); }
+    return out.join(' ');
+  }
+  window.mdPdfFill=function(){
+    var inp=document.getElementById('md-pj-file'), f=inp.files&&inp.files[0], st=document.getElementById('md-pj-st');
+    if(!f){ if(window.toast) toast('Sélectionnez le PDF du mandat dans le champ fichier'); return; }
+    st.textContent='Lecture du PDF…';
+    var r=new FileReader();
+    r.onload=function(){ pdfText(r.result).then(function(t){
+      var txt=pdfStrings(t)+' '+t;
+      var got=[];
+      function fill(id,val,lbl){ var el=document.getElementById(id); if(el&&val&&!el.value){ el.value=val; got.push(lbl); } }
+      var m=txt.match(/mandat[^\dA-Za-z]{0,4}(?:de\s+(?:vente|location)\s+)?(?:exclusif\s+)?n?\s*[°o]?\s*[:.]?\s*(\d{1,6})/i);
+      if(m) fill('md-num', m[1], 'n°');
+      if(/mandat[^.]{0,40}location|louer/i.test(txt)){ var k=document.getElementById('md-kind'); if(k){ k.value='location'; got.push('location'); } }
+      var dts=[...txt.matchAll(/(\d{2})\/(\d{2})\/(\d{4})/g)].map(function(d){ return d[3]+'-'+d[2]+'-'+d[1]; });
+      if(dts.length) fill('md-sign', dts[0], 'signature');
+      m=txt.match(/(?:le\s+)?mandant[^A-Za-zÀ-ÿ]{0,20}((?:M\.|Mme|Mlle|Monsieur|Madame|M et Mme|M\. et Mme)[^,;(\n]{2,60})/i);
+      if(m) fill('md-mdt', m[1].trim(), 'mandant');
+      m=txt.match(/(?:0|\+33[\s.]?)[1-9](?:[\s.·-]?\d{2}){4}/);
+      if(m) fill('md-tels', m[0].trim(), 'téléphone');
+      m=txt.match(/[\w.\-]+@[\w.\-]+\.[a-z]{2,}/i);
+      if(m) fill('md-mails', m[0], 'mail');
+      m=txt.match(/(?:situé(?:e)?\s+(?:au|à|a)|sis(?:e)?\s+(?:au|à)?)\s*[:.]?\s*(\d{1,4}[^,;\n]{5,70})/i);
+      if(m) fill('md-adr', m[1].trim(), 'adresse');
+      m=txt.match(/prix[^0-9]{0,30}([\d\s .,]{4,15})\s*(?:€|euros)/i);
+      if(m) fill('md-prix', numFmtStr(m[1].replace(/[\s ]/g,'')), 'prix');
+      mdSignAuto();
+      st.textContent=got.length? ('✓ pré-rempli : '+got.join(', ')+' — vérifiez chaque champ.') : 'Aucune donnée lisible (scan ? modèle différent ?) — saisie manuelle, ou envoyez-moi le PDF pour calibrer l’extraction.';
+    }); };
+    r.readAsArrayBuffer(f);
+  };
+
+  /* ---------- modale ---------- */
+  function openM(m){
+    document.getElementById('md-m-title').textContent=m? ('Mandat n° '+(m.num||'?')) : 'Nouveau mandat';
+    document.getElementById('md-id').value=m?m.id:'';
+    ['num','ref','adr','ville','mdt','tels','mails','notes','delegq','delegn'].forEach(function(k){ var map={num:'num',ref:'ref',adr:'adresse',ville:'ville',mdt:'mdt',tels:'tels',mails:'mails',notes:'notes',delegq:'delegq',delegn:'delegn'};
+      document.getElementById('md-'+k).value=m?(m[map[k]]||''):''; });
+    document.getElementById('md-kind').value=m?(m.kind||'vente'):'vente';
+    document.getElementById('md-typ').value=m?(m.typ||'exclusif'):'exclusif';
+    document.getElementById('md-sign').value=m?(m.sign||''):new Date().toISOString().slice(0,10);
+    document.getElementById('md-fin').value=m?(m.fin||''):'';
+    document.getElementById('md-prix').value=m&&m.prix? numFmtStr(''+m.prix):'';
+    document.getElementById('md-hono').value=m?(m.hono||''):'';
+    document.getElementById('md-honou').value=m?(m.honou||'pct'):'pct';
+    document.getElementById('md-honoc').value=m?(m.honoc||'vendeur'):'vendeur';
+    document.getElementById('md-deleg').value=m?(m.deleg||''):'';
+    DIFF=m&&m.diff? {vit:m.diff.vit?1:0,rs:m.diff.rs?1:0,sit:m.diff.sit?1:0,por:m.diff.por?1:0} : {vit:0,rs:0,sit:0,por:0};
+    NONE=m&&m.none?1:0;
+    AV=(m&&m.avenants)? JSON.parse(JSON.stringify(m.avenants)) : [];
+    PJ=(m&&m.pj)? JSON.parse(JSON.stringify(m.pj)) : [];
+    document.getElementById('md-av-d').value=new Date().toISOString().slice(0,10);
+    document.getElementById('md-pj-st').textContent='';
+    document.getElementById('md-btn-arch').style.display=m?'':'none';
+    document.getElementById('md-btn-arch').textContent=m&&m.arch?'↩ Réactiver':'⤵ Archiver';
+    document.getElementById('md-btn-del').style.display=(m&&(window.ACH_USER||{}).key==='admin')?'':'none';
+    diffPaint(); avPaint(); pjPaint();
+    if(window.numFmtAll) try{ numFmtAll(); }catch(e){window.achErr&&achErr(e)}
+    openModal('modal-mandat');
+  }
+  window.mdSignAuto=function(){ var sg=document.getElementById('md-sign').value, fn=document.getElementById('md-fin');
+    if(sg&&fn&&!fn.value){ var d=new Date(sg); d.setMonth(d.getMonth()+3); fn.value=d.toISOString().slice(0,10); } };
+  window.mdPlus3=function(){ var sg=document.getElementById('md-sign').value; if(!sg) return;
+    var d=new Date(sg); d.setMonth(d.getMonth()+3); document.getElementById('md-fin').value=d.toISOString().slice(0,10); };
+  window.mdNew=function(){ openM(null); };
+  window.mdEdit=function(id){ var m=all().filter(function(x){return x.id===id;})[0]; if(m) openM(m); };
+  window.mdModalSave=function(){
+    var id=document.getElementById('md-id').value;
+    var num=(document.getElementById('md-num').value||'').trim();
+    if(!num){ if(window.toast) toast('Le n° de mandat (registre) est obligatoire'); return; }
+    var a=all();
+    var dup=a.filter(function(x){ return x.id!==id && (''+x.num).trim()===num; })[0];
+    if(dup && !confirm('⚠ Le n° '+num+' existe déjà ('+(dup.adresse||'')+'). Enregistrer quand même ?')) return;
+    var m=id? a.filter(function(x){return x.id===id;})[0] : {id:'md_'+Date.now(), created:new Date().toISOString()};
+    m.num=num;
+    m.kind=document.getElementById('md-kind').value; m.typ=document.getElementById('md-typ').value;
+    m.ref=(document.getElementById('md-ref').value||'').trim();
+    m.sign=document.getElementById('md-sign').value; m.fin=document.getElementById('md-fin').value;
+    m.adresse=(document.getElementById('md-adr').value||'').trim(); m.ville=(document.getElementById('md-ville').value||'').trim();
+    m.mdt=(document.getElementById('md-mdt').value||'').trim();
+    m.tels=(document.getElementById('md-tels').value||'').trim(); m.mails=(document.getElementById('md-mails').value||'').trim();
+    m.prix=NUMV(document.getElementById('md-prix').value)||'';
+    m.hono=(document.getElementById('md-hono').value||'').trim(); m.honou=document.getElementById('md-honou').value; m.honoc=document.getElementById('md-honoc').value;
+    m.diff={vit:DIFF.vit,rs:DIFF.rs,sit:DIFF.sit,por:DIFF.por}; m.none=NONE?1:0;
+    m.deleg=document.getElementById('md-deleg').value; m.delegq=(document.getElementById('md-delegq').value||'').trim(); m.delegn=(document.getElementById('md-delegn').value||'').trim();
+    m.avenants=AV; m.pj=PJ; m.notes=(document.getElementById('md-notes').value||'').trim();
+    m.updated=new Date().toISOString(); m.updBy=(window.ACH_USER||{}).name||'';
+    if(!id) a.push(m);
+    save(a); closeModal('modal-mandat'); mdRender();
+    if(window.toast) toast('\u{1F4DC} Mandat n° '+num+' enregistré');
+  };
+  window.mdArchive=function(){ var id=document.getElementById('md-id').value; if(!id) return;
+    var a=all(), m=a.filter(function(x){return x.id===id;})[0]; if(!m) return;
+    if(m.arch){ delete m.arch; } else { if(!confirm('Archiver ce mandat ? (vendu, expiré non renouvelé, dénoncé…) Il restera consultable dans l’onglet Archivés.')) return; m.arch={d:new Date().toISOString(), by:(window.ACH_USER||{}).name||''}; }
+    save(a); closeModal('modal-mandat'); mdRender(); };
+  window.mdDelete=function(){ var id=document.getElementById('md-id').value; if(!id) return;
+    if(!confirm('SUPPRIMER définitivement ce mandat du registre ? (réservé aux erreurs de saisie — préférez Archiver)')) return;
+    save(all().filter(function(x){return x.id!==id;})); closeModal('modal-mandat'); mdRender(); };
+
+  /* ---------- branchement navigation + init ---------- */
+  var _navToMd=window.navTo;
+  window.navTo=function(id,el){ _navToMd(id,el); if(id==='mandats'){ try{ mdRender(); }catch(e){window.achErr&&achErr(e)} } };
+  try{ mdBadge(); }catch(e){window.achErr&&achErr(e)}
+  window.addEventListener('storage',function(e){ if(e&&e.key===K){ try{ mdBadge(); var pg=document.getElementById('page-mandats'); if(pg&&pg.classList.contains('active')) mdRender(); }catch(err){window.achErr&&achErr(err)} } });
 })();
 </script>
 </body>
