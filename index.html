@@ -1685,7 +1685,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     </div>
   </div>
   </div>
-  <div class="logo-ver app-ver">Achille App — v10.01</div>
+  <div class="logo-ver app-ver">Achille App — v10.03</div>
 </aside>
 <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Réduire la barre latérale">‹</button>
 
@@ -1762,6 +1762,27 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
         <span class="pg-sep"></span>
         <button class="pg-chip" id="pg-filters-btn" onclick="pigeFiltersToggle()">⚙ Filtres <span id="pg-filters-n"></span> <span id="pg-filters-arrow">▾</span></button>
         <button class="pg-chip pg-raz" onclick="pigeRAZ()" title="Tout réinitialiser : tri, filtres, villes, dossiers, recherche">↺ RAZ</button>
+        <span id="pg-help-wrap"><button class="pg-chip pg-help-btn" onclick="pgHelpToggle(event)" title="Légende des couleurs et indicateurs">?</button>
+        <div id="pg-legend">
+          <div class="pgl-t">Les repères de la Pige</div>
+          <div class="pgl-s">Bordure gauche des fiches = dossier</div>
+          <div class="pgl-l"><i style="background:#b47360"></i>📞 En cours (à appeler / nouveau)</div>
+          <div class="pgl-l"><i style="background:#b0883b"></i>⏳ En attente (sans réponse, à rappeler)</div>
+          <div class="pgl-l"><i style="background:#2e6e50"></i>🤝 Achille (accord de visite, mandat)</div>
+          <div class="pgl-l"><i style="background:#2b2b28"></i>✕ Refus</div>
+          <div class="pgl-l"><i style="background:#c9c2b6"></i>📦 Archivée</div>
+          <div class="pgl-h">Dans « Tous » ou en recherche, chaque fiche porte la couleur de son dossier ; dans un dossier, tout est de la même couleur. C'est le SUIVI qui classe la fiche.</div>
+          <div class="pgl-s">Pastille ronde = importance (cliquez-la pour changer)</div>
+          <div class="pgl-l"><i style="background:#a03222;border-radius:50%"></i>⭐ Prioritaire</div>
+          <div class="pgl-l"><i style="background:#2e6e50;border-radius:50%"></i>👍 Intéressant</div>
+          <div class="pgl-l"><i style="background:#9a9a94;border-radius:50%"></i>➖ Moyen</div>
+          <div class="pgl-h">Une nouvelle fiche naît « Moyen » : passez-la en Intéressant ou Prioritaire après l’avoir regardée.</div>
+          <div class="pgl-s">Ancienneté de l'annonce</div>
+          <div class="pgl-l">🔥 Pige chaude (moins de 7 jours) · 🌤 tiède (jusqu'à 6 semaines) · ❄ froide</div>
+          <div class="pgl-s">Autres repères</div>
+          <div class="pgl-l"><b style="color:var(--terra)">NOUVEAU</b> = fiche que VOUS n'avez pas encore ouverte · 🔔 = rappel · 👥 ×N = même numéro sur N fiches · ✓ Appelée = appel sans réponse</div>
+          <div class="pgl-h">🔍 La recherche est GLOBALE : elle fouille tous les dossiers (archivées comprises), les observations, en ignorant filtres et onglets.</div>
+        </div></span>
       </div>
       <div id="pg-filters" style="display:none;">
         <div class="pg-trow" style="margin-top:6px;">
@@ -11734,7 +11755,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     startRealtime();
     var ov=document.getElementById('ach-login-overlay'); if(ov) ov.classList.add('ach-hidden');
     var ub=document.getElementById('ach-userbar'); if(ub) ub.style.display='none';
-    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v10.01';
+    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v10.03';
     flag('Synchronis\u00e9');
     // fin de l'init : on autorise la journalisation des actions
     setTimeout(function(){ installInterceptor._init=false; }, 1500);
@@ -12920,9 +12941,9 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
   /* v7.23 : label = singulier (une fiche) ; pl = pluriel (onglets de la barre de dossiers)
      v7.24 : statut « Terminé » SUPPRIMÉ (doublon des Archives) — les anciennes fiches Terminé sont archivées automatiquement */
   var PG_STATUTS=[
-    {k:'encours', label:'Normal',   pl:'Normal',    col:'#2e6e50', ico:'⏳'},   /* v8.59 : renommé (ex-« En cours ») — l'onglet « En cours » désigne désormais le vivier */
-    {k:'chaud',   label:'Chaud',    pl:'Chauds',    col:'#a03222', ico:'🔥'},
-    {k:'offline', label:'Réticent', pl:'Réticents', col:'#4a4a48', ico:'🌙'}   /* v8.19 : renommé (ex-« En veille », ex-Offline) — bien noté pour information, propriétaire pas ouvert aux agences (ou pas à nous) */
+    {k:'encours', label:'Intéressant', pl:'Intéressants', col:'#2e6e50', ico:'👍'},   /* v10.02 : la pastille = IMPORTANCE de la fiche (libellés Laurent) */
+    {k:'chaud',   label:'Prioritaire', pl:'Prioritaires', col:'#a03222', ico:'⭐'},   /* v10.03 : « À appeler » doublonnait l'onglet En cours */
+    {k:'offline', label:'Moyen',       pl:'Moyens',       col:'#9a9a94', ico:'➖'}   /* v10.03 : gris CLAIR (le foncé = Refus) · ex-Réticent */   /* v8.19 : renommé (ex-« En veille », ex-Offline) — bien noté pour information, propriétaire pas ouvert aux agences (ou pas à nous) */
   ];
   function pgStatutDef(k){ for(var i=0;i<PG_STATUTS.length;i++){ if(PG_STATUTS[i].k===k) return PG_STATUTS[i]; } return PG_STATUTS[0]; }   /* v8.58 : repli = « En cours » (désormais en tête du tableau) */
   function pgStatutOf(r){ return (r&&r.statut)||'encours'; }
@@ -13248,21 +13269,7 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
     if(window.toast) toast('📦 Fiche archivée — '+PG_MOTIFS[m][1]+(_ref?' · réf. Apimo '+_ref:''));
     try{ if(window.achLog) achLog('modification','Pige','archivage ('+PG_MOTIFS[m][1]+(_ref?', réf. Apimo '+_ref:'')+') : '+(r.adresse||r.titre||'')); }catch(e){window.achErr&&achErr(e)}
   };
-  /* v8.21 : passer la fiche en « Réticent » depuis le bandeau (Refus catégorique) — même garde-fou que l'archivage :
-     on ENREGISTRE d'abord, et si l'enregistrement échoue (modale encore ouverte) on ne touche à rien. */
-  window.pigeReticentFromFiche=function(){
-    var id=document.getElementById('pg-edit-id').value; if(!id) return;
-    var _sv=(document.getElementById('pg-suivi')||{}).value||'';
-    var _de=document.getElementById('pg-rap2-date');
-    var _rap=(_sv==='refus-rel') && !!((_de&&_de.value)||'');   /* v8.21 : le rappel n'existe que si une date est restée saisie */
-    window.pigeSave();
-    var mo=document.getElementById('modal-pige');
-    if(mo && mo.classList.contains('open')) return;   /* l'enregistrement a échoué (champ manquant) : on ne change pas le statut */
-    var a=load(), r=a.filter(function(x){return x.id===id;})[0]; if(!r) return;
-    r.statut='offline'; r.updated=new Date().toISOString(); save(a); pigeRender();
-    if(window.toast) toast('🌙 Fiche passée en « Réticent »'+(_rap?' · 🔔 rappel créé':'')+' — elle reste dans le stock actif');
-    try{ if(window.achLog) achLog('modification','Pige','passage en Réticent ('+(_sv==='refus-rel'?'refus à relancer':'refus catégorique')+') : '+(r.adresse||r.titre||'')); }catch(e){window.achErr&&achErr(e)}
-  };
+  /* v10.02 : le passage automatique en statut gris sur Refus est SUPPRIMÉ (le gris = importance « Moyen »). */
   /* Bandeau automatique dans la fiche, sous le menu Suivi */
   window.pigeSuiviAutoRefresh=function(){
     var box=document.getElementById('pg-suivi-auto'); if(!box) return;
@@ -13281,21 +13288,8 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
       /* v8.21 : référence Apimo demandée mais FACULTATIVE (« proposition mais pas bloquante ») */
       var _pv=(r&&r.apimoRef)? ' value="'+esc(r.apimoRef)+'"' : '';
       box.innerHTML='<div class="pg-auto ga">🤝 <b>Suivi Achille / Apimo.</b>&nbsp;Notez la référence Apimo : elle s’affichera sur le bandeau de la fiche, qui reste dans l’onglet « Achille » — « Enregistrer » suffit.<input type="text" id="pg-apimo-ref"'+_pv+' placeholder="Réf. Apimo (facultatif)"><button type="button" class="pg-auto-b" title="Facultatif — seulement si vous ne voulez plus suivre la fiche ici" onclick="pigeArchFromFiche(\''+mo+'\')">⤵ Archiver (facultatif)</button></div>';
-    } else if((sv==='refus'||sv==='refus-rel') && id && ((document.getElementById('pg-statut')||{}).value||'encours')!=='offline'){
-      /* v8.21 (demande Laurent) : « Refus catégorique » ET « Refus à relancer » ne proposent PLUS l'archivage
-         mais le passage en statut « Réticent » — la fiche reste dans le stock actif, pour information.
-         Pour « Refus à relancer », une date de rappel est PROPOSÉE (pré-remplie à +7 jours) mais jamais
-         bloquante : date effacée = passage en Réticent sans rappel. */
-      var _dt='';
-      if(sv==='refus-rel'){
-        var _prev=document.getElementById('pg-rap2-date');
-        var _val=(_prev&&_prev.value)||'';
-        if(!_val){ var _d7=new Date(); _d7.setDate(_d7.getDate()+7); _val=_d7.getFullYear()+'-'+pgPad2(_d7.getMonth()+1)+'-'+pgPad2(_d7.getDate()); }
-        _dt='&nbsp;🔔 rappel le&nbsp;<input type="date" id="pg-rap2-date" value="'+_val+'"><span class="pg-auto-hint">(effacez la date pour ne pas créer de rappel)</span>';
-      }
-      box.innerHTML='<div class="pg-auto ga">🌙 <b>'+(sv==='refus'?'Refus catégorique.':'Refus à relancer.')+'</b>&nbsp;Passer la fiche en « Réticent » ? Elle reste consultable dans le stock actif.'+_dt+'<button type="button" class="pg-auto-b" onclick="pigeReticentFromFiche()">Passer en Réticent</button></div>';
     } else if(sv==='refus' && id){
-      box.innerHTML='<div class="pg-auto ga">🌙 Fiche déjà en <b>Réticent</b> — rien à faire.</div>';
+      box.innerHTML='<div class="pg-auto ga">✕ <b>Refus catégorique noté.</b>&nbsp;La fiche est classée dans l’onglet « Refus » ; la pastille d’importance reste à votre main.</div>';
     } else if(sv==='relance'||sv==='refus-rel'){
       var prev=document.getElementById('pg-rap2-date');
       var val=(prev&&prev.value)||'';
@@ -14124,6 +14118,10 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
     if(btn){ btn.classList.add('on'); var ar=btn.querySelector('.pg-arrow'); if(ar) ar.textContent=(sortDir<0?'▼':'▲'); }
     pigeRender();
   };
+  window.pgHelpToggle=function(ev){ try{ ev.stopPropagation(); }catch(e){window.achErr&&achErr(e)}
+    var l=document.getElementById('pg-legend'); if(l) l.classList.toggle('pin'); };
+  document.addEventListener('click',function(e){ var l=document.getElementById('pg-legend');
+    if(l&&l.classList.contains('pin')&&!e.target.closest('#pg-help-wrap')) l.classList.remove('pin'); });
   window.pigeRAZ=function(){
     var s=document.getElementById('pg-search'); if(s) s.value='';
     pgFilt.sites=[]; pgFilt.users=[]; pgFilt.villes=[];
@@ -14143,7 +14141,7 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
        • En cours  (info-bulle « Nouveau / À appeler »)        = ni Suivi ni tampon — le vivier ;
        • En attente (« Sans réponse / Rappeler + tard »)       = tampon 📞 seul, ou Suivi PDR / Message laissé / Bon contact à relancer ;
        • Achille   (« Accords · Mandats »)                     = Suivi Mandat → Apimo ou Accord de visite → Apimo ;
-       • Refus     (« Refus catégorique / Refus à relancer »)  = Suivi refus / refus-rel, ou statut Réticent (compat) ;
+       • Refus     (« Refus catégorique / Refus à relancer »)  = Suivi refus / refus-rel (v10.02 : le statut gris ne classe plus ici) ;
      Personne ne classe rien à la main : changer le Suivi déplace la fiche d'onglet.
      Le 🔥 Chaud reste la pastille rouge de la carte (statuts conservés dans les données).
      Le TAMPON 📞 « Appelé » couvre le seul cas sans case : appelé, sans réponse, rien à noter —
@@ -14152,12 +14150,22 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
     {k:'vivier',  lbl:'\ud83d\udcde En cours',  tip:'Nouveau / \u00c0 appeler',                          col:'#b47360'},
     {k:'attente', lbl:'\u23f3 En attente',        tip:'Sans r\u00e9ponse / Rappeler + tard',              col:'#b0883b'},
     {k:'accord',  lbl:'\ud83e\udd1d Achille',    tip:'Accords \u00b7 Mandats',                           col:'#2e6e50'},
-    {k:'refusG',  lbl:'\u2715 Refus',             tip:'Refus cat\u00e9gorique / Refus \u00e0 relancer',  col:'#4a4a48'}
+    {k:'refusG',  lbl:'\u2715 Refus',             tip:'Refus cat\u00e9gorique / Refus \u00e0 relancer',  col:'#2b2b28'}
   ];
+  var PG_ETAPE_COL={vivier:'#b47360',attente:'#b0883b',accord:'#2e6e50',refusG:'#2b2b28'};   /* v10.02 : couleurs des onglets */
+  function pgRowBorder(r){
+    /* v10.02 : dans « Tous » (ou en recherche), la bordure dit le DOSSIER de la fiche ;
+       dans un dossier, tout est harmonisé à la couleur de ce dossier. La pastille ronde garde l'importance. */
+    if(r&&r.arch) return '#c9c2b6';
+    var q=((document.getElementById('pg-search')||{}).value||'').trim();
+    if(q || pgDossier==='tous' || pgDossier==='multi' || pgDossier==='arch') return PG_ETAPE_COL[pgEtape(r)]||'#4c533b';
+    if(PG_ETAPE_COL[pgDossier]) return PG_ETAPE_COL[pgDossier];
+    return '#4c533b';
+  }
   function pgEtape(r){
     var sv=(r&&r.suivi)||'';
     if(sv==='mandat'||sv==='visite') return 'accord';
-    if(sv==='refus'||sv==='refus-rel'||pgStatutOf(r)==='offline') return 'refusG';
+    if(sv==='refus'||sv==='refus-rel') return 'refusG';   /* v10.02 : le statut gris (Moyen) ne classe plus en Refus */
     if(sv==='pdr'||sv==='msg'||sv==='relance'||(r&&r.called)) return 'attente';
     return 'vivier';
   }
@@ -14217,22 +14225,23 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
     var q=pgNorm((document.getElementById('pg-search')||{}).value);
     var qd=q.replace(/\D/g,'');   /* v8.08 : chiffres seuls (tél/prix sans espaces) */
     if(q){ a=a.filter(function(r){
-      var hay=pgNorm([r.adresse,r.ville,r.vendeur,r.tel,r.descriptif,r.titre].concat(pigeSources(r).map(function(l){return l.url;})).concat([r.fipac]).join(' '));
+      var hay=pgNorm([r.adresse,r.ville,r.vendeur,r.tel,r.descriptif,r.titre].concat(pigeSources(r).map(function(l){return l.url;})).concat([r.fipac]).concat((r.notes||[]).map(function(n){return n.txt||'';})).join(' '));   /* v10.02 : les observations aussi */
       if(hay.indexOf(q)>=0) return true;
       if(qd.length>=3 && (pgTelKey(r.tel).indexOf(qd)>=0 || (''+(r.prix||'')).indexOf(qd)>=0)) return true;   /* tél OU prix, espaces ignorés */
       return false;
     }); }
-    if(pgFilt.sites.length){ a=a.filter(function(r){
+    /* v10.02 : une RECHERCHE est GLOBALE — les filtres épinglés ne s'appliquent pas */
+    if(!q && pgFilt.sites.length){ a=a.filter(function(r){
       return pgFilt.sites.some(function(f){
         if(f==='__fipac') return !!r.fipac;
         if(f==='fipac') return r.src==='fipac' || pigeSources(r).some(function(l){return l.src==='fipac';});
         return r.src===f || pigeSources(r).some(function(l){return l.src===f;});
       });
     }); }
-    if(pgFilt.users.length){ a=a.filter(function(r){
+    if(!q && pgFilt.users.length){ a=a.filter(function(r){
       return pgFilt.users.some(function(f){ return f==='none'? !r.user : r.user===f; });
     }); }
-    if(pgFilt.villes.length){ a=a.filter(function(r){ return pgFilt.villes.indexOf(villeOf(r))>=0; }); }
+    if(!q && pgFilt.villes.length){ a=a.filter(function(r){ return pgFilt.villes.indexOf(villeOf(r))>=0; }); }
     renderFolderBar(a, load());
     /* v7.22 : « Tous » et les statuts ne montrent que les fiches ACTIVES ; le tiroir « arch » montre les archivées */
     var telIx=pgTelIndex();   /* v7.34 : index téléphone → fiches (toutes, archivées comprises) */
@@ -14241,10 +14250,11 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
     var inMulti=(pgDossier==='multi');
     if(inMulti && !load().some(telMulti)){ pgDossier='tous'; inMulti=false; }   /* plus aucun multi → retour à Tous */
     var inArch=(pgDossier==='arch');
+    if(q){ inMulti=false; inArch=false; }   /* v10.02 : la recherche sort du tiroir en cours */
     if(pgDossier==='termine') pgDossier='tous';   /* v7.24 : le statut Terminé n'existe plus */
     /* v7.27 : une RECHERCHE depuis « Tous » remonte AUSSI les fiches archivées (affichées directement,
        avec leur style grisé + badge de motif — classées après les actives) */
-    var withArch=(!!q && pgDossier==='tous');
+    var withArch=!!q;   /* v10.02 : recherche GLOBALE — archivées incluses quel que soit le dossier */
     var _archHidden=0;
     if(inArch){
       a=a.filter(function(r){ return r.arch; });
@@ -14261,7 +14271,7 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
     }
     else {
       if(!withArch) a=a.filter(function(r){ return !r.arch; });
-      if(pgDossier!=='tous'){
+      if(!q && pgDossier!=='tous'){   /* v10.02 : la recherche ignore le dossier courant */
         if(pgDossier.indexOf('d:')===0){
           var _did=pgDossier.slice(2);
           var _dd=dossLoad().filter(function(x){return x.id===_did;})[0];
@@ -14281,7 +14291,7 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
       else if(inArch) cntEl.textContent=shown+' fiche'+(shown>1?'s':'')+' archivée'+(shown>1?'s':'');
       else if(withArch){
         var _nA=a.filter(function(r){return r.arch;}).length;
-        cntEl.textContent=shown+' résultat'+(shown>1?'s':'')+(_nA?(' (dont '+_nA+' archivé'+(_nA>1?'s':'')+')'):'');
+        cntEl.textContent=shown+' résultat'+(shown>1?'s':'')+(_nA?(' (dont '+_nA+' archivé'+(_nA>1?'s':'')+')'):'')+' — recherche globale, tous dossiers et filtres confondus';
       }
       else cntEl.textContent = (shown===total)? (total+' bien'+(total>1?'s':'')+' en pige') : (shown+' bien'+(shown>1?'s':'')+' sur '+total);
     }
@@ -14338,7 +14348,7 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
       var cl=caracList(r); var clh=cl.length? cl.join(' · ') : '';
       var pm2v=(r.prix&&num(r.surface))? (fmtN(r.prix/num(r.surface))+' €/m²') : '';
       var plan=r.plan?' <span class="pg-planflag" title="Plan disponible">🗺️</span>':'';
-      return '<div class="pg-fiche" style="border-left:4px solid '+_st.col+';" onclick="pigeEdit(\''+r.id+'\')">'+ph
+      return '<div class="pg-fiche" style="border-left:4px solid '+pgRowBorder(r)+';" onclick="pigeEdit(\''+r.id+'\')">'+ph
         +'<div class="pg-main"><div class="pg-top"><span class="pg-statut-dot" title="'+_st.label+' — cliquez pour changer" style="background:'+_st.col+';" onclick="event.stopPropagation();pigeStatutMenu(\''+r.id+'\',event)"></span><span class="pg-date">'+dstr(r.created)+'</span>'+(r.apimoRef?'<span class="pg-apimo" title="Référence Apimo">Apimo · '+esc(r.apimoRef)+'</span>':'')+suiviBadge(r)+(window.rapTempChip?rapTempChip(r):'')+(window.rapRowChip?rapRowChip(r):'')+(window.pgNewChip?pgNewChip(r):'')+'</div>'
         +'<div class="pg-titre"><span class="pg-mapspin" title="Voir sur Google Maps" onclick="pigeMaps(\''+r.id+'\',event)">📍</span> '+titre+(r.ville?' <span class="pg-titre-ville">· '+esc(r.ville)+'</span>':'')+plan+' <button class="pg-secto" title="Secteur, transports, écoles — sectorisation dans un nouvel onglet" onclick="event.stopPropagation();pgSectoTab(\''+r.id+'\')">🧭 Secteur</button>'+'</div>'
         +(ml?'<div class="pg-carac">'+ml+'</div>':'')
@@ -14441,7 +14451,7 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
     document.getElementById('pg-del-btn').style.display='none';
     var lw0=document.getElementById('pg-lock-warn'); if(lw0) lw0.style.display='none';
     window._pgSnap='';
-    pigeStatutPickRender('encours'); pigeDossSelectFill('');
+    pigeStatutPickRender('offline'); pigeDossSelectFill('');   /* v10.03 : une nouvelle fiche naît « Moyen » */
     openModal('modal-pige');
   }
   window.pigeNew=function(){ openBlank('', 'manuel'); };
@@ -18693,6 +18703,17 @@ window.r3FlashToDetail=function(){
 .pg-com-edit-btns .pg-com-cancel{background:#fff;border:1px solid var(--beige-2);color:var(--gris);}
 .pg-raz{color:var(--terra);border-color:rgba(180,115,96,.45);}
 .pg-raz:hover{background:rgba(180,115,96,.1);}
+#pg-help-wrap{position:relative;display:inline-block;}
+.pg-help-btn{width:26px;text-align:center;color:var(--gris-2);border-color:var(--beige-2);font-weight:700;}
+.pg-help-btn:hover{color:var(--terra);border-color:var(--terra);}
+#pg-legend{display:none;position:absolute;right:0;top:32px;z-index:900;width:430px;background:#fff;border:1px solid var(--border);border-radius:10px;box-shadow:0 12px 40px rgba(0,0,0,.22);padding:13px 16px;font-family:'Jost',sans-serif;font-size:12px;color:var(--noir);line-height:1.55;text-align:left;cursor:default;}
+#pg-help-wrap:hover #pg-legend{display:block;}
+#pg-legend.pin{display:block;}
+#pg-legend .pgl-t{font-family:'Cormorant Garamond',serif;font-size:17px;margin-bottom:4px;}
+#pg-legend .pgl-s{font-size:10px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--kaki);margin:9px 0 3px;}
+#pg-legend .pgl-l{display:flex;align-items:center;gap:7px;padding:1.5px 0;}
+#pg-legend .pgl-l i{display:inline-block;width:14px;height:14px;border-radius:3px;flex:none;}
+#pg-legend .pgl-h{font-size:11px;color:var(--gris-2);font-style:italic;margin-top:4px;}
 .pg-obs{border-left:1px solid rgba(76,83,59,.16);padding-left:14px;text-align:left;min-width:0;align-self:stretch;display:flex;flex-direction:column;justify-content:flex-start;gap:2px;}
 .pg-obs:empty{border:none;padding:0;}
 .pg-obs-hd{font-size:11px;color:var(--gris-2);margin-bottom:3px;letter-spacing:.02em;}
