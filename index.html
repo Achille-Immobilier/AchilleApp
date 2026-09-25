@@ -1685,7 +1685,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     </div>
   </div>
   </div>
-  <div class="logo-ver app-ver">Achille App — v10.04</div>
+  <div class="logo-ver app-ver">Achille App — v10.05</div>
 </aside>
 <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Réduire la barre latérale">‹</button>
 
@@ -1758,6 +1758,16 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
         <button class="pg-chip pg-sortbtn" onclick="pigeSort('pm2',this)">Prix/m² <span class="pg-arrow"></span></button>
         <button class="pg-chip pg-sortbtn" onclick="pigeSort('surface',this)">m² <span class="pg-arrow"></span></button>
         <span class="pg-sep"></span>
+        <span id="pg-imp-wrap"><button class="pg-chip" id="pg-imp-btn" onclick="pgImpToggle(event)" title="Filtrer / trier selon la pastille d'importance">● Importance <span id="pg-imp-n"></span>▾</button>
+        <div id="pg-imp-menu">
+          <div class="pgi-h">Afficher :</div>
+          <label><input type="checkbox" id="pg-imp-chaud" checked onchange="pgImpApply()"><i style="background:#a03222"></i>⭐ Prioritaire</label>
+          <label><input type="checkbox" id="pg-imp-encours" checked onchange="pgImpApply()"><i style="background:#2e6e50"></i>👍 Intéressant</label>
+          <label><input type="checkbox" id="pg-imp-offline" checked onchange="pgImpApply()"><i style="background:#9a9a94"></i>➖ Moyen</label>
+          <button class="pg-chip" style="margin-top:7px;width:100%;" onclick="pgImpSort(event)" title="Re-cliquez pour inverser">⇅ Trier : Prioritaire → Moyen</button>
+        </div></span>
+        <button class="pg-chip" id="pg-new-btn" onclick="pgNewToggle()" title="N'afficher que les fiches que vous n'avez pas encore ouvertes">✨ New</button>
+        <span class="pg-sep"></span>
         <span id="pg-filt-villes" class="pg-filtset"></span>
         <span class="pg-sep"></span>
         <button class="pg-chip" id="pg-filters-btn" onclick="pigeFiltersToggle()">⚙ Filtres <span id="pg-filters-n"></span> <span id="pg-filters-arrow">▾</span></button>
@@ -1767,7 +1777,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
           <div class="pgl-t">Les repères de la Pige</div>
           <div class="pgl-s">Bordure gauche des fiches = dossier</div>
           <div class="pgl-l"><i style="background:#b47360"></i>📞 En cours (à appeler / nouveau)</div>
-          <div class="pgl-l"><i style="background:#b0883b"></i>⏳ En attente (sans réponse, à rappeler)</div>
+          <div class="pgl-l"><i style="background:#e6b23a"></i>⏳ En attente (sans réponse, à rappeler)</div>
           <div class="pgl-l"><i style="background:#2e6e50"></i>🤝 Achille (accord de visite, mandat)</div>
           <div class="pgl-l"><i style="background:#2b2b28"></i>✕ Refus</div>
           <div class="pgl-l"><i style="background:#c9c2b6"></i>📦 Archivée</div>
@@ -1780,7 +1790,10 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
           <div class="pgl-s">Ancienneté de l'annonce</div>
           <div class="pgl-l">🔥 Pige chaude (moins de 7 jours) · 🌤 tiède (jusqu'à 6 semaines) · ❄ froide</div>
           <div class="pgl-s">Autres repères</div>
-          <div class="pgl-l"><b style="color:var(--terra)">NOUVEAU</b> = fiche que VOUS n'avez pas encore ouverte · 🔔 = rappel · 👥 ×N = même numéro sur N fiches · ✓ Appelée = appel sans réponse</div>
+          <div class="pgl-l"><b style="color:var(--terra);font-size:10px;letter-spacing:.06em;">NOUVEAU</b><span>= fiche que VOUS n'avez pas encore ouverte</span></div>
+          <div class="pgl-l"><span style="width:14px;text-align:center;flex:none;">🔔</span><span>= un rappel est programmé sur la fiche</span></div>
+          <div class="pgl-l"><span style="width:14px;text-align:center;flex:none;">👥</span><span>×N = le même numéro apparaît sur N fiches</span></div>
+          <div class="pgl-l"><span style="width:14px;text-align:center;flex:none;">✓</span><span>Appelée = appel passé, sans réponse</span></div>
           <div class="pgl-h">🔍 La recherche est GLOBALE : elle fouille tous les dossiers (archivées comprises), les observations, en ignorant filtres et onglets.</div>
         </div></span>
       </div>
@@ -11755,7 +11768,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     startRealtime();
     var ov=document.getElementById('ach-login-overlay'); if(ov) ov.classList.add('ach-hidden');
     var ub=document.getElementById('ach-userbar'); if(ub) ub.style.display='none';
-    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v10.04';
+    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v10.05';
     flag('Synchronis\u00e9');
     // fin de l'init : on autorise la journalisation des actions
     setTimeout(function(){ installInterceptor._init=false; }, 1500);
@@ -12947,7 +12960,8 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
   ];
   function pgStatutDef(k){ for(var i=0;i<PG_STATUTS.length;i++){ if(PG_STATUTS[i].k===k) return PG_STATUTS[i]; } return PG_STATUTS[0]; }   /* v8.58 : repli = « En cours » (désormais en tête du tableau) */
   function pgStatutOf(r){ return (r&&r.statut)||'encours'; }
-  var pgDossier='tous';   /* filtre dossier courant : 'tous' | statut | 'd:'+id */
+  var pgDossier='tous';
+  var pgImp=['chaud','encours','offline'], pgNewOnly=false;   /* v10.05 : filtre importance + bouton New */   /* filtre dossier courant : 'tous' | statut | 'd:'+id */
   var pgPage=1;
   var PG_PER=25;
 
@@ -14118,6 +14132,23 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
     if(btn){ btn.classList.add('on'); var ar=btn.querySelector('.pg-arrow'); if(ar) ar.textContent=(sortDir<0?'▼':'▲'); }
     pigeRender();
   };
+  window.pgImpToggle=function(ev){ try{ ev.stopPropagation(); }catch(e){window.achErr&&achErr(e)}
+    var m=document.getElementById('pg-imp-menu'); if(m) m.classList.toggle('open'); };
+  document.addEventListener('click',function(e){ var m=document.getElementById('pg-imp-menu');
+    if(m&&m.classList.contains('open')&&!e.target.closest('#pg-imp-wrap')) m.classList.remove('open'); });
+  window.pgImpApply=function(){
+    pgImp=['chaud','encours','offline'].filter(function(k){ var c=document.getElementById('pg-imp-'+k); return c&&c.checked; });
+    var b=document.getElementById('pg-imp-btn'), n=document.getElementById('pg-imp-n');
+    if(b) b.classList.toggle('on', pgImp.length<3);
+    if(n) n.textContent=(pgImp.length<3)?('('+pgImp.length+') '):'';
+    pigeRender();
+  };
+  window.pgImpSort=function(ev){ try{ ev.stopPropagation(); }catch(e){window.achErr&&achErr(e)}
+    pigeSort('importance', null);
+    if(window.toast) toast('⇅ Tri par importance : '+(sortDir<0?'Prioritaire → Moyen':'Moyen → Prioritaire')); };
+  window.pgNewToggle=function(){ pgNewOnly=!pgNewOnly;
+    var b=document.getElementById('pg-new-btn'); if(b) b.classList.toggle('on', pgNewOnly);
+    pigeRender(); };
   window.pgHelpToggle=function(ev){ try{ ev.stopPropagation(); }catch(e){window.achErr&&achErr(e)}
     var l=document.getElementById('pg-legend'); if(l) l.classList.toggle('pin'); };
   document.addEventListener('click',function(e){ var l=document.getElementById('pg-legend');
@@ -14127,6 +14158,12 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
     pgFilt.sites=[]; pgFilt.users=[]; pgFilt.villes=[];
     pgDossier='tous'; pgPage=1;
     sortMode='date'; sortDir=-1;
+    pgImp=['chaud','encours','offline']; pgNewOnly=false;   /* v10.05 */
+    ['chaud','encours','offline'].forEach(function(k){ var c=document.getElementById('pg-imp-'+k); if(c) c.checked=true; });
+    var _ib=document.getElementById('pg-imp-btn'); if(_ib) _ib.classList.remove('on');
+    var _in=document.getElementById('pg-imp-n'); if(_in) _in.textContent='';
+    var _im=document.getElementById('pg-imp-menu'); if(_im) _im.classList.remove('open');
+    var _nb=document.getElementById('pg-new-btn'); if(_nb) _nb.classList.remove('on');
     document.querySelectorAll('.pg-sortbtn').forEach(function(b,ix){
       b.classList.toggle('on', ix===0);
       var ar=b.querySelector('.pg-arrow'); if(ar) ar.textContent=(ix===0?'▼':'');
@@ -14148,11 +14185,11 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
      r.called={d,u}, un clic pose, un re-clic (confirmé) retire, updated bumpé (synchro fiable). */
   var PG_ETAPES=[
     {k:'vivier',  lbl:'\ud83d\udcde En cours',  tip:'Nouveau / \u00c0 appeler',                          col:'#b47360'},
-    {k:'attente', lbl:'\u23f3 En attente',        tip:'Sans r\u00e9ponse / Rappeler + tard',              col:'#b0883b'},
+    {k:'attente', lbl:'\u23f3 En attente',        tip:'Sans r\u00e9ponse / Rappeler + tard',              col:'#e6b23a'},
     {k:'accord',  lbl:'\ud83e\udd1d Achille',    tip:'Accords \u00b7 Mandats',                           col:'#2e6e50'},
     {k:'refusG',  lbl:'\u2715 Refus',             tip:'Refus cat\u00e9gorique / Refus \u00e0 relancer',  col:'#2b2b28'}
   ];
-  var PG_ETAPE_COL={vivier:'#b47360',attente:'#b0883b',accord:'#2e6e50',refusG:'#2b2b28'};   /* v10.02 : couleurs des onglets */
+  var PG_ETAPE_COL={vivier:'#b47360',attente:'#e6b23a',accord:'#2e6e50',refusG:'#2b2b28'};   /* v10.02 : couleurs des onglets */
   function pgRowBorder(r){
     /* v10.02 : dans « Tous » (ou en recherche), la bordure dit le DOSSIER de la fiche ;
        dans un dossier, tout est harmonisé à la couleur de ce dossier. La pastille ronde garde l'importance. */
@@ -14242,6 +14279,8 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
       return pgFilt.users.some(function(f){ return f==='none'? !r.user : r.user===f; });
     }); }
     if(!q && pgFilt.villes.length){ a=a.filter(function(r){ return pgFilt.villes.indexOf(villeOf(r))>=0; }); }
+    if(!q && pgImp.length<3){ a=a.filter(function(r){ return pgImp.indexOf(pgStatutOf(r))>=0; }); }   /* v10.05 : cases Importance */
+    if(!q && pgNewOnly){ a=a.filter(function(r){ return window.pgNewChip && pgNewChip(r)!==''; }); }   /* v10.05 : bouton New */
     renderFolderBar(a, load());
     /* v7.22 : « Tous » et les statuts ne montrent que les fiches ACTIVES ; le tiroir « arch » montre les archivées */
     var telIx=pgTelIndex();   /* v7.34 : index téléphone → fiches (toutes, archivées comprises) */
@@ -14301,6 +14340,9 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
     else if(sortMode==='pm2') a.sort(function(x,y){ return (pm2(x)-pm2(y))*dir; });
     else if(sortMode==='surface') a.sort(function(x,y){ return (num(x.surface)-num(y.surface))*dir; });
     else if(sortMode==='ville') a.sort(function(x,y){ return villeKey(x).localeCompare(villeKey(y),'fr',{numeric:true})*dir; });
+    else if(sortMode==='importance'){ var _IO={chaud:0,encours:1,offline:2};
+      a.sort(function(x,y){ var d=((_IO[pgStatutOf(x)]!==undefined?_IO[pgStatutOf(x)]:1)-(_IO[pgStatutOf(y)]!==undefined?_IO[pgStatutOf(y)]:1))*(dir<0?1:-1);
+        return d || (y.created||'').localeCompare(x.created||''); }); }
     else a.sort(function(x,y){ return (x.created||'').localeCompare(y.created||'')*dir; });
     if(withArch){ var _actP=a.filter(function(r){return !r.arch;}), _arcP=a.filter(function(r){return r.arch;}); a=_actP.concat(_arcP); }   /* v7.27 : actives d'abord, archivées ensuite */
     /* v8.29 : bandeau d'alerte quand des fiches sont masquées par les filtres, dans les DEUX
@@ -18704,6 +18746,13 @@ window.r3FlashToDetail=function(){
 .pg-raz{color:var(--terra);border-color:rgba(180,115,96,.45);}
 .pg-raz:hover{background:rgba(180,115,96,.1);}
 #pg-help-wrap{position:relative;display:inline-block;}
+#pg-imp-wrap{position:relative;display:inline-block;}
+#pg-imp-menu{display:none;position:absolute;left:0;top:32px;z-index:900;width:230px;background:#fff;border:1px solid var(--border);border-radius:10px;box-shadow:0 12px 36px rgba(0,0,0,.2);padding:11px 13px;font-family:'Jost',sans-serif;font-size:12.5px;}
+#pg-imp-menu.open{display:block;}
+#pg-imp-menu .pgi-h{font-size:10px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--kaki);margin-bottom:5px;}
+#pg-imp-menu label{display:flex;align-items:center;gap:7px;padding:3.5px 0;cursor:pointer;}
+#pg-imp-menu label i{display:inline-block;width:12px;height:12px;border-radius:50%;flex:none;}
+#pg-imp-btn.on,#pg-new-btn.on{background:var(--terra);border-color:var(--terra);color:#fff;}
 .pg-help-btn{width:26px;text-align:center;color:var(--gris-2);border-color:var(--beige-2);font-weight:700;}
 .pg-help-btn:hover{color:var(--terra);border-color:var(--terra);}
 #pg-legend{display:none;position:absolute;right:0;top:32px;z-index:900;width:430px;background:#fff;border:1px solid var(--border);border-radius:10px;box-shadow:0 12px 40px rgba(0,0,0,.22);padding:13px 16px;font-family:'Jost',sans-serif;font-size:12px;color:var(--noir);line-height:1.55;text-align:left;cursor:default;}
