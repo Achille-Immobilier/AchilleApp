@@ -1685,7 +1685,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     </div>
   </div>
   </div>
-  <div class="logo-ver app-ver">Achille App — v10.05</div>
+  <div class="logo-ver app-ver">Achille App — v10.06</div>
 </aside>
 <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Réduire la barre latérale">‹</button>
 
@@ -4529,7 +4529,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
 
 <div class="modal-overlay" id="modal-vt-det"><div class="modal" style="width:520px;"><button class="modal-close" onclick="closeModal('modal-vt-det')">x</button><div id="vt-det-content"></div><div class="modal-actions"><button class="btn btn-outline" onclick="closeModal('modal-vt-det')">Fermer</button><button class="btn btn-terra" onclick="closeModal('modal-vt-det');vtAccReset();openModal('modal-visite')">+ Nouvelle visite</button></div></div></div>
 
-<div class="modal-overlay" id="modal-bv-edit"><div class="modal" style="width:480px;"><button class="modal-close" onclick="closeModal('modal-bv-edit')">x</button><div class="modal-title">Modifier le bon de visite</div><input type="hidden" id="bve-n-orig"><div class="form-row"><div class="form-group"><label class="form-label">N°</label><input class="form-input" id="bve-n" type="number" min="1" style="width:90px;"></div><div class="form-group"><label class="form-label">Date <span style="font-size:11px;color:var(--gris-2);">(JJ/MM/AAAA)</span></label><input class="form-input" id="bve-d" type="text" placeholder="Ex : 14/06/2025"></div></div><div class="form-group"><label class="form-label">Visiteur</label><input class="form-input" id="bve-v" type="text" placeholder="NOM Prénom"></div><div class="form-group"><label class="form-label">Adresse</label><input class="form-input" id="bve-a" type="text" autocomplete="off" oninput="bvAddrAC(this)" placeholder="Ex : 12 avenue Charles de Gaulle"></div><div class="form-group"><label class="form-label">Observations</label><input class="form-input" id="bve-obs" type="text" placeholder="—"></div><div class="modal-actions"><button class="btn btn-outline" onclick="closeModal('modal-bv-edit')">Annuler</button><button class="btn btn-rouge" id="bve-del-btn" onclick="bvEditDel()" style="margin-right:auto;">🗑 Supprimer</button><button class="btn btn-terra" onclick="bvEditSave()">Enregistrer</button></div></div></div>
+<div class="modal-overlay" id="modal-bv-edit"><div class="modal" style="width:480px;"><button class="modal-close" onclick="closeModal('modal-bv-edit')">x</button><div class="modal-title">Modifier le bon de visite</div><input type="hidden" id="bve-n-orig"><div class="form-row"><div class="form-group"><label class="form-label">N°</label><input class="form-input" id="bve-n" type="number" min="1" style="width:90px;"></div><div class="form-group"><label class="form-label">Date <span style="font-size:11px;color:var(--gris-2);">(JJ/MM/AAAA)</span></label><input class="form-input" id="bve-d" type="text" placeholder="Ex : 14/06/2025"></div></div><div class="form-group"><label class="form-label">Visiteur</label><input class="form-input" id="bve-v" type="text" placeholder="NOM Prénom"></div><div class="form-group"><label class="form-label">Bien(s) visité(s)</label><div id="bve-a-wrap" style="display:flex;flex-direction:column;gap:6px;"></div><button type="button" onclick="bveAddrAdd('')" style="margin-top:6px;border:1px dashed rgba(180,85,45,.55);color:var(--terra);background:transparent;border-radius:999px;padding:3px 12px;font-family:'Jost',sans-serif;font-size:12px;cursor:pointer;">+ Ajouter un bien</button></div><div class="form-group"><label class="form-label">Observations</label><input class="form-input" id="bve-obs" type="text" placeholder="—"></div><div class="modal-actions"><button class="btn btn-outline" onclick="closeModal('modal-bv-edit')">Annuler</button><button class="btn btn-rouge" id="bve-del-btn" onclick="bvEditDel()" style="margin-right:auto;">🗑 Supprimer</button><button class="btn btn-terra" onclick="bvEditSave()">Enregistrer</button></div></div></div>
 
   
 
@@ -7078,7 +7078,10 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
         '<span style="color:var(--gris);">N° du bon</span><input id="bvp-num" type="number" min="1" value="'+nextN+'" style="border:1px solid var(--border);border-radius:6px;padding:5px 9px;font-family:\'Cormorant Garamond\',serif;font-size:17px;font-weight:600;color:var(--terra);background:var(--blanc);outline:none;width:90px;">'+
         '<span style="color:var(--gris);">Date</span><span style="font-weight:500;">'+dateStr+'</span>'+
         '<span style="color:var(--gris);">Visiteur</span><input id="bvp-visiteur" value="'+(visiteur||'').replace(/"/g,'&quot;')+'" placeholder="Nom du visiteur…" style="border:1px solid var(--border);border-radius:6px;padding:6px 10px;font-family:\'Jost\',sans-serif;font-size:14px;background:var(--blanc);color:var(--noir);outline:none;width:100%;">'+
-        '<span style="color:var(--gris);">Adresse</span><input id="bvp-adresse" autocomplete="off" oninput="bvAddrAC(this)" value="'+(adresse||'').replace(/"/g,'&quot;')+'" placeholder="Adresse du bien…" style="border:1px solid var(--border);border-radius:6px;padding:6px 10px;font-family:\'Jost\',sans-serif;font-size:14px;background:var(--blanc);color:var(--noir);outline:none;width:100%;">'+
+        '<span style="color:var(--gris);align-self:start;padding-top:7px;">Bien(s) visit\u00e9(s)</span><div id="bvp-addr-wrap" style="display:flex;flex-direction:column;gap:6px;">'+
+        '<input class="bvp-addr" id="bvp-adresse" autocomplete="off" oninput="bvAddrAC(this)" value="'+(adresse||'').replace(/"/g,'&quot;')+'" placeholder="Adresse du bien…" style="border:1px solid var(--border);border-radius:6px;padding:6px 10px;font-family:\'Jost\',sans-serif;font-size:14px;background:var(--blanc);color:var(--noir);outline:none;width:100%;">'+
+        '<button type="button" class="bvp-addr-more" onclick="bvpAddrAdd(\'\')" style="align-self:flex-start;border:1px dashed rgba(180,85,45,.55);color:var(--terra);background:transparent;border-radius:999px;padding:3px 12px;font-family:\'Jost\',sans-serif;font-size:12px;cursor:pointer;">+ Ajouter un bien</button>'+
+        '</div>'+
         '<span style="color:var(--gris);">Observations</span><input id="bvp-obs" value="" placeholder="—" style="border:1px solid var(--border);border-radius:6px;padding:6px 10px;font-family:\'Jost\',sans-serif;font-size:14px;background:var(--blanc);color:var(--noir);outline:none;width:100%;">'+
         '<span style="color:var(--gris);">Accompagnateur(s)</span><div id="bvp-acc-field" class="vt-acc-field" onclick="bvpAccOpen()"><span class="vt-acc-ph">+ ajouter un accompagnateur</span></div>'+
       '</div>'+
@@ -7093,12 +7096,36 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     overlay.style.display='flex';
   };
 
+  /* v10.06 : biens supplémentaires dans la modal de création */
+  window.bvpAddrAdd=function(val){
+    var wrap=document.getElementById('bvp-addr-wrap'); if(!wrap) return;
+    var row=document.createElement('div'); row.style.cssText='display:flex;gap:6px;align-items:center;';
+    var inp=document.createElement('input'); inp.className='bvp-addr'; inp.autocomplete='off';
+    inp.placeholder='Adresse d\u2019un autre bien\u2026';
+    inp.style.cssText='border:1px solid var(--border);border-radius:6px;padding:6px 10px;font-family:\'Jost\',sans-serif;font-size:14px;background:var(--blanc);color:var(--noir);outline:none;flex:1;';
+    inp.addEventListener('input',function(){ window.bvAddrAC&&bvAddrAC(this); });
+    if(val) inp.value=val;
+    var del=document.createElement('button'); del.type='button'; del.title='Retirer ce bien'; del.textContent='\u2715';
+    del.style.cssText='flex:none;border:none;background:transparent;color:var(--gris-2);font-size:13px;cursor:pointer;padding:2px 4px;';
+    del.onclick=function(){ row.remove(); };
+    row.appendChild(inp); row.appendChild(del);
+    var more=wrap.querySelector('.bvp-addr-more');
+    if(more) wrap.insertBefore(row, more); else wrap.appendChild(row);
+    if(!val) inp.focus();
+  };
+  window.bvpAddrGet=function(){
+    var out=[];
+    document.querySelectorAll('#bvp-addr-wrap .bvp-addr').forEach(function(i){ var v=(i.value||'').trim(); if(v) out.push(v); });
+    return out;
+  };
+
   window.bvConfirmProp=function(n, dateStr, isAdmin){
     var _ni=document.getElementById('bvp-num'); if(_ni){ var _nv=parseInt(_ni.value,10); if(!isNaN(_nv)&&_nv>0) n=_nv; }
     var visiteur=document.getElementById('bvp-visiteur').value.trim()||'—';
-    var adresse=document.getElementById('bvp-adresse').value.trim()||'—';
+    var _addrs=window.bvpAddrGet?bvpAddrGet():[];
+    var adresse=_addrs[0]||document.getElementById('bvp-adresse').value.trim()||'—';
     var obs=document.getElementById('bvp-obs').value.trim();
-    var newBon={n:n, d:dateStr, v:visiteur, a:adresse, obs:obs, accomp:bvpAccGet()};
+    var newBon={n:n, d:dateStr, v:visiteur, a:adresse, aa:_addrs.slice(1), obs:obs, accomp:bvpAccGet()};   /* v10.06 : plusieurs biens possibles */
     if(isAdmin){
       // Intégration directe dans BV_DATA si pas déjà présent
       if(!BV_DATA.find(function(b){return b.n===n;})) BV_DATA.push(newBon);
@@ -7123,7 +7150,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
         pend.push(newBon);
         localStorage.setItem('ach_bv_pending',JSON.stringify(pend));
       }catch(e){window.achErr&&achErr(e)}
-      bvAddNotif(n, visiteur, adresse, dateStr);
+      bvAddNotif(n, visiteur, (_addrs.length>1?_addrs.join(' \u00b7 '):adresse), dateStr);
       document.getElementById('bv-prop-overlay').style.display='none';
       toast('Bon n°'+n+' soumis — en attente de validation');
       if(bvInited) bvRender();
@@ -7170,8 +7197,12 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
       try{
         var extra=JSON.parse(localStorage.getItem('ach_bv_extra')||'[]');
         extra.forEach(function(b){
-          if(b && b.n!=null && !BV_DATA.find(function(x){return x.n===b.n;})) BV_DATA.push(b);
+          if(!b || b.n==null) return;
+          var ex=BV_DATA.find(function(x){return x.n===b.n;});
+          if(ex) Object.assign(ex, b);   /* v10.06 : un bon modifié écrase sa version d'origine */
+          else BV_DATA.push(b);
         });
+        bvLoadObs();   /* v10.06 : ré-applique les observations après la fusion (bons ajoutés/modifiés) */
       }catch(e){window.achErr&&achErr(e)}
       bvLoadAccomp(); bvMigrateAccomp(); bvInited=true;
     }
@@ -7203,7 +7234,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
             html+='<span style="font-family:\'Cormorant Garamond\',serif;font-size:15px;font-weight:700;color:var(--terra);">N°'+b.n+'</span>';
             html+='<span style="color:var(--gris);">'+b.d+'</span>';
             html+='<span style="font-weight:500;color:var(--noir);">'+b.v+'</span>';
-            html+='<span style="color:var(--gris);">'+b.a+'</span>';
+            html+='<span style="color:var(--gris);">'+(window.bvAddrs?bvAddrs(b).join(' \u00b7 '):b.a)+'</span>';
             if(notif.by) html+='<span style="color:var(--gris-2);font-size:12px;">par '+notif.by+'</span>';
             html+='<button onclick="bvValidatePending('+b.n+')" style="padding:4px 10px;border:none;border-radius:6px;background:var(--vert);color:var(--blanc);font-size:12px;font-family:\'Jost\',sans-serif;cursor:pointer;font-weight:500;">✓ Valider</button>';
             html+='<button onclick="bvRejectPending('+b.n+')" style="padding:4px 10px;border:1px solid var(--border);border-radius:6px;background:transparent;color:var(--gris);font-size:12px;font-family:\'Jost\',sans-serif;cursor:pointer;">✕ Refuser</button>';
@@ -7238,7 +7269,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     }
     var rows=allData.filter(function(b){
       if(!q)return true;
-      return b.v.toLowerCase().includes(q)||b.a.toLowerCase().includes(q)||String(b.n).includes(q)||b.obs.toLowerCase().includes(q);
+      return b.v.toLowerCase().includes(q)||(window.bvAddrs?bvAddrs(b).join(' '):b.a).toLowerCase().includes(q)||String(b.n).includes(q)||b.obs.toLowerCase().includes(q);   /* v10.06 : recherche sur tous les biens */
     });
     rows.sort(function(a,b){
       var av,bv;
@@ -7275,7 +7306,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
         '<td style="padding:9px 14px;font-family:\'Cormorant Garamond\',serif;font-size:15px;font-weight:600;color:'+(isPending?'var(--orange)':'var(--terra)')+';white-space:nowrap;">'+hl(String(b.n))+(isPending?' <span style="font-size:11px;background:var(--orange);color:var(--blanc);border-radius:4px;padding:1px 5px;font-style:normal;vertical-align:middle;">En attente</span>':'')+'</td>'+
         '<td style="padding:9px 14px;white-space:nowrap;color:var(--gris);">'+hl(b.d)+'</td>'+
         '<td style="padding:9px 14px;font-weight:500;color:var(--noir);">'+hl(b.v)+'</td>'+
-        '<td style="padding:9px 14px;color:var(--gris);">'+hl(b.a)+'</td>'+
+        '<td style="padding:9px 14px;color:var(--gris);">'+(window.bvAddrCell?bvAddrCell(b,hl):hl(b.a))+'</td>'+
         '<td style="padding:6px 10px;"><div class="bv-acc-cell" onclick="bvAccOpen('+b.n+',this)" title="Cliquer pour modifier les accompagnateurs">'+window.bvAccBadges(b.accomp)+'</div></td>'+
         '<td style="padding:9px 14px;"><input type="text" value="'+b.obs.replace(/"/g,'&quot;')+'" placeholder="—" data-n="'+b.n+'" onchange="bvUpdateObs(this)" style="width:100%;border:none;background:transparent;font-family:\'Jost\',sans-serif;font-size:13px;color:var(--gris);outline:none;cursor:text;" onfocus="this.style.background=\'var(--blanc)\';this.style.border=\'1px solid var(--terra-l)\';this.style.borderRadius=\'4px\';" onblur="this.style.background=\'transparent\';this.style.border=\'none\';"></td>'+
         '<td style="padding:9px 8px;text-align:center;white-space:nowrap;"><button class="bv-cr-btn'+((window.crHas&&window.crHas('bv'+b.n))?' done':'')+'" onclick="crOpen('+b.n+')" data-cr="bv'+b.n+'" title="'+((window.crHas&&window.crHas('bv'+b.n))?'':'Compte rendu de visite')+'" style="padding:4px 8px;border:1px solid var(--terra);border-radius:6px;background:transparent;color:var(--terra);font-size:12px;font-family:\'Jost\',sans-serif;cursor:pointer;white-space:nowrap;transition:all .15s;">'+((window.crHas&&window.crHas('bv'+b.n))?'CR ✓':'CR')+'</button>'+(cu==='admin'?' <button onclick="bvEditOpen('+b.n+')" title="Modifier ce bon" style="padding:4px 7px;border:1px solid var(--kaki-l);border-radius:6px;background:transparent;color:var(--kaki);font-size:12px;font-family:\'Jost\',sans-serif;cursor:pointer;transition:all .15s;" onmouseover="this.style.background=\'var(--kaki)\';this.style.color=\'var(--blanc)\'" onmouseout="this.style.background=\'transparent\';this.style.color=\'var(--kaki)\'">✏️</button>':'')+'</td>';
@@ -9229,6 +9260,23 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
  ];
   window.BV_DATA = BV_DATA;
 
+  /* v10.06 : un bon de visite peut couvrir PLUSIEURS biens.
+     b.a = 1re adresse (compatibilité avec les bons existants), b.aa = adresses supplémentaires. */
+  window.bvAddrs=function(b){
+    var out=[]; if(b&&b.a) out.push(b.a);
+    ((b&&b.aa)||[]).forEach(function(x){ if(x) out.push(x); });
+    return out;
+  };
+  window.bvAddrCell=function(b,hl){
+    hl=hl||function(x){return x;};
+    var as=window.bvAddrs(b);
+    if(!as.length) return '\u2014';
+    if(as.length===1) return hl(as[0]);
+    return '<div style="display:flex;flex-direction:column;gap:3px;">'+as.map(function(x,i){
+      return '<div style="display:flex;gap:7px;align-items:center;"><span style="flex:none;display:inline-flex;align-items:center;justify-content:center;width:15px;height:15px;border-radius:50%;border:1px solid rgba(180,85,45,.45);color:var(--terra);font-size:9.5px;font-weight:600;font-family:\'Jost\',sans-serif;">'+(i+1)+'</span><span>'+hl(x)+'</span></div>';
+    }).join('')+'</div>';
+  };
+
   // Charger obs depuis localStorage
   function bvLoadObs(){
     try{var r=localStorage.getItem('ach_bv_obs');if(r){var d=JSON.parse(r);BV_DATA.forEach(function(b){if(d[b.n]!==undefined)b.obs=d[b.n];});}}catch(e){window.achErr&&achErr(e)}
@@ -9376,6 +9424,26 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
   window.bvFilter=function(){bvRender();};
 
   // ── Edition bon de visite (admin) ──
+  /* v10.06 : lignes d'adresses de la modal d'édition */
+  function bveAddrRow(val, first){
+    var wrap=document.getElementById('bve-a-wrap'); if(!wrap) return null;
+    var row=document.createElement('div'); row.style.cssText='display:flex;gap:6px;align-items:center;';
+    var inp=document.createElement('input'); inp.className='form-input bve-addr'; inp.type='text'; inp.autocomplete='off';
+    inp.placeholder=first?'Ex : 12 avenue Charles de Gaulle':'Adresse d\u2019un autre bien\u2026';
+    inp.style.flex='1'; inp.value=val||'';
+    inp.addEventListener('input',function(){ window.bvAddrAC&&bvAddrAC(this); });
+    row.appendChild(inp);
+    if(!first){
+      var del=document.createElement('button'); del.type='button'; del.title='Retirer ce bien'; del.textContent='\u2715';
+      del.style.cssText='flex:none;border:none;background:transparent;color:var(--gris-2);font-size:13px;cursor:pointer;padding:2px 4px;';
+      del.onclick=function(){ row.remove(); };
+      row.appendChild(del);
+    }
+    wrap.appendChild(row);
+    return inp;
+  }
+  window.bveAddrAdd=function(val){ var i=bveAddrRow(val||'', false); if(i&&!val) i.focus(); };
+
   window.bvEditOpen=function(n){
     var b=BV_DATA.find(function(x){return x.n===n;});
     if(!b)return;
@@ -9383,7 +9451,8 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     document.getElementById('bve-n').value=b.n;
     document.getElementById('bve-d').value=b.d;
     document.getElementById('bve-v').value=b.v;
-    document.getElementById('bve-a').value=b.a;
+    var _w=document.getElementById('bve-a-wrap');
+    if(_w){ _w.innerHTML=''; var _as=window.bvAddrs?bvAddrs(b):[b.a]; if(!_as.length)_as=['']; _as.forEach(function(x,i){ bveAddrRow(x, i===0); }); }
     document.getElementById('bve-obs').value=b.obs||'';
     openModal('modal-bv-edit');
   };
@@ -9393,19 +9462,22 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     var nNew=parseInt(document.getElementById('bve-n').value);
     var d=document.getElementById('bve-d').value.trim();
     var v=document.getElementById('bve-v').value.trim();
-    var a=document.getElementById('bve-a').value.trim();
+    var _as=[]; document.querySelectorAll('#bve-a-wrap .bve-addr').forEach(function(i){ var v=(i.value||'').trim(); if(v) _as.push(v); });
+    var a=_as[0]||'';
     var obs=document.getElementById('bve-obs').value.trim();
     if(!nNew||!d||!v||!a){toast('Veuillez remplir tous les champs obligatoires.');return;}
     // Vérifier doublon de numéro
     if(nNew!==nOrig && BV_DATA.find(function(x){return x.n===nNew;})){toast('Ce numéro de bon existe déjà.');return;}
     var b=BV_DATA.find(function(x){return x.n===nOrig;});
     if(!b){toast('Bon introuvable.');return;}
-    b.n=nNew; b.d=d; b.v=v; b.a=a; b.obs=obs;
+    b.n=nNew; b.d=d; b.v=v; b.a=a; b.aa=_as.slice(1); b.obs=obs;   /* v10.06 */
     // Mettre à jour extras localStorage si présent
     try{
       var extra=JSON.parse(localStorage.getItem('ach_bv_extra')||'[]');
       var ei=extra.findIndex(function(x){return x.n===nOrig;});
-      if(ei>=0){extra[ei]=Object.assign({},b);localStorage.setItem('ach_bv_extra',JSON.stringify(extra));}
+      if(ei>=0){extra[ei]=Object.assign({},b);}
+      else{extra.push(Object.assign({},b));}   /* v10.06 : les modifications des bons d'origine sont désormais conservées */
+      localStorage.setItem('ach_bv_extra',JSON.stringify(extra));
     }catch(e){window.achErr&&achErr(e)}
     bvSaveObs();
     closeModal('modal-bv-edit');
@@ -9875,7 +9947,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     }
     if(!bon) return;
     crCurrentBon = bon;
-    crOpenRef('bv'+n, { n:bon.n, v:bon.v, a:bon.a, d:bon.d, obs:bon.obs });
+    crOpenRef('bv'+n, { n:bon.n, v:bon.v, a:(window.bvAddrs?bvAddrs(bon).join(' \u00b7 '):bon.a), d:bon.d, obs:bon.obs });   /* v10.06 */
   };
 
   /* Visites sans bon : même formulaire */
@@ -11768,7 +11840,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     startRealtime();
     var ov=document.getElementById('ach-login-overlay'); if(ov) ov.classList.add('ach-hidden');
     var ub=document.getElementById('ach-userbar'); if(ub) ub.style.display='none';
-    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v10.05';
+    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v10.06';
     flag('Synchronis\u00e9');
     // fin de l'init : on autorise la journalisation des actions
     setTimeout(function(){ installInterceptor._init=false; }, 1500);
@@ -11878,7 +11950,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
   document.addEventListener('scroll', close, true);
   document.addEventListener('mousedown', function(e){
     var b=document.getElementById('bv-addr-ac');
-    if(b && !b.contains(e.target) && !(e.target.id==='bvp-adresse'||e.target.id==='bve-a')) close();
+    if(b && !b.contains(e.target) && !(e.target.id==='bvp-adresse'||e.target.id==='bve-a'||(e.target.classList&&(e.target.classList.contains('bvp-addr')||e.target.classList.contains('bve-addr'))))) close();
   });
 })();
 </script>
