@@ -1685,7 +1685,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     </div>
   </div>
   </div>
-  <div class="logo-ver app-ver">Achille App — v10.07</div>
+  <div class="logo-ver app-ver">Achille App — v10.08</div>
 </aside>
 <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Réduire la barre latérale">‹</button>
 
@@ -11840,7 +11840,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     startRealtime();
     var ov=document.getElementById('ach-login-overlay'); if(ov) ov.classList.add('ach-hidden');
     var ub=document.getElementById('ach-userbar'); if(ub) ub.style.display='none';
-    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v10.07';
+    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v10.08';
     flag('Synchronis\u00e9');
     // fin de l'init : on autorise la journalisation des actions
     setTimeout(function(){ installInterceptor._init=false; }, 1500);
@@ -12936,10 +12936,6 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
     </div>
     <input type="hidden" id="pg-edit-id"><input type="hidden" id="pg-tempref"><input type="hidden" id="pg-created"><input type="hidden" id="pg-new-url"><input type="hidden" id="pg-new-src">
     <div id="pg-srcline" style="font-size:12px;color:var(--gris);margin-bottom:8px;"></div>
-    <div id="pg-paste-wrap" style="margin-bottom:10px;">
-      <textarea id="pg-paste-txt" rows="2" oninput="pgPasteParse()" placeholder="✨ Collez ici le texte de l'annonce (sur la page : Ctrl+A puis Ctrl+C) — prix, surface, pièces, tél… se remplissent seuls" style="width:100%;border:1px dashed rgba(180,85,45,.5);border-radius:8px;padding:8px 11px;font-family:'Jost',sans-serif;font-size:12.5px;background:#fdfbf7;color:var(--noir);outline:none;resize:vertical;"></textarea>
-      <div id="pg-paste-info" style="display:none;font-size:12px;color:var(--kaki);margin-top:4px;line-height:1.5;"></div>
-    </div>
     <div id="pg-lock-warn" style="display:none;background:#fdf3e7;border:1px solid #e8c9a0;color:#8a5a1e;border-radius:8px;padding:9px 13px;font-size:12.5px;margin-bottom:10px;line-height:1.5;"></div>
     <div class="pige-grid">
       <div class="pige-col">
@@ -12981,8 +12977,8 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
 
       </div>
       <div class="pige-col">
-        <div class="form-group" style="flex:1;display:flex;flex-direction:column;"><label class="form-label">Descriptif <span style="font-weight:400;color:var(--gris-2);font-size:11px;">— le bouton ✨ analyse ce texte (mêmes détections que la zone de collage du haut)</span></label>
-          <textarea class="form-input" id="pg-descriptif" placeholder="Collez le texte de l’annonce (ou écrivez librement)…" style="resize:vertical;min-height:150px;flex:1;font-family:inherit;line-height:1.5;"></textarea>
+        <div class="form-group" style="flex:1;display:flex;flex-direction:column;"><label class="form-label">Descriptif <span style="font-weight:400;color:var(--gris-2);font-size:11px;">— collez le texte de l’annonce (Ctrl+A puis Ctrl+C sur la page) : prix, surface, tél… se remplissent seuls</span></label>
+          <textarea class="form-input" id="pg-descriptif" onpaste="pgDescPaste()" placeholder="Collez le texte de l’annonce (ou écrivez librement)…" style="resize:vertical;min-height:150px;flex:1;font-family:inherit;line-height:1.5;"></textarea>
           <button class="btn btn-outline btn-sm" style="margin-top:6px;align-self:flex-start;" onclick="pigeExtract()">✨ Extraire les informations</button></div>
         <div class="form-row" style="align-items:stretch;">
           <div class="form-group" style="flex:1;"><label class="form-label">Photo</label>
@@ -14079,33 +14075,39 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
       } else if(tries>120){ clearInterval(it); }
     },500);
   })();
-  /* ══ v10.07 : bouton navigateur « ➜ Achille » — la page de l'annonce ouvre l'app avec
-     #pgimp=<base64{u:url, x:texte}> ; on attend la connexion puis on ouvre une fiche
-     neuve pré-remplie par le parseur « Coller l'annonce ». ══ */
-  (function(){
-    var m=(location.hash||'').match(/^#pgimp=([A-Za-z0-9\-_=]+)$/); if(!m) return;
-    try{ history.replaceState(null,'',location.pathname+location.search); }catch(e){window.achErr&&achErr(e)}
-    var j=null;
+  /* ══ v10.07/v10.08 : bouton navigateur « ➜ Achille » — la page de l'annonce ouvre l'app avec
+     #pgimp=<base64{u:url, x:texte}> ; on attend la connexion puis on ouvre une fiche neuve
+     pré-remplie. v10.08 : remplissage direct des champs + écoute hashchange (app déjà ouverte). ══ */
+  function pgImpDecode(h){
     try{
-      var b=m[1].replace(/-/g,'+').replace(/_/g,'/'); while(b.length%4) b+='=';
-      j=JSON.parse(decodeURIComponent(escape(atob(b))));
-    }catch(e){ window.achErr&&achErr(e); return; }
-    if(!j) return;
+      var b=h.replace(/-/g,'+').replace(/_/g,'/'); while(b.length%4) b+='=';
+      return JSON.parse(decodeURIComponent(escape(atob(b))));
+    }catch(e){ window.achErr&&achErr(e); return null; }
+  }
+  function pgImpRun(j){
     var tries=0;
     var it=setInterval(function(){
       tries++;
-      if(window.ACH_USER && window.pgPasteParse){
+      if(window.ACH_USER && window.pgAdFill){
         clearInterval(it);
         setTimeout(function(){ try{
           navTo('pige',null);
           openBlank(j.u||'', srcOf(j.u||''));
-          var ta=document.getElementById('pg-paste-txt'); if(ta) ta.value=(j.x||'').slice(0,15000);
-          pgPasteParse();
-          if(window.toast) toast('✨ Annonce importée — vérifiez la fiche avant d\u2019enregistrer');
+          var out=pgParseAdText((j.x||'').slice(0,15000));
+          delete out.url;   /* le lien est déjà posé par openBlank depuis j.u */
+          pgAdFill(out);
+          if(window.toast) toast('\u2728 Annonce import\u00e9e \u2014 v\u00e9rifiez la fiche avant d\u2019enregistrer');
         }catch(e){window.achErr&&achErr(e)} }, 400);
       } else if(tries>240){ clearInterval(it); }
     },500);
-  })();
+  }
+  function pgImpCheck(){
+    var m=(location.hash||'').match(/^#pgimp=([A-Za-z0-9\-_=]+)$/); if(!m) return;
+    try{ history.replaceState(null,'',location.pathname+location.search); }catch(e){window.achErr&&achErr(e)}
+    var j=pgImpDecode(m[1]); if(j) pgImpRun(j);
+  }
+  pgImpCheck();
+  window.addEventListener('hashchange', pgImpCheck);
   /* v7.34 : le bandeau pro se met à jour avec les mêmes saisies */
   (function(){ var _dc=window.pigeDupCheck; window.pigeDupCheck=function(){ _dc(); try{ pigeProWarn(); }catch(e){window.achErr&&achErr(e)} }; })();
   var UCOL={admin:'#4c533b',gerant:'#6b7453',collaborateur:'#b47360',alternant:'#b0883b'};
@@ -14573,8 +14575,6 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
     TXT.forEach(function(id){ var e=document.getElementById(id); if(e) e.value=''; });
     CBX.forEach(function(id){ var e=document.getElementById(id); if(e) e.value='0'; });
     document.getElementById('pg-dpe').value='';
-    var _pz=document.getElementById('pg-paste-txt'); if(_pz) _pz.value='';
-    var _pi=document.getElementById('pg-paste-info'); if(_pi) _pi.style.display='none';
     document.getElementById('pg-suivi').value='';
     try{ var _sa=document.getElementById('pg-suivi-auto'); if(_sa) _sa.innerHTML=''; }catch(e){window.achErr&&achErr(e)}
     document.getElementById('pg-user').value='';
@@ -14644,7 +14644,17 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
     m=t.match(/https?:\/\/[^\s"'<>)\]]+/); if(m) out.url=m[0];
     /* descriptif : le plus long paragraphe du texte collé */
     var paras=(txt||'').split(/\n{2,}/).map(function(x){return x.trim();}).filter(function(x){return x.length>=120;});
-    if(paras.length){ paras.sort(function(a,b){return b.length-a.length;}); out.descriptif=paras[0].slice(0,1400); }
+    if(paras.length){
+      /* v10.08 : on choisit le paragraphe qui RESSEMBLE À DE LA PROSE (virgules, points),
+         pas le plus long — sinon les menus/liens du site gagnent sur un Ctrl+A. */
+      var best=null, bs=-1;
+      paras.forEach(function(x){
+        var pn=(x.match(/[a-zà-ÿ],\s/g)||[]).length*3+(x.match(/[a-zà-ÿ]\.\s/g)||[]).length*2;
+        var sc=pn*1000+Math.min(x.length,1400);
+        if(sc>bs){ bs=sc; best=x; }
+      });
+      out.descriptif=best.slice(0,1400);
+    }
     return out;
   };
   window.pgAdFill=function(out){
@@ -14676,16 +14686,18 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
     try{ window.pigeDupCheck&&pigeDupCheck(); }catch(e){window.achErr&&achErr(e)}   /* alerte doublon + bandeau pro */
     return got;
   };
-  window.pgPasteParse=function(){
-    var ta=document.getElementById('pg-paste-txt'); if(!ta) return;
-    var txt=ta.value; if(!txt || txt.trim().length<12) return;
-    var got=pgAdFill(pgParseAdText(txt));
-    var info=document.getElementById('pg-paste-info');
-    if(info){
-      info.style.display='block';
-      info.innerHTML=got.length? ('✨ Détecté : <b>'+got.join(' · ')+'</b> — vérifiez, les champs déjà remplis ne sont jamais écrasés.')
-        : 'Rien de nouveau détecté (les champs déjà remplis ne sont jamais écrasés).';
-    }
+  /* v10.08 : coller le texte de l'annonce DANS LE DESCRIPTIF lance l'extraction tout seul.
+     Si on colle une page entière (Ctrl+A), le descriptif ne garde que le paragraphe de l'annonce. */
+  window.pgDescPaste=function(){
+    setTimeout(function(){
+      var de=document.getElementById('pg-descriptif'); if(!de) return;
+      var txt=de.value||''; if(txt.trim().length<12) return;
+      var out=pgParseAdText(txt);
+      if(txt.length>1500 && out.descriptif) de.value=out.descriptif;
+      delete out.descriptif;
+      var got=pgAdFill(out);
+      if(window.toast) toast(got.length?('\u2728 D\u00e9tect\u00e9 depuis l\u2019annonce : '+got.join(' \u00b7 ')+' \u2014 v\u00e9rifiez'):'Annonce coll\u00e9e \u2014 aucune information nouvelle d\u00e9tect\u00e9e');
+    },80);
   };
 
   window.pigeNew=function(){ openBlank('', 'manuel'); };
@@ -14698,7 +14710,6 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
     var r=load().filter(function(x){return x.id===id;})[0]; if(!r) return;
     function S(fid,v){ var e=document.getElementById(fid); if(e) e.value=(v==null?'':v); }
     function C(fid,v){ var e=document.getElementById(fid); if(e) e.checked=!!v; }
-    S('pg-paste-txt',''); var _pi2=document.getElementById('pg-paste-info'); if(_pi2) _pi2.style.display='none';
     S('pg-edit-id',id); S('pg-new-url',r.url||''); S('pg-new-src',r.src||'manuel');
     S('pg-adresse',r.adresse||r.titre||'');
     S('pg-prix', r.prix? fmtN(r.prix):'');
