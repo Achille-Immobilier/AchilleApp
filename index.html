@@ -1685,7 +1685,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     </div>
   </div>
   </div>
-  <div class="logo-ver app-ver">Achille App — v10.06</div>
+  <div class="logo-ver app-ver">Achille App — v10.07</div>
 </aside>
 <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Réduire la barre latérale">‹</button>
 
@@ -11840,7 +11840,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     startRealtime();
     var ov=document.getElementById('ach-login-overlay'); if(ov) ov.classList.add('ach-hidden');
     var ub=document.getElementById('ach-userbar'); if(ub) ub.style.display='none';
-    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v10.06';
+    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v10.07';
     flag('Synchronis\u00e9');
     // fin de l'init : on autorise la journalisation des actions
     setTimeout(function(){ installInterceptor._init=false; }, 1500);
@@ -12936,6 +12936,10 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
     </div>
     <input type="hidden" id="pg-edit-id"><input type="hidden" id="pg-tempref"><input type="hidden" id="pg-created"><input type="hidden" id="pg-new-url"><input type="hidden" id="pg-new-src">
     <div id="pg-srcline" style="font-size:12px;color:var(--gris);margin-bottom:8px;"></div>
+    <div id="pg-paste-wrap" style="margin-bottom:10px;">
+      <textarea id="pg-paste-txt" rows="2" oninput="pgPasteParse()" placeholder="✨ Collez ici le texte de l'annonce (sur la page : Ctrl+A puis Ctrl+C) — prix, surface, pièces, tél… se remplissent seuls" style="width:100%;border:1px dashed rgba(180,85,45,.5);border-radius:8px;padding:8px 11px;font-family:'Jost',sans-serif;font-size:12.5px;background:#fdfbf7;color:var(--noir);outline:none;resize:vertical;"></textarea>
+      <div id="pg-paste-info" style="display:none;font-size:12px;color:var(--kaki);margin-top:4px;line-height:1.5;"></div>
+    </div>
     <div id="pg-lock-warn" style="display:none;background:#fdf3e7;border:1px solid #e8c9a0;color:#8a5a1e;border-radius:8px;padding:9px 13px;font-size:12.5px;margin-bottom:10px;line-height:1.5;"></div>
     <div class="pige-grid">
       <div class="pige-col">
@@ -12977,7 +12981,7 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
 
       </div>
       <div class="pige-col">
-        <div class="form-group" style="flex:1;display:flex;flex-direction:column;"><label class="form-label">Descriptif <span style="font-weight:400;color:var(--gris-2);font-size:11px;">— collez ici le texte de l’annonce, l’extraction est automatique</span></label>
+        <div class="form-group" style="flex:1;display:flex;flex-direction:column;"><label class="form-label">Descriptif <span style="font-weight:400;color:var(--gris-2);font-size:11px;">— le bouton ✨ analyse ce texte (mêmes détections que la zone de collage du haut)</span></label>
           <textarea class="form-input" id="pg-descriptif" placeholder="Collez le texte de l’annonce (ou écrivez librement)…" style="resize:vertical;min-height:150px;flex:1;font-family:inherit;line-height:1.5;"></textarea>
           <button class="btn btn-outline btn-sm" style="margin-top:6px;align-self:flex-start;" onclick="pigeExtract()">✨ Extraire les informations</button></div>
         <div class="form-row" style="align-items:stretch;">
@@ -14075,6 +14079,33 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
       } else if(tries>120){ clearInterval(it); }
     },500);
   })();
+  /* ══ v10.07 : bouton navigateur « ➜ Achille » — la page de l'annonce ouvre l'app avec
+     #pgimp=<base64{u:url, x:texte}> ; on attend la connexion puis on ouvre une fiche
+     neuve pré-remplie par le parseur « Coller l'annonce ». ══ */
+  (function(){
+    var m=(location.hash||'').match(/^#pgimp=([A-Za-z0-9\-_=]+)$/); if(!m) return;
+    try{ history.replaceState(null,'',location.pathname+location.search); }catch(e){window.achErr&&achErr(e)}
+    var j=null;
+    try{
+      var b=m[1].replace(/-/g,'+').replace(/_/g,'/'); while(b.length%4) b+='=';
+      j=JSON.parse(decodeURIComponent(escape(atob(b))));
+    }catch(e){ window.achErr&&achErr(e); return; }
+    if(!j) return;
+    var tries=0;
+    var it=setInterval(function(){
+      tries++;
+      if(window.ACH_USER && window.pgPasteParse){
+        clearInterval(it);
+        setTimeout(function(){ try{
+          navTo('pige',null);
+          openBlank(j.u||'', srcOf(j.u||''));
+          var ta=document.getElementById('pg-paste-txt'); if(ta) ta.value=(j.x||'').slice(0,15000);
+          pgPasteParse();
+          if(window.toast) toast('✨ Annonce importée — vérifiez la fiche avant d\u2019enregistrer');
+        }catch(e){window.achErr&&achErr(e)} }, 400);
+      } else if(tries>240){ clearInterval(it); }
+    },500);
+  })();
   /* v7.34 : le bandeau pro se met à jour avec les mêmes saisies */
   (function(){ var _dc=window.pigeDupCheck; window.pigeDupCheck=function(){ _dc(); try{ pigeProWarn(); }catch(e){window.achErr&&achErr(e)} }; })();
   var UCOL={admin:'#4c533b',gerant:'#6b7453',collaborateur:'#b47360',alternant:'#b0883b'};
@@ -14542,6 +14573,8 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
     TXT.forEach(function(id){ var e=document.getElementById(id); if(e) e.value=''; });
     CBX.forEach(function(id){ var e=document.getElementById(id); if(e) e.value='0'; });
     document.getElementById('pg-dpe').value='';
+    var _pz=document.getElementById('pg-paste-txt'); if(_pz) _pz.value='';
+    var _pi=document.getElementById('pg-paste-info'); if(_pi) _pi.style.display='none';
     document.getElementById('pg-suivi').value='';
     try{ var _sa=document.getElementById('pg-suivi-auto'); if(_sa) _sa.innerHTML=''; }catch(e){window.achErr&&achErr(e)}
     document.getElementById('pg-user').value='';
@@ -14568,6 +14601,93 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
     pigeStatutPickRender('encours'); pigeDossSelectFill('');   /* v10.04 : une nouvelle fiche naît « Intéressant » (on ne rentre que des fiches intéressantes — Laurent) */
     openModal('modal-pige');
   }
+  /* ══ v10.07 : « Coller l'annonce » — analyse du texte d'une annonce et pré-remplissage ══ */
+  function pgAdNum(x){ x=(''+x).replace(/[\s\u00a0.]/g,'').replace(',','.'); var n=parseFloat(x); return n===n?n:0; }
+  window.pgParseAdText=function(txt){
+    var t=(' '+(txt||'')+' ').replace(/\u00a0/g,' ');
+    var out={}, m;
+    /* JSON-LD (fourni par le bouton navigateur) */
+    m=t.match(/"price"\s*:\s*"?([\d\s.,]+)/); if(m){ var pj=pgAdNum(m[1]); if(pj>=10000) out.prix=pj; }
+    m=t.match(/"addressLocality"\s*:\s*"([^"]{2,40})"/); if(m) out.ville=m[1];
+    m=t.match(/"postalCode"\s*:\s*"?(\d{5})/); if(m) out.cp=m[1];
+    m=t.match(/"telephone"\s*:\s*"([+\d\s.()\-]{8,20})"/); if(m) out.tel=m[1].trim();
+    /* prix : le plus grand montant en € (hors €/m²) */
+    if(!out.prix){
+      var best=0, reP=/([\d][\d\s.]{2,14}(?:,\d+)?)\s*€(?!\s*\/?\s*m)/g, k;
+      while((k=reP.exec(t))){ var v=pgAdNum(k[1]); if(v>best) best=v; }
+      if(best>=10000) out.prix=best;
+    }
+    /* surface : m² non précédé de €/ */
+    m=t.match(/(?:^|[^€\/\d,.])(\d{1,3}(?:[.,]\d{1,2})?)\s*m[²2](?![a-zA-Z0-9])/); if(m){ var sf=pgAdNum(m[1]); if(sf>=8&&sf<=1500) out.surface=sf; }
+    m=t.match(/(\d{1,2})\s*pi[èe]ces?/i); if(m) out.pieces=m[1];
+    m=t.match(/(\d{1,2})\s*chambres?/i); if(m) out.chambres=m[1];
+    m=t.match(/(\d{1,2})\s*(?:er|e|è|ème|eme)?\s*étage/i); if(m) out.etage=m[1]+'e';
+    else if(/rez[- ]de[- ]chauss|\bRDC\b/i.test(t)) out.etage='RDC';
+    m=t.match(/(?:DPE|classe\s+énerg\w*|GES)\s*[:\-]?\s*([A-G])\b/i); if(m) out.dpe=m[1].toUpperCase();
+    m=t.match(/(?:année?\s+de\s+construction|construit|b[âa]ti)\D{0,12}((?:18|19|20)\d{2})/i); if(m) out.annee=m[1];
+    if(!out.tel){ m=t.match(/(?:\+33\s?[1-9]|0[1-9])(?:[\s.\-]?\d{2}){4}/); if(m) out.tel=m[0].trim(); }
+    /* ville : « Neuilly-sur-Seine (92200) » ou « 92200 Neuilly-sur-Seine » */
+    if(!out.ville){
+      m=t.match(/([A-ZÀ-Ü][\wÀ-ÿ'’\-]+(?:[\s\-][A-ZÀ-Üa-zà-ÿ'’\-]+){0,3})\s*\((\d{5})\)/);
+      if(m){ out.ville=m[1].trim(); out.cp=m[2]; }
+      else { m=t.match(/(\d{5})\s+([A-ZÀ-Ü][\wÀ-ÿ'’\-]+(?:[\s\-][A-ZÀ-Üa-zà-ÿ'’\-]+){0,3})/); if(m){ out.cp=m[1]; out.ville=m[2].trim(); } }
+    }
+    if(out.cp && /^75[01]\d{2}$/.test(out.cp)){ var ar=parseInt(out.cp.slice(3),10); if(ar>=1&&ar<=20) out.ville='Paris '+(ar===1?'1er':ar+'e'); }
+    /* caractéristiques, en évitant les négations (« sans balcon », « pas de cave ») */
+    [['cave','cave'],['parking','parking|stationnement|box|garage'],['balcon','balcon'],['terrasse','terrasse'],['jardin','jardin']].forEach(function(w){
+      var reC=new RegExp('(sans |pas de |aucune? |ni )?\\b(?:'+w[1]+')','i'); var kc=reC.exec(t);
+      if(kc && !kc[1]) out[w[0]]=1;
+    });
+    /* adresse : « rue / avenue / boulevard … » */
+    m=t.match(/\b(?:rue|avenue|av\.|boulevard|bd|place|allée|chemin|impasse|quai|villa|square)\s+[A-Za-zÀ-ÿ'’\- ]{2,40}/i);
+    if(m) out.adresse=m[0].trim();
+    m=t.match(/https?:\/\/[^\s"'<>)\]]+/); if(m) out.url=m[0];
+    /* descriptif : le plus long paragraphe du texte collé */
+    var paras=(txt||'').split(/\n{2,}/).map(function(x){return x.trim();}).filter(function(x){return x.length>=120;});
+    if(paras.length){ paras.sort(function(a,b){return b.length-a.length;}); out.descriptif=paras[0].slice(0,1400); }
+    return out;
+  };
+  window.pgAdFill=function(out){
+    var got=[];
+    function FL(id,v,lbl){ var e=document.getElementById(id); if(!e||v==null||v==='') return; if((''+(e.value||'')).trim()!=='') return; e.value=v; if(lbl) got.push(lbl); }
+    if(out.prix) FL('pg-prix', fmtN(out.prix), fmtN(out.prix)+' €');
+    if(out.surface) FL('pg-surface', out.surface, out.surface+' m²');
+    if(out.pieces) FL('pg-pieces', out.pieces, out.pieces+' pièces');
+    if(out.chambres) FL('pg-chambres', out.chambres, out.chambres+' ch.');
+    if(out.etage) FL('pg-etage', out.etage, 'étage '+out.etage);
+    if(out.annee) FL('pg-annee', out.annee, 'constr. '+out.annee);
+    if(out.tel){ var telV=(window.pgTelPretty?pgTelPretty(out.tel):out.tel); FL('pg-tel', telV, telV); }
+    if(out.adresse) FL('pg-adresse', out.adresse, out.adresse);
+    if(out.ville) FL('pg-ville', out.ville, out.ville);
+    if(out.dpe){ var d=document.getElementById('pg-dpe'); if(d && !d.value){ d.value=out.dpe; got.push('DPE '+out.dpe); } }
+    ['cave','parking','balcon','terrasse','jardin'].forEach(function(w){
+      if(out[w]){ var e=document.getElementById('pg-'+w); if(e && (e.value==='0'||e.value==='')){ e.value='1'; got.push(w); } }
+    });
+    if(out.descriptif){ var de=document.getElementById('pg-descriptif'); if(de && !(de.value||'').trim()){ de.value=out.descriptif; got.push('descriptif'); } }
+    if(out.url){
+      var ue=document.getElementById('pg-new-url');
+      if(ue && !ue.value){
+        var sc=srcOf(out.url);
+        if(sc==='fipac'){ var fp=document.getElementById('pg-fipac'); if(fp&&!fp.value){ fp.value=out.url; got.push('lien Fipac'); } }
+        else { ue.value=out.url; var se=document.getElementById('pg-new-src'); if(se) se.value=sc; pigeLinksRender([{src:sc,url:out.url}]); got.push('lien '+((SRC[sc]||SRC.manuel)[0])); }
+      }
+    }
+    try{ pigeCalcM2(); }catch(e){window.achErr&&achErr(e)}
+    try{ window.pigeDupCheck&&pigeDupCheck(); }catch(e){window.achErr&&achErr(e)}   /* alerte doublon + bandeau pro */
+    return got;
+  };
+  window.pgPasteParse=function(){
+    var ta=document.getElementById('pg-paste-txt'); if(!ta) return;
+    var txt=ta.value; if(!txt || txt.trim().length<12) return;
+    var got=pgAdFill(pgParseAdText(txt));
+    var info=document.getElementById('pg-paste-info');
+    if(info){
+      info.style.display='block';
+      info.innerHTML=got.length? ('✨ Détecté : <b>'+got.join(' · ')+'</b> — vérifiez, les champs déjà remplis ne sont jamais écrasés.')
+        : 'Rien de nouveau détecté (les champs déjà remplis ne sont jamais écrasés).';
+    }
+  };
+
   window.pigeNew=function(){ openBlank('', 'manuel'); };
   window.pigeFromUrl=function(){
     var e=document.getElementById('pige-url'); var u=(e&&e.value||'').trim();
@@ -14578,6 +14698,7 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
     var r=load().filter(function(x){return x.id===id;})[0]; if(!r) return;
     function S(fid,v){ var e=document.getElementById(fid); if(e) e.value=(v==null?'':v); }
     function C(fid,v){ var e=document.getElementById(fid); if(e) e.checked=!!v; }
+    S('pg-paste-txt',''); var _pi2=document.getElementById('pg-paste-info'); if(_pi2) _pi2.style.display='none';
     S('pg-edit-id',id); S('pg-new-url',r.url||''); S('pg-new-src',r.src||'manuel');
     S('pg-adresse',r.adresse||r.titre||'');
     S('pg-prix', r.prix? fmtN(r.prix):'');
@@ -14857,36 +14978,12 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
   };
 
   window.pigeExtract=function(){
-    var t=(document.getElementById('pg-descriptif').value||''); if(!t.trim()){ if(window.toast) toast('Collez d’abord le texte de l’annonce dans le descriptif'); return; }
-    var found=0;
-    function setIf(id,val){ var e=document.getElementById(id); if(e && val && !(''+e.value).trim()){ e.value=val; found++; } }
-    function chk(id){ var e=document.getElementById(id); if(e && (parseInt(e.value||0,10)||0)===0){ e.value='1'; found++; } }
-    var prix=0; (t.match(/\d{1,3}(?:[\s\u00a0.]\d{3})+\s*€|\d{5,}\s*€/g)||[]).forEach(function(m){ var n=parseFloat(m.replace(/[^\d]/g,'')); if(n>prix) prix=n; });
-    if(prix) setIf('pg-prix', fmtN(prix));
-    var surf=(t.match(/(\d{1,3}(?:[.,]\d{1,2})?)\s*m\s?[²2]/i)||[])[1];
-    if(surf) setIf('pg-surface', surf.replace(',','.'));
-    var pieces=(t.match(/(\d{1,2})\s*pi[èe]ces?/i)||[])[1];
-    if(pieces) setIf('pg-pieces', pieces);
-    var chb=(t.match(/(\d{1,2})\s*chambres?/i)||[])[1];
-    if(chb) setIf('pg-chambres', chb);
-    var etage=(t.match(/(\d{1,2})\s*(?:er|e|ème)?\s*étage/i)||[])[1];
-    if(etage) setIf('pg-etage', etage+'e');
-    else if(/rez[\s\-]de[\s\-]chauss/i.test(t)) setIf('pg-etage','RDC');
-    var annee=(t.match(/(?:construit|construction|b[âa]ti)\D{0,12}(1[89]\d{2}|20\d{2})/i)||[])[1] || (t.match(/\b(1[89]\d{2})\b/)||[])[1];
-    if(annee) setIf('pg-annee', annee);
-    var dpe=(t.match(/(?:DPE|classe\s+énerg\w*|GES)\s*[:\-]?\s*([A-G])\b/i)||[])[1];
-    if(dpe){ var e=document.getElementById('pg-dpe'); if(e && !e.value){ e.value=dpe.toUpperCase(); found++; } }
-    if(/\bcave\b/i.test(t)) chk('pg-cave');
-    if(/parking|stationnement|box\b|garage/i.test(t)) chk('pg-parking');
-    if(/balcon/i.test(t)) chk('pg-balcon');
-    if(/terrasse|jardin/i.test(t)) chk('pg-terrasse');
-    var tel=(t.match(/(?:\+33\s?|0)[1-9](?:[\s.\-]?\d{2}){4}/)||[])[0];
-    if(tel) setIf('pg-tel', pgTelPretty(tel));   /* v8.50 */
-    var adr=(t.match(/\b(?:rue|avenue|av\.|boulevard|bd|place|allée|chemin|impasse|quai|villa|square)\s+[A-Za-zÀ-ÿ'’\- ]{2,40}/i)||[])[0];
-    if(adr) setIf('pg-adresse', adr.trim());
-    pigeCalcM2();
-    try{ window.pigeDupCheck(); }catch(e){window.achErr&&achErr(e)}   /* v7.35 : l'extraction auto déclenche AUSSI l'alerte doublon + pro */
-    if(window.toast) toast(found?('✨ '+found+' information'+(found>1?'s':'')+' extraite'+(found>1?'s':'')+' — vérifiez et complétez'):'Aucune information reconnue dans ce texte');
+    /* v10.07 : délègue au parseur partagé « Coller l'annonce » (pgParseAdText/pgAdFill) */
+    var t=(document.getElementById('pg-descriptif').value||'');
+    if(!t.trim()){ if(window.toast) toast('Collez d\u2019abord le texte de l\u2019annonce dans le descriptif'); return; }
+    var out=pgParseAdText(t); delete out.descriptif;   /* le descriptif est ici la SOURCE, on n'y touche pas */
+    var got=pgAdFill(out);
+    if(window.toast) toast(got.length?('✨ '+got.length+' information'+(got.length>1?'s':'')+' extraite'+(got.length>1?'s':'')+' — vérifiez et complétez'):'Aucune information nouvelle reconnue dans ce texte');
   };
 
   /* ---- Photo & Plan : coller / compresser (vignette 220px) + zoom ---- */
