@@ -1685,7 +1685,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     </div>
   </div>
   </div>
-  <div class="logo-ver app-ver">Achille App — v10.11</div>
+  <div class="logo-ver app-ver">Achille App — v10.12</div>
 </aside>
 <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Réduire la barre latérale">‹</button>
 
@@ -11840,7 +11840,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     startRealtime();
     var ov=document.getElementById('ach-login-overlay'); if(ov) ov.classList.add('ach-hidden');
     var ub=document.getElementById('ach-userbar'); if(ub) ub.style.display='none';
-    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v10.11';
+    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v10.12';
     flag('Synchronis\u00e9');
     // fin de l'init : on autorise la journalisation des actions
     setTimeout(function(){ installInterceptor._init=false; }, 1500);
@@ -14114,9 +14114,23 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
         /* site inconnu (Figaro, confrère, Facebook…) : le lien est rattaché en « Autre site » */
         var _sc=srcOf(j.u||''); if(_sc==='manuel' && j.u) _sc='autre';
         openBlank(j.u||'', _sc);
-        var out=pgParseAdText((j.x||'').slice(0,15000));
+        var out=pgParseAdText((j.x||'').slice(0,45000));
         delete out.url;   /* le lien est déjà posé par openBlank depuis j.u */
+        /* bouton v2 : les liens « tel: » de la page sont la source la plus fiable
+           (sur SeLoger le numéro affiché tombe souvent après la coupe du texte) */
+        if(!out.tel && j.p && j.p.length){
+          var _tp=null, _q;
+          for(_q=0;_q<j.p.length;_q++){
+            var _dg=(''+j.p[_q]).replace(/\D/g,'').replace(/^33/,'0');
+            if(/^0[67]\d{8}$/.test(_dg)){ _tp=_dg; break; }
+            if(!_tp && /^0[1-9]\d{8}$/.test(_dg)) _tp=_dg;
+          }
+          if(_tp) out.tel=_tp;
+        }
         pgAdFill(out);
+        /* bouton v2 : première photo de l'annonce + plan si détecté */
+        if(j.i && j.i.length && !_photo) pgImgImport(''+j.i[0], 'photo');
+        if(j.pl && !_plan) pgImgImport(''+j.pl, 'plan');
         window._pgImpBusy=false;
         if(window.toast) toast('\u2728 Annonce import\u00e9e \u2014 v\u00e9rifiez la fiche avant d\u2019enregistrer');
       }catch(e){ window._pgImpBusy=false; window.achErr&&achErr(e); } }, 600);
@@ -15123,23 +15137,51 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
       }catch(e){ res(null); }
     });
   }
+  /* v10.12 : BONNE QUALITÉ — l'image est réduite à 1100 px (JPEG 0.82) et envoyée au
+     coffre cloud (v8.46) ; la fiche ne garde que l'adresse. Sans coffre (hors ligne),
+     repli vignette 220 px comme avant pour ne pas saturer le stockage local. */
+  function pgShrink(im, max, q){
+    var k=Math.min(1, max/Math.max(im.width||1, im.height||1));
+    var cv=document.createElement('canvas');
+    cv.width=Math.max(1,Math.round(im.width*k)); cv.height=Math.max(1,Math.round(im.height*k));
+    cv.getContext('2d').drawImage(im,0,0,cv.width,cv.height);
+    return cv.toDataURL('image/jpeg',q);
+  }
+  function pgAdoptImage(im, target){
+    var big=pgShrink(im,1100,0.82), small=pgShrink(im,220,0.55);
+    if(target==='plan'){ _plan=big; pgPlanShow(); } else { _photo=big; pgPhotoShow(); }
+    pgPhotoUpload(big).then(function(url){
+      if(url){
+        if(target==='plan'){ if(_plan===big) _plan=url; }
+        else { if(_photo===big) _photo=url; }
+      } else {
+        /* pas de coffre : on retombe sur la vignette locale */
+        if(target==='plan'){ if(_plan===big){ _plan=small; pgPlanShow(); } }
+        else { if(_photo===big){ _photo=small; pgPhotoShow(); } }
+      }
+    });
+  }
   function pgCompress(file, target){
     var rd=new FileReader();
     rd.onload=function(){ var im=new Image();
-      im.onload=function(){ var w=Math.min(220,im.width), r=w/im.width, cv=document.createElement('canvas');
-        cv.width=w; cv.height=Math.round(im.height*r);
-        cv.getContext('2d').drawImage(im,0,0,cv.width,cv.height);
-        var data=cv.toDataURL('image/jpeg',0.55);
-        if(target==='plan'){ _plan=data; pgPlanShow(); } else { _photo=data; pgPhotoShow(); }
-        /* v8.46 : envoi au coffre en arrière-plan — si l'utilisateur n'a pas encore enregistré,
-           la fiche stockera directement l'adresse cloud */
-        pgPhotoUpload(data).then(function(url){
-          if(!url) return;
-          if(target==='plan'){ if(_plan===data){ _plan=url; } }
-          else { if(_photo===data){ _photo=url; } }
-        }); };
+      im.onload=function(){ pgAdoptImage(im, target); };
       im.src=rd.result; };
     rd.readAsDataURL(file);
+  }
+  /* v10.12 : import d'une image depuis la page de l'annonce (bouton navigateur).
+     CORS accepté → recompression + coffre ; refusé → on garde l'adresse distante. */
+  function pgImgImport(url, target){
+    if(!url) return;
+    try{
+      fetch(url,{mode:'cors'}).then(function(r){ if(!r.ok) throw 0; return r.blob(); })
+        .then(function(bl){ return new Promise(function(res,rej){
+          var im=new Image(); im.onload=function(){ res(im); }; im.onerror=rej;
+          im.src=URL.createObjectURL(bl); }); })
+        .then(function(im){ pgAdoptImage(im, target); })
+        .catch(function(){
+          if(target==='plan'){ _plan=url; pgPlanShow(); } else { _photo=url; pgPhotoShow(); }
+        });
+    }catch(e){window.achErr&&achErr(e)}
   }
   /* v8.46 : MIGRATION AUTOMATIQUE des photos déjà stockées en base64 — une par une, en douceur.
      Idempotente (seules les images « data: » sont concernées), elle tourne après la connexion ;
