@@ -1685,7 +1685,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     </div>
   </div>
   </div>
-  <div class="logo-ver app-ver">Achille App — v10.13</div>
+  <div class="logo-ver app-ver">Achille App — v10.14</div>
 </aside>
 <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Réduire la barre latérale">‹</button>
 
@@ -11840,7 +11840,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     startRealtime();
     var ov=document.getElementById('ach-login-overlay'); if(ov) ov.classList.add('ach-hidden');
     var ub=document.getElementById('ach-userbar'); if(ub) ub.style.display='none';
-    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v10.13';
+    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v10.14';
     flag('Synchronis\u00e9');
     // fin de l'init : on autorise la journalisation des actions
     setTimeout(function(){ installInterceptor._init=false; }, 1500);
@@ -14127,6 +14127,8 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
           }
           if(_tp) out.tel=_tp;
         }
+        /* bouton v2.2 : lettre DPE lue dans les données embarquées du portail */
+        if(j.e && !out.dpe && /^[A-G]$/.test(''+j.e)) out.dpe=''+j.e;
         pgAdFill(out);
         /* bouton v2 : première photo de l'annonce ; plan étiqueté (j.pl) sinon
            DÉTECTION VISUELLE parmi les images suivantes de la galerie (v10.13) */
@@ -14737,7 +14739,7 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
     /* ── vendeur : le nom du contact, s'il est affich\u00e9 pr\u00e8s du t\u00e9l\u00e9phone ──
        (SeLoger particulier : \u00ab Guillaume \u00bb juste au-dessus du num\u00e9ro) */
     var _reNom=/^[A-Z\u00c0-\u00dc][a-z\u00e0-\u00ff'\u2019\-]{1,20}(?:\s[A-Z\u00c0-\u00dc][A-Za-z\u00e0-\u00ff'\u2019\-]{1,20}){0,2}$/;
-    var _reNomStop=/propri|particulier|contact|message|envoyer|t\u00e9l\u00e9phone|voir|appeler|masqu|estim|annonce|identifiant|email|pr\u00e9nom|nom de|paris|neuilly|levallois/i;
+    var _reNomStop=/propri|particulier|contact|message|envoyer|t\u00e9l\u00e9phone|voir|appel|masqu|estim|annonce|identifiant|email|pr\u00e9nom|nom de|paris|neuilly|levallois|afficher|num\u00e9ro/i;
     if(out.tel){
       var _tk=out.tel.replace(/\D/g,'').slice(-9);
       for(var _li=0;_li<_lines.length;_li++){
