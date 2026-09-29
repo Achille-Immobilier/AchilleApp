@@ -1685,7 +1685,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     </div>
   </div>
   </div>
-  <div class="logo-ver app-ver">Achille App — v10.17</div>
+  <div class="logo-ver app-ver">Achille App — v10.18</div>
 </aside>
 <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Réduire la barre latérale">‹</button>
 
@@ -1767,6 +1767,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
           <button class="pg-chip" style="margin-top:7px;width:100%;" onclick="pgImpSort(event)" title="Re-cliquez pour inverser">⇅ Trier : Prioritaire → Moyen</button>
         </div></span>
         <button class="pg-chip" id="pg-new-btn" onclick="pgNewToggle()" title="N'afficher que les fiches que vous n'avez pas encore ouvertes">✨ New</button>
+        <button class="pg-chip" id="pg-conf-btn" onclick="pgConfToggle()" title="N'afficher que les biens partagés par des confrères (fiches PDF)">🤝 Confrères</button>
         <span class="pg-sep"></span>
         <span id="pg-filt-villes" class="pg-filtset"></span>
         <span class="pg-sep"></span>
@@ -11840,7 +11841,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     startRealtime();
     var ov=document.getElementById('ach-login-overlay'); if(ov) ov.classList.add('ach-hidden');
     var ub=document.getElementById('ach-userbar'); if(ub) ub.style.display='none';
-    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v10.17';
+    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v10.18';
     flag('Synchronis\u00e9');
     // fin de l'init : on autorise la journalisation des actions
     setTimeout(function(){ installInterceptor._init=false; }, 1500);
@@ -12979,7 +12980,7 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
       <div class="pige-col">
         <div class="form-group" style="flex:1;display:flex;flex-direction:column;"><label class="form-label">Descriptif <span style="font-weight:400;color:var(--gris-2);font-size:11px;">— collez le texte de l’annonce (Ctrl+A puis Ctrl+C sur la page) : prix, surface, tél… se remplissent seuls</span></label>
           <textarea class="form-input" id="pg-descriptif" onpaste="pgDescPaste()" placeholder="Collez le texte de l’annonce (ou écrivez librement)…" style="resize:vertical;min-height:150px;flex:1;font-family:inherit;line-height:1.5;"></textarea>
-          <button class="btn btn-outline btn-sm" style="margin-top:6px;align-self:flex-start;" onclick="pigeExtract()">✨ Extraire les informations</button></div>
+          <button class="btn btn-outline btn-sm" style="margin-top:6px;align-self:flex-start;" onclick="pigeExtract()">✨ Extraire les informations</button><button class="btn btn-outline btn-sm" style="margin-top:6px;align-self:flex-start;margin-left:8px;" onclick="pgPdfPick()" title="Bien partagé discrètement par un confrère : le PDF est lu (texte, photo, plan), joint à la fiche, et la source devient « Confrère »">📄 Fiche PDF confrère</button><input type="file" id="pg-pdf-file" accept="application/pdf" style="display:none" onchange="pgPdfImport(this.files[0])"></div>
         <div class="form-row" style="align-items:stretch;">
           <div class="form-group" style="flex:1;"><label class="form-label">Photo</label>
             <div id="pg-photo" class="pg-photo" tabindex="0" title="Cliquez ici puis collez l’image (Ctrl+V)"><span id="pg-photo-hint">Cliquez puis collez la photo (Ctrl+V)</span><img id="pg-photo-img" style="display:none;" onclick="pigeZoom('photo')"></div>
@@ -13033,7 +13034,7 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
   function pgStatutDef(k){ for(var i=0;i<PG_STATUTS.length;i++){ if(PG_STATUTS[i].k===k) return PG_STATUTS[i]; } return PG_STATUTS[0]; }   /* v8.58 : repli = « En cours » (désormais en tête du tableau) */
   function pgStatutOf(r){ return (r&&r.statut)||'encours'; }
   var pgDossier='tous';
-  var pgImp=['chaud','encours','offline'], pgNewOnly=false;   /* v10.05 : filtre importance + bouton New */   /* filtre dossier courant : 'tous' | statut | 'd:'+id */
+  var pgImp=['chaud','encours','offline'], pgNewOnly=false, pgConfOnly=false;   /* v10.05 : filtre importance + bouton New */   /* filtre dossier courant : 'tous' | statut | 'd:'+id */
   var pgPage=1;
   var PG_PER=25;
 
@@ -13563,7 +13564,7 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
   }
 
   function esc(s){ return (''+(s||'')).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-  var SRC={seloger:['SeLoger','#e00034'],pap:['PAP','#0d6efd'],lbc:['Leboncoin','#ec5a13'],bd:['Belles Demeures','#9a7b4f'],manuel:['Manuelle','#7a7570'],fipac:['Fipac','#7a5c9e'],autre:['Autre site','#5b8aa6']};
+  var SRC={seloger:['SeLoger','#e00034'],pap:['PAP','#0d6efd'],lbc:['Leboncoin','#ec5a13'],bd:['Belles Demeures','#9a7b4f'],manuel:['Manuelle','#7a7570'],fipac:['Fipac','#7a5c9e'],autre:['Autre site','#5b8aa6'],confrere:['Confrère','#2f6f6f']};
   var SRC_MAIN=['seloger','pap','lbc','bd','manuel'];   /* sources principales proposées à tous */
   function admin(){ return (window.ACH_USER&&ACH_USER.key)==='admin'; }
   function srcOptions(cur){
@@ -14269,7 +14270,7 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
     return line+' <span style="color:var(--gris-2);white-space:nowrap;">· créée le '+dstr(r.created)+'</span>';
   }
   function pgSrcLogo(k,c){   /* v9.46 : monogramme SVG aux couleurs de la marque (pas de fichier externe) */
-    var L={seloger:'S',pap:'P',lbc:'b',bd:'B',fipac:'F',manuel:'M'}[k]||'↗';
+    var L={seloger:'S',pap:'P',lbc:'b',bd:'B',fipac:'F',manuel:'M',confrere:'C'}[k]||'↗';
     return '<svg width="15" height="15" viewBox="0 0 16 16" style="flex:none;display:block;" aria-hidden="true"><rect width="16" height="16" rx="4.5" fill="'+c+'"/><text x="8" y="11.8" text-anchor="middle" font-family="Jost,Arial,sans-serif" font-size="11" font-weight="700" fill="#fff">'+L+'</text></svg>';
   }
   function srcLinkBtns(r){
@@ -14280,9 +14281,13 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
       var s=SRC[l.src]||SRC.autre;
       out+='<button class="pg-srcpill" style="border-color:'+s[1]+'55;color:'+s[1]+';" onclick="event.stopPropagation();window.open(\''+esc(l.url)+'\',\'_blank\')">'+pgSrcLogo(l.src,s[1])+s[0]+'</button>';
     });
+    if(r && r.src==='confrere'){
+      var sc9=SRC.confrere;
+      out+='<button class="pg-srcpill" style="border-color:'+sc9[1]+'55;color:'+sc9[1]+';" title="'+(r.pdf?'Ouvrir la fiche PDF du confrère':'Bien partagé par un confrère')+'" onclick="event.stopPropagation();'+(r.pdf?('window.open(\''+esc(r.pdf)+'\',\'_blank\')'):'')+'">'+pgSrcLogo('confrere',sc9[1])+'Confrère</button>';
+    }
     return out;
   }
-  var sortMode='date', _photo='', _plan='';
+  var sortMode='date', _photo='', _plan='', _pdfUrl='';
   var sortDir=-1;  /* -1 = décroissant (défaut), 1 = croissant */
   var pgFilt={sites:[], users:[], villes:[]};
   window.pigeSort=function(m,btn){
@@ -14308,6 +14313,9 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
   window.pgNewToggle=function(){ pgNewOnly=!pgNewOnly;
     var b=document.getElementById('pg-new-btn'); if(b) b.classList.toggle('on', pgNewOnly);
     pigeRender(); };
+  window.pgConfToggle=function(){ pgConfOnly=!pgConfOnly;
+    var b=document.getElementById('pg-conf-btn'); if(b) b.classList.toggle('on', pgConfOnly);
+    pigeRender(); };
   window.pgHelpToggle=function(ev){ try{ ev.stopPropagation(); }catch(e){window.achErr&&achErr(e)}
     var l=document.getElementById('pg-legend'); if(l) l.classList.toggle('pin'); };
   document.addEventListener('click',function(e){ var l=document.getElementById('pg-legend');
@@ -14317,7 +14325,7 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
     pgFilt.sites=[]; pgFilt.users=[]; pgFilt.villes=[];
     pgDossier='tous'; pgPage=1;
     sortMode='date'; sortDir=-1;
-    pgImp=['chaud','encours','offline']; pgNewOnly=false;   /* v10.05 */
+    pgImp=['chaud','encours','offline']; pgNewOnly=false; pgConfOnly=false; var _cb9=document.getElementById('pg-conf-btn'); if(_cb9) _cb9.classList.remove('on');   /* v10.05 */
     ['chaud','encours','offline'].forEach(function(k){ var c=document.getElementById('pg-imp-'+k); if(c) c.checked=true; });
     var _ib=document.getElementById('pg-imp-btn'); if(_ib) _ib.classList.remove('on');
     var _in=document.getElementById('pg-imp-n'); if(_in) _in.textContent='';
@@ -14440,6 +14448,7 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
     if(!q && pgFilt.villes.length){ a=a.filter(function(r){ return pgFilt.villes.indexOf(villeOf(r))>=0; }); }
     if(!q && pgImp.length<3){ a=a.filter(function(r){ return pgImp.indexOf(pgStatutOf(r))>=0; }); }   /* v10.05 : cases Importance */
     if(!q && pgNewOnly){ a=a.filter(function(r){ return window.pgNewChip && pgNewChip(r)!==''; }); }   /* v10.05 : bouton New */
+    if(!q && pgConfOnly){ a=a.filter(function(r){ return r.src==='confrere'; }); }   /* biens partagés par des confrères */
     renderFolderBar(a, load());
     /* v7.22 : « Tous » et les statuts ne montrent que les fiches ACTIVES ; le tiroir « arch » montre les archivées */
     var telIx=pgTelIndex();   /* v7.34 : index téléphone → fiches (toutes, archivées comprises) */
@@ -14642,7 +14651,7 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
     var dw=document.getElementById('pg-dup-warn'); if(dw) dw.style.display='none';
     var pw=document.getElementById('pg-pro-warn'); if(pw) pw.style.display='none';
     var mb=document.getElementById('pg-merge-btn'); if(mb) mb.style.display='none';   /* v7.35 : pas de fusion sur une fiche non enregistrée */
-    _photo=''; _plan=''; pgPhotoShow(); pgPlanShow();
+    _photo=''; _plan=''; _pdfUrl=''; pgPhotoShow(); pgPlanShow();
     document.getElementById('pg-modal-title').textContent='Nouvelle fiche de pige';
     var s=SRC[src||'manuel'];
     document.getElementById('pg-srcline').innerHTML=(url?('Reconnu : <b style="color:'+s[1]+';">'+s[0]+'</b> — vérifiez la source ci-dessous'):'Fiche créée à la main');
@@ -14660,7 +14669,11 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
      par le bouton navigateur) et en tire prix, surface, pièces, chambres, étage, DPE,
      année, téléphone, ville, adresse, caractéristiques, lien et descriptif.
      pgAdFill(out) remplit UNIQUEMENT les champs encore vides de la fiche. ══ */
-  function pgAdNum(x){ x=(''+x).replace(/[\s\u00a0.]/g,'').replace(',','.'); var n=parseFloat(x); return n===n?n:0; }
+  function pgAdNum(x){
+    x=(''+x).replace(/[\s\u00a0]/g,'');
+    x=x.replace(/\.(?=\d{3}(?:\D|$))/g,'');   /* point de MILLIERS retiré (1.599.000) — le point décimal (97.56) est conservé */
+    x=x.replace(',','.');
+    var n=parseFloat(x); return n===n?n:0; }
   /* « Ile de la Jatte Neuilly-sur-Seine (92200) » → « Neuilly-sur-Seine » : quand le nom
      capté finit par une commune à traits d'union, on écarte les mots de quartier devant
      (en conservant un éventuel article : La Garenne-Colombes). */
@@ -14695,7 +14708,7 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
     /* prix : le montant en € (hors €/m²) le PLUS FRÉQUENT sur la page — le vrai prix y
        figure plusieurs fois, alors que « frais de notaire inclus » (plus grand !) ou une
        mensualité n'apparaissent qu'une fois ; à égalité, le plus grand */
-    var cnt={}, reP=/([\d][\d \u202f.]{2,14}(?:,\d+)?)[ \u202f]*€(?![ \u202f]*\/?[ \u202f]*m)/g, k;   /* jamais de saut de ligne dans un montant */
+    var cnt={}, reP=/([\d][\d \u202f.]{2,14}(?:,\d+)?)[ \u202f]*(?:€|euros?\b)(?![ \u202f]*\/?[ \u202f]*m)/gi, k;   /* jamais de saut de ligne dans un montant ; « euros » des plaquettes accepté */
     while((k=reP.exec(t))){ var v=pgAdNum(k[1]); if(v>=10000) cnt[v]=(cnt[v]||0)+1; }
     var best=0, bn=0;
     for(var pv in cnt){ var nv=+pv; if(cnt[pv]>bn || (cnt[pv]===bn && nv>best)){ bn=cnt[pv]; best=nv; } }
@@ -14704,10 +14717,12 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
     m=t.match(/(?:^|[^€\/\d,.])(\d{1,3}(?:[.,]\d{1,2})?)\s*m[²2](?![a-zA-Z0-9])/); if(m){ var sf=pgAdNum(m[1]); if(sf>=8&&sf<=1500) out.surface=sf; }
     m=t.match(/(\d{1,2})\s*pi[èe]ces?/i); if(m) out.pieces=m[1];
     m=t.match(/(\d{1,2})\s*chambres?/i); if(m) out.chambres=m[1];
+    if(!out.chambres){ m=t.match(/\b(une|deux|trois|quatre|cinq)\s+chambres?/i);
+      if(m) out.chambres={une:'1',deux:'2',trois:'3',quatre:'4',cinq:'5'}[m[1].toLowerCase()]; }
     m=t.match(/(\d{1,2})\s*(?:er|e|è|ème|eme)?\s*étage/i); if(m) out.etage=(m[1]==='1'?'1er':m[1]+'e');
     else if(/rez[- ]de[- ]chauss|\bRDC\b/i.test(t)) out.etage='RDC';
     m=t.match(/(?:DPE|classe\s+énerg\w*|GES)\s*[:\-]?\s*([A-G])\b/i); if(m) out.dpe=m[1].toUpperCase();
-    m=t.match(/(?:année?\s+de\s+construction|construit|b[âa]ti)\D{0,12}((?:18|19|20)\d{2})/i); if(m) out.annee=m[1];
+    m=t.match(/(?:année?\s+de\s+construction|construit|b[âa]ti|datant\s+de(?:s\s+années)?)\D{0,12}((?:18|19|20)\d{2})/i); if(m) out.annee=m[1];
     /* téléphone : mobile d'abord (la pige vise des particuliers) ; un fixe n'est retenu
        que sur un texte collé « propre » — le blob du bouton navigateur contient le JSON-LD
        du portail, dont le standard de SeLoger (01 53 38 28 00) qu'il ne faut PAS ramasser */
@@ -14720,6 +14735,10 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
       m=t.match(/([A-ZÀ-Ü][\wÀ-ÿ'’\-]+(?:[ \-][A-ZÀ-Üa-zà-ÿ'’\-]+){0,3})[ ]*\((\d{5})\)/);
       if(m){ out.ville=pgVilleClean(m[1]); out.cp=m[2]; }
       else { m=t.match(/(\d{5}) +([A-ZÀ-Ü][\wÀ-ÿ'’\-]+(?:[ \-][A-ZÀ-Üa-zà-ÿ'’\-]+){0,3})/); if(m){ out.cp=m[1]; out.ville=pgVilleClean(m[2]); } }
+    }
+    if(!out.ville){
+      m=t.match(/\b(\d{1,2})\s*(?:e|er|ème|eme)?\s+arrondissement/i);
+      if(m){ var _ar9=parseInt(m[1],10); if(_ar9>=1&&_ar9<=20) out.ville='Paris '+(_ar9===1?'1er':_ar9+'e'); }
     }
     /* repli JSON-LD (bouton navigateur) — en dernier : le JSON-LD d'un portail commence
        souvent par la fiche du portail lui-même (SeLoger : adresse du siège à Paris 9e) */
@@ -14851,6 +14870,92 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
     },80);
   };
 
+  /* ══ PIGE EXPRESS — fiche PDF de confrère (bien off-market) ═══════════════════════════
+     Le PDF est lu ENTIÈREMENT côté navigateur (pdf.js, chargé au premier usage) :
+     texte de toutes les pages → extracteur d'annonce ; page 1 → Photo ; première page
+     « blanche à traits » suivante → Plan ; le PDF original est joint à la fiche via le
+     coffre cloud (la fiche ne garde que l'adresse). Un PDF scanné sans texte donne
+     quand même les images — le descriptif se complète à la main. */
+  var ACH_PDFJS=window.ACH_PDFJS||{js:'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js',
+    worker:'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js'};
+  function pgPdfLib(){
+    return new Promise(function(res,rej){
+      if(window.pdfjsLib){ res(window.pdfjsLib); return; }
+      var sc=document.createElement('script'); sc.src=ACH_PDFJS.js;
+      sc.onload=function(){ try{ window.pdfjsLib.GlobalWorkerOptions.workerSrc=ACH_PDFJS.worker; res(window.pdfjsLib); }catch(e){ rej(e); } };
+      sc.onerror=function(){ rej(new Error('pdf.js indisponible')); };
+      document.head.appendChild(sc);
+    });
+  }
+  function pgPdfUpload(blob){
+    return new Promise(function(res){
+      try{
+        if(!window.ACH_DB || !window.ACH_DB.storage || !navigator.onLine){ res(null); return; }
+        var path='pdf'+Date.now()+'-'+Math.floor(Math.random()*1e6)+'.pdf';
+        window.ACH_DB.storage.from('pige-photos').upload(path, blob, {contentType:'application/pdf', upsert:false})
+          .then(function(up){
+            if(up && up.error){ res(null); return; }
+            var pub=window.ACH_DB.storage.from('pige-photos').getPublicUrl(path);
+            res((pub && pub.data && pub.data.publicUrl)||null);
+          })
+          .catch(function(){ res(null); });
+      }catch(e){ res(null); }
+    });
+  }
+  window.pgPdfPick=function(){ var f=document.getElementById('pg-pdf-file'); if(f){ f.value=''; f.click(); } };
+  window.pgPdfImport=function(file){
+    if(!file) return;
+    if(window.toast) toast('📄 Lecture de « '+file.name+' »…');
+    var buf=null;
+    file.arrayBuffer().then(function(b){ buf=b; return pgPdfLib(); })
+    .then(function(pdfjs){ return pdfjs.getDocument({data:buf.slice(0)}).promise; })
+    .then(function(doc){
+      var maxP=Math.min(doc.numPages,14), texts=[], canvases=[];
+      function page(p){
+        if(p>maxP) return Promise.resolve();
+        return doc.getPage(p).then(function(pg){
+          return pg.getTextContent().then(function(tc){
+            var _tl=''; tc.items.forEach(function(it){ _tl+=it.str+(it.hasEOL?'\n':' '); });
+            texts.push(_tl);
+            var vp=pg.getViewport({scale:1});
+            var k=1100/Math.max(vp.width,vp.height);
+            var vp2=pg.getViewport({scale:k});
+            var cv=document.createElement('canvas'); cv.width=Math.round(vp2.width); cv.height=Math.round(vp2.height);
+            return pg.render({canvasContext:cv.getContext('2d'),viewport:vp2}).promise.then(function(){ canvases.push(cv); });
+          });
+        }).then(function(){ return page(p+1); });
+      }
+      return page(1).then(function(){ return {texts:texts, canvases:canvases}; });
+    })
+    .then(function(rz){
+      var txt=rz.texts.join('\n'), got=[];
+      if(txt.replace(/\s+/g,'').length>=80){
+        var out=pgParseAdText(txt);
+        delete out.url;
+        got=pgAdFill(out);
+      }
+      var se=document.getElementById('pg-new-src'); if(se && (!se.value || se.value==='manuel')) se.value='confrere';
+      var sl=document.getElementById('pg-srcline');
+      if(sl) sl.innerHTML='Reconnu : <b style="color:'+SRC.confrere[1]+';">Confrère</b> — fiche PDF « '+esc(file.name)+' » importée';
+      /* plan = première page « blanche à traits » (hors couverture) ;
+         photo = première page qui ressemble à une PHOTO (ni blanche, ni le plan) */
+      var _iPl=-1, _iPh=-1, _q9;
+      for(_q9=1;_q9<rz.canvases.length;_q9++){ if(pgLooksLikePlan(rz.canvases[_q9])){ _iPl=_q9; break; } }
+      for(_q9=0;_q9<rz.canvases.length;_q9++){ if(_q9===_iPl) continue;
+        if(!pgLooksWhiteish(rz.canvases[_q9])){ _iPh=_q9; break; } }
+      if(_iPh<0) _iPh=0;
+      if(!_photo && rz.canvases[_iPh]) pgAdoptImage(rz.canvases[_iPh],'photo');
+      if(!_plan && _iPl>=0) pgAdoptImage(rz.canvases[_iPl],'plan');
+      pgPdfUpload(new Blob([buf],{type:'application/pdf'})).then(function(u){
+        if(u){ _pdfUrl=u; if(window.toast) toast('📄 PDF joint à la fiche ✓'); }
+        else if(window.toast) toast('PDF non joint (hors ligne) — infos et photos conservées');
+      });
+      if(window.toast) toast(got.length? ('✨ Fiche lue : '+got.join(' · ')+' — vérifiez, indiquez le confrère dans « Vendeur »')
+        : '📄 PDF importé — texte non lisible (scan ?) : complétez à la main');
+    })
+    .catch(function(e){ window.achErr&&achErr(e); if(window.toast) toast('Impossible de lire ce PDF'); });
+  };
+
   window.pigeNew=function(){ openBlank('', 'manuel'); };
   window.pigeFromUrl=function(){
     var e=document.getElementById('pige-url'); var u=(e&&e.value||'').trim();
@@ -14882,10 +14987,12 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
     S('pg-tempref', r.tempRef||'');
     S('pg-created', r.created||'');
     pigeCalcM2();
-    _photo=r.photo||''; _plan=r.plan||''; pgPhotoShow(); pgPlanShow();
+    _photo=r.photo||''; _plan=r.plan||''; _pdfUrl=r.pdf||''; pgPhotoShow(); pgPlanShow();
     document.getElementById('pg-modal-title').textContent='Fiche de pige';
     var s=SRC[r.src]||SRC.manuel;
     document.getElementById('pg-srcline').innerHTML=pigeSrcLineHtml(r);
+    if(r.pdf){ var _sl9=document.getElementById('pg-srcline');
+      if(_sl9) _sl9.innerHTML+=' — <a href="'+esc(r.pdf)+'" target="_blank" style="color:'+SRC.confrere[1]+';font-weight:600;" onclick="event.stopPropagation()">📄 ouvrir la fiche PDF du confrère</a>'; }
     document.getElementById('pg-com-bloc').style.display='';
     pgComRender(r);
     document.getElementById('pg-del-btn').style.display=canDel()?'':'none';
@@ -15021,14 +15128,15 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
       suiviDate:suivi? (document.getElementById('pg-suivi-date').value||today()) : '',
       ville:villeCanon((document.getElementById('pg-ville').value||'').trim()),
       fipac:(document.getElementById('pg-fipac').value||'').trim(),
-      photo:_photo||'', plan:_plan||'',
+      photo:_photo||'', plan:_plan||'', pdf:_pdfUrl||'',
       statut:(document.getElementById('pg-statut')||{}).value||'encours',
       dossier:(document.getElementById('pg-dossier')||{}).value||'' };
     var links=pigeLinksRead();
     obj.links=links;
     var _ar=document.getElementById('pg-apimo-ref');            /* v9.43 : la réf. Apimo saisie dans le bandeau */
     if(_ar) obj.apimoRef=_ar.value.trim();                       /* est enregistrée même sans archiver */
-    obj.src=(links[0]&&links[0].src)||'manuel';       /* source principale = 1er lien (pour tri/filtre) */
+    obj.src=(links[0]&&links[0].src)||'manuel';
+    if(((document.getElementById('pg-new-src')||{}).value==='confrere') && !(links[0]&&links[0].url)) obj.src='confrere';   /* fiche PDF de confrère : une ligne de lien vide n'écrase pas la source */       /* source principale = 1er lien (pour tri/filtre) */
     obj.url=(links[0]&&links[0].url)||'';
     /* v7.35 : garde-fou à la CRÉATION — confirmation explicite si doublon probable */
     if(!id){
@@ -15226,18 +15334,21 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
      l'étiquettent pas. Un plan = image massivement blanche parcourue de traits :
      sur un échantillon 48×48, ≥60 % de pixels quasi blancs et 0,8–32 % de pixels
      sombres. Analyse possible car l'image est téléchargée en CORS (canvas propre). */
+  function pgInkRatios(bm){
+    var N=48, cv=document.createElement('canvas'); cv.width=N; cv.height=N;
+    var cx=cv.getContext('2d'); cx.fillStyle='#fff'; cx.fillRect(0,0,N,N); cx.drawImage(bm,0,0,N,N);
+    var d2=cx.getImageData(0,0,N,N).data, wh=0, dk=0, tot=N*N;
+    for(var q=0;q<d2.length;q+=4){
+      var mn=Math.min(d2[q],d2[q+1],d2[q+2]), mx=Math.max(d2[q],d2[q+1],d2[q+2]);
+      if(mn>=215) wh++; else if(mx<=90) dk++;
+    }
+    return {pw:wh/tot, pd:dk/tot};
+  }
   function pgLooksLikePlan(bm){
-    try{
-      var N=48, cv=document.createElement('canvas'); cv.width=N; cv.height=N;
-      var cx=cv.getContext('2d'); cx.fillStyle='#fff'; cx.fillRect(0,0,N,N); cx.drawImage(bm,0,0,N,N);
-      var d2=cx.getImageData(0,0,N,N).data, wh=0, dk=0, tot=N*N;
-      for(var q=0;q<d2.length;q+=4){
-        var mn=Math.min(d2[q],d2[q+1],d2[q+2]), mx=Math.max(d2[q],d2[q+1],d2[q+2]);
-        if(mn>=215) wh++; else if(mx<=90) dk++;
-      }
-      var pw=wh/tot, pd=dk/tot;
-      return pw>=0.60 && pd>=0.008 && pd<=0.32;
-    }catch(e){ return false; }
+    try{ var r=pgInkRatios(bm); return r.pw>=0.60 && r.pd>=0.008 && r.pd<=0.32; }catch(e){ return false; }
+  }
+  function pgLooksWhiteish(bm){
+    try{ return pgInkRatios(bm).pw>=0.55; }catch(e){ return false; }
   }
   function pgPlanScan(urls){
     var k=0;
