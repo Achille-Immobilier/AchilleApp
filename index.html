@@ -1685,7 +1685,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     </div>
   </div>
   </div>
-  <div class="logo-ver app-ver">Achille App — v10.18</div>
+  <div class="logo-ver app-ver">Achille App — v10.19</div>
 </aside>
 <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Réduire la barre latérale">‹</button>
 
@@ -11841,7 +11841,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     startRealtime();
     var ov=document.getElementById('ach-login-overlay'); if(ov) ov.classList.add('ach-hidden');
     var ub=document.getElementById('ach-userbar'); if(ub) ub.style.display='none';
-    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v10.18';
+    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v10.19';
     flag('Synchronis\u00e9');
     // fin de l'init : on autorise la journalisation des actions
     setTimeout(function(){ installInterceptor._init=false; }, 1500);
@@ -14780,12 +14780,22 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
       return /^[\u2022\u25cf\u25aa\-\u2013*]/.test(L) || /[;:]\s*$/.test(L) || /\u20ac/.test(L);
     }
     var _lines=t.split(/\n+/).map(function(x){return x.trim();});
-    var _blocks=[], _cur=null, _gap=0;
+    var _blocks=[], _cur=null, _gap=0, _hold=null;
     _lines.forEach(function(L){
       var sc=pgProseScore(L);
-      if(sc>0){ if(!_cur) _cur={t:[],s:0}; _cur.t.push(L); _cur.s+=sc; _gap=0; }
-      else if(_cur && pgProseCont(L)){ _cur.t.push(L); _cur.s+=Math.min(L.length,120); _gap=0; }
-      else if(_cur && (++_gap>1 || L.length>200)){ _blocks.push(_cur); _cur=null; _gap=0; }
+      if(sc>0){
+        if(!_cur) _cur={t:[],s:0};
+        if(_hold){ _cur.t.push(_hold); _hold=null; }   /* la ligne courte médiane fait partie de la phrase */
+        _cur.t.push(L); _cur.s+=sc; _gap=0;
+      }
+      else if(_cur && pgProseCont(L)){
+        if(_hold){ _cur.t.push(_hold); _hold=null; }
+        _cur.t.push(L); _cur.s+=Math.min(L.length,120); _gap=0;
+      }
+      else if(_cur){
+        if(++_gap>1 || L.length>200 || _reUI.test(L)){ _blocks.push(_cur); _cur=null; _gap=0; _hold=null; }
+        else _hold=L;   /* en attente : réinjectée si la prose reprend juste après */
+      }
     });
     if(_cur) _blocks.push(_cur);
     if(_blocks.length){
@@ -14915,8 +14925,22 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
         if(p>maxP) return Promise.resolve();
         return doc.getPage(p).then(function(pg){
           return pg.getTextContent().then(function(tc){
-            var _tl=''; tc.items.forEach(function(it){ _tl+=it.str+(it.hasEOL?'\n':' '); });
-            texts.push(_tl);
+            /* jointure GÉOMÉTRIQUE : pdf.js livre des fragments — un espace n'est ajouté
+               que s'il existe un vrai blanc horizontal, une nouvelle ligne que si la
+               position verticale change (sinon les mots sortent hachés : « ter r asse ») */
+            var _tl='', _lx=null, _ly=null, _fs=10;
+            tc.items.forEach(function(it){
+              var tr=it.transform||[10,0,0,10,0,0], x=tr[4], y=tr[5];
+              var f=Math.max(Math.abs(tr[3]||0),Math.abs(tr[0]||0)); if(f>1) _fs=f;
+              if(it.str){
+                if(_ly!==null && Math.abs(y-_ly)>_fs*0.6) _tl+='\n';
+                else if(_lx!==null && (x-_lx)>_fs*0.12) _tl+=' ';
+                _tl+=it.str;
+                _lx=x+(it.width||0); _ly=y;
+              }
+              if(it.hasEOL){ _tl+='\n'; _lx=null; }
+            });
+            texts.push(_tl.replace(/[ \t]{2,}/g,' '));   /* certains fragments portent déjà leur espace */
             var vp=pg.getViewport({scale:1});
             var k=1100/Math.max(vp.width,vp.height);
             var vp2=pg.getViewport({scale:k});
@@ -14944,11 +14968,32 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
       for(_q9=0;_q9<rz.canvases.length;_q9++){ if(_q9===_iPl) continue;
         if(!pgLooksWhiteish(rz.canvases[_q9])){ _iPh=_q9; break; } }
       if(_iPh<0) _iPh=0;
+      window._pgPdfLast={photoIdx:_iPh, planIdx:_iPl};   /* diagnostic */
       if(!_photo && rz.canvases[_iPh]) pgAdoptImage(rz.canvases[_iPh],'photo');
       if(!_plan && _iPl>=0) pgAdoptImage(rz.canvases[_iPl],'plan');
+      if(window.ACH_DB && navigator.onLine && window.toast) toast('📄 Envoi du PDF au coffre en arrière-plan…');
       pgPdfUpload(new Blob([buf],{type:'application/pdf'})).then(function(u){
-        if(u){ _pdfUrl=u; if(window.toast) toast('📄 PDF joint à la fiche ✓'); }
-        else if(window.toast) toast('PDF non joint (hors ligne) — infos et photos conservées');
+        if(!u){ if(window.toast) toast('PDF non joint (hors ligne) — infos et photos conservées'); return; }
+        var _mo=document.getElementById('modal-pige');
+        if(_mo && _mo.classList.contains('open')){
+          _pdfUrl=u; if(window.toast) toast('📄 PDF joint à la fiche ✓');
+        } else {
+          /* la fiche a été enregistrée pendant l'envoi : on rattache le PDF à la
+             dernière fiche « Confrère » qui n'en a pas, et la synchro propage */
+          try{
+            var _arr=load(), _best=null;
+            _arr.forEach(function(r){
+              if(r && r.src==='confrere' && !r.pdf){
+                var t=r.updated||r.created||'';
+                if(!_best || t>(_best.updated||_best.created||'')) _best=r;
+              }
+            });
+            if(_best){ _best.pdf=u; save(_arr);
+              if(window.toast) toast('📄 PDF joint à la fiche « '+(_best.adresse||_best.ville||'')+' » ✓');
+              if(typeof pigeRender==='function') pigeRender();
+            }
+          }catch(e){window.achErr&&achErr(e)}
+        }
       });
       if(window.toast) toast(got.length? ('✨ Fiche lue : '+got.join(' · ')+' — vérifiez, indiquez le confrère dans « Vendeur »')
         : '📄 PDF importé — texte non lisible (scan ?) : complétez à la main');
@@ -15334,21 +15379,29 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
      l'étiquettent pas. Un plan = image massivement blanche parcourue de traits :
      sur un échantillon 48×48, ≥60 % de pixels quasi blancs et 0,8–32 % de pixels
      sombres. Analyse possible car l'image est téléchargée en CORS (canvas propre). */
-  function pgInkRatios(bm){
-    var N=48, cv=document.createElement('canvas'); cv.width=N; cv.height=N;
+  /* Analyse d'encre 160 px (calibrée sur de vraies plaquettes) :
+     pw = part de pixels quasi blancs ; hRun/vRun = plus long trait d'encre continu
+     horizontal/vertical (part du côté). Un PLAN = page blanche traversée de traits
+     longs dans les DEUX sens (murs) ; une page de TEXTE n'a aucun trait vertical long. */
+  function pgInkStats(bm){
+    var N=160, cv=document.createElement('canvas'); cv.width=N; cv.height=N;
     var cx=cv.getContext('2d'); cx.fillStyle='#fff'; cx.fillRect(0,0,N,N); cx.drawImage(bm,0,0,N,N);
-    var d2=cx.getImageData(0,0,N,N).data, wh=0, dk=0, tot=N*N;
-    for(var q=0;q<d2.length;q+=4){
-      var mn=Math.min(d2[q],d2[q+1],d2[q+2]), mx=Math.max(d2[q],d2[q+1],d2[q+2]);
-      if(mn>=215) wh++; else if(mx<=90) dk++;
+    var d2=cx.getImageData(0,0,N,N).data, wh=0, g=new Uint8Array(N*N);
+    for(var i=0,q=0;q<d2.length;q+=4,i++){
+      var mn=Math.min(d2[q],d2[q+1],d2[q+2]);
+      if(mn>=215) wh++;
+      if(mn<200) g[i]=1;
     }
-    return {pw:wh/tot, pd:dk/tot};
+    var hR=0,vR=0,x,y,run;
+    for(y=0;y<N;y++){ run=0; for(x=0;x<N;x++){ if(g[y*N+x]){ run++; if(run>hR)hR=run; } else run=0; } }
+    for(x=0;x<N;x++){ run=0; for(y=0;y<N;y++){ if(g[y*N+x]){ run++; if(run>vR)vR=run; } else run=0; } }
+    return {pw:wh/(N*N), hRun:hR/N, vRun:vR/N};
   }
   function pgLooksLikePlan(bm){
-    try{ var r=pgInkRatios(bm); return r.pw>=0.60 && r.pd>=0.008 && r.pd<=0.32; }catch(e){ return false; }
+    try{ var st=pgInkStats(bm); return st.pw>=0.75 && st.hRun>=0.35 && st.vRun>=0.35; }catch(e){ return false; }
   }
   function pgLooksWhiteish(bm){
-    try{ return pgInkRatios(bm).pw>=0.55; }catch(e){ return false; }
+    try{ return pgInkStats(bm).pw>=0.55; }catch(e){ return false; }
   }
   function pgPlanScan(urls){
     var k=0;
