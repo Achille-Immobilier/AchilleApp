@@ -1685,7 +1685,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     </div>
   </div>
   </div>
-  <div class="logo-ver app-ver">Achille App — v10.20</div>
+  <div class="logo-ver app-ver">Achille App — v10.21</div>
 </aside>
 <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Réduire la barre latérale">‹</button>
 
@@ -1767,7 +1767,6 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
           <button class="pg-chip" style="margin-top:7px;width:100%;" onclick="pgImpSort(event)" title="Re-cliquez pour inverser">⇅ Trier : Prioritaire → Moyen</button>
         </div></span>
         <button class="pg-chip" id="pg-new-btn" onclick="pgNewToggle()" title="N'afficher que les fiches que vous n'avez pas encore ouvertes">✨ New</button>
-        <button class="pg-chip" id="pg-conf-btn" onclick="pgConfToggle()" title="N'afficher que les biens partagés par des confrères (fiches PDF)">🤝 Confrères</button>
         <span class="pg-sep"></span>
         <span id="pg-filt-villes" class="pg-filtset"></span>
         <span class="pg-sep"></span>
@@ -11841,7 +11840,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     startRealtime();
     var ov=document.getElementById('ach-login-overlay'); if(ov) ov.classList.add('ach-hidden');
     var ub=document.getElementById('ach-userbar'); if(ub) ub.style.display='none';
-    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v10.20';
+    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v10.21';
     flag('Synchronis\u00e9');
     // fin de l'init : on autorise la journalisation des actions
     setTimeout(function(){ installInterceptor._init=false; }, 1500);
@@ -12952,10 +12951,19 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
         <div id="pg-dup-warn" style="display:none;background:#fdf3e7;border:1px solid #e8c9a0;color:#8a5a1e;border-radius:8px;padding:9px 13px;font-size:12.5px;margin-bottom:11px;line-height:1.5;"></div>
         <div id="pg-pro-warn" style="display:none;background:#efe9f5;border:1px solid #cdbede;color:#5a4a75;border-radius:8px;padding:9px 13px;font-size:12.5px;margin-bottom:11px;line-height:1.5;"></div>
         <div class="form-row">
-          <div class="form-group fg-prix"><label class="form-label">Prix (€)</label><input class="form-input js-thousands" inputmode="decimal" id="pg-prix" placeholder="1 250 000" oninput="pigeCalcM2();pigeDupCheck()"></div>
+          <div class="form-group fg-prix"><label class="form-label" id="pg-prix-label">Prix (€)</label><input class="form-input js-thousands" inputmode="decimal" id="pg-prix" placeholder="1 250 000" oninput="pigeCalcM2();pigeDupCheck();pgConfCalc()"></div>
           <div class="form-group fg-surface"><label class="form-label">Surface (m²)</label><input class="form-input" inputmode="decimal" id="pg-surface" placeholder="92" oninput="pigeCalcM2();pigeDupCheck()"></div>
           <div class="form-group fg-pm2"><label class="form-label">Prix au m²</label><input class="form-input" id="pg-prixm2" readonly tabindex="-1" style="background:var(--beige);color:var(--kaki);font-weight:600;" placeholder="—"></div>
           <div class="form-group fg-pieces"><label class="form-label">Pièces</label><input class="form-input" inputmode="numeric" id="pg-pieces" placeholder="4"></div>
+        </div>
+        <div id="pg-conf-prix" style="display:none;border:1px solid #2f6f6f33;background:#2f6f6f0a;border-radius:10px;padding:10px 12px 8px;margin-bottom:11px;">
+          <div class="form-label" style="color:#2f6f6f;">Partage confrère — les prix du bien</div>
+          <div class="form-row" style="margin-bottom:0;">
+            <div class="form-group"><label class="form-label">Net vendeur (€)</label><input class="form-input js-thousands" inputmode="decimal" id="pg-prix-net" placeholder="1 500 000" oninput="pgConfCalc()"></div>
+            <div class="form-group"><label class="form-label" title="Proposés automatiquement : Prix FAI − Net vendeur">Honoraires totaux (€)</label><input class="form-input js-thousands" inputmode="decimal" id="pg-hono-tot" placeholder="99 000" oninput="pgConfCalc('tot')"></div>
+            <div class="form-group"><label class="form-label">Honoraires Achille (€)</label><input class="form-input js-thousands" inputmode="decimal" id="pg-hono-ach" placeholder="49 500" oninput="pgConfCalc('ach')"></div>
+          </div>
+          <div id="pg-conf-hint" style="font-size:11.5px;color:#2f6f6f;margin-top:4px;min-height:14px;"></div>
         </div>
         <div class="form-row">
           <div class="form-group fg-chambres"><label class="form-label">Chambres</label><input class="form-input" inputmode="numeric" id="pg-chambres" placeholder="2"></div>
@@ -13038,7 +13046,7 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
   function pgStatutDef(k){ for(var i=0;i<PG_STATUTS.length;i++){ if(PG_STATUTS[i].k===k) return PG_STATUTS[i]; } return PG_STATUTS[0]; }   /* v8.58 : repli = « En cours » (désormais en tête du tableau) */
   function pgStatutOf(r){ return (r&&r.statut)||'encours'; }
   var pgDossier='tous';
-  var pgImp=['chaud','encours','offline'], pgNewOnly=false, pgConfOnly=false;   /* v10.05 : filtre importance + bouton New */   /* filtre dossier courant : 'tous' | statut | 'd:'+id */
+  var pgImp=['chaud','encours','offline'], pgNewOnly=false;   /* v10.05 : filtre importance + bouton New */   /* filtre dossier courant : 'tous' | statut | 'd:'+id */
   var pgPage=1;
   var PG_PER=25;
 
@@ -13431,7 +13439,7 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
     var doss=dossLoad();
     var onTous=(pgDossier==='tous');
     /* v8.59 : onglets par ÉTAPE (En cours, En attente, Achille, Refus — libellés Laurent), puis Tous */
-    var ecnt={vivier:0,attente:0,accord:0,refusG:0};
+    var ecnt={vivier:0,attente:0,accord:0,partage:0,refusG:0};
     act.forEach(function(r){ ecnt[pgEtape(r)]++; });
     var html='';
     PG_ETAPES.forEach(function(s){
@@ -13574,6 +13582,7 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
   function srcOptions(cur){
     var keys=SRC_MAIN.slice();
     if(admin() && keys.indexOf('autre')<0) keys.push('autre');       /* « Autre » réservé à l'admin */
+    if(keys.indexOf('confrere')<0) keys.splice(keys.indexOf('manuel')>=0?keys.indexOf('manuel'):keys.length,0,'confrere');   /* v10.21 : un bien partagé à la voix (sans PDF) se saisit à la main */
     if(cur && keys.indexOf(cur)<0) keys.push(cur);                    /* garde la valeur actuelle même si fipac/autre */
     return keys.map(function(k){ return '<option value="'+k+'"'+(k===cur?' selected':'')+'>'+SRC[k][0]+'</option>'; }).join('');
   }
@@ -14317,9 +14326,6 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
   window.pgNewToggle=function(){ pgNewOnly=!pgNewOnly;
     var b=document.getElementById('pg-new-btn'); if(b) b.classList.toggle('on', pgNewOnly);
     pigeRender(); };
-  window.pgConfToggle=function(){ pgConfOnly=!pgConfOnly;
-    var b=document.getElementById('pg-conf-btn'); if(b) b.classList.toggle('on', pgConfOnly);
-    pigeRender(); };
   window.pgHelpToggle=function(ev){ try{ ev.stopPropagation(); }catch(e){window.achErr&&achErr(e)}
     var l=document.getElementById('pg-legend'); if(l) l.classList.toggle('pin'); };
   document.addEventListener('click',function(e){ var l=document.getElementById('pg-legend');
@@ -14329,7 +14335,7 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
     pgFilt.sites=[]; pgFilt.users=[]; pgFilt.villes=[];
     pgDossier='tous'; pgPage=1;
     sortMode='date'; sortDir=-1;
-    pgImp=['chaud','encours','offline']; pgNewOnly=false; pgConfOnly=false; var _cb9=document.getElementById('pg-conf-btn'); if(_cb9) _cb9.classList.remove('on');   /* v10.05 */
+    pgImp=['chaud','encours','offline']; pgNewOnly=false;   /* v10.05 */
     ['chaud','encours','offline'].forEach(function(k){ var c=document.getElementById('pg-imp-'+k); if(c) c.checked=true; });
     var _ib=document.getElementById('pg-imp-btn'); if(_ib) _ib.classList.remove('on');
     var _in=document.getElementById('pg-imp-n'); if(_in) _in.textContent='';
@@ -14358,9 +14364,10 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
     {k:'vivier',  lbl:'\ud83d\udcde En cours',  tip:'Nouveau / \u00c0 appeler',                          col:'#b47360'},
     {k:'attente', lbl:'\u23f3 En attente',        tip:'Sans r\u00e9ponse / Rappeler + tard',              col:'#e6b23a'},
     {k:'accord',  lbl:'\ud83e\udd1d Achille',    tip:'Accords \u00b7 Mandats',                           col:'#2e6e50'},
+    {k:'partage', lbl:'\ud83d\udce5 Partages',   tip:'Biens partag\u00e9s discr\u00e8tement par des confr\u00e8res (off-market)', col:'#2f6f6f'},   /* v10.21 */
     {k:'refusG',  lbl:'\u2715 Refus',             tip:'Refus cat\u00e9gorique / Refus \u00e0 relancer',  col:'#2b2b28'}
   ];
-  var PG_ETAPE_COL={vivier:'#b47360',attente:'#e6b23a',accord:'#2e6e50',refusG:'#2b2b28'};   /* v10.02 : couleurs des onglets */
+  var PG_ETAPE_COL={vivier:'#b47360',attente:'#e6b23a',accord:'#2e6e50',partage:'#2f6f6f',refusG:'#2b2b28'};   /* v10.02 : couleurs des onglets */
   function pgRowBorder(r){
     /* v10.02 : dans « Tous » (ou en recherche), la bordure dit le DOSSIER de la fiche ;
        dans un dossier, tout est harmonisé à la couleur de ce dossier. La pastille ronde garde l'importance. */
@@ -14371,6 +14378,7 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
     return '#4c533b';
   }
   function pgEtape(r){
+    if(r&&r.src==='confrere') return 'partage';   /* v10.21 : les biens partagés vivent dans leur dossier */
     var sv=(r&&r.suivi)||'';
     if(sv==='mandat'||sv==='visite') return 'accord';
     if(sv==='refus'||sv==='refus-rel') return 'refusG';   /* v10.02 : le statut gris (Moyen) ne classe plus en Refus */
@@ -14452,7 +14460,6 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
     if(!q && pgFilt.villes.length){ a=a.filter(function(r){ return pgFilt.villes.indexOf(villeOf(r))>=0; }); }
     if(!q && pgImp.length<3){ a=a.filter(function(r){ return pgImp.indexOf(pgStatutOf(r))>=0; }); }   /* v10.05 : cases Importance */
     if(!q && pgNewOnly){ a=a.filter(function(r){ return window.pgNewChip && pgNewChip(r)!==''; }); }   /* v10.05 : bouton New */
-    if(!q && pgConfOnly){ a=a.filter(function(r){ return r.src==='confrere'; }); }   /* biens partagés par des confrères */
     renderFolderBar(a, load());
     /* v7.22 : « Tous » et les statuts ne montrent que les fiches ACTIVES ; le tiroir « arch » montre les archivées */
     var telIx=pgTelIndex();   /* v7.34 : index téléphone → fiches (toutes, archivées comprises) */
@@ -14488,7 +14495,7 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
           var _dd=dossLoad().filter(function(x){return x.id===_did;})[0];
           a=_dd? a.filter(function(r){ return dossMatch(r,_dd); }) : [];
         }
-        else if(pgDossier==='vivier'||pgDossier==='attente'||pgDossier==='accord'||pgDossier==='refusG'){ a=a.filter(function(r){ return pgEtape(r)===pgDossier; }); }   /* v8.59 */
+        else if(pgDossier==='vivier'||pgDossier==='attente'||pgDossier==='accord'||pgDossier==='partage'||pgDossier==='refusG'){ a=a.filter(function(r){ return pgEtape(r)===pgDossier; }); }   /* v8.59 */
         else { a=a.filter(function(r){ return pgStatutOf(r)===pgDossier; }); }
       }
     }
@@ -14567,6 +14574,7 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
         +'<div class="pg-titre"><span class="pg-mapspin" title="Voir sur Google Maps" onclick="pigeMaps(\''+r.id+'\',event)">📍</span> '+titre+(r.ville?' <span class="pg-titre-ville">· '+esc(r.ville)+'</span>':'')+plan+' <button class="pg-secto" title="Secteur, transports, écoles — sectorisation dans un nouvel onglet" onclick="event.stopPropagation();pgSectoTab(\''+r.id+'\')">🧭 Secteur</button>'+'</div>'
         +(ml?'<div class="pg-carac">'+ml+'</div>':'')
         +(clh?'<div class="pg-carac" style="color:var(--gris);">'+esc(clh)+'</div>':'')
+        +((r.src==='confrere'&&(r.prixNet||r.honoTot||r.honoAch))?'<div class="pg-carac" style="color:'+SRC.confrere[1]+';font-weight:600;">'+[r.prixNet?('Net vendeur '+fmtN(r.prixNet)+' €'):'',r.honoTot?('Honoraires '+fmtN(r.honoTot)+' €'):'',r.honoAch?('dont Achille '+fmtN(r.honoAch)+' €'):''].filter(Boolean).join(' · ')+'</div>':'')
         +(vend?'<div class="pg-vend">'+vend+'</div>':'')
         +(r.called?'<div class="pg-called-line">✓ Appelée le '+dstr(r.called.d)+(r.called.u?(' par '+esc(r.called.u)):'')+' — sans réponse</div>':'')
         +'</div>'+(nc?pgObsPreview(r,nc):'<div class="pg-obs"></div>')
@@ -14636,7 +14644,7 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
     try{ window.pigeSuiviAutoRefresh(); }catch(e){window.achErr&&achErr(e)}   /* v7.22 : bandeau automatique (archivage / rappel) */
   };
 
-  var TXT=['pg-adresse','pg-prix','pg-surface','pg-pieces','pg-chambres','pg-etage','pg-annee','pg-descriptif','pg-vendeur','pg-tel','pg-com-input','pg-prixm2','pg-suivi-date'];
+  var TXT=['pg-adresse','pg-prix','pg-surface','pg-pieces','pg-chambres','pg-etage','pg-annee','pg-descriptif','pg-vendeur','pg-tel','pg-com-input','pg-prixm2','pg-suivi-date','pg-prix-net','pg-hono-tot','pg-hono-ach'];
   var CBX=['pg-cave','pg-parking','pg-balcon','pg-terrasse','pg-jardin'];
   function openBlank(url,src){
     TXT.forEach(function(id){ var e=document.getElementById(id); if(e) e.value=''; });
@@ -14652,6 +14660,7 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
     var isFipacUrl=(src==='fipac');
     pigeLinksRender((url && !isFipacUrl)? [{src:src||srcOf(url), url:url}] : []);
     var fp=document.getElementById('pg-fipac'); if(fp) fp.value=isFipacUrl? url : '';
+    _pgHonoAuto=null; pgConfPrixShow();   /* v10.21 */
     var dw=document.getElementById('pg-dup-warn'); if(dw) dw.style.display='none';
     var pw=document.getElementById('pg-pro-warn'); if(pw) pw.style.display='none';
     var mb=document.getElementById('pg-merge-btn'); if(mb) mb.style.display='none';   /* v7.35 : pas de fusion sur une fiche non enregistrée */
@@ -14919,6 +14928,41 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
   /* v10.20 : « Ouvrir le PDF » en un clic — visible dès qu'un PDF est joint à la fiche */
   function pgPdfBtnShow(){ var b=document.getElementById('pg-pdf-open'); if(b) b.style.display=_pdfUrl?'':'none'; }
   window.pgPdfOpen=function(){ if(_pdfUrl) window.open(_pdfUrl,'_blank'); };
+  /* v10.21 : PARTAGE CONFRÈRE — quatre prix. Le champ Prix existant EST le Prix FAI
+     (listes, tris et €/m² inchangés) ; le bloc n'apparaît que si la source est Confrère. */
+  function pgConfIs(){
+    try{
+      var l=pigeLinksRead();
+      if(l[0]&&l[0].src==='confrere') return true;
+      if(((document.getElementById('pg-new-src')||{}).value)==='confrere' && !(l[0]&&l[0].url)) return true;
+    }catch(e){window.achErr&&achErr(e)}
+    return false;
+  }
+  window.pgConfPrixShow=function(){
+    var on=pgConfIs();
+    var b=document.getElementById('pg-conf-prix'); if(b) b.style.display=on?'':'none';
+    var lb=document.getElementById('pg-prix-label'); if(lb) lb.textContent=on?'Prix FAI (€)':'Prix (€)';
+    if(on) pgConfCalc();
+  };
+  var _pgHonoAuto=null;   /* dernière valeur d'honoraires PROPOSÉE (jamais écrasée si saisie à la main) */
+  window.pgConfCalc=function(mode){
+    var b=document.getElementById('pg-conf-prix'); if(!b || b.style.display==='none') return;
+    var fai=num((document.getElementById('pg-prix')||{}).value);
+    var totE=document.getElementById('pg-hono-tot');
+    var net=num((document.getElementById('pg-prix-net')||{}).value),
+        tot=num(totE?totE.value:''), ach=num((document.getElementById('pg-hono-ach')||{}).value);
+    if(mode==='tot') _pgHonoAuto=null;   /* saisis à la main : on ne propose plus */
+    else if(mode!=='ach' && fai&&net&&fai>net&&totE&&(!tot||tot===_pgHonoAuto)){
+      _pgHonoAuto=fai-net; totE.value=fmtN(_pgHonoAuto); tot=_pgHonoAuto;   /* proposition : FAI − net vendeur */
+    }
+    var h=document.getElementById('pg-conf-hint'), p=[];
+    function pc(x){ return String(Math.round(x*1000)/10).replace('.',','); }
+    if(fai&&tot) p.push('honoraires '+pc(tot/fai)+' % du prix FAI');
+    if(tot&&ach) p.push('part Achille '+pc(ach/tot)+' % des honoraires');
+    if(h) h.textContent=p.join(' · ');
+  };
+  /* changer la source d'un lien (vers ou depuis Confrère) montre / cache le bloc */
+  (function(){ try{ var lb=document.getElementById('pg-links'); if(lb) lb.addEventListener('change', function(){ pgConfPrixShow(); }); }catch(e){window.achErr&&achErr(e)} })();
   window.pgPdfPick=function(){ var f=document.getElementById('pg-pdf-file'); if(f){ f.value=''; f.click(); } };
   window.pgPdfImport=function(file){
     if(!file) return;
@@ -14966,6 +15010,7 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
         got=pgAdFill(out);
       }
       var se=document.getElementById('pg-new-src'); if(se && (!se.value || se.value==='manuel')) se.value='confrere';
+      pgConfPrixShow();   /* v10.21 */
       var sl=document.getElementById('pg-srcline');
       if(sl) sl.innerHTML='Reconnu : <b style="color:'+SRC.confrere[1]+';">Confrère</b> — fiche PDF « '+esc(file.name)+' » importée';
       /* plan = première page « blanche à traits » (hors couverture) ;
@@ -15033,6 +15078,8 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
     S('pg-ville', r.ville||'');
     pigeLinksRender(pigeMainSources(r));
     S('pg-fipac', pigeFipacLink(r));
+    S('pg-prix-net', r.prixNet? fmtN(r.prixNet):''); S('pg-hono-tot', r.honoTot? fmtN(r.honoTot):''); S('pg-hono-ach', r.honoAch? fmtN(r.honoAch):'');
+    _pgHonoAuto=null; pgConfPrixShow();   /* v10.21 : prix du partage confrère */
     var dw=document.getElementById('pg-dup-warn'); if(dw) dw.style.display='none';
     document.getElementById('pg-suivi').value=(r.suivi&&SUIVI[r.suivi])?r.suivi:'';
     S('pg-suivi-date', r.suiviDate||'');
@@ -15178,6 +15225,7 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
       suiviDate:suivi? (document.getElementById('pg-suivi-date').value||today()) : '',
       ville:villeCanon((document.getElementById('pg-ville').value||'').trim()),
       fipac:(document.getElementById('pg-fipac').value||'').trim(),
+      prixNet:num((document.getElementById('pg-prix-net')||{}).value)||'', honoTot:num((document.getElementById('pg-hono-tot')||{}).value)||'', honoAch:num((document.getElementById('pg-hono-ach')||{}).value)||'',
       photo:_photo||'', plan:_plan||'', pdf:_pdfUrl||'',
       statut:(document.getElementById('pg-statut')||{}).value||'encours',
       dossier:(document.getElementById('pg-dossier')||{}).value||'' };
