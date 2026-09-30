@@ -1685,7 +1685,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     </div>
   </div>
   </div>
-  <div class="logo-ver app-ver">Achille App — v10.25</div>
+  <div class="logo-ver app-ver">Achille App — v10.26</div>
 </aside>
 <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Réduire la barre latérale">‹</button>
 
@@ -1779,6 +1779,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
           <div class="pgl-l"><i style="background:#b47360"></i>📞 En cours (à appeler / nouveau)</div>
           <div class="pgl-l"><i style="background:#e6b23a"></i>⏳ En attente (sans réponse, à rappeler)</div>
           <div class="pgl-l"><i style="background:#2e6e50"></i>🤝 Achille (accord de visite, mandat)</div>
+          <div class="pgl-l"><i style="background:#2f6f6f"></i>📥 Partages (biens partagés par des confrères)</div>
           <div class="pgl-l"><i style="background:#2b2b28"></i>✕ Refus</div>
           <div class="pgl-l"><i style="background:#c9c2b6"></i>📦 Archivée</div>
           <div class="pgl-h">Dans « Tous » ou en recherche, chaque fiche porte la couleur de son dossier ; dans un dossier, tout est de la même couleur. C'est le SUIVI qui classe la fiche.</div>
@@ -1794,6 +1795,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
           <div class="pgl-l"><span style="width:14px;text-align:center;flex:none;">🔔</span><span>= un rappel est programmé sur la fiche</span></div>
           <div class="pgl-l"><span style="width:14px;text-align:center;flex:none;">👥</span><span>×N = le même numéro apparaît sur N fiches</span></div>
           <div class="pgl-l"><span style="width:14px;text-align:center;flex:none;">✓</span><span>Appelée = appel passé, sans réponse</span></div>
+          <div class="pgl-l"><span style="width:14px;text-align:center;flex:none;color:#2f6f6f;font-weight:700;">C</span><span>= fiche confrère (source « Confrère ») : prix FAI, net vendeur et honoraires, PDF joint ouvrable en un clic — groupée par agence dans « Partages », jamais dans les Pros</span></div>
           <div class="pgl-h">🔍 La recherche est GLOBALE : elle fouille tous les dossiers (archivées comprises), les observations, en ignorant filtres et onglets.</div>
         </div></span>
       </div>
@@ -5325,10 +5327,48 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     } else {
       sectMap.setView([lat,lon], 15);
     }
+    if(!sectPoiLayer) sectPoiLayer = L.layerGroup().addTo(sectMap);
+    sectPoiClear();   /* v10.26 : nouvelle adresse = on repart d'un plan propre */
     if(sectMarker) sectMarker.remove();
     sectMarker = L.marker([lat,lon]).addTo(sectMap);
     setTimeout(function(){ sectMap.invalidateSize(); }, 100);
   }
+
+  /* ── v10.26 : STATIONS SUR LE PLAN + PUNAISE ──
+     Les stations (métro/RER/tram) sont posées d'office en pastilles aux couleurs des
+     lignes ; cliquer un élément du bandeau de droite pose une punaise 📍 et recentre. */
+  var sectPoiLayer = null, sectPinMarker = null;
+  function sectPoiClear(){
+    if(sectPoiLayer){ try{ sectPoiLayer.clearLayers(); }catch(e){window.achErr&&achErr(e)} }
+    if(sectPinMarker){ try{ sectPinMarker.remove(); }catch(e){window.achErr&&achErr(e)} sectPinMarker=null; }
+  }
+  function sectPoiIcon(txt, bg, fg, sq){
+    return L.divIcon({className:'', iconSize:[20,20], iconAnchor:[10,10],
+      html:'<div style="background:'+bg+';color:'+fg+';border:2px solid #fff;border-radius:'+(sq?'5px':'50%')+';width:20px;height:20px;display:flex;align-items:center;justify-content:center;font:700 10px Jost,sans-serif;box-shadow:0 1px 4px rgba(0,0,0,.45);">'+txt+'</div>'});
+  }
+  function sectPoiAdd(lat2, lon2, txt, bg, fg, sq, tip){
+    if(!sectMap || !sectPoiLayer || !lat2 || !lon2) return;
+    try{ L.marker([lat2,lon2], {icon:sectPoiIcon(txt,bg,fg,sq)}).bindTooltip(tip,{direction:'top',offset:[0,-10]}).addTo(sectPoiLayer); }catch(e){window.achErr&&achErr(e)}
+  }
+  window.sectPin = function(lat2, lon2, tip){
+    if(!sectMap || !lat2 || !lon2) return;
+    if(sectPinMarker){ try{ sectPinMarker.remove(); }catch(e){window.achErr&&achErr(e)} }
+    try{
+      sectPinMarker = L.marker([lat2,lon2], {icon:L.divIcon({className:'', iconSize:[30,30], iconAnchor:[15,28],
+        html:'<div style="font-size:26px;line-height:30px;text-shadow:0 1px 3px rgba(0,0,0,.4);">📍</div>'})})
+        .bindTooltip(tip||'', {direction:'top', offset:[0,-26]}).addTo(sectMap);
+      sectPinMarker.openTooltip();
+      sectMap.panTo([lat2,lon2]);
+    }catch(e){window.achErr&&achErr(e)}
+  };
+  (function(){
+    var rp=document.getElementById('sect-results');
+    if(rp) rp.addEventListener('click', function(e){
+      var it=e.target.closest? e.target.closest('.sect-item[data-lat]') : null;
+      if(!it) return;
+      sectPin(parseFloat(it.getAttribute('data-lat')), parseFloat(it.getAttribute('data-lon')), it.getAttribute('data-tip')||'');
+    });
+  })();
 
   // ── AUTOCOMPLÉTION ──
   var sectACTimer = null;
@@ -5482,7 +5522,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     var p=sectFetchJSON(u,12000).then(function(d){
       return (d.records||[]).map(function(rec){ var f=rec.fields||{}; var g=(rec.geometry&&rec.geometry.coordinates)||null;
         var elat=g?g[1]:f.latitude, elon=g?g[0]:f.longitude;
-        return {name:f.nom_etablissement||f.appellation_officielle||'Établissement', type:(f.type_etablissement||'').toLowerCase(), statut:(f.statut_public_prive||''), commune:(f.nom_commune||f.libelle_commune||''), cp:(''+(f.code_postal||'')), dist:(elat&&elon)?sectM(lat,lon,elat,elon):99999}; })
+        return {name:f.nom_etablissement||f.appellation_officielle||'Établissement', type:(f.type_etablissement||'').toLowerCase(), statut:(f.statut_public_prive||''), commune:(f.nom_commune||f.libelle_commune||''), cp:(''+(f.code_postal||'')), lat:elat||'', lon:elon||'', dist:(elat&&elon)?sectM(lat,lon,elat,elon):99999}; })
         .sort(function(a,b){return a.dist-b.dist;});
     });
     _sectAnn={key:key,p:p};
@@ -5710,7 +5750,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
         var pr=/pr/i.test(s.statut);
         var badge='<span class="sect-badge '+(pr?'sb-prive':'sb-public')+'">'+(pr?'Privé':'Public')+'</span>';
         var comm=s.commune?(' <span style="color:var(--gris-2);font-size:10px;">· '+sectEsc(sectTcase(s.commune))+'</span>'):'';
-        h+='<div class="sect-item"><span class="sect-item-icon">'+meta[k].ico+'</span>'
+        h+='<div class="sect-item"'+((s.lat&&s.lon)?' data-lat="'+s.lat+'" data-lon="'+s.lon+'" data-tip="'+meta[k].ico+' '+sectEsc(s.name).replace(/"/g,'&quot;')+'" style="cursor:pointer;" title="Cliquez : punaise sur le plan"':'')+'><span class="sect-item-icon">'+meta[k].ico+'</span>'
           +'<div style="flex:1;min-width:0;"><div class="sect-item-name" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+sectEsc(s.name)+'</div>'
           +'<div>'+badge+comm+'</div></div>'
           +'<span class="sect-item-dist">'+sectFD(s.dist)+'</span></div>';
@@ -5883,13 +5923,13 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
         || (rw === 'halt');
       if(isRer && d <= Rm) {
         var cleanName = name.replace(/\s*\(.*?\)/g,'').trim();
-        rer.push({ name: cleanName || name, lines: lines, dist: d });
+        rer.push({ name: cleanName || name, lines: lines, dist: d, lat: elLat, lon: elLon });
         return;
       }
 
       // ── TRAM ──
       if(rw === 'tram_stop' && d <= Rt) {
-        tram.push({ name: name, lines: lines, dist: d });
+        tram.push({ name: name, lines: lines, dist: d, lat: elLat, lon: elLon });
         return;
       }
 
@@ -5899,13 +5939,15 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
         if(refs.length){
           refs.forEach(function(ref) {
             if(!busMap[ref]) busMap[ref] = { name: name || 'Arrêt', dists: [], line: ref };
-            busMap[ref].dists.push(d);
+            var _b=busMap[ref]; _b.dists.push(d);
+            if(_b._bd==null || d<_b._bd){ _b._bd=d; _b.lat=elLat; _b.lon=elLon; }
           });
         } else if(name) {
           // arrêt sans n° de ligne dans l'open data : on le montre par son NOM, sans badge « ? »
           var nk = 'n:'+name.toLowerCase();
           if(!busMap[nk]) busMap[nk] = { name: name, dists: [], line: '' };
-          busMap[nk].dists.push(d);
+          var _b2=busMap[nk]; _b2.dists.push(d);
+          if(_b2._bd==null || d<_b2._bd){ _b2._bd=d; _b2.lat=elLat; _b2.lon=elLon; }
         }
       }
     });
@@ -5938,7 +5980,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     schools.sort(function(a,b){ return a.dist - b.dist; });
 
     var busList = Object.keys(busMap)
-      .map(function(k){ var b=busMap[k]; return { line:b.line||'', name:b.name, dist:Math.min.apply(null, b.dists) }; })
+      .map(function(k){ var b=busMap[k]; return { line:b.line||'', name:b.name, dist:Math.min.apply(null, b.dists), lat:b.lat, lon:b.lon }; })
       .sort(function(a,b){ return a.dist - b.dist; });
 
     // ── Rendu d'un badge ligne ──
@@ -5966,8 +6008,11 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
       return h + '</div>';
     }
 
-    function itemRow(icon, name, badges, dist) {
-      return '<div class="sect-item">'
+    function itemRow(icon, name, badges, dist, pos) {
+      var _at = (pos && pos.lat && pos.lon)
+        ? ' data-lat="'+pos.lat+'" data-lon="'+pos.lon+'" data-tip="'+sectEsc(pos.tip||'').replace(/"/g,'&quot;')+'" style="cursor:pointer;" title="Cliquez : punaise sur le plan"'
+        : '';
+      return '<div class="sect-item"'+_at+'>'
            + '<span class="sect-item-icon">'+icon+'</span>'
            + '<div style="flex:1;min-width:0;">'
            + '<div class="sect-item-name" style="font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+name+'</div>'
@@ -5976,6 +6021,26 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
            + '<span class="sect-item-dist" style="flex-shrink:0;margin-left:8px;">'+sectFD(dist)+'</span>'
            + '</div>';
     }
+
+    /* v10.26 : les stations sont posées D'OFFICE sur le plan (pastilles couleurs des lignes) */
+    try{
+      metro.slice(0,8).forEach(function(m){
+        var l0=(m.lines&&m.lines[0])||''; if(!l0 && m.name){ var mx0=m.name.match(/\b(\d{1,2}[ABab]?)\b/); if(mx0) l0=mx0[1]; }
+        var col=MC[l0]||MC[(l0||'').toUpperCase()]||'#0055A4';
+        var fg=(l0==='1'||l0==='3b'||l0==='3B')?'#333':'#fff';
+        sectPoiAdd(m.lat, m.lon, (l0&&l0.length<=2? l0 : 'M'), col, fg, false,
+          '🚇 '+sectEsc(m.name)+(m.lines&&m.lines.length? ' — ligne '+m.lines.join(', ') : ''));
+      });
+      rer.slice(0,5).forEach(function(r2){
+        var k=((r2.lines&&r2.lines[0])||'').replace(/^RER\s*/i,'')||'R';
+        sectPoiAdd(r2.lat, r2.lon, k.slice(0,2), (RC[k.toUpperCase()]||'#555'), '#fff', true,
+          '🚆 '+sectEsc(r2.name)+(r2.lines&&r2.lines.length? ' — '+r2.lines.join(', ') : ''));
+      });
+      tram.slice(0,6).forEach(function(t2){
+        var k=(t2.lines&&t2.lines[0])||'T'; k=(/^t/i.test(k)? k.toUpperCase() : 'T'+k);
+        sectPoiAdd(t2.lat, t2.lon, k.slice(0,3), '#0055A4', '#fff', true, '🚊 '+sectEsc(t2.name));
+      });
+    }catch(ePoi){window.achErr&&achErr(ePoi)}
 
     var h = '';
 
@@ -5987,25 +6052,25 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
         var mx = m.name.match(/\b(\d{1,2}[ABab]?)\b/);
         if(mx) badges = metroLine(mx[1]);
       }
-      return itemRow('🚇', m.name, badges, m.dist);
+      return itemRow('🚇', m.name, badges, m.dist, {lat:m.lat, lon:m.lon, tip:'🚇 '+m.name});
     });
 
     // RER
     h += sectionHtml('🚆', 'RER / Transilien', Rm, rer.slice(0,5), function(r) {
       var badges = r.lines.map(rerLine).join('');
-      return itemRow('🚆', r.name, badges, r.dist);
+      return itemRow('🚆', r.name, badges, r.dist, {lat:r.lat, lon:r.lon, tip:'🚆 '+r.name});
     });
 
     // Tram
     h += sectionHtml('🚊', 'Tramway', Rt, tram.slice(0,6), function(t) {
       var badges = t.lines.map(tramLine).join('');
-      return itemRow('🚊', t.name, badges, t.dist);
+      return itemRow('🚊', t.name, badges, t.dist, {lat:t.lat, lon:t.lon, tip:'🚊 '+t.name});
     });
 
     // Bus
     h += sectionHtml('🚌', 'Bus', Rb, busList.slice(0,15), function(b) {
       var badge = b.line ? '<span class="sect-badge sb-bus" style="font-weight:700;font-size:11px;">'+b.line+'</span>' : '';
-      return itemRow('🚌', b.name, badge, b.dist);
+      return itemRow('🚌', b.name, badge, b.dist, {lat:b.lat, lon:b.lon, tip:'🚌 '+b.name+(b.line?' (bus '+b.line+')':'')});
     });
 
 
@@ -11840,7 +11905,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     startRealtime();
     var ov=document.getElementById('ach-login-overlay'); if(ov) ov.classList.add('ach-hidden');
     var ub=document.getElementById('ach-userbar'); if(ub) ub.style.display='none';
-    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v10.25';
+    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v10.26';
     flag('Synchronis\u00e9');
     // fin de l'init : on autorise la journalisation des actions
     setTimeout(function(){ installInterceptor._init=false; }, 1500);
