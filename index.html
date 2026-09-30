@@ -1685,7 +1685,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     </div>
   </div>
   </div>
-  <div class="logo-ver app-ver">Achille App — v10.27</div>
+  <div class="logo-ver app-ver">Achille App — v10.28</div>
 </aside>
 <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Réduire la barre latérale">‹</button>
 
@@ -11933,7 +11933,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     startRealtime();
     var ov=document.getElementById('ach-login-overlay'); if(ov) ov.classList.add('ach-hidden');
     var ub=document.getElementById('ach-userbar'); if(ub) ub.style.display='none';
-    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v10.27';
+    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v10.28';
     flag('Synchronis\u00e9');
     // fin de l'init : on autorise la journalisation des actions
     setTimeout(function(){ installInterceptor._init=false; }, 1500);
@@ -15473,16 +15473,23 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
        Désormais : on bascule sur l'onglet du statut de la fiche, on efface recherche et
        filtres, on revient page 1, on surligne la fiche 3 secondes. Et si MALGRÉ TOUT sa
        carte n'est pas à l'écran, une alerte le dit avec les infos utiles. */
+    var _stayPart=false, _etq='';
     if(!id){
       try{
-        pgDossier=pgEtape(obj)||'tous';   /* v8.59 : les onglets sont des étapes (fiche neuve → « En cours ») */
-        pgFilt={sites:[],users:[],villes:[]};
-        var _se=document.getElementById('pg-search'); if(_se) _se.value='';
-        pgPage=1; sortMode='date'; sortDir=-1;
+        _etq=pgEtape(obj)||'tous';
+        /* v10.28 (Laurent) : quand on TRAVAILLE dans « Partages », valider une fiche ne
+           nous en sort pas — on reste où on était (filtres et recherche compris). */
+        _stayPart=(pgDossier==='partage');
+        if(!_stayPart){
+          pgDossier=_etq;   /* v8.59 : les onglets sont des étapes (fiche neuve → « En cours ») */
+          pgFilt={sites:[],users:[],villes:[]};
+          var _se=document.getElementById('pg-search'); if(_se) _se.value='';
+          pgPage=1; sortMode='date'; sortDir=-1;
+        }
       }catch(e){window.achErr&&achErr(e)}
     }
     pigeRender();
-    if(!id){
+    if(!id && !(_stayPart && _etq!=='partage')){
       setTimeout(function(){
         try{
           var card=document.querySelector('#pige-list .pg-fiche[data-id="'+obj.id+'"]');
@@ -15502,7 +15509,14 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
         }catch(e){window.achErr&&achErr(e)}
       }, 350);
     }
-    if(window.toast) toast(id?'Fiche mise à jour ✓':'Fiche de pige créée ✓ — affichée à l\u2019écran');
+    if(window.toast){
+      if(id) toast('Fiche mise à jour ✓');
+      else if(_stayPart && _etq!=='partage'){
+        var _lbq=_etq; for(var _qe=0;_qe<PG_ETAPES.length;_qe++){ if(PG_ETAPES[_qe].k===_etq){ _lbq=PG_ETAPES[_qe].lbl; break; } }
+        toast('Fiche de pige créée ✓ — rangée dans « '+_lbq+' »');
+      }
+      else toast('Fiche de pige créée ✓ — affichée à l\u2019écran');
+    }
   };
   window.pigeDelete=function(){
     if(!canDel()) return;
