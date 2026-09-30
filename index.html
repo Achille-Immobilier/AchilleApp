@@ -1685,7 +1685,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     </div>
   </div>
   </div>
-  <div class="logo-ver app-ver">Achille App — v10.24</div>
+  <div class="logo-ver app-ver">Achille App — v10.25</div>
 </aside>
 <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Réduire la barre latérale">‹</button>
 
@@ -11840,7 +11840,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     startRealtime();
     var ov=document.getElementById('ach-login-overlay'); if(ov) ov.classList.add('ach-hidden');
     var ub=document.getElementById('ach-userbar'); if(ub) ub.style.display='none';
-    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v10.24';
+    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v10.25';
     flag('Synchronis\u00e9');
     // fin de l'init : on autorise la journalisation des actions
     setTimeout(function(){ installInterceptor._init=false; }, 1500);
@@ -12977,8 +12977,9 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
           </div>
         </div>
         <div class="form-row">
-          <div class="form-group fg-vendeur"><label class="form-label" id="pg-vendeur-label">Vendeur</label><input class="form-input" id="pg-vendeur" placeholder="Nom du vendeur"></div>
-          <div class="form-group fg-vendeur" id="pg-agence-wrap" style="display:none;"><label class="form-label">Agence</label><input class="form-input" id="pg-agence" placeholder="Nom de l’agence consœur"></div>
+          <div class="form-group fg-vendeur"><label class="form-label" id="pg-vendeur-label">Vendeur</label><input class="form-input" id="pg-vendeur" placeholder="Nom du vendeur" autocomplete="off" oninput="pgConfNomPick()"></div>
+          <div class="form-group fg-vendeur" id="pg-agence-wrap" style="display:none;"><label class="form-label">Agence</label><input class="form-input" id="pg-agence" list="pg-agences" placeholder="Nom de l’agence consœur" autocomplete="off"></div>
+          <datalist id="pg-conf-noms"></datalist><datalist id="pg-agences"></datalist>
           <div class="form-group fg-tel"><label class="form-label">Téléphone</label><input class="form-input" id="pg-tel" placeholder="06 12 34 56 78" oninput="pigeTelFmt(this);pigeDupCheck()" onblur="this.value=pgTelPretty(this.value);pigeDupCheck()"></div>
         </div>
         <div class="form-row">
@@ -13046,7 +13047,7 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
   ];
   function pgStatutDef(k){ for(var i=0;i<PG_STATUTS.length;i++){ if(PG_STATUTS[i].k===k) return PG_STATUTS[i]; } return PG_STATUTS[0]; }   /* v8.58 : repli = « En cours » (désormais en tête du tableau) */
   function pgStatutOf(r){ return (r&&r.statut)||'encours'; }
-  var pgDossier='tous';
+  var pgDossier='vivier';   /* v10.25 : on arrive sur « En cours » */
   var pgImp=['chaud','encours','offline'], pgNewOnly=false;   /* v10.05 : filtre importance + bouton New */   /* filtre dossier courant : 'tous' | statut | 'd:'+id */
   var pgPage=1;
   var PG_PER=25;
@@ -14335,7 +14336,7 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
   window.pigeRAZ=function(){
     var s=document.getElementById('pg-search'); if(s) s.value='';
     pgFilt.sites=[]; pgFilt.users=[]; pgFilt.villes=[];
-    pgDossier='tous'; pgPage=1;
+    pgDossier='vivier'; pgPage=1;   /* v10.25 : la RAZ ramène aussi sur « En cours » */
     sortMode='date'; sortDir=-1;
     pgImp=['chaud','encours','offline']; pgNewOnly=false;   /* v10.05 */
     ['chaud','encours','offline'].forEach(function(k){ var c=document.getElementById('pg-imp-'+k); if(c) c.checked=true; });
@@ -14970,9 +14971,44 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
     var b=document.getElementById('pg-conf-prix'); if(b) b.style.display=on?'':'none';
     var lb=document.getElementById('pg-prix-label'); if(lb) lb.textContent=on?'Prix FAI (€)':'Prix (€)';
     var vl=document.getElementById('pg-vendeur-label'); if(vl) vl.textContent=on?'Confrère':'Vendeur';
-    var vi=document.getElementById('pg-vendeur'); if(vi) vi.placeholder=on?'Nom du confrère':'Nom du vendeur';
+    var vi=document.getElementById('pg-vendeur');
+    if(vi){ vi.placeholder=on?'Nom du confrère':'Nom du vendeur';
+      if(on) vi.setAttribute('list','pg-conf-noms'); else vi.removeAttribute('list'); }
     var aw=document.getElementById('pg-agence-wrap'); if(aw) aw.style.display=on?'':'none';
-    if(on) pgConfCalc();
+    if(on){ pgConfDirRefresh(); pgConfCalc(); }
+  };
+  /* v10.25 : RÉPERTOIRE des confrères — bâti tout seul depuis les fiches Partages */
+  function pgConfDir(){
+    var seen={}, out=[];
+    load().forEach(function(r){
+      if(!r || r.src!=='confrere') return;
+      var nom=(r.vendeur||'').trim(), ag=(r.agence||'').trim(), tl=(r.tel||'').trim();
+      if(!nom && !ag) return;
+      var k=(nom+'|'+ag).toLowerCase();
+      if(seen[k]){ if(!seen[k].agence&&ag) seen[k].agence=ag; if(!seen[k].tel&&tl) seen[k].tel=tl; return; }
+      var c={nom:nom, agence:ag, tel:tl}; seen[k]=c; out.push(c);
+    });
+    return out;
+  }
+  function pgConfDirRefresh(){
+    var dir=pgConfDir();
+    var dn=document.getElementById('pg-conf-noms'), da=document.getElementById('pg-agences');
+    if(dn) dn.innerHTML=dir.filter(function(c){return c.nom;}).map(function(c){
+      return '<option value="'+esc(c.nom)+'">'+esc([c.agence,c.tel].filter(Boolean).join(' · '))+'</option>'; }).join('');
+    if(da){ var ags=[]; dir.forEach(function(c){ if(c.agence && ags.indexOf(c.agence)<0) ags.push(c.agence); });
+      da.innerHTML=ags.sort().map(function(a2){ return '<option value="'+esc(a2)+'"></option>'; }).join(''); }
+  }
+  window.pgConfNomPick=function(){
+    /* un nom du répertoire choisi (ou tapé en entier) remplit agence + téléphone — champs vides seulement */
+    try{
+      if(!pgConfIs()) return;
+      var v=(document.getElementById('pg-vendeur').value||'').trim().toLowerCase(); if(!v) return;
+      var c=pgConfDir().filter(function(x){ return x.nom && x.nom.toLowerCase()===v; })[0]; if(!c) return;
+      var got=[];
+      var ae=document.getElementById('pg-agence'); if(ae && !ae.value.trim() && c.agence){ ae.value=c.agence; got.push('agence'); }
+      var te=document.getElementById('pg-tel'); if(te && !te.value.trim() && c.tel){ te.value=c.tel; got.push('téléphone'); }
+      if(got.length && window.toast) toast('📇 Répertoire : '+got.join(' + ')+' rempli');
+    }catch(e){window.achErr&&achErr(e)}
   };
   var _pgHonoAuto=null;   /* dernière valeur d'honoraires PROPOSÉE (jamais écrasée si saisie à la main) */
   window.pgConfCalc=function(mode){
@@ -15658,7 +15694,7 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
 
   /* ---- Init + hooks ---- */
   var _pgNav=window.navTo;
-  window.navTo=function(id,el){ if(typeof _pgNav==='function') _pgNav(id,el); if(id==='pige'){ try{ pigeRender(); }catch(e){window.achErr&&achErr(e)} } };
+  window.navTo=function(id,el){ if(typeof _pgNav==='function') _pgNav(id,el); if(id==='pige'){ try{ pgDossier='vivier'; pgPage=1; pigeRender(); }catch(e){window.achErr&&achErr(e)} } };   /* v10.25 : chaque entrée dans Pige atterrit sur « En cours » */
   if(document.readyState!=='loading') pigeSeedWhenReady(); else document.addEventListener('DOMContentLoaded', function(){ pigeSeedWhenReady(); });
 })();
 </script>
