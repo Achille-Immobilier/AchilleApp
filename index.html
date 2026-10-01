@@ -1757,14 +1757,6 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
         <button class="pg-chip pg-sortbtn" onclick="pigeSort('prix',this)">Prix <span class="pg-arrow"></span></button>
         <button class="pg-chip pg-sortbtn" onclick="pigeSort('pm2',this)">Prix/m² <span class="pg-arrow"></span></button>
         <button class="pg-chip pg-sortbtn" onclick="pigeSort('surface',this)">m² <span class="pg-arrow"></span></button>
-        <span id="pg-ext-wrap"><button class="pg-chip" id="pg-ext-btn" onclick="pgExtToggle(event)" title="N'afficher que les biens avec un extérieur">🌿 Extérieur <span id="pg-ext-n"></span>▾</button>
-        <div id="pg-ext-menu">
-          <div class="pgi-h" style="margin-bottom:1px;">N'afficher que les biens avec :</div><div style="font-size:11px;color:var(--gris-2);margin-bottom:5px;">(au moins un des cochés)</div>
-          <label><input type="checkbox" id="pg-ext-balcon" onchange="pgExtApply()">Balcon</label>
-          <label><input type="checkbox" id="pg-ext-terrasse" onchange="pgExtApply()">Terrasse</label>
-          <label><input type="checkbox" id="pg-ext-jardin" onchange="pgExtApply()">Jardin</label>
-        </div></span>
-        <button class="pg-chip" id="pg-park-btn" onclick="pgParkToggle()" title="N'afficher que les biens avec parking / box / garage">🚗 Parking</button>
         <span class="pg-sep"></span>
         <span id="pg-imp-wrap"><button class="pg-chip" id="pg-imp-btn" onclick="pgImpToggle(event)" title="Filtrer / trier selon la pastille d'importance">● Importance <span id="pg-imp-n"></span>▾</button>
         <div id="pg-imp-menu">
@@ -13150,7 +13142,7 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
   function pgStatutDef(k){ for(var i=0;i<PG_STATUTS.length;i++){ if(PG_STATUTS[i].k===k) return PG_STATUTS[i]; } return PG_STATUTS[0]; }   /* v8.58 : repli = « En cours » (désormais en tête du tableau) */
   function pgStatutOf(r){ return (r&&r.statut)||'encours'; }
   var pgDossier='vivier';   /* v10.25 : on arrive sur « En cours » */
-  var pgImp=[], pgNewOnly=false, pgExt=[], pgParkOnly=false;   /* v10.31 : filtres Extérieur (balcon/terrasse/jardin, au moins un) + Parking */   /* v10.30 : rien de coché = tout affiché ; cocher = filtrer (sens naturel, demande Laurent) */   /* filtre dossier courant : 'tous' | statut | 'd:'+id */
+  var pgImp=[], pgNewOnly=false;   /* v10.30 : rien de coché = tout affiché ; cocher = filtrer (sens naturel, demande Laurent) */   /* filtre dossier courant : 'tous' | statut | 'd:'+id */
   var pgPage=1;
   var PG_PER=25;
 
@@ -14414,8 +14406,20 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
     if(btn){ btn.classList.add('on'); var ar=btn.querySelector('.pg-arrow'); if(ar) ar.textContent=(sortDir<0?'▼':'▲'); }
     pigeRender();
   };
+  /* v10.31 : les popovers de la barre sont en position:fixed (la barre défile) —
+     on les pose sous leur bouton à l'ouverture, bornés au bord droit de l'écran */
+  function pgPopPlace(m, btn){
+    try{
+      var r=btn.getBoundingClientRect();
+      m.style.top=(r.bottom+4)+'px'; m.style.left=r.left+'px';
+      var mw=m.offsetWidth||0;
+      if(r.left+mw>window.innerWidth-8) m.style.left=Math.max(8, window.innerWidth-mw-8)+'px';
+    }catch(e){window.achErr&&achErr(e)}
+  }
   window.pgImpToggle=function(ev){ try{ ev.stopPropagation(); }catch(e){window.achErr&&achErr(e)}
-    var m=document.getElementById('pg-imp-menu'); if(m) m.classList.toggle('open'); };
+    var m=document.getElementById('pg-imp-menu'); if(!m) return;
+    m.classList.toggle('open');
+    if(m.classList.contains('open')) pgPopPlace(m, document.getElementById('pg-imp-btn')||ev.target); };
   document.addEventListener('click',function(e){ var m=document.getElementById('pg-imp-menu');
     if(m&&m.classList.contains('open')&&!e.target.closest('#pg-imp-wrap')) m.classList.remove('open'); });
   window.pgImpApply=function(){
@@ -14428,31 +14432,13 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
   window.pgImpSort=function(ev){ try{ ev.stopPropagation(); }catch(e){window.achErr&&achErr(e)}
     pigeSort('importance', null);
     if(window.toast) toast('⇅ Tri par importance : '+(sortDir<0?'Prioritaire → Moyen':'Moyen → Prioritaire')); };
-  /* v10.31 : Extérieur (choix multiple) + Parking */
-  window.pgExtToggle=function(ev){ try{ ev.stopPropagation(); }catch(e){window.achErr&&achErr(e)}
-    var m=document.getElementById('pg-ext-menu'); if(m) m.classList.toggle('open'); };
-  document.addEventListener('click',function(e){ var m=document.getElementById('pg-ext-menu');
-    if(m&&m.classList.contains('open')&&!e.target.closest('#pg-ext-wrap')) m.classList.remove('open'); });
-  window.pgExtApply=function(){
-    pgExt=['balcon','terrasse','jardin'].filter(function(k){ var c=document.getElementById('pg-ext-'+k); return c&&c.checked; });
-    var b=document.getElementById('pg-ext-btn'), n=document.getElementById('pg-ext-n');
-    if(b) b.classList.toggle('on', pgExt.length>0);
-    if(n) n.textContent=(pgExt.length>0)?('('+pgExt.length+') '):'';
-    pgPage=1; pigeRender();
-  };
-  window.pgParkToggle=function(){ pgParkOnly=!pgParkOnly;
-    var b=document.getElementById('pg-park-btn'); if(b) b.classList.toggle('on', pgParkOnly);
-    pgPage=1; pigeRender(); };
-  window.pgHasCarac=function(r,k){
-    if((parseInt(r[k]||0,10)||0)>0) return true;
-    var re={balcon:/balcon/,terrasse:/terrasse/,jardin:/jardin/,parking:/parking|stationnement|box|garage/}[k];
-    return !!(re && r.carac && re.test(pgNorm(r.carac)));   /* anciennes fiches : champ libre */
-  };
   window.pgNewToggle=function(){ pgNewOnly=!pgNewOnly;
     var b=document.getElementById('pg-new-btn'); if(b) b.classList.toggle('on', pgNewOnly);
     pigeRender(); };
   window.pgHelpToggle=function(ev){ try{ ev.stopPropagation(); }catch(e){window.achErr&&achErr(e)}
-    var l=document.getElementById('pg-legend'); if(l) l.classList.toggle('pin'); };
+    var l=document.getElementById('pg-legend'); if(!l) return;
+    l.classList.toggle('pin');
+    if(l.classList.contains('pin')) pgPopPlace(l, document.querySelector('.pg-help-btn')||ev.target); };
   document.addEventListener('click',function(e){ var l=document.getElementById('pg-legend');
     if(l&&l.classList.contains('pin')&&!e.target.closest('#pg-help-wrap')) l.classList.remove('pin'); });
   window.pigeRAZ=function(){
@@ -14466,11 +14452,6 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
     var _in=document.getElementById('pg-imp-n'); if(_in) _in.textContent='';
     var _im=document.getElementById('pg-imp-menu'); if(_im) _im.classList.remove('open');
     var _nb=document.getElementById('pg-new-btn'); if(_nb) _nb.classList.remove('on');
-    pgExt=[]; pgParkOnly=false;   /* v10.31 */
-    ['balcon','terrasse','jardin'].forEach(function(k){ var c=document.getElementById('pg-ext-'+k); if(c) c.checked=false; });
-    ['pg-ext-btn','pg-park-btn'].forEach(function(id){ var e=document.getElementById(id); if(e) e.classList.remove('on'); });
-    var _en=document.getElementById('pg-ext-n'); if(_en) _en.textContent='';
-    var _em=document.getElementById('pg-ext-menu'); if(_em) _em.classList.remove('open');
     document.querySelectorAll('.pg-sortbtn').forEach(function(b,ix){
       b.classList.toggle('on', ix===0);
       var ar=b.querySelector('.pg-arrow'); if(ar) ar.textContent=(ix===0?'▼':'');
@@ -14590,8 +14571,6 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
     if(!q && pgFilt.villes.length){ a=a.filter(function(r){ return pgFilt.villes.indexOf(villeOf(r))>=0; }); }
     if(!q && pgImp.length){ a=a.filter(function(r){ return pgImp.indexOf(pgStatutOf(r))>=0; }); }   /* v10.30 : cocher = filtrer ; rien de coché = tout */
     if(!q && pgNewOnly){ a=a.filter(function(r){ return window.pgNewChip && pgNewChip(r)!==''; }); }   /* v10.05 : bouton New */
-    if(!q && pgExt.length){ a=a.filter(function(r){ return pgExt.some(function(k){ return pgHasCarac(r,k); }); }); }   /* v10.31 : Extérieur */
-    if(!q && pgParkOnly){ a=a.filter(function(r){ return pgHasCarac(r,'parking'); }); }   /* v10.31 : Parking */
     renderFolderBar(a, load());
     /* v7.22 : « Tous » et les statuts ne montrent que les fiches ACTIVES ; le tiroir « arch » montre les archivées */
     var telIx=pgTelIndex();   /* v7.34 : index téléphone → fiches (toutes, archivées comprises) */
@@ -16803,7 +16782,10 @@ select.pg-chip{padding:6px 10px;}
    souvent sur 2 lignes : le margin-top des onglets aère les lignes pour que le repli ait
    l'air VOULU, et le margin-right sépare chaque onglet — chaque dossier redevient un outil
    identifiable au lieu d'un bloc blanc continu. */
-#pg-folders{margin:2px 0 0;border-bottom:2px solid var(--border,#e5ded3);padding:0 4px;}
+#pg-folders{margin:2px 0 0;border-bottom:2px solid var(--border,#e5ded3);padding:0 4px 2px;display:flex;flex-wrap:nowrap;align-items:flex-end;overflow-x:auto;overflow-y:hidden;scrollbar-width:thin;}   /* v10.31 : une seule ligne, défilement au besoin */
+#pg-folders::-webkit-scrollbar{height:6px;}
+#pg-folders::-webkit-scrollbar-thumb{background:var(--beige-3);border-radius:3px;}
+#pg-folders .pg-fold{flex:none;white-space:nowrap;}
 .pg-fold{display:inline-flex;align-items:center;gap:6px;background:var(--beige,#f3ede2);border:1px solid var(--border,#e5ded3);border-bottom:3px solid var(--border,#e5ded3);color:var(--gris,#6b6b63);border-radius:9px 9px 0 0;padding:7px 14px 6px;font-family:'Jost',sans-serif;font-size:12.5px;cursor:pointer;transition:all .15s;margin:7px 4px -2px 0;vertical-align:bottom;}
 /* v7.22 : tiroir Archivées + fiches archivées + modale motif + bandeaux automatiques dans la fiche */
 .pg-fold-archdrawer{margin-left:auto;color:#55524b;} /* v8.20 : trait plein hérité de .pg-fold + texte foncé (fini pointillés et ton sur ton) */
@@ -16959,6 +16941,14 @@ select.pg-chip{padding:6px 10px;}
 .pg-pg-dots{color:var(--gris-2,#a8a49a);padding:0 2px;}
 .pg-toolbar{display:flex;flex-direction:column;gap:4px;margin:0 0 10px;padding-top:8px;border-top:1px solid var(--beige-2);}
 .pg-trow{display:flex;flex-wrap:wrap;align-items:center;gap:6px;}
+/* v10.31 : la barre PRINCIPALE tient sur une ligne (défilement horizontal au besoin) ;
+   les rangées du panneau Filtres, elles, continuent de replier */
+.pg-toolbar > .pg-trow{flex-wrap:nowrap;overflow-x:auto;overflow-y:hidden;padding-bottom:3px;scrollbar-width:thin;}
+.pg-toolbar > .pg-trow::-webkit-scrollbar{height:6px;}
+.pg-toolbar > .pg-trow::-webkit-scrollbar-thumb{background:var(--beige-3);border-radius:3px;}
+.pg-toolbar > .pg-trow > *{flex:none;}
+.pg-toolbar > .pg-trow .pg-chip{white-space:nowrap;}
+.pg-toolbar > .pg-trow .pg-filtset{flex-wrap:nowrap;}
 .pg-sep{width:1px;height:20px;background:var(--beige-3);margin:0 6px;}
 .pg-srcchips{display:inline-flex;flex-wrap:wrap;gap:6px;vertical-align:middle;}
 .pg-srcchip{display:inline-flex;align-items:center;gap:4px;font-family:'Jost',sans-serif;font-size:11.5px;font-weight:600;padding:3px 10px;border-radius:13px;text-decoration:none;}
@@ -19576,18 +19566,16 @@ window.r3FlashToDetail=function(){
 .pg-raz{color:var(--terra);border-color:rgba(180,115,96,.45);}
 .pg-raz:hover{background:rgba(180,115,96,.1);}
 #pg-help-wrap{position:relative;display:inline-block;}
-#pg-imp-wrap,#pg-ext-wrap{position:relative;display:inline-block;}
-#pg-imp-menu,#pg-ext-menu{display:none;position:absolute;left:0;top:32px;z-index:900;width:230px;background:#fff;border:1px solid var(--border);border-radius:10px;box-shadow:0 12px 36px rgba(0,0,0,.2);padding:11px 13px;font-family:'Jost',sans-serif;font-size:12.5px;}
-#pg-imp-menu.open,#pg-ext-menu.open{display:block;}
-#pg-ext-menu{width:250px;}
-#pg-imp-menu .pgi-h,#pg-ext-menu .pgi-h{font-size:10px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--kaki);margin-bottom:5px;}
-#pg-imp-menu label,#pg-ext-menu label{display:flex;align-items:center;gap:7px;padding:3.5px 0;cursor:pointer;}
+#pg-imp-wrap{position:relative;display:inline-block;}
+#pg-imp-menu{display:none;position:fixed;z-index:1200;width:230px;background:#fff;border:1px solid var(--border);border-radius:10px;box-shadow:0 12px 36px rgba(0,0,0,.2);padding:11px 13px;font-family:'Jost',sans-serif;font-size:12.5px;}
+#pg-imp-menu.open{display:block;}
+#pg-imp-menu .pgi-h{font-size:10px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--kaki);margin-bottom:5px;}
+#pg-imp-menu label{display:flex;align-items:center;gap:7px;padding:3.5px 0;cursor:pointer;}
 #pg-imp-menu label i{display:inline-block;width:12px;height:12px;border-radius:50%;flex:none;}
-#pg-imp-btn.on,#pg-new-btn.on,#pg-ext-btn.on,#pg-park-btn.on{background:var(--terra);border-color:var(--terra);color:#fff;}
+#pg-imp-btn.on,#pg-new-btn.on{background:var(--terra);border-color:var(--terra);color:#fff;}
 .pg-help-btn{width:26px;text-align:center;color:var(--gris-2);border-color:var(--beige-2);font-weight:700;}
 .pg-help-btn:hover{color:var(--terra);border-color:var(--terra);}
-#pg-legend{display:none;position:absolute;right:0;top:32px;z-index:900;width:430px;background:#fff;border:1px solid var(--border);border-radius:10px;box-shadow:0 12px 40px rgba(0,0,0,.22);padding:13px 16px;font-family:'Jost',sans-serif;font-size:12px;color:var(--noir);line-height:1.55;text-align:left;cursor:default;}
-#pg-help-wrap:hover #pg-legend{display:block;}
+#pg-legend{display:none;position:fixed;z-index:1200;width:430px;background:#fff;border:1px solid var(--border);border-radius:10px;box-shadow:0 12px 40px rgba(0,0,0,.22);padding:13px 16px;font-family:'Jost',sans-serif;font-size:12px;color:var(--noir);line-height:1.55;text-align:left;cursor:default;}
 #pg-legend.pin{display:block;}
 #pg-legend .pgl-t{font-family:'Cormorant Garamond',serif;font-size:17px;margin-bottom:4px;}
 #pg-legend .pgl-s{font-size:10px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--kaki);margin:9px 0 3px;}
