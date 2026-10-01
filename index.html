@@ -1685,7 +1685,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     </div>
   </div>
   </div>
-  <div class="logo-ver app-ver">Achille App — v10.33</div>
+  <div class="logo-ver app-ver">Achille App — v10.34</div>
 </aside>
 <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Réduire la barre latérale">‹</button>
 
@@ -1752,6 +1752,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     
     <div class="pg-toolbar">
       <div class="pg-trow">
+        <span class="pg-trow-scroll">
         <span class="pg-lbl">Trier</span>
         <button class="pg-chip pg-sortbtn on" onclick="pigeSort('date',this)">Date <span class="pg-arrow">▼</span></button>
         <button class="pg-chip pg-sortbtn" onclick="pigeSort('prix',this)">Prix <span class="pg-arrow"></span></button>
@@ -1779,6 +1780,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
         <span id="pg-filt-villes" class="pg-filtset"></span>
         <span class="pg-sep"></span>
         <button class="pg-chip" id="pg-filters-btn" onclick="pigeFiltersToggle()">⚙ Filtres <span id="pg-filters-n"></span> <span id="pg-filters-arrow">▾</span></button>
+        </span>
         <button class="pg-chip pg-raz" onclick="pigeRAZ()" title="Tout réinitialiser : tri, filtres, villes, dossiers, recherche">↺ RAZ</button>
         <span id="pg-help-wrap"><button class="pg-chip pg-help-btn" onclick="pgHelpToggle(event)" title="Légende des couleurs et indicateurs">?</button>
         <div id="pg-legend">
@@ -11942,7 +11944,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     startRealtime();
     var ov=document.getElementById('ach-login-overlay'); if(ov) ov.classList.add('ach-hidden');
     var ub=document.getElementById('ach-userbar'); if(ub) ub.style.display='none';
-    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v10.33';
+    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v10.34';
     flag('Synchronis\u00e9');
     // fin de l'init : on autorise la journalisation des actions
     setTimeout(function(){ installInterceptor._init=false; }, 1500);
@@ -14559,6 +14561,14 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
   }
   window.pigeFiltToggle=toggleFilt;
   function villeOf(r){ return villeCanon(r.ville||'') || '—'; }
+  /* v10.34 : une pastille à CP sélectionnée (« Paris 16e (75116) ») attrape AUSSI les
+     fiches enregistrées sans CP (« Paris 16e ») — la pastille générique n'existe plus */
+  function pgVilleMatch(vv){
+    if(pgFilt.villes.indexOf(vv)>=0) return true;
+    for(var i=0;i<pgFilt.villes.length;i++){ var sl=pgFilt.villes[i], j=sl.lastIndexOf(' (');
+      if(j>0 && sl.slice(0,j)===vv) return true; }
+    return false;
+  }
   function renderFilterChips(){
     var data=load();
     /* Sites */
@@ -14575,6 +14585,9 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
     /* Villes (construites depuis les données) */
     var vc=document.getElementById('pg-filt-villes');
     if(vc){ var seen={},list=[]; data.forEach(function(r){ var v=villeOf(r); if(v&&v!=='—'&&!seen[v]){ seen[v]=1; list.push(v); } });
+      /* v10.34 : si « Paris 16e (75116) » existe, la pastille générique « Paris 16e »
+         disparaît (les pastilles à CP attrapent aussi les fiches sans CP — pgVilleMatch) */
+      list=list.filter(function(v){ return !list.some(function(w){ var i=w.lastIndexOf(' ('); return w!==v && i>0 && w.slice(0,i)===v; }); });
       list.sort(function(a,b){ var ra=villeRank(a),rb=villeRank(b); return (ra-rb)||a.localeCompare(b,'fr',{numeric:true}); });
       vc.innerHTML=list.map(function(v){ var on=pgFilt.villes.indexOf(v)>=0;
         return '<button class="pg-fchip'+(on?' on':'')+'" onclick="pigeFiltToggle(\'villes\',\''+v.replace(/'/g,"\\'")+'\')">'+esc(v)+'</button>'; }).join('') || '<span style="font-size:11px;color:var(--gris-2);">—</span>'; }
@@ -14608,7 +14621,7 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
     if(!q && pgFilt.users.length){ a=a.filter(function(r){
       return pgFilt.users.some(function(f){ return f==='none'? !r.user : r.user===f; });
     }); }
-    if(!q && pgFilt.villes.length){ a=a.filter(function(r){ return pgFilt.villes.indexOf(villeOf(r))>=0; }); }
+    if(!q && pgFilt.villes.length){ a=a.filter(function(r){ return pgVilleMatch(villeOf(r)); }); }
     if(!q && pgImp.length){ a=a.filter(function(r){ return pgImp.indexOf(pgStatutOf(r))>=0; }); }   /* v10.30 : cocher = filtrer ; rien de coché = tout */
     if(!q && pgNewOnly){ a=a.filter(function(r){ return window.pgNewChip && pgNewChip(r)!==''; }); }   /* v10.05 : bouton New */
     if(!q && pgExtSel.length){ a=a.filter(function(r){ return pgExtSel.some(function(k){ return pgHasCarac(r,k); }); }); }   /* v10.32 : Extérieur */
@@ -16985,10 +16998,14 @@ select.pg-chip{padding:6px 10px;}
 .pg-trow{display:flex;flex-wrap:wrap;align-items:center;gap:6px;}
 /* v10.31 : la barre PRINCIPALE tient sur une ligne (défilement horizontal au besoin) ;
    les rangées du panneau Filtres, elles, continuent de replier */
-.pg-toolbar > .pg-trow{flex-wrap:nowrap;overflow-x:auto;overflow-y:hidden;padding-bottom:3px;scrollbar-width:thin;}
-.pg-toolbar > .pg-trow::-webkit-scrollbar{height:6px;}
-.pg-toolbar > .pg-trow::-webkit-scrollbar-thumb{background:var(--beige-3);border-radius:3px;}
+.pg-toolbar > .pg-trow{flex-wrap:nowrap;}
+/* v10.34 : seule la partie GAUCHE défile — RAZ et la légende « ? » restent visibles à droite */
+.pg-trow-scroll{display:flex;align-items:center;gap:6px;flex-wrap:nowrap;flex:1 1 auto;min-width:0;overflow-x:auto;overflow-y:hidden;padding-bottom:3px;scrollbar-width:thin;}
+.pg-trow-scroll::-webkit-scrollbar{height:6px;}
+.pg-trow-scroll::-webkit-scrollbar-thumb{background:var(--beige-3);border-radius:3px;}
+.pg-trow-scroll > *{flex:none;}
 .pg-toolbar > .pg-trow > *{flex:none;}
+.pg-toolbar > .pg-trow > .pg-trow-scroll{flex:1 1 auto;}
 .pg-toolbar > .pg-trow .pg-chip{white-space:nowrap;}
 .pg-toolbar > .pg-trow .pg-filtset{flex-wrap:nowrap;}
 .pg-sep{width:1px;height:20px;background:var(--beige-3);margin:0 6px;}
