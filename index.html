@@ -1466,6 +1466,9 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
 #page-encours #ec-tab-liste.active{display:flex;flex-direction:column;}
 #page-encours #ec-tab-enc{background:var(--blanc);overflow-y:auto;padding:22px 26px;}
 #page-encours #ec-tab-enc.active{display:block;}
+#page-encours #ec-tab-loc{background:var(--blanc);overflow-y:auto;padding:22px 26px;}
+#page-encours #ec-tab-loc.active{display:block;}
+#ec-loc-tbody .ec-loc-st{cursor:pointer;}
 .ec-enc-badge{display:inline-block;font-size:11px;padding:2px 9px;border-radius:10px;font-weight:500;white-space:nowrap;}
 .ec-enc-badge.enc{background:rgba(76,83,59,.12);color:var(--kaki);}
 .ec-enc-badge.att{background:rgba(180,115,96,.13);color:var(--terra);}
@@ -1685,7 +1688,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     </div>
   </div>
   </div>
-  <div class="logo-ver app-ver">Achille App — v10.35</div>
+  <div class="logo-ver app-ver">Achille App — v10.38</div>
 </aside>
 <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Réduire la barre latérale">‹</button>
 
@@ -4305,6 +4308,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     <div class="encours-page" id="encours-page-root">
       <div class="comm-tabs-bar ec-tabs-bar">
         <button class="comm-tab active" onclick="ecTab('liste',this)">📋 Suivi des ventes</button>
+        <button class="comm-tab" onclick="ecTab('loc',this)">🔑 Suivi des locations</button>
         <button class="comm-tab" onclick="ecTab('enc',this)">💶 Encaissements</button>
         <button class="ec-add-btn" id="ec-add-btn" onclick="ecOpenNew()" style="margin-left:auto;align-self:center;margin-right:12px;">+ Nouvelle vente</button>
       </div>
@@ -4491,18 +4495,28 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
       </div>
 
     </div>
+      <div class="ec-tabpanel" id="ec-tab-loc">
+        <div class="sec-hd"><div><div class="sec-title">Suivi des <span>locations</span></div><div class="sec-sub">Locations réalisées — les honoraires alimentent l'onglet Encaissements</div></div>
+          <button class="btn btn-terra" onclick="locNew()">+ Nouvelle location</button></div>
+        <div class="card">
+          <table class="comm-table">
+            <thead><tr><th>Bien</th><th>Signature</th><th>Entrée</th><th>Propriétaire</th><th>Locataire(s)</th><th style="text-align:right">Loyer CC /mois</th><th style="text-align:right">Hono. bailleur</th><th style="text-align:right">Hono. locataire</th><th style="text-align:right">Total facturé TTC</th><th>Statut</th><th></th></tr></thead>
+            <tbody id="ec-loc-tbody"></tbody>
+          </table>
+        </div>
+      </div>
       <div class="ec-tabpanel" id="ec-tab-enc">
         <div class="sec-hd"><div><div class="sec-title">Encaissements <span>&amp; commissions</span></div><div class="sec-sub">Synthèse des honoraires calculée à partir du suivi des ventes</div></div></div>
         <div class="grid-3" style="margin-bottom:20px;">
           <div class="card">
-            <div class="card-sub">Honoraires encaissés (ventes signées)</div>
+            <div class="card-sub">Honoraires encaissés (ventes signées + locations)</div>
             <div class="kpi-val" id="ec-enc-encaisse">—</div>
-            <div style="font-size:12px;color:var(--gris-2);margin-top:6px;"><span id="ec-enc-count-pa">0</span> vente(s) · acte signé</div>
+            <div style="font-size:12px;color:var(--gris-2);margin-top:6px;"><span id="ec-enc-count-pa">0</span> vente(s) · acte signé<span id="ec-enc-loc-pa"></span></div>
           </div>
           <div class="card">
             <div class="card-sub">En attente (compromis en cours)</div>
             <div class="kpi-val" id="ec-enc-attente">—</div>
-            <div style="font-size:12px;color:var(--gris-2);margin-top:6px;"><span id="ec-enc-count-ec">0</span> vente(s) en cours</div>
+            <div style="font-size:12px;color:var(--gris-2);margin-top:6px;"><span id="ec-enc-count-ec">0</span> vente(s) en cours<span id="ec-enc-loc-ec"></span></div>
           </div>
           <div class="card">
             <div class="card-sub">Taux moyen (encaissé / prix)</div>
@@ -4534,6 +4548,34 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
 
 
 
+
+<div class="modal-overlay" id="modal-loc"><div class="modal" style="max-width:860px;"><button class="modal-close" onclick="closeModal('modal-loc')">x</button><div class="modal-title" id="loc-modal-title">Nouvelle location</div><input type="hidden" id="loc-edit-id" value="">
+<div class="form-group"><label class="form-label">Adresse du bien</label><input class="form-input" id="loc-addr" type="text" placeholder="Ex : 12 rue de Chartres, Neuilly 92200"></div>
+<div class="form-row"><div class="form-group"><label class="form-label">Date de signature du bail</label><input class="form-input" id="loc-bail" type="date"></div>
+<div class="form-group"><label class="form-label">Date d'état des lieux</label><input class="form-input" id="loc-edl" type="date"></div>
+<div class="form-group"><label class="form-label">Date d'entrée</label><input class="form-input" id="loc-entree" type="date"></div></div>
+<div class="form-row"><div class="form-group" style="flex:0 0 160px;"><label class="form-label">Propriétaire</label><select class="form-select" id="loc-pro-type"><option value="part">Particulier</option><option value="soc">Société</option></select></div>
+<div class="form-group"><label class="form-label">Nom du propriétaire</label><input class="form-input" id="loc-bailleur" type="text" placeholder="Nom ou raison sociale"></div>
+<div class="form-group"><label class="form-label">Coordonnées propriétaire</label><input class="form-input" id="loc-bailleur-coord" type="text" placeholder="Tél / mail"></div></div>
+<div class="form-row"><div class="form-group"><label class="form-label">Garant (caution)</label><input class="form-input" id="loc-garant" type="text" placeholder="Nom du garant (optionnel)"></div>
+<div class="form-group"><label class="form-label">Coordonnées garant</label><input class="form-input" id="loc-garant-coord" type="text" placeholder="Tél / mail"></div>
+<div class="form-group" style="flex:0 0 160px;"><label class="form-label">N° de mandat</label><input class="form-input" id="loc-mandat" type="text" placeholder="175"></div></div>
+<div class="form-group"><label class="form-label">Locataire(s) <span style="font-weight:400;color:var(--gris-2);">— plusieurs lignes en cas de colocation</span></label>
+  <div id="loc-locs"></div>
+  <button type="button" class="btn btn-outline btn-sm" style="margin-top:6px;" onclick="locLocAdd('','')">+ Ajouter un locataire</button></div>
+<div class="form-row"><div class="form-group"><label class="form-label">Loyer complet CC (€/mois)</label><input class="form-input js-thousands" id="loc-loyer" inputmode="decimal" placeholder="2 500" oninput="locCalcHC()"></div>
+<div class="form-group"><label class="form-label">dont charges (€/mois)</label><input class="form-input js-thousands" id="loc-charges" inputmode="decimal" placeholder="200" oninput="locCalcHC()"></div>
+<div class="form-group"><label class="form-label">Loyer hors charges (calculé)</label><input class="form-input" id="loc-hc" readonly tabindex="-1" style="background:var(--beige);color:var(--kaki);font-weight:600;" placeholder="—"></div></div>
+<div class="form-row"><div class="form-group"><label class="form-label">Dépôt de garantie (€)</label><input class="form-input js-thousands" id="loc-depot" inputmode="decimal" placeholder="2 300"></div>
+<div class="form-group"><label class="form-label">Coût état des lieux (€)</label><input class="form-input js-thousands" id="loc-edl-cout" inputmode="decimal" placeholder="300"></div>
+<div class="form-group"><label class="form-label">Type de bail</label><select class="form-select" id="loc-bail-type"><option value="">—</option><option value="vide">Vide</option><option value="meuble">Meublé</option><option value="autre">Autre</option></select></div></div>
+<div class="form-row"><div class="form-group"><label class="form-label">Honoraires propriétaire TTC (€)</label><input class="form-input js-thousands" id="loc-hono-bail" inputmode="decimal" placeholder="1 500"></div>
+<div class="form-group"><label class="form-label">Honoraires locataire TTC (€)</label><input class="form-input js-thousands" id="loc-hono-loc" inputmode="decimal" placeholder="1 500"></div>
+<div class="form-group"><label class="form-label">Négociateur</label><select class="form-select" id="loc-nego"><option value="">—</option><option>Laurent Sellem</option><option>Marine Attias</option><option>Marine Zoretic</option><option>Liloé Pichat</option></select></div></div>
+<div class="form-row"><div class="form-group"><label class="form-label">Encaissement</label><select class="form-select" id="loc-enc"><option value="att">⏳ En attente</option><option value="enc">✓ Encaissé</option></select></div>
+<div class="form-group"><label class="form-label">Date d'encaissement</label><input class="form-input" id="loc-enc-date" type="date"></div></div>
+<div class="form-group"><label class="form-label">Commentaires</label><textarea class="form-input" id="loc-comment" rows="3" placeholder="Notes, points d'attention, suivi…" style="resize:vertical;min-height:70px;font-family:inherit;line-height:1.4;"></textarea></div>
+<div class="modal-actions"><button class="btn btn-outline" onclick="closeModal('modal-loc')">Annuler</button><button class="btn btn-terra" onclick="locSaveForm()">Enregistrer la location</button></div></div></div>
 
 <div class="modal-overlay" id="modal-postit"><div class="modal"><button class="modal-close" onclick="closeModal('modal-postit')">x</button><div class="modal-title" id="pi-modal-title">Nouveau post-it</div><div class="form-group"><label class="form-label">Colonne</label><select class="form-select" id="pi-col-sel" onchange="piColFields()"><option value="produits">Produits</option><option value="clients">Clients</option></select></div><div class="form-group"><label class="form-label">Couleur / Priorite</label><div style="display:flex;gap:8px;"><div class="pi-color-choice active" data-color="hot" onclick="piSelColor(this)" style="background:#fffbe0;"><div style="width:20px;height:20px;border-radius:4px;background:var(--hot);border:1.5px solid var(--hot-d);margin:0 auto 4px;"></div>Hot</div><div class="pi-color-choice" data-color="todo" onclick="piSelColor(this)" style="background:#eaf3fc;"><div style="width:20px;height:20px;border-radius:4px;background:var(--todo);border:1.5px solid var(--todo-d);margin:0 auto 4px;"></div>To do</div><div class="pi-color-choice" data-color="ff" onclick="piSelColor(this)" style="background:#fdf0f3;"><div style="width:20px;height:20px;border-radius:4px;background:var(--ff);border:1.5px solid var(--ff-d);margin:0 auto 4px;"></div>F&amp;F</div></div></div><input type="hidden" id="pi-ref" value=""><div id="pi-fg-cli" style="display:none;"><div class="form-row"><div class="form-group"><label class="form-label">Nom et prénom du client <span style="color:var(--terra);">*</span> <span style="font-weight:400;color:var(--gris-2);">(interne)</span></label><input class="form-input" id="pi-cli" type="text" placeholder="Ex : Jean Charpentier"></div><div class="form-group"><label class="form-label">Identité affichée <span style="color:var(--terra);">*</span> <span style="font-weight:400;color:var(--gris-2);">(tableau &amp; écran Agence)</span></label><input class="form-input" id="pi-cli-pub" type="text" placeholder="Ex : M. C."></div></div></div><div id="pi-fg-prod" style="display:none;"><div class="form-row"><div class="form-group"><label class="form-label">Nom et prénom du vendeur <span style="color:var(--terra);">*</span> <span style="font-weight:400;color:var(--gris-2);">(interne)</span></label><input class="form-input" id="pi-vendeur" type="text" placeholder="Ex : Anne Lefort"></div><div class="form-group" style="position:relative;"><label class="form-label">Adresse du bien <span style="color:var(--terra);">*</span> <span style="font-weight:400;color:var(--gris-2);">(interne)</span></label><input class="form-input" id="pi-adresse" type="text" autocomplete="off" oninput="piAdrAC(this.value)" onblur="setTimeout(piAdrHide,180)" placeholder="Commencez à taper l'adresse…"><div id="pi-ac-list" style="display:none;position:absolute;top:100%;left:0;right:0;z-index:30;background:#fff;border:1px solid var(--beige-3);border-radius:0 0 7px 7px;max-height:190px;overflow-y:auto;box-shadow:0 8px 20px rgba(0,0,0,.12);"></div></div></div><div class="form-row"><div class="form-group"><label class="form-label">Identité affichée <span style="color:var(--terra);">*</span> <span style="font-weight:400;color:var(--gris-2);">(tableau &amp; écran)</span></label><input class="form-input" id="pi-vend-pub" type="text" placeholder="Ex : Mme L."></div><div class="form-group"><label class="form-label">Lieu affiché <span style="color:var(--terra);">*</span> <span style="font-weight:400;color:var(--gris-2);">(tableau &amp; écran)</span></label><input class="form-input" id="pi-adr-pub" type="text" placeholder="Ex : quartier du Château"></div></div></div><div class="form-row"><div class="form-group"><label class="form-label">Ville affichée <span style="font-weight:400;color:var(--gris-2);">(en-tête écran &amp; tableau)</span></label><input class="form-input" id="pi-ville" type="text" placeholder="Ex : Neuilly Sablons"></div><div class="form-group"><label class="form-label">Surface affichée <span style="font-weight:400;color:var(--gris-2);">(en-tête écran &amp; tableau)</span></label><input class="form-input" id="pi-surface" type="text" placeholder="Ex : 80-100 m²"></div></div><div class="form-group"><label class="form-label">La recherche / l'info en quelques mots-clés <span style="font-weight:400;color:var(--gris-2);">(affichée sur le post-it ET sur l'écran de l'agence : aucune info personnelle — <span id="pi-cnt">120</span> caract.)</span></label><textarea class="form-textarea" id="pi-content" maxlength="120" oninput="piCntUpd()" style="font-family:'Caveat',cursive;font-size:17px;" placeholder="L'essentiel, court et lisible..."></textarea></div><div class="form-group"><label class="form-label">Détails internes <span style="font-weight:400;color:var(--gris-2);">(lisibles en OUVRANT le post-it d'un clic — jamais à l'écran Agence)</span></label><textarea class="form-textarea" id="pi-details" placeholder="Tout le contexte utile : coordonnées, historique, montants..."></textarea></div><div class="form-row"><div class="form-group" style="margin:0;"><label class="form-label">Visibilite</label><select class="form-select" id="pi-vis" onchange="piPubField()"><option value="moi">Prive</option><option value="ecran">Agence (équipe + écran de l'agence)</option></select></div><div class="form-group" style="margin:0;"><label class="form-label">Collaborateur</label><select class="form-select" id="pi-owner"><option value="LS">Laurent Sellem</option><option value="MA">Marine Attias</option><option value="LP">Liloé Pichat</option><option value="MZ">Marine Zoretic</option></select></div></div><!-- v8.39 : le champ « pub » 90c est remplacé par « Identité affichée » + « Lieu affiché » (choix du rédacteur, champ par champ) — les anciens post-its qui portent encore n.pub restent affichés tels quels --><div class="modal-actions"><button class="btn btn-outline" onclick="closeModal('modal-postit')">Annuler</button><button class="btn btn-terra" id="pi-save-btn" onclick="piCreate()">Ajouter</button></div></div></div>
 
@@ -7761,6 +7803,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     var p=document.getElementById('ec-tab-'+id); if(p) p.classList.add('active');
     if(btn) btn.classList.add('active');
     if(id==='enc' && typeof window.ecEncRender==='function') window.ecEncRender();
+    if(id==='loc' && typeof window.ecLocRender==='function') window.ecLocRender();
   };
 
   /* ===================== PAGE HONORAIRES ===================== */
@@ -8778,6 +8821,167 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     ecEncRender();
   }
 
+  /* ── v10.36 : SUIVI DES LOCATIONS — stock ach_locations_v1 (synchronisé cloud) ── */
+  var LOC_KEY='ach_locations_v1';
+  /* v10.38 : la PREMIÈRE location de l'agence (128 av. Charles de Gaulle — récap
+     Laurent du 02/10/2026) est servie PRÉ-REMPLIE tant que rien n'a été enregistré
+     (clé absente) — même principe qu'EC_DEFAULT pour les ventes. Montants à l'euro :
+     CC 3 465 (réel 3 464,50) ; total facturé 2 935+1 062+530 EDL = 4 527 TTC exact. */
+  var LOC_DEFAULT=[{ id:'loc-128cdg-devenne',
+    addr:'128 avenue Charles de Gaulle, 92200 Neuilly-sur-Seine',
+    bail:'2026-09-28', edl:'2026-09-29', entree:'2026-09-30',
+    proType:'part', bailleur:'Helena CARLOTO MARQUES, veuve DEVENNE',
+    coordBail:'helenaparis16@gmail.com · 06 45 61 50 24',
+    locs:[{nom:'Estefania MANZUR MONTELONGO', coord:'estefimanzur@gmail.com · 07 49 09 67 59'}],
+    locataire:'Estefania MANZUR MONTELONGO', coordLoc:'estefimanzur@gmail.com · 07 49 09 67 59',
+    garant:'Adalberto Tito MANZUR TRUJILLO', coordGarant:'tito@titomanzur.com · +1 (936) 521-9306',
+    mandatNum:'175', bailType:'meuble', nego:'Marine Attias',
+    loyer:3465, charges:265, depot:6400, edlCout:530, honBail:2935, honLoc:1062,
+    enc:'att', encDate:'',
+    comment:'Meublé 3P 88,54 m² RDC · effet du bail 01/10/2026, échéance 30/09/2027 (IRL T2) · loyer réel 3 200 HC + 264,50 ch. = 3 464,50 € · dépôt versé au bailleur · caution 83 148 € (1 an + 2 reconductions) · à suivre : ERP complet, anomalies électricité, interphone/badges, sonnette, déclaration occupation impôts avant 01/07/2027',
+    created:'2026-09-28T12:00:00.000Z', updated:'2026-09-28T12:00:00.000Z' }];
+  function locLoad(){
+    try{
+      var raw=localStorage.getItem(LOC_KEY);
+      if(raw==null) return JSON.parse(JSON.stringify(LOC_DEFAULT));
+      var d=JSON.parse(raw); return Array.isArray(d)?d:[];
+    }catch(e){ return []; }
+  }
+  function locSaveArr(a){ try{ localStorage.setItem(LOC_KEY, JSON.stringify(a)); }catch(e){window.achErr&&achErr(e)} }
+  function locNum(v){ return parseInt((''+(v==null?'':v)).replace(/[^\d]/g,''),10)||0; }
+  /* v10.37 : total facturé = honoraires des deux parties + coût de l'état des lieux */
+  function locHono(l){ return (l.honBail||0)+(l.honLoc||0)+(l.edlCout||0); }
+  /* v10.37 : colocation — anciennes fiches (locataire unique) migrées en liste */
+  function locLocs(l){
+    if(Array.isArray(l.locs) && l.locs.length) return l.locs;
+    return l.locataire? [{nom:l.locataire, coord:l.coordLoc||''}] : [];
+  }
+  window.locLocAdd=function(nom, coord){
+    var box=document.getElementById('loc-locs'); if(!box) return;
+    var esc=function(x){return (''+(x==null?'':x)).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');};
+    var row=document.createElement('div');
+    row.className='loc-loc-row'; row.style.cssText='display:flex;gap:8px;margin-bottom:6px;align-items:center;';
+    row.innerHTML='<input class="form-input loc-loc-nom" type="text" placeholder="Nom du locataire" value="'+esc(nom)+'" style="flex:1;">'
+      +'<input class="form-input loc-loc-coord" type="text" placeholder="Tél / mail" value="'+esc(coord)+'" style="flex:1;">'
+      +'<button type="button" class="pg-mini" title="Retirer ce locataire" onclick="this.parentNode.remove()">✕</button>';
+    box.appendChild(row);
+  };
+  function locLocsRead(){
+    var out=[];
+    document.querySelectorAll('#loc-locs .loc-loc-row').forEach(function(r){
+      var nom=(r.querySelector('.loc-loc-nom')||{}).value||'', coord=(r.querySelector('.loc-loc-coord')||{}).value||'';
+      nom=nom.trim(); coord=coord.trim();
+      if(nom||coord) out.push({nom:nom, coord:coord});
+    });
+    return out;
+  }
+  window.locCalcHC=function(){
+    var cc=locNum((document.getElementById('loc-loyer')||{}).value);
+    var ch=locNum((document.getElementById('loc-charges')||{}).value);
+    var e=document.getElementById('loc-hc'); if(!e) return;
+    e.value=(cc>0)? (numFmtStr(''+Math.max(0,cc-ch))+' € HC') : '';
+  };
+  function locDF(d){ try{ return d? (window.achDateFr? achDateFr(d) : d) : '—'; }catch(e){ return d||'—'; } }
+  window.locNew=function(){
+    ['loc-addr','loc-bailleur','loc-bailleur-coord','loc-garant','loc-garant-coord','loc-mandat','loc-loyer','loc-charges','loc-hc','loc-depot','loc-edl-cout','loc-hono-bail','loc-hono-loc','loc-comment','loc-bail','loc-edl','loc-entree','loc-enc-date','loc-edit-id'].forEach(function(id){ var e=document.getElementById(id); if(e) e.value=''; });
+    ['loc-enc','loc-nego','loc-bail-type'].forEach(function(id){ var e=document.getElementById(id); if(e) e.value=(id==='loc-enc')?'att':''; });
+    var pt=document.getElementById('loc-pro-type'); if(pt) pt.value='part';
+    var box=document.getElementById('loc-locs'); if(box) box.innerHTML='';
+    locLocAdd('','');
+    var t=document.getElementById('loc-modal-title'); if(t) t.textContent='Nouvelle location';
+    openModal('modal-loc');
+  };
+  window.locEdit=function(id){
+    var l=locLoad().filter(function(x){return x.id===id;})[0]; if(!l) return;
+    function S(fid,v){ var e=document.getElementById(fid); if(e) e.value=(v==null?'':v); }
+    S('loc-edit-id',id); S('loc-addr',l.addr); S('loc-bail',l.bail); S('loc-edl',l.edl); S('loc-entree',l.entree);
+    S('loc-bailleur',l.bailleur); S('loc-bailleur-coord',l.coordBail);
+    S('loc-garant',l.garant); S('loc-garant-coord',l.coordGarant); S('loc-mandat',l.mandatNum);
+    var pt=document.getElementById('loc-pro-type'); if(pt) pt.value=(l.proType==='soc')?'soc':'part';
+    var box=document.getElementById('loc-locs'); if(box) box.innerHTML='';
+    var _ls=locLocs(l); if(!_ls.length) _ls=[{nom:'',coord:''}];
+    _ls.forEach(function(x){ locLocAdd(x.nom||'', x.coord||''); });
+    S('loc-loyer', l.loyer? numFmtStr(''+l.loyer):''); S('loc-charges', l.charges? numFmtStr(''+l.charges):'');
+    locCalcHC();
+    S('loc-depot', l.depot? numFmtStr(''+l.depot):''); S('loc-edl-cout', l.edlCout? numFmtStr(''+l.edlCout):'');
+    var bt=document.getElementById('loc-bail-type'); if(bt) bt.value=l.bailType||'';
+    S('loc-hono-bail', l.honBail? numFmtStr(''+l.honBail):''); S('loc-hono-loc', l.honLoc? numFmtStr(''+l.honLoc):'');
+    S('loc-enc', l.enc==='enc'?'enc':'att'); S('loc-enc-date', l.encDate||''); S('loc-comment', l.comment||'');
+    var ne=document.getElementById('loc-nego'); if(ne) ne.value=l.nego||'';
+    var t=document.getElementById('loc-modal-title'); if(t) t.textContent='Location — '+(l.addr||'');
+    openModal('modal-loc');
+  };
+  window.locSaveForm=function(){
+    var g=function(id){ var e=document.getElementById(id); return e? (e.value||'').trim() : ''; };
+    var addr=g('loc-addr');
+    if(!addr){ if(window.toast) toast('Indiquez le bien / l\u2019adresse'); return; }
+    var id=g('loc-edit-id'), a=locLoad();
+    var _locs=locLocsRead();
+    var obj={ addr:addr, bail:g('loc-bail'), edl:g('loc-edl'), entree:g('loc-entree'), nego:g('loc-nego'),
+      proType:(g('loc-pro-type')==='soc')?'soc':'part',
+      bailleur:g('loc-bailleur'), coordBail:g('loc-bailleur-coord'),
+      garant:g('loc-garant'), coordGarant:g('loc-garant-coord'), mandatNum:g('loc-mandat'),
+      locs:_locs, locataire:(_locs[0]&&_locs[0].nom)||'', coordLoc:(_locs[0]&&_locs[0].coord)||'',
+      loyer:locNum(g('loc-loyer')), charges:locNum(g('loc-charges')),
+      depot:locNum(g('loc-depot')), edlCout:locNum(g('loc-edl-cout')), bailType:g('loc-bail-type'),
+      honBail:locNum(g('loc-hono-bail')), honLoc:locNum(g('loc-hono-loc')),
+      enc:(g('loc-enc')==='enc')?'enc':'att', encDate:g('loc-enc-date'), comment:g('loc-comment') };
+    if(obj.enc==='enc' && !obj.encDate) obj.encDate=new Date().toISOString().slice(0,10);
+    if(id){ var l=a.filter(function(x){return x.id===id;})[0];
+      if(l){ Object.assign(l,obj); l.updated=new Date().toISOString(); } }
+    else { obj.id='loc-'+Date.now()+Math.floor(Math.random()*1000); obj.created=new Date().toISOString(); obj.updated=obj.created; a.push(obj); }
+    locSaveArr(a);
+    closeModal('modal-loc'); ecLocRender(); if(window.ecEncRender) ecEncRender();
+    if(window.toast) toast(id?'Location mise à jour ✓':'Location enregistrée ✓ — honoraires repris dans les Encaissements');
+    try{ if(window.achLog) achLog('modification','Locations',(id?'modifiée : ':'créée : ')+addr); }catch(e){window.achErr&&achErr(e)}
+  };
+  window.locDel=function(id,ev){
+    try{ if(ev) ev.stopPropagation(); }catch(e){window.achErr&&achErr(e)}
+    var l=locLoad().filter(function(x){return x.id===id;})[0]; if(!l) return;
+    if(!confirm('Supprimer la location « '+(l.addr||'')+' » ?')) return;
+    locSaveArr(locLoad().filter(function(x){return x.id!==id;}));
+    ecLocRender(); if(window.ecEncRender) ecEncRender();
+  };
+  window.locEncToggle=function(id,ev){
+    try{ if(ev) ev.stopPropagation(); }catch(e){window.achErr&&achErr(e)}
+    var a=locLoad(), l=a.filter(function(x){return x.id===id;})[0]; if(!l) return;
+    if(l.enc==='enc'){ l.enc='att'; }
+    else { l.enc='enc'; if(!l.encDate) l.encDate=new Date().toISOString().slice(0,10); }
+    l.updated=new Date().toISOString(); locSaveArr(a);
+    ecLocRender(); if(window.ecEncRender) ecEncRender();
+  };
+  window.ecLocRender=function(){
+    var tb=document.getElementById('ec-loc-tbody'); if(!tb) return;
+    var esc=function(x){return (''+(x==null?'':x)).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');};
+    var a=locLoad().slice().sort(function(x,y){ return (''+(y.bail||y.created||'')).localeCompare(''+(x.bail||x.created||'')); });
+    if(!a.length){ tb.innerHTML='<tr><td colspan="11" style="color:var(--gris-2);font-style:italic;padding:18px;text-align:center;">Aucune location enregistrée — « + Nouvelle location » pour commencer.</td></tr>'; return; }
+    tb.innerHTML=a.map(function(l){
+      var badge=(l.enc==='enc')
+        ? '<span class="ec-enc-badge enc ec-loc-st" title="Encaissé le '+esc(locDF(l.encDate))+' — cliquez pour repasser en attente" onclick="locEncToggle(\''+l.id+'\',event)">\u2713 Encaissé</span>'
+        : '<span class="ec-enc-badge att ec-loc-st" title="Cliquez pour marquer encaissé (date du jour)" onclick="locEncToggle(\''+l.id+'\',event)">\u23F3 En attente</span>';
+      var sub=function(t){ return '<div style="font-size:11px;color:var(--gris-2);">'+t+'</div>'; };
+      var _ls=locLocs(l);
+      var locCell=_ls.length? _ls.map(function(x){ return '<div>'+esc(x.nom||'—')+(x.coord? sub(esc(x.coord)):'')+'</div>'; }).join('') : '—';
+      if(l.garant) locCell+=sub('Garant : '+esc(l.garant)+(l.coordGarant? (' · '+esc(l.coordGarant)):''));
+      var proCell=(l.bailleur? ('<div>'+esc(l.bailleur)+(l.proType==='soc'?' <span style="font-size:10px;background:var(--beige);border:1px solid var(--beige-3);border-radius:4px;padding:0 4px;color:var(--kaki);">Société</span>':'')+'</div>'+(l.coordBail? sub(esc(l.coordBail)):'')) : '—');
+      var loyerCell=l.loyer? (fmtNum(l.loyer)+sub((l.charges? numFmtStr(''+Math.max(0,l.loyer-l.charges))+' HC + '+numFmtStr(''+l.charges)+' ch.' : 'CC'))) : '—';
+      var totCell=fmtNum(locHono(l))+(l.edlCout? sub('dont EDL '+numFmtStr(''+l.edlCout)) : '');
+      return '<tr style="cursor:pointer;" onclick="locEdit(\''+l.id+'\')" title="Cliquez pour modifier">'
+        +'<td style="font-weight:500;color:var(--noir);">'+esc(l.addr)+((l.bailType||l.mandatNum)? sub([(l.bailType? (l.bailType==='vide'?'Bail vide':(l.bailType==='meuble'?'Bail meublé':'Bail autre')):''),(l.mandatNum? ('Mandat n° '+esc(l.mandatNum)):'')].filter(Boolean).join(' · ')):'')+(l.nego? sub(esc(l.nego)):'')+(l.comment? sub('\uD83D\uDCAC '+esc(l.comment)):'')+'</td>'
+        +'<td style="color:var(--gris);">'+esc(locDF(l.bail))+'</td>'
+        +'<td style="color:var(--gris);">'+esc(locDF(l.entree))+(l.edl? sub('EDL '+esc(locDF(l.edl))):'')+'</td>'
+        +'<td>'+proCell+'</td>'
+        +'<td>'+locCell+'</td>'
+        +'<td style="text-align:right;">'+loyerCell+'</td>'
+        +'<td style="text-align:right;">'+(l.honBail? fmtNum(l.honBail):'—')+'</td>'
+        +'<td style="text-align:right;">'+(l.honLoc? fmtNum(l.honLoc):'—')+'</td>'
+        +'<td style="text-align:right;color:var(--terra);font-weight:600;">'+totCell+'</td>'
+        +'<td>'+badge+'</td>'
+        +'<td style="white-space:nowrap;"><button class="pg-mini" onclick="event.stopPropagation();locEdit(\''+l.id+'\')" title="Modifier">\u270E</button> <button class="pg-mini" onclick="locDel(\''+l.id+'\',event)" title="Supprimer">\u2715</button></td>'
+        +'</tr>';
+    }).join('');
+  };
+
   /* ── Onglet Encaissements : synthèse calculée depuis le suivi des ventes ── */
   function ecEncRender(){
     var data = ecVisibleData(loadData());
@@ -8790,11 +8994,16 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     var sumHon=function(a){var t=0;a.forEach(function(r){t+=ecMoney(r).enc;});return t;};
     var sumPrix=function(a){var t=0;a.forEach(function(r){t+=r.prix;});return t;};
     var honPa=sumHon(pas), honEc=sumHon(enc);
+    /* v10.36 : les honoraires de LOCATION entrent dans Encaissé / En attente */
+    var _locs=locLoad(), _locEnc=0, _locAtt=0, _nLE=0, _nLA=0;
+    _locs.forEach(function(l){ var h=locHono(l); if(l.enc==='enc'){ _locEnc+=h; _nLE++; } else { _locAtt+=h; _nLA++; } });
     var prixTot=sumPrix(pas)+sumPrix(enc), honTot=honPa+honEc;
     var taux = prixTot>0 ? (honTot/prixTot*100) : 0;
     var set=function(id,v){var e=document.getElementById(id); if(e) e.textContent=v;};
-    set('ec-enc-encaisse', fmtNum(honPa));
-    set('ec-enc-attente', fmtNum(honEc));
+    set('ec-enc-encaisse', fmtNum(honPa+_locEnc));
+    set('ec-enc-attente', fmtNum(honEc+_locAtt));
+    set('ec-enc-loc-pa', _nLE? (' · '+_nLE+' location'+(_nLE>1?'s':'')) : '');
+    set('ec-enc-loc-ec', _nLA? (' · '+_nLA+' location'+(_nLA>1?'s':'')) : '');
     set('ec-enc-taux', taux.toFixed(1).replace('.',',')+' %');
     set('ec-enc-count-pa', pas.length);
     set('ec-enc-count-ec', enc.length);
@@ -8820,6 +9029,19 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     var rows='';
     pas.forEach(function(r){ rows+=mkRow(r,true); });
     enc.forEach(function(r){ rows+=mkRow(r,false); });
+    _locs.forEach(function(l){
+      var h=locHono(l);
+      var badge=(l.enc==='enc')?'<span class="ec-enc-badge enc">\u2713 Encaissé</span>':'<span class="ec-enc-badge att">\u23F3 En attente</span>';
+      rows+='<tr>'
+        +'<td style="font-weight:500;color:var(--noir);">\uD83D\uDD11 '+esc((l.addr||'').split(',')[0])+' <span style="font-size:11px;color:var(--gris-2);">location</span></td>'
+        +'<td>'+badge+'</td>'
+        +'<td style="color:var(--gris);">'+esc(locDF(l.enc==='enc'?(l.encDate||l.bail):(l.bail||'')))+'</td>'
+        +'<td style="text-align:right;color:var(--gris);">'+(l.loyer? (fmtNum(l.loyer)+' <span style="font-size:10px;">/mois</span>'):'—')+'</td>'
+        +'<td style="text-align:right;"><span style="color:var(--terra);font-weight:600;">'+fmtNum(h)+'</span></td>'
+        +'<td style="text-align:right;color:var(--gris);">'+fmtNum(Math.round(h/1.2))+'</td>'
+        +'<td style="text-align:right;color:var(--gris-2);">—</td>'
+        +'</tr>';
+    });
     if(!rows) rows='<tr><td colspan="7" style="color:var(--gris-2);font-style:italic;padding:18px;text-align:center;">Aucune vente enregistrée</td></tr>';
     tb.innerHTML=rows;
     ecRenderPrimes(data);
@@ -11944,7 +12166,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     startRealtime();
     var ov=document.getElementById('ach-login-overlay'); if(ov) ov.classList.add('ach-hidden');
     var ub=document.getElementById('ach-userbar'); if(ub) ub.style.display='none';
-    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v10.35';
+    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v10.38';
     flag('Synchronis\u00e9');
     // fin de l'init : on autorise la journalisation des actions
     setTimeout(function(){ installInterceptor._init=false; }, 1500);
