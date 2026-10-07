@@ -1502,6 +1502,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
 /* v10.42 : phrase d'accueil du Tableau de bord */
 .dash-hello{font-family:'Cormorant Garamond',serif;font-size:27px;font-weight:600;color:var(--noir);line-height:1.12;margin-bottom:3px;letter-spacing:.2px;}
 .dash-hello .dh-nom{color:var(--terra);font-style:italic;}
+#dash-hello-sub{font-size:13px;font-style:italic;}   /* v10.43 : baseline plus grande et italique — plus convivial (Laurent) */
 .logo-area:hover{opacity:.85;}
 /* ====== ACHILLE CLOUD — styles connexion / sync / historique ====== */
 #ach-login-overlay{position:fixed;inset:0;z-index:99999;background:linear-gradient(135deg,#2b2f22,#4c533b);display:flex;align-items:center;justify-content:center;font-family:'Jost',sans-serif;}
@@ -1706,7 +1707,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     </div>
   </div>
   </div>
-  <div class="logo-ver app-ver">Achille App — v10.42</div>
+  <div class="logo-ver app-ver">Achille App — v10.43</div>
 </aside>
 <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Réduire la barre latérale">‹</button>
 
@@ -1746,7 +1747,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
   <!-- DASHBOARD -->
   <div class="page active" id="page-dashboard">
     <!-- v8.22 : titre de page retiré (déjà affiché dans le bandeau du haut — demande Laurent, captures 27/07) -->
-    <div class="sec-hd"><div><div class="dash-hello" id="dash-hello-main">Bonjour 👋</div><div class="sec-sub" id="dash-hello-sub">Vue d'ensemble de l'activité</div></div><button class="btn btn-terra btn-sm" onclick="affNew()">+ Nouvelle affaire</button></div>
+    <div class="sec-hd"><div><div class="dash-hello" id="dash-hello-main">Bonjour</div><div class="sec-sub" id="dash-hello-sub">Vue d'ensemble de l'activité</div></div><button class="btn btn-terra btn-sm" onclick="affNew()">+ Nouvelle affaire</button></div>
     <div id="rap-dash"></div>
     <div id="dash-body"></div>
   </div>
@@ -4728,15 +4729,20 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
       if(sb) sb.textContent='Vue d\u2019ensemble de l\u2019activit\u00e9 de l\u2019agence';
       return;
     }
-    var h=new Date().getHours();
-    var salut=(h>=5&&h<18)?'Bonjour':'Bonsoir';
+    var h=new Date().getHours(), day=Math.floor(Date.now()/864e5);
+    /* v10.43 : salutations vari\u00e9es (Laurent 07/10) \u2014 jour et soir ont chacun
+       leur panel, la formule change chaque jour ; plus d'emoji. */
+    var SALUTS=(h>=5&&h<18)
+      ? ['Bonjour','Hello','Bienvenue','Bonjour','Salut','Hello']
+      : ['Bonsoir','Hello','Belle fin de journ\u00e9e','Bonsoir','Salut'];
+    var salut=SALUTS[day%SALUTS.length];
     var prenom=((u.name||'').trim().split(/\s+/)[0])||'';
     var SUBS=['Voici une vue d\u2019ensemble de ton activit\u00e9.',
               'Petit tour d\u2019horizon de l\u2019agence aujourd\u2019hui.',
               'Voici o\u00f9 en est l\u2019activit\u00e9 en ce moment.',
               'Belle journ\u00e9e \u2014 voici l\u2019essentiel de ton activit\u00e9.'];
-    m.innerHTML=salut+(prenom?'\u00a0<span class="dh-nom">'+prenom+'</span>':'')+'\u00a0\ud83d\udc4b';
-    if(sb) sb.textContent=SUBS[Math.floor(Date.now()/864e5)%SUBS.length];
+    m.innerHTML=salut+(prenom?'\u00a0<span class="dh-nom">'+prenom+'</span>':'');
+    if(sb) sb.textContent=SUBS[day%SUBS.length];
   };
   window.navTo=function(id,el){
     if(id==='droits'){ id='acces'; el=document.querySelector('.nav-item[onclick*="acces"]')||el; setTimeout(function(){ try{ accesTab('droits'); }catch(e){window.achErr&&achErr(e)} },0); }
@@ -12396,7 +12402,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     startRealtime();
     var ov=document.getElementById('ach-login-overlay'); if(ov) ov.classList.add('ach-hidden');
     var ub=document.getElementById('ach-userbar'); if(ub) ub.style.display='none';
-    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v10.42';
+    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v10.43';
     flag('Synchronis\u00e9');
     // fin de l'init : on autorise la journalisation des actions
     setTimeout(function(){ installInterceptor._init=false; }, 1500);
