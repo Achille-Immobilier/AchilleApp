@@ -1707,7 +1707,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     </div>
   </div>
   </div>
-  <div class="logo-ver app-ver">Achille App — v10.45</div>
+  <div class="logo-ver app-ver">Achille App — v10.46</div>
 </aside>
 <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Réduire la barre latérale">‹</button>
 
@@ -5086,6 +5086,123 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     n.col=half; n.slot=slot; n.ord=newOrd; n.updated=new Date().toISOString();
     piSave(); piRenderAll();
   };
+  /* ── v10.46 : GLISSER FLUIDE ────────────────────────────────────────────
+     Fini le drag natif HTML5 (fantôme figé par le navigateur, aucune
+     prévisualisation). Désormais :
+     • le post-it se SOULÈVE (ombre, légère rotation) et suit la souris
+       image par image (requestAnimationFrame) ;
+     • un EMPLACEMENT en pointillés montre en continu où il se posera ;
+     • les voisins GLISSENT en douceur pour lui faire la place (FLIP) ;
+     • au lâcher, le post-it ATTERRIT en glissant vers sa place.
+     Le clic (ouvrir), la saisie dans le texte et les boutons sont intacts :
+     le glisser ne démarre qu'après 5 px de mouvement, jamais depuis un champ. */
+  var _piD=null;
+  function piPointerDrag(div, id){
+    div.addEventListener('pointerdown', function(e){
+      if(e.button!==0 || _piD) return;
+      if(e.target.closest('textarea,button,input,select,a')) return;
+      if(!piCanEdit()) return;
+      var sx=e.clientX, sy=e.clientY, started=false;
+      var r=div.getBoundingClientRect(), offX=sx-r.left, offY=sy-r.top;
+      function onMove(ev){
+        if(!started){
+          if(Math.abs(ev.clientX-sx)<5 && Math.abs(ev.clientY-sy)<5) return;
+          started=true; piLift(div, id, r, offX, offY);
+        }
+        if(_piD){ _piD.x=ev.clientX; _piD.y=ev.clientY; piDragTick(); ev.preventDefault(); }
+      }
+      function onUp(){
+        document.removeEventListener('pointermove', onMove);
+        document.removeEventListener('pointerup', onUp);
+        document.removeEventListener('pointercancel', onUp);
+        if(started) piDrop();
+      }
+      document.addEventListener('pointermove', onMove);
+      document.addEventListener('pointerup', onUp);
+      document.addEventListener('pointercancel', onUp);
+    });
+  }
+  function piLift(div, id, r, offX, offY){
+    var ph=document.createElement('div');
+    ph.className='pi-ph'; ph.style.height=r.height+'px';
+    div.parentNode.insertBefore(ph, div);
+    document.body.appendChild(div);
+    div.classList.add('pi-lift');
+    div.style.left=r.left+'px'; div.style.top=r.top+'px'; div.style.width=r.width+'px';
+    document.body.classList.add('pi-grabbing');
+    _piD={id:id, el:div, ph:ph, x:r.left+offX, y:r.top+offY, offX:offX, offY:offY, bx:r.left, by:r.top, raf:0};
+  }
+  function piDragTick(){
+    if(!_piD || _piD.raf) return;
+    _piD.raf=requestAnimationFrame(function(){
+      if(!_piD) return;
+      _piD.raf=0;
+      var d=_piD;
+      d.el.style.transform='translate3d('+(d.x-d.offX-d.bx)+'px,'+(d.y-d.offY-d.by)+'px,0) scale(1.03) rotate(1.4deg)';
+      /* colonne sous le curseur (le post-it soulevé est pointer-events:none) */
+      var under=document.elementFromPoint(d.x, d.y);
+      var col=under && under.closest ? under.closest('.pi-gcol') : null;
+      if(!col) return;
+      var before=null, kids=[].slice.call(col.children);
+      for(var i=0;i<kids.length;i++){
+        var k=kids[i]; if(k===d.ph || !k.classList || !k.classList.contains('postit')) continue;
+        var kr=k.getBoundingClientRect();
+        if(d.y < kr.top + kr.height/2){ before=k; break; }
+      }
+      piPhMove(col, before);
+    });
+  }
+  function piPhMove(col, before){
+    var ph=_piD.ph;
+    if(ph.parentNode===col && ph.nextElementSibling===before) return;
+    /* FLIP : photo avant, déplacement, photo après, puis glissement vers 0 */
+    var cols=[ph.parentNode, col], items=[];
+    cols.forEach(function(c){ if(!c) return; [].slice.call(c.children).forEach(function(k){
+      if(k!==ph && k.classList && k.classList.contains('postit')) items.push([k, k.getBoundingClientRect()]);
+    }); });
+    col.insertBefore(ph, before);
+    items.forEach(function(p){
+      var k=p[0], r0=p[1], r1=k.getBoundingClientRect();
+      var dx=r0.left-r1.left, dy=r0.top-r1.top;
+      if(dx||dy){
+        k.style.transition='none'; k.style.transform='translate('+dx+'px,'+dy+'px)';
+        requestAnimationFrame(function(){ k.style.transition='transform .18s ease'; k.style.transform=''; });
+      }
+    });
+  }
+  function piDrop(){
+    var d=_piD; if(!d) return;
+    _piD=null; if(d.raf) cancelAnimationFrame(d.raf);
+    var ph=d.ph, col=ph.parentNode;
+    /* v10.46 : relâché HORS du tableau → on ANNULE (retour à la place d'origine),
+       on ne pose pas le post-it au dernier emplacement traversé par surprise */
+    var _ru=document.elementFromPoint(d.x, d.y);
+    if(!(_ru && _ru.closest && _ru.closest('.pi-gcol'))){
+      document.body.classList.remove('pi-grabbing');
+      try{ ph.remove(); }catch(e){window.achErr&&achErr(e)}
+      try{ d.el.remove(); }catch(e){window.achErr&&achErr(e)}
+      piRenderAll();
+      return;
+    }
+    var half='produits', slot=0;
+    var m=col && col.id && col.id.match(/^pi-col-(produits|clients)-(\d)$/);
+    if(m){ half=m[1]; slot=parseInt(m[2],10); }
+    var nx=ph.nextElementSibling, beforeId=null;
+    while(nx && !(nx.classList && nx.classList.contains('postit'))) nx=nx.nextElementSibling;
+    if(nx) beforeId=parseInt(nx.id.replace('pn-',''),10);
+    if(beforeId===d.id) beforeId=null;
+    /* atterrissage : le post-it GLISSE vers l'emplacement, puis rangement réel */
+    var pr=ph.getBoundingClientRect();
+    d.el.style.transition='transform .18s ease';
+    d.el.style.transform='translate3d('+(pr.left-d.bx)+'px,'+(pr.top-d.by)+'px,0) scale(1) rotate(0deg)';
+    setTimeout(function(){
+      document.body.classList.remove('pi-grabbing');
+      try{ ph.remove(); }catch(e){window.achErr&&achErr(e)}
+      try{ d.el.remove(); }catch(e){window.achErr&&achErr(e)}
+      if(m) piMoveTo(d.id, half, slot, beforeId);
+      else piRenderAll();   /* lâché hors tableau : retour à sa place */
+    }, 185);
+  }
   function piDropWire(colEl, half, slot){
     if(colEl._piWired) return; colEl._piWired=true;
     colEl.addEventListener('dragover', function(e){ if(_piDragId==null) return; e.preventDefault(); colEl.classList.add('pi-over'); });
@@ -5170,11 +5287,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
             if(window.piView) piView(n.id);
           });
           div.innerHTML='<div class="pt-stripe"></div><div class="pt-inner"><div class="pt-top"><span class="pt-badge">'+PI_LABELS[color]+'</span><div class="pt-own '+oc+'" title="Auteur : '+piEsc(n.owner)+'">'+piEsc(n.owner)+'</div></div>'+(_sub?'<div class="pt-ref">'+piEsc(_sub)+(n.details?' <span title="D\u00e9tails internes \u2014 cliquez sur le post-it pour l\u2019ouvrir">\u24d8</span>':'')+'</div>':'')+((n.ref&&!_isPubAcc&&!_sub)?'<div class="pt-ref">'+piEsc(n.ref)+'</div>':'')   /* v8.44 : plus de DOUBLE ligne — la vieille Référence s'efface devant l'identité affichée */+'<textarea class="pt-text" data-id="'+n.id+'" onchange="piUpdate('+n.id+',this.value)">'+piEsc(n.content)+'</textarea><div class="pt-footer"><span class="pt-date">'+piEsc(n.date)+'</span><span class="pt-vis">'+((n.vis==='equipe'||n.vis==='ecran')?'Agence':'Prive')+'</span><span class="pt-actions"><button class="pt-arch pi-admin-action" title="Archiver (retirer du tableau sans supprimer)" onclick="piArch('+n.id+')">🗄</button><button class="pt-edit pi-admin-action" onclick="piEdit('+n.id+')">Modif.</button><button class="pt-del pi-admin-action" onclick="piDel('+n.id+')">Suppr.</button></span></div></div>';
-          if(canDrag){
-            div.draggable=true;
-            div.addEventListener('dragstart', function(e){ _piDragId=n.id; div.classList.add('pi-dragging'); try{ e.dataTransfer.setData('text/plain',''+n.id); e.dataTransfer.effectAllowed='move'; }catch(err){} });
-            div.addEventListener('dragend', function(){ _piDragId=null; div.classList.remove('pi-dragging'); document.querySelectorAll('.pi-gcol.pi-over').forEach(function(c){c.classList.remove('pi-over');}); });
-          }
+          if(canDrag){ piPointerDrag(div, n.id); }   /* v10.46 : glisser fluide (pointer events) */
           target.appendChild(div);
         });
       });
@@ -13715,7 +13828,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     startRealtime();
     var ov=document.getElementById('ach-login-overlay'); if(ov) ov.classList.add('ach-hidden');
     var ub=document.getElementById('ach-userbar'); if(ub) ub.style.display='none';
-    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v10.45';
+    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v10.46';
     flag('Synchronis\u00e9');
     // fin de l'init : on autorise la journalisation des actions
     setTimeout(function(){ installInterceptor._init=false; }, 1500);
@@ -22477,6 +22590,12 @@ textarea.rd-inp{resize:vertical;line-height:1.45;}
 <style>
 .postit[draggable="true"]{cursor:grab;}
 .postit.pi-dragging{opacity:.35;}
+/* v10.46 : glisser fluide */
+.postit{cursor:grab;}
+.postit.pi-lift{position:fixed;z-index:9200;margin:0;pointer-events:none;box-shadow:0 18px 44px rgba(0,0,0,.3);will-change:transform;}
+.pi-ph{border:2px dashed var(--terra);border-radius:10px;background:rgba(180,115,96,.07);flex-shrink:0;}
+body.pi-grabbing{cursor:grabbing;}
+body.pi-grabbing *{user-select:none!important;}
 .pi-gcol.pi-over{outline:2px dashed var(--terra);outline-offset:-4px;border-radius:10px;background:rgba(180,115,96,.06);}
 .pi-gcol{min-height:60px;}
 .pt-arch{border:none;background:none;cursor:pointer;font-size:11px;opacity:.75;}
