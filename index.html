@@ -1394,6 +1394,7 @@ body.lex-admin-editing .lex-save-btn{display:block;}
 .role-public .notif-btn{display:none!important;}
 .role-public .lex-propose-btn{display:none!important;}
 .role-public .tb-id-item[onclick*="pwChangeOpen"]{display:none!important;}
+.role-public .tb-id-item[onclick*="corbeille"]{display:none!important;}   /* v11.03 : pas de corbeille sur l'écran Agence */
 .role-public .pt-vis{display:none!important;}
 /* v8.38 : pointer-events:none supprimé — il bloquait AUSSI la molette (scroll impossible dans un post-it long, bug signalé par Laurent). readOnly (posé par piApplyRole) suffit : lecture et défilement OK, modification impossible. */
 .role-public .pi-col-add-btn{display:none!important;}
@@ -1701,7 +1702,6 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     <div class="nav-item" onclick="navTo('finances',this)"><span class="nav-icon">💶</span><span class="nav-item-label">Finances</span></div>
     <div class="nav-item" onclick="navTo('encours',this)"><span class="nav-icon">◈</span><span class="nav-item-label">Ventes / En cours</span></div>
     <div class="nav-item" onclick="navTo('mandats',this)"><span class="nav-icon">📜</span><span class="nav-item-label">Mandats</span><span class="nav-badge" id="badge-mandats" style="display:none;"></span></div>
-    <div class="nav-item" onclick="navTo('corbeille',this)"><span class="nav-icon">🗑</span><span class="nav-item-label">Corbeille</span></div>
   </div>
   <div class="nav-section" id="nav-admin-section">
     <div class="nav-lbl">Administration</div>
@@ -1726,7 +1726,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     </div>
   </div>
   </div>
-  <div class="logo-ver app-ver">Achille App — v11.02</div>
+  <div class="logo-ver app-ver">Achille App — v11.03</div>
 </aside>
 <div id="mob-bk" onclick="mobNav(false)"></div>
 <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Réduire la barre latérale">‹</button>
@@ -1753,6 +1753,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
           <div class="tb-id-head"><div class="tb-id-name" id="tb-id-name">—</div><div class="tb-id-role" id="tb-id-role">—</div></div>
           <button class="tb-id-item" onclick="tbIdClose();achTestCloud()">🔌&nbsp; Tester ma connexion</button>
           <button class="tb-id-item" onclick="tbIdClose();pwChangeOpen()">🔑&nbsp; Changer mon mot de passe</button>
+          <button class="tb-id-item" onclick="tbIdClose();navTo('corbeille')">🗑&nbsp; Corbeille</button>
           <button class="tb-id-item" id="tb-id-spy" style="display:none;" onclick="tbIdClose();spyFromTop()">🕵️&nbsp; Voir en tant que…</button>
           <button class="tb-id-item tb-id-out" onclick="tbIdClose();var b=document.getElementById(&quot;ach-logout-btn&quot;); if(b) b.click();">⏻&nbsp; Se déconnecter</button>
         </div>
@@ -13861,7 +13862,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     startRealtime();
     var ov=document.getElementById('ach-login-overlay'); if(ov) ov.classList.add('ach-hidden');
     var ub=document.getElementById('ach-userbar'); if(ub) ub.style.display='none';
-    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v11.02';
+    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v11.03';
     flag('Synchronis\u00e9');
     // fin de l'init : on autorise la journalisation des actions
     setTimeout(function(){ installInterceptor._init=false; }, 1500);
@@ -23296,37 +23297,61 @@ body.pi-grabbing *{user-select:none!important;}
   /* ── Sectorisation : carte au-dessus, résultats dessous ── */
   .sect-body{flex-direction:column;overflow-y:auto;}
   .sect-body > *{width:100%!important;min-height:300px;}
+  /* ── Corbeille : filtre pleine largeur, lignes empilées ── */
+  #page-corbeille select.form-select{max-width:none!important;width:100%;}
   /* ── Tableau de bord : tuiles sur 2 colonnes, encart activité pleine largeur ── */
   .dash-top,.dash-top-collab{grid-template-columns:repeat(2,minmax(0,1fr))!important;}
   .dash-activity{grid-column:1/-1;}
   .dash-hello{font-size:22px;}
 }
 </style>
-<!-- ============ v10.49 : CORBEILLE 30 JOURS ============ -->
+<!-- ============ v10.49/v11.03 : CORBEILLE 30 JOURS + JOURNAL DES MOUVEMENTS ============ -->
 <script>
 (function(){
   'use strict';
   var TK='ach_trash_v1', TTL=30*864e5;
+  var TLOG='ach_trash_log_v1', TLOG_TTL=90*864e5;   /* v11.03 : mouvements, 90 jours */
   function esc(x){ return (''+(x==null?'':x)).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
   function uinfo(){ return window.ACH_USER||{key:'admin',initials:'LS',name:'Laurent Sellem'}; }
   function canAll(){ var k=uinfo().key; return k==='admin'||k==='gerant'; }
   function load(){ try{ var a=JSON.parse(localStorage.getItem(TK)||'[]'); return Array.isArray(a)?a:[]; }catch(e){ return []; } }
   function save(a){ try{ localStorage.setItem(TK, JSON.stringify(a)); }catch(e){ window.achErr&&achErr(e); } }
-  function purge(a){ var lim=Date.now()-TTL; return a.filter(function(e){ return e && e.item && (+new Date(e.at)||0)>lim; }); }
   var MODLBL={ach_pige_v1:['🔎','Fiche de pige'], ach_encours_v1:['🏛','Vente'],
     ach_locations_v1:['🔑','Location'], ach_mandats_v1:['📜','Mandat'],
     ach_affaires_v1:['⟶','Affaire'], ach_pi_v4:['📌','Post-it']};
+  /* ── journal des mouvements ── */
+  function logLoad(){ try{ var a=JSON.parse(localStorage.getItem(TLOG)||'[]'); return Array.isArray(a)?a:[]; }catch(e){ return []; } }
+  function logAdd(ev, e, actor){
+    try{
+      var u=actor||uinfo(), now=new Date().toISOString(), lim=Date.now()-TLOG_TTL;
+      var a=logLoad().filter(function(x){ return x && (+new Date(x.t)||0)>lim; });
+      a.push({ id:'tl-'+Date.now()+'-'+Math.floor(Math.random()*1e4), t:now, updated:now, ev:ev,
+        mod:e.mod, label:(''+(e.label||'')).slice(0,120), ownKey:e.byKey||'', ownName:e.byName||'',
+        byKey:u.key||'', byName:u.name||'' });
+      if(a.length>600) a=a.slice(a.length-600);
+      localStorage.setItem(TLOG, JSON.stringify(a));
+    }catch(err){ window.achErr&&achErr(err); }
+  }
+  /* purge 30 j avec trace des expirations */
+  function purgeLog(a){
+    var lim=Date.now()-TTL, keep=[], out=[];
+    a.forEach(function(e){ if(e && e.item && (+new Date(e.at)||0)>lim) keep.push(e); else if(e) out.push(e); });
+    out.forEach(function(e){ logAdd('expiration', e, {key:'',name:'automatique (30 jours)'}); });
+    return keep;
+  }
   window.achTrashAdd=function(mod, label, sub, item){
     try{
       if(!item || item.id===undefined) return;
       var u=uinfo(), now=new Date().toISOString();
-      var a=purge(load());
-      a.push({ id:'tr-'+Date.now()+'-'+Math.floor(Math.random()*1e4), mod:mod,
+      var a=purgeLog(load());
+      var e={ id:'tr-'+Date.now()+'-'+Math.floor(Math.random()*1e4), mod:mod,
         label:(''+(label||'Élément')).slice(0,120), sub:(''+(sub||'')).slice(0,160),
         item:JSON.parse(JSON.stringify(item)), by:u.initials||'', byKey:u.key||'', byName:u.name||'',
-        at:now, updated:now });
+        at:now, updated:now };
+      a.push(e);
       if(a.length>400) a=a.slice(a.length-400);
       save(a);
+      logAdd('corbeille', e);
     }catch(e){ window.achErr&&achErr(e); }
   };
   window.achTrashRestore=function(trId){
@@ -23341,10 +23366,11 @@ body.pi-grabbing *{user-select:none!important;}
         if(window.toast) toast('Déjà présent sur sa page — retiré de la corbeille');
       } else {
         var it=JSON.parse(JSON.stringify(e.item));
-        it.updated=new Date().toISOString();   /* horodatage COMPLET et plus récent que le certificat de suppression : la synchro le lève (R:) */
+        it.updated=new Date().toISOString();   /* horodatage COMPLET plus récent que le certificat 'D:' → la synchro le lève (R:) */
         arr.push(it);
         localStorage.setItem(e.mod, JSON.stringify(store));
         if(window.toast) toast('Restauré ✓ — de retour sur sa page');
+        logAdd('restauration', e);
         try{ if(window.achLog) achLog('modification','Corbeille','restauré : '+(e.label||'')); }catch(e2){window.achErr&&achErr(e2)}
       }
       save(load().filter(function(x){return x.id!==trId;}));
@@ -23357,31 +23383,71 @@ body.pi-grabbing *{user-select:none!important;}
     if(!canAll() && e.byKey!==uinfo().key){ if(window.toast) toast('Réservé'); return; }
     if(!confirm('Supprimer DÉFINITIVEMENT « '+(e.label||'')+' » ?\nAucune récupération possible ensuite.')) return;
     save(a.filter(function(x){return x.id!==trId;}));
+    logAdd('definitif', e);
     achTrashRender();
   };
   function fdate(iso){ var d=new Date(iso); var p=function(x){return (x<10?'0':'')+x;}; return p(d.getDate())+'/'+p(d.getMonth()+1)+' à '+p(d.getHours())+'h'+p(d.getMinutes()); }
+  var _cbAcct='tous';   /* v11.03 : filtre par compte (vue gérants) */
+  window.cbAcctSet=function(v){ _cbAcct=v||'tous'; achTrashRender(); };
+  function acctName(k){ var R=window.ROLES||{}; return (k==='admin'&&R.admin&&R.admin.name)||(R[k]&&R[k].name)||k||'?'; }
   window.achTrashRender=function(){
     var box=document.getElementById('cb-body'); if(!box) return;
-    var a=purge(load()); save(a);
-    var mine=canAll()? a : a.filter(function(e){ return e.byKey===uinfo().key; });
+    var a=purgeLog(load()); save(a);
+    var all=canAll();
+    var mine=all? a : a.filter(function(e){ return e.byKey===uinfo().key; });
+    if(all && _cbAcct!=='tous') mine=mine.filter(function(e){ return e.byKey===_cbAcct; });
     var sub=document.getElementById('cb-sub');
-    if(sub) sub.textContent=canAll()
-      ? 'Éléments supprimés par toute l’équipe — récupérables pendant 30 jours (vue gérants)'
+    if(sub) sub.textContent=all
+      ? 'Éléments supprimés — récupérables 30 jours · filtre par compte et journal des mouvements (vue gérants)'
       : 'VOS éléments supprimés — récupérables pendant 30 jours';
-    if(!mine.length){ box.innerHTML='<div style="padding:26px 20px;color:var(--gris-2);font-style:italic;">Corbeille vide — les éléments supprimés (pige, ventes, locations, mandats, affaires, post-its) arrivent ici et restent récupérables 30 jours.</div>'; return; }
-    mine.sort(function(x,y){ return (''+y.at).localeCompare(''+x.at); });
     var h='';
-    mine.forEach(function(e){
-      var ml=MODLBL[e.mod]||['🗂','Élément'];
-      h+='<div style="display:flex;align-items:center;gap:13px;padding:11px 18px;border-bottom:1px solid var(--border);">'
-        +'<span style="font-size:17px;">'+ml[0]+'</span>'
-        +'<div style="flex:1;min-width:0;">'
-        +'<div style="font-size:14px;font-weight:500;color:var(--noir);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+esc(e.label)+'</div>'
-        +'<div style="font-size:11.5px;color:var(--gris-2);">'+ml[1]+(e.sub?' · '+esc(e.sub):'')+' · supprimé le '+fdate(e.at)+(canAll()?(' par '+esc(e.byName||e.by)):'')+'</div></div>'
-        +'<button class="btn btn-terra btn-sm" style="flex-shrink:0;" onclick="achTrashRestore(\''+e.id+'\')">↩ Restaurer</button>'
-        +'<button class="btn btn-outline btn-sm" style="flex-shrink:0;" title="Supprimer définitivement" onclick="achTrashPurgeOne(\''+e.id+'\')">✕</button>'
-        +'</div>';
-    });
+    if(all){
+      var KEYS=['tous','admin','gerant','collaborateur','alternant'];
+      h+='<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:12px 18px;border-bottom:1px solid var(--border);background:var(--beige);">'
+        +'<span style="font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--gris);font-weight:600;">Corbeille de</span>'
+        +'<select class="form-select" style="max-width:260px;padding:6px 10px;font-size:13px;" onchange="cbAcctSet(this.value)">'
+        +KEYS.map(function(k){ return '<option value="'+k+'"'+(k===_cbAcct?' selected':'')+'>'+(k==='tous'?'Toute l’équipe':esc(acctName(k)))+'</option>'; }).join('')
+        +'</select></div>';
+    }
+    if(!mine.length){
+      h+='<div style="padding:24px 20px;color:var(--gris-2);font-style:italic;">Corbeille vide'+(all&&_cbAcct!=='tous'?' pour '+esc(acctName(_cbAcct)):'')+' — les éléments supprimés (pige, ventes, locations, mandats, affaires, post-its) restent récupérables 30 jours.</div>';
+    } else {
+      mine.sort(function(x,y){ return (''+y.at).localeCompare(''+x.at); });
+      mine.forEach(function(e){
+        var ml=MODLBL[e.mod]||['🗂','Élément'];
+        h+='<div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:11px 18px;border-bottom:1px solid var(--border);">'
+          +'<span style="font-size:17px;">'+ml[0]+'</span>'
+          +'<div style="flex:1;min-width:180px;">'
+          +'<div style="font-size:14px;font-weight:500;color:var(--noir);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+esc(e.label)+'</div>'
+          +'<div style="font-size:11.5px;color:var(--gris-2);">'+ml[1]+(e.sub?' · '+esc(e.sub):'')+' · supprimé le '+fdate(e.at)+(all?(' par '+esc(e.byName||e.by)):'')+'</div></div>'
+          +'<span style="display:flex;gap:7px;flex-shrink:0;">'
+          +'<button class="btn btn-terra btn-sm" onclick="achTrashRestore(\''+e.id+'\')">↩ Restaurer</button>'
+          +'<button class="btn btn-outline btn-sm" title="Supprimer définitivement" onclick="achTrashPurgeOne(\''+e.id+'\')">✕</button>'
+          +'</span></div>';
+      });
+    }
+    /* ── journal des mouvements (gérants) ── */
+    if(all){
+      var EV={corbeille:['🗑','mis en corbeille','var(--gris)'], restauration:['↩','restauré','var(--kaki)'],
+        definitif:['✕','supprimé DÉFINITIVEMENT','#a33b2e'], expiration:['⏳','expiré (30 jours)','var(--gris-2)']};
+      var lg=logLoad().slice().sort(function(x,y){ return (''+y.t).localeCompare(''+x.t); });
+      if(_cbAcct!=='tous') lg=lg.filter(function(x){ return x.ownKey===_cbAcct || x.byKey===_cbAcct; });
+      h+='<div style="padding:14px 18px 6px;font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--gris);font-weight:600;border-top:2px solid var(--beige-3);margin-top:6px;">🗂 Mouvements des 90 derniers jours ('+lg.length+')</div>';
+      if(!lg.length) h+='<div style="padding:10px 18px 18px;color:var(--gris-2);font-size:12.5px;font-style:italic;">Aucun mouvement enregistré pour l’instant.</div>';
+      lg.slice(0,120).forEach(function(x){
+        var ev=EV[x.ev]||['·',x.ev,'var(--gris)'];
+        var ml=MODLBL[x.mod]||[null,'Élément'];
+        var actor=(x.ev==='expiration')?'automatique':esc(x.byName||x.byKey);
+        var owner=(x.ownKey && x.ownKey!==x.byKey && x.ev!=='corbeille')?(' · corbeille de '+esc(x.ownName||x.ownKey)):'';
+        h+='<div style="display:flex;align-items:baseline;gap:9px;flex-wrap:wrap;padding:7px 18px;border-bottom:1px solid var(--beige-2);font-size:12.5px;">'
+          +'<span style="color:'+ev[2]+';font-weight:700;flex-shrink:0;">'+ev[0]+'</span>'
+          +'<span style="color:var(--noir);font-weight:500;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:46%;">'+esc(x.label)+'</span>'
+          +'<span style="color:'+ev[2]+';">'+ev[1]+'</span>'
+          +'<span style="color:var(--gris-2);">'+ml[1]+' · le '+fdate(x.t)+' · par '+actor+owner+'</span>'
+          +'</div>';
+      });
+      if(lg.length>120) h+='<div style="padding:8px 18px;color:var(--gris-2);font-size:11.5px;">… et '+(lg.length-120)+' mouvements plus anciens (conservés 90 jours).</div>';
+    }
     box.innerHTML=h;
   };
 })();
