@@ -1726,7 +1726,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     </div>
   </div>
   </div>
-  <div class="logo-ver app-ver">Achille App — v11.01</div>
+  <div class="logo-ver app-ver">Achille App — v11.02</div>
 </aside>
 <div id="mob-bk" onclick="mobNav(false)"></div>
 <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Réduire la barre latérale">‹</button>
@@ -13861,7 +13861,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     startRealtime();
     var ov=document.getElementById('ach-login-overlay'); if(ov) ov.classList.add('ach-hidden');
     var ub=document.getElementById('ach-userbar'); if(ub) ub.style.display='none';
-    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v11.01';
+    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v11.02';
     flag('Synchronis\u00e9');
     // fin de l'init : on autorise la journalisation des actions
     setTimeout(function(){ installInterceptor._init=false; }, 1500);
@@ -23283,6 +23283,16 @@ body.pi-grabbing *{user-select:none!important;}
   .pi-half{min-height:220px;}
   /* ── Pige : colonne unique ── */
   .pige-grid{grid-template-columns:1fr!important;gap:14px;}
+  /* v11.02 : carte de pige empilée — photo en bannière, texte dessous, plus aucun chevauchement */
+  .pg-fiche{display:flex;flex-direction:column;gap:10px;align-items:stretch;padding:11px 12px;}
+  .pg-ph{width:100%;height:172px;}
+  .pg-ph.pg-ph-empty{height:72px;display:flex;align-items:center;justify-content:center;font-size:30px;}
+  .pg-obs{border-left:none;padding-left:0;}
+  .pg-obs:empty{display:none;}
+  .pg-titre{font-size:19px;}
+  .pg-top{flex-wrap:wrap;row-gap:4px;}
+  .pg-foot-l{row-gap:6px;}
+  .pg-actions{justify-content:flex-start;row-gap:6px;}
   /* ── Sectorisation : carte au-dessus, résultats dessous ── */
   .sect-body{flex-direction:column;overflow-y:auto;}
   .sect-body > *{width:100%!important;min-height:300px;}
