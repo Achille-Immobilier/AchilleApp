@@ -1726,7 +1726,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     </div>
   </div>
   </div>
-  <div class="logo-ver app-ver">Achille App — v11.06</div>
+  <div class="logo-ver app-ver">Achille App — v11.07</div>
 </aside>
 <div id="mob-bk" onclick="mobNav(false)"></div>
 <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Réduire la barre latérale">‹</button>
@@ -1970,6 +1970,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
         <button class="docs-tab active" onclick="docsTab('modeles',this)">📁 Documents de l’agence</button>
         <button class="docs-tab" onclick="docsTab('redac',this)">✍️ Rédaction quot.</button>
         <button class="docs-tab" onclick="docsTab('histo',this)">🕘 Historique</button>
+        <label class="docs-tab" style="margin-left:auto;opacity:.75;cursor:pointer;" title="Importer un nouveau fichier ACHILLE_POLICES_DOCS.json (polices &amp; bandeaux des PDF)">🔄 Mettre à jour la charte<input type="file" accept=".json,application/json" style="display:none" onchange="dgMajCharte(this)"></label>   <!-- v11.07 -->
       </div>
       <div class="docs-body">
         <div class="docs-panel" id="docs-generer"><div class="nx-wrap">
@@ -13878,7 +13879,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     startRealtime();
     var ov=document.getElementById('ach-login-overlay'); if(ov) ov.classList.add('ach-hidden');
     var ub=document.getElementById('ach-userbar'); if(ub) ub.style.display='none';
-    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v11.06';
+    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v11.07';
     flag('Synchronis\u00e9');
     // fin de l'init : on autorise la journalisation des actions
     setTimeout(function(){ installInterceptor._init=false; }, 1500);
@@ -20563,6 +20564,24 @@ function dgInstallUI(){
     +'<label class="dg-install-btn">Choisir le fichier…<input type="file" accept=".json,application/json" style="display:none" onchange="dgInstall(this)"></label>'
     +'<div class="dg-install-err" id="dg-install-err"></div></div>';
 }
+/* v11.07 : mise à jour de la charte depuis un poste où elle est DÉJÀ installée.
+   Même fichier, même contrôle que l'installation ; partagée ensuite via le cloud. */
+window.dgMajCharte=function(inp){
+  var f=inp.files&&inp.files[0]; if(!f){ return; }
+  if(!confirm('Remplacer la charte graphique des PDF (polices + bandeaux) par le contenu de ce fichier ?\nElle sera partagée avec toute l\u2019\u00e9quipe via le cloud.')){ inp.value=''; return; }
+  var r=new FileReader();
+  r.onload=function(){
+    try{
+      var a=JSON.parse(r.result);
+      if(!(a.belleza&&a.kenoky&&a.banner&&a.footer)) throw new Error('fichier incomplet');
+      localStorage.setItem(DG_KEY, JSON.stringify({belleza:a.belleza,kenoky:a.kenoky,banner:a.banner,footer:a.footer}));
+      if(window.toast) toast('Charte mise \u00e0 jour \u2014 partag\u00e9e avec l\u2019\u00e9quipe via le cloud \u2713');
+      if(window.achLog) try{ achLog('modification','Documents','mise \u00e0 jour de la charte graphique des PDF (polices)'); }catch(e){}
+    }catch(e){ if(window.toast) toast('\u2717 Fichier non reconnu \u2014 v\u00e9rifiez qu\u2019il s\u2019agit bien de ACHILLE_POLICES_DOCS.json'); }
+    inp.value='';
+  };
+  r.readAsText(f);
+};
 window.dgInstall=function(inp){
   var f=inp.files&&inp.files[0]; if(!f) return;
   var err=document.getElementById('dg-install-err');
