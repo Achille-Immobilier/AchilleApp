@@ -1726,7 +1726,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     </div>
   </div>
   </div>
-  <div class="logo-ver app-ver">Achille App — v11.08</div>
+  <div class="logo-ver app-ver">Achille App — v11.09</div>
 </aside>
 <div id="mob-bk" onclick="mobNav(false)"></div>
 <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Réduire la barre latérale">‹</button>
@@ -2733,6 +2733,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
         <button class="comm-tab active" id="comm-tab-posts" onclick="commSwitch('posts')">📱 Posts réseaux</button>
         <button class="comm-tab" id="comm-tab-cour" onclick="commSwitch('courriers')">✉️ Courriers distribués</button>
         <button class="comm-tab" id="comm-tab-avenir" onclick="commSwitch('avenir')">🗓 Posts à venir</button>
+        <button class="comm-tab" id="comm-tab-idees" onclick="commSwitch('idees')">💡 Idées du jour</button>
       </div>
       <input id="comm-search" class="comm-search" type="text" placeholder="🔎 Rechercher (réf, adresse, ville…)" oninput="commSearch(this.value)" autocomplete="off">
       <div style="flex:1;"></div>
@@ -2771,6 +2772,12 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
         </div>
         <div class="cav-sec"><div class="cav-sec-tt ok">✅ Validés — à mettre en place <span class="n" id="cav-n-val"></span></div><div id="cav-list-valide"></div></div>
         <div class="cav-sec"><div class="cav-sec-tt">💡 Idées &amp; propositions <span class="n" id="cav-n-idee"></span></div><div id="cav-list-idee"></div></div>
+      </div>
+      <!-- v11.09 : Idées du jour — propositions rédigées chaque matin par la veille automatique
+           (fichier idees-posts.json à la racine du dépôt — l'app le lit, n'y écrit jamais) -->
+      <div class="comm-panel" id="comm-panel-idees">
+        <div class="idj-head"><span class="idj-hint">Propositions issues de la veille du matin — donnez vos retours (publié / rejeté) à Claude par conversation.</span><span class="idj-maj" id="idj-maj"></span></div>
+        <div id="idj-list"></div>
       </div>
     </div>
   </div>
@@ -13880,7 +13887,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     startRealtime();
     var ov=document.getElementById('ach-login-overlay'); if(ov) ov.classList.add('ach-hidden');
     var ub=document.getElementById('ach-userbar'); if(ub) ub.style.display='none';
-    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v11.08';
+    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v11.09';
     flag('Synchronis\u00e9');
     // fin de l'init : on autorise la journalisation des actions
     setTimeout(function(){ installInterceptor._init=false; }, 1500);
@@ -22910,6 +22917,180 @@ body.pi-grabbing *{user-select:none!important;}
   seed();
 })();
 </script>
+<!-- ══════════ v11.09 : Communication — Idées du jour (veille automatique du matin) ══════════ -->
+<style>
+.idj-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:2px 0 12px;flex-wrap:wrap;}
+.idj-hint{font-size:11.5px;color:var(--gris-2);font-style:italic;}
+.idj-maj{font-size:11px;color:var(--gris-2);white-space:nowrap;}
+.idj-tt{flex:1;min-width:0;font-size:13px;color:var(--noir);padding:5px 2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.idj-fmt{font-size:10px;font-weight:600;padding:2px 8px;border-radius:12px;white-space:nowrap;flex:none;border:1px solid var(--beige-3);color:var(--gris);background:#fff;}
+.idj-st{font-size:10px;font-weight:700;padding:2px 9px;border-radius:12px;white-space:nowrap;flex:none;}
+.idj-note{font-size:10.5px;color:var(--gris-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:260px;flex:none;}
+.idj-body{padding:10px 14px 14px 43px;border-bottom:1px solid #f3eee6;background:#fbf8f3;}
+.idj-meta{font-size:12.5px;color:var(--noir);line-height:1.55;margin-bottom:4px;}
+.idj-meta b{color:var(--gris);font-weight:600;}
+.idj-meta a{color:var(--terra);text-decoration:none;}
+.idj-meta a:hover{text-decoration:underline;}
+.idj-nets{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px;}
+.idj-net{background:#fff;border:1px solid var(--border);border-radius:9px;overflow:hidden;}
+.idj-net-hd{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:6px 11px;background:#f6f1e9;border-bottom:1px solid var(--border);font-size:10.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--gris);}
+.idj-net-tx{padding:10px 12px;font-size:12.5px;line-height:1.6;color:var(--noir);white-space:pre-wrap;word-break:break-word;}
+.idj-send-bar{display:flex;align-items:center;gap:10px;margin-top:12px;}
+.idj-sent{font-size:11.5px;color:var(--vert);font-weight:600;}
+</style>
+<script>
+(function(){
+  'use strict';
+  var CAV_KEY='ach_comm_avenir_v1';
+  var THEMES={
+    visite:['🎥','Visite virtuelle','#5b8aa6'], infoimmo:['📊','Info Immo','#2e6e50'],
+    astuce:['💡','Astuces','#b0883b'], achille:['🏛','Info Achille','#b47360'],
+    humour:['😄','Humour','#7a5c9e'], temoignage:['⭐','Témoignage','#9a7b4f'],
+    vielocale:['🌿','Vie locale','#6b7a5e'], bien:['✨','Nouveau bien','#a03222'],
+    sondage:['🗳','Sondage','#4a4a48']
+  };
+  var FORMATS={classique:['📝','Classique'], carrousel:['🖼','Carrousel'], video:['🎬','Vidéo'], meme:['😄','Meme']};
+  var STATUTS={propose:['Proposé','#b0883b'], publie:['Publié','#2e6e50'], rejete:['Rejeté','#a03222']};
+  var REPRO={non:'ne pas reproposer', plus_tard:'à reproposer plus tard', autre_forme:'à reproposer sous une autre forme'};
+  var NETS=[['linkedin','LinkedIn'],['instagram','Instagram'],['facebook','Facebook'],['tiktok','TikTok']];
+  function esc(t){ return (''+(t==null?'':t)).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+  var _data=null, _open={}, _q='', _seq=0;
+  function props(){ return (_data&&Array.isArray(_data.propositions))?_data.propositions:[]; }
+  function byId(id){ return props().filter(function(p){ return (''+p.id)===id; })[0]; }
+  function cavList(){ try{ var a=JSON.parse(localStorage.getItem(CAV_KEY)||'[]'); return Array.isArray(a)?a:[]; }catch(e){ return []; } }
+  function dejaEnvoyee(id){ return cavList().some(function(o){ return o.src===id; }); }
+  function visibles(){
+    var cut=new Date(Date.now()-13*864e5), cutS=cut.getFullYear()+'-'+('0'+(cut.getMonth()+1)).slice(-2)+'-'+('0'+cut.getDate()).slice(-2);
+    return props().filter(function(p){
+      if((''+(p.date||''))<cutS) return false;
+      if(!_q) return true;
+      var th=(THEMES[p.theme]||['','',''])[1];
+      var hay=[p.titre,p.actu,p.angle,p.concurrent,th,p.linkedin,p.instagram,p.facebook,p.tiktok].join(' ').toLowerCase();
+      return hay.indexOf(_q.toLowerCase())>=0;
+    });
+  }
+  function jourTitre(d){
+    try{ var t=new Date(d+'T12:00:00').toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'});
+      return t.charAt(0).toUpperCase()+t.slice(1);
+    }catch(e){ return ''+d; }
+  }
+  function majTxt(){
+    if(!_data||!_data.maj) return '';
+    var d=new Date(_data.maj); if(isNaN(d)) return '';
+    return 'Mis à jour le '+('0'+d.getDate()).slice(-2)+'/'+('0'+(d.getMonth()+1)).slice(-2)+' à '+('0'+d.getHours()).slice(-2)+'h'+('0'+d.getMinutes()).slice(-2);
+  }
+  function compteur(n){
+    if(window._commTabCur!=='idees') return;
+    var el=document.getElementById('comm-count'); if(el) el.textContent=n+' idée'+(n>1?'s':'');
+  }
+  window.idjRender=function(){
+    var box=document.getElementById('idj-list'); if(!box) return;
+    var m=document.getElementById('idj-maj'); if(m) m.textContent=majTxt();
+    var list=visibles();
+    compteur(list.length);
+    if(!list.length){
+      box.innerHTML='<div class="cav-sec"><div class="cav-empty">'+(_q?'Aucune proposition ne correspond à la recherche.':'Aucune proposition pour le moment — elles arrivent chaque matin vers 9h.')+'</div></div>';
+      return;
+    }
+    var jours={}; list.forEach(function(p){ var d=''+(p.date||''); (jours[d]=jours[d]||[]).push(p); });
+    var h='';
+    Object.keys(jours).sort().reverse().forEach(function(d){
+      var g=jours[d];
+      h+='<div class="cav-sec"><div class="cav-sec-tt">'+esc(jourTitre(d))+' · '+g.length+' proposition'+(g.length>1?'s':'')+'</div>';
+      g.forEach(function(p){
+        var id=''+p.id, eid=encodeURIComponent(id), open=!!_open[id];
+        var T=THEMES[p.theme]||['📌',p.theme||'—','#7a7570'];
+        var Fm=FORMATS[p.format]||['📌',p.format||'—'];
+        var St=STATUTS[p.statut]||[p.statut||'—','#7a7570'];
+        var note='';
+        if(p.statut==='rejete'&&(p.raison||p.reproposer)){
+          var r=[]; if(p.raison) r.push(esc(p.raison));
+          if(p.reproposer&&REPRO[p.reproposer]) r.push(REPRO[p.reproposer]+(p.reproposer==='autre_forme'&&p.reproposer_forme?' ('+esc(p.reproposer_forme)+')':''));
+          note='<span class="idj-note" title="'+r.join(' — ')+'">'+r.join(' — ')+'</span>';
+        }
+        h+='<div class="cav-row">'
+          +'<button class="cav-car has" onclick="idjToggle(\''+eid+'\')" title="Voir le détail">'+(open?'▾':'▸')+'</button>'
+          +'<span class="cav-th" style="background:'+T[2]+'18;color:'+T[2]+';border:1px solid '+T[2]+'44;">'+T[0]+' '+esc(T[1])+'</span>'
+          +'<span class="idj-fmt">'+Fm[0]+' '+esc(Fm[1])+'</span>'
+          +'<span class="idj-tt" title="'+esc(p.titre)+'">'+esc(p.titre)+'</span>'
+          +note
+          +'<span class="idj-st" style="background:'+St[1]+'18;color:'+St[1]+';border:1px solid '+St[1]+'44;">'+esc(St[0])+'</span>'
+          +'</div>';
+        if(open){
+          h+='<div class="idj-body">';
+          if(p.actu){ h+='<div class="idj-meta"><b>Actu :</b> '+esc(p.actu);
+            if(p.source&&p.source.url){ h+=' — <a href="'+esc(p.source.url)+'" target="_blank" rel="noopener">'+esc(p.source.nom||'source')+(p.source.date?' · '+esc(p.source.date):'')+'</a>'; }
+            h+='</div>'; }
+          if(p.angle) h+='<div class="idj-meta"><b>Angle Achille :</b> '+esc(p.angle)+'</div>';
+          if(p.concurrent) h+='<div class="idj-meta"><b>Concurrent :</b> '+esc(p.concurrent)+'</div>';
+          var nets=NETS.filter(function(n){ return (''+(p[n[0]]||'')).trim(); });
+          if(nets.length){
+            h+='<div class="idj-nets">'+nets.map(function(n){
+              return '<div class="idj-net"><div class="idj-net-hd"><span>'+n[1]+'</span>'
+                +'<button class="cav-copy" onclick="idjCopy(\''+eid+'\',\''+n[0]+'\',this)">📋 Copier</button></div>'
+                +'<div class="idj-net-tx">'+esc(p[n[0]])+'</div></div>';
+            }).join('')+'</div>';
+          }
+          h+='<div class="idj-send-bar">'+(dejaEnvoyee(id)
+            ? '<span class="idj-sent">✓ Déjà dans Posts à venir</span>'
+            : '<button class="cav-act ok" onclick="idjSend(\''+eid+'\')">→ Envoyer dans Posts à venir</button>')
+            +'</div>';
+          h+='</div>';
+        }
+      });
+      h+='</div>';
+    });
+    box.innerHTML=h;
+  };
+  window.idjToggle=function(eid){ var id=decodeURIComponent(eid); _open[id]=!_open[id]; idjRender(); };
+  window.idjCopy=function(eid,net,btn){
+    var p=byId(decodeURIComponent(eid)); if(!p) return;
+    var tx=''+(p[net]||''); if(!tx) return;
+    function ok(){ if(btn){ var t=btn.textContent; btn.textContent='Copié ✓'; setTimeout(function(){ btn.textContent=t; },1400); } }
+    function fb(){ try{ var ta=document.createElement('textarea'); ta.value=tx; ta.style.position='fixed'; ta.style.left='-9999px'; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta); ok(); }catch(e){window.achErr&&achErr(e)} }
+    try{ if(navigator.clipboard&&navigator.clipboard.writeText){ navigator.clipboard.writeText(tx).then(ok,fb); } else fb(); }catch(e){ fb(); }
+  };
+  window.idjSend=function(eid){
+    var id=decodeURIComponent(eid), p=byId(id); if(!p) return;
+    if(dejaEnvoyee(id)){ idjRender(); return; }
+    var nets=NETS.filter(function(n){ return (''+(p[n[0]]||'')).trim(); });
+    var texte=(''+(p.linkedin||'')).trim(); if(!texte&&nets.length) texte=(''+p[nets[0][0]]).trim();
+    var a=cavList();
+    a.push({ id:'cav-'+Date.now().toString(36)+Math.floor(Math.random()*1000), st:'idee',
+      th:p.theme||'astuce', titre:''+(p.titre||''), res:nets.map(function(n){return n[1];}).join(' · '),
+      texte:texte, by:(window.ACH_USER&&ACH_USER.initials)||'LS',
+      created:new Date().toISOString(), updated:new Date().toISOString(), src:id });
+    try{ localStorage.setItem(CAV_KEY, JSON.stringify(a)); }catch(e){window.achErr&&achErr(e)}
+    if(window.toast) toast('→ Ajouté dans Posts à venir');
+    try{ if(window.achLog) achLog('ajout','Posts à venir',''+(p.titre||'')); }catch(e){window.achErr&&achErr(e)}
+    if(typeof window.cavRender==='function'&&document.getElementById('cav-list-valide')) try{ cavRender(); }catch(e){}
+    idjRender();
+  };
+  window.idjLoad=function(){
+    var seq=++_seq;
+    fetch('idees-posts.json?v='+Date.now(), {cache:'no-store'})
+      .then(function(r){ if(!r.ok) throw new Error('http '+r.status); return r.json(); })
+      .then(function(j){ if(seq!==_seq) return; _data=(j&&typeof j==='object')?j:null; idjRender(); })
+      .catch(function(){ if(seq!==_seq) return; _data=null; idjRender(); });
+    idjRender();   /* affichage immédiat (données précédentes ou message vide) */
+  };
+  /* intégration : on enchaîne les enveloppements posés par « Posts à venir » (v7.31) */
+  if(window.commSwitch){ var _cs=window.commSwitch; window.commSwitch=function(tab){
+    _cs(tab==='idees'?'posts':tab);
+    var ti=document.getElementById('comm-tab-idees'), pi=document.getElementById('comm-panel-idees');
+    if(ti) ti.classList.toggle('active', tab==='idees');
+    if(tab==='idees'){
+      window._commTabCur='idees';
+      ['comm-tab-posts','comm-tab-cour','comm-tab-avenir'].forEach(function(i){ var e=document.getElementById(i); if(e) e.classList.remove('active'); });
+      ['comm-panel-posts','comm-panel-courriers','comm-panel-avenir'].forEach(function(i){ var e=document.getElementById(i); if(e) e.classList.remove('active'); });
+      if(pi) pi.classList.add('active');
+      idjLoad();
+    } else { if(pi) pi.classList.remove('active'); }
+  }; }
+  if(window.commSearch){ var _cq=window.commSearch; window.commSearch=function(v){ _cq(v); _q=v||''; if(window._commTabCur==='idees') idjRender(); }; }
+  if(window.commAdd){ var _ca=window.commAdd; window.commAdd=function(){ if(window._commTabCur==='idees'){ if(window.toast) toast('Les idées arrivent automatiquement chaque matin 😉'); return; } _ca(); }; }
+})();
+</script>
 <script>
 /* ══════════ v10.00 : MANDATS — registre des mandats (vente & location) ══════════ */
 (function(){
@@ -23323,6 +23504,12 @@ body.pi-grabbing *{user-select:none!important;}
   #page-documents .docs-tabs{overflow-x:auto;-webkit-overflow-scrolling:touch;flex-wrap:nowrap;scrollbar-width:none;}
   #page-documents .docs-tabs::-webkit-scrollbar{display:none;}
   #page-documents .docs-tab{flex:0 0 auto;white-space:nowrap;}
+  /* v11.09 : Idées du jour sur iPhone — blocs réseaux empilés, lignes qui replient */
+  #comm-panel-idees .idj-nets{grid-template-columns:1fr;}
+  #comm-panel-idees .cav-row{flex-wrap:wrap;}
+  #comm-panel-idees .idj-tt{flex:1 1 100%;white-space:normal;}
+  #comm-panel-idees .idj-note{max-width:100%;}
+  #comm-panel-idees .idj-body{padding-left:14px;}
   /* ── Tableau de bord : tuiles sur 2 colonnes, encart activité pleine largeur ── */
   .dash-top,.dash-top-collab{grid-template-columns:repeat(2,minmax(0,1fr))!important;}
   .dash-activity{grid-column:1/-1;}
