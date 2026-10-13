@@ -1726,7 +1726,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     </div>
   </div>
   </div>
-  <div class="logo-ver app-ver">Achille App — v11.15</div>
+  <div class="logo-ver app-ver">Achille App — v11.16</div>
 </aside>
 <div id="mob-bk" onclick="mobNav(false)"></div>
 <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Réduire la barre latérale">‹</button>
@@ -13910,7 +13910,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     startRealtime();
     var ov=document.getElementById('ach-login-overlay'); if(ov) ov.classList.add('ach-hidden');
     var ub=document.getElementById('ach-userbar'); if(ub) ub.style.display='none';
-    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v11.15';
+    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v11.16';
     flag('Synchronis\u00e9');
     // fin de l'init : on autorise la journalisation des actions
     setTimeout(function(){ installInterceptor._init=false; }, 1500);
@@ -23293,12 +23293,14 @@ body.pi-grabbing *{user-select:none!important;}
     try{ if(navigator.clipboard&&navigator.clipboard.writeText){ navigator.clipboard.writeText(u).then(ok,fb); } else fb(); }catch(e){ fb(); }
   };
 
-  /* ── PDF : page d'impression aux couleurs de la charte (logo + Belleza/Kenoky si installées) ── */
+  /* ── PDF : brochure à la française (modèle Apimo validé par Laurent 13/10) —
+     en-tête logo + bloc contact, grande photo, colonne « Informations », étiquette
+     énergie dessinée, descriptif ; charte Belleza/Kenoky si installée sur le poste. */
   window.pgSharePdf=function(id){
     var r=pigeGet(id); if(!r) return;
     function c(i){ var e=document.getElementById(i); return !!(e&&e.checked); }
     var o={vendeur:c('pgsh-vendeur'), notes:c('pgsh-notes'), photo:c('pgsh-photo')};
-    var a=(typeof window.dgAssets==='function')?dgAssets():null;   /* charte : {belleza,kenoky,banner,footer} base64 */
+    var a=(typeof window.dgAssets==='function')?dgAssets():null;
     var fontCss='', fTitle="'Cormorant Garamond',Georgia,serif", fBody="'Jost',Helvetica,Arial,sans-serif";
     if(a){
       fontCss='@font-face{font-family:ChKenoky;src:url(data:font/ttf;base64,'+a.kenoky+') format(\'truetype\');}'
@@ -23306,62 +23308,88 @@ body.pi-grabbing *{user-select:none!important;}
       fTitle="ChKenoky,'Cormorant Garamond',Georgia,serif"; fBody="ChBelleza,'Jost',Helvetica,Arial,sans-serif";
     }
     var pm2=(parseFloat(r.prix)&&parseFloat(r.surface))?Math.round(parseFloat(r.prix)/parseFloat(r.surface)):0;
-    var facts=[];
-    function F(l,v){ if(v!==''&&v!=null&&v!==0) facts.push('<div class="fact"><b>'+l+'</b><span>'+esc(v)+'</span></div>'); }
-    F('Surface', r.surface?fmtN(r.surface)+' m²':''); F('Pièces', r.pieces); F('Chambres', r.chambres);
-    F('Étage', r.etage); F('Année', r.annee); F('DPE', r.dpe?(''+r.dpe).toUpperCase():'');
-    var ext=[]; if(r.balcon) ext.push(r.balcon>1?r.balcon+' balcons':'balcon'); if(r.terrasse) ext.push(r.terrasse>1?r.terrasse+' terrasses':'terrasse'); if(r.jardin) ext.push('jardin');
-    F('Extérieur', ext.join(' · ')); if(r.cave) F('Cave', r.cave>1?r.cave:'oui'); if(r.parking) F('Parking', r.parking>1?r.parking:'oui');
+    /* colonne Informations (uniquement les champs renseignés) */
+    var rows=[];
+    function R(l,v){ if(v!==''&&v!=null&&v!==0) rows.push('<div class="row"><b>'+l+'</b><span>'+esc(v)+'</span></div>'); }
+    R('Ville', r.ville); R('Prix', r.prix?fmtN(r.prix)+' €':'');
+    R('Prix au m²', pm2?fmtN(pm2)+' €':''); R('Surface', r.surface?fmtN(r.surface)+' m²':'');
+    R('Pièces', r.pieces); R('Chambres', r.chambres); R('Étage', r.etage); R('Année', r.annee);
+    var ext=[]; if(r.balcon) ext.push(r.balcon>1?r.balcon+' balcons':'Balcon'); if(r.terrasse) ext.push(r.terrasse>1?r.terrasse+' terrasses':'Terrasse'); if(r.jardin) ext.push('Jardin');
+    R('Extérieur', ext.join(' · ')); if(r.cave) R('Cave', r.cave>1?r.cave:'Oui'); if(r.parking) R('Parking', r.parking>1?r.parking:'Oui');
+    /* étiquette énergie dessinée */
+    var dpe=(''+(r.dpe||'')).trim().toUpperCase(), DPECOL={A:'#008f4c',B:'#54b451',C:'#a2cf52',D:'#f1e42e',E:'#f3b23e',F:'#ec8235',G:'#d7221f'};
+    var dpeHtml='';
+    if(DPECOL[dpe]){
+      dpeHtml='<div class="side-tt">Classe énergie</div><div class="dpe">'+'ABCDEFG'.split('').map(function(L,i){
+        var on=(L===dpe);
+        return '<div class="dl'+(on?' on':'')+'" style="width:'+(44+i*8)+'%;background:'+DPECOL[L]+'">'+L+(on?'<span>◀</span>':'')+'</div>';
+      }).join('')+'</div>';
+    }
+    var who=(window.ACH_USER&&ACH_USER.name)||'';
     var links=cleanLinks(r);
     var html='<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">'
       +'<title>Fiche — '+esc(r.adresse||r.ville||'Achille')+'</title>'
       +'<link href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500;600&family=Cormorant+Garamond:wght@500;600&display=swap" rel="stylesheet">'
       +'<style>'+fontCss
-      +'*{box-sizing:border-box;margin:0;padding:0;}body{font-family:'+fBody+';color:#1a1a18;background:#efe9df;}'
-      +'.bar{max-width:720px;margin:14px auto 10px;display:flex;justify-content:flex-end;padding:0 12px;}'
+      +'*{box-sizing:border-box;margin:0;padding:0;}body{font-family:'+fBody+';color:#1a1a18;background:#e9e3d8;font-size:12.5px;}'
+      +'.bar{max-width:760px;margin:14px auto 10px;display:flex;justify-content:flex-end;padding:0 12px;}'
       +'.bar button{border:none;border-radius:9px;padding:10px 16px;font-size:14px;cursor:pointer;background:#1a1a18;color:#e8c9a0;font-family:'+fBody+';}'
-      +'.page{max-width:720px;margin:0 auto 40px;background:#fffdf9;padding:40px 48px 30px;border:1px solid #e0d9cc;}'
-      +'.head{text-align:center;margin-bottom:6px;}'
-      +'.head img{height:64px;}'
-      +'.wordmark{font-family:'+fTitle+';font-size:34px;letter-spacing:.03em;}'
-      +'.wordmark i{font-style:italic;font-size:14px;letter-spacing:.3em;color:#8a5a1e;display:block;}'
-      +'.doctt{text-align:center;font-family:'+fTitle+';font-size:15px;letter-spacing:.22em;text-transform:uppercase;color:#8a5a1e;margin:14px 0 2px;}'
-      +'.docdate{text-align:center;font-size:11px;color:#8f8878;margin-bottom:20px;}'
-      +'.photo img{width:100%;max-height:330px;object-fit:cover;margin-bottom:18px;}'
-      +'.adr{font-family:'+fTitle+';font-size:26px;line-height:1.2;}'
-      +'.ville{color:#8f8878;font-size:14px;margin:2px 0 10px;}'
-      +'.prix{font-size:22px;color:#8a5a1e;font-weight:600;}'
-      +'.pm2{font-size:12.5px;color:#6b6b63;margin-bottom:14px;}'
-      +'.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0 4px;}'
-      +'.fact{border:1px solid #e8e1d3;background:#faf6ee;padding:8px 11px;}'
-      +'.fact b{display:block;font-size:9.5px;letter-spacing:.09em;text-transform:uppercase;color:#8f8878;margin-bottom:2px;}'
-      +'.fact span{font-size:13.5px;}'
-      +'.sec{font-family:'+fTitle+';font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:#8a5a1e;margin:18px 0 6px;border-top:1px solid #eee7da;padding-top:13px;}'
-      +'.txt{font-size:13px;line-height:1.65;white-space:pre-wrap;}'
-      +'.note{font-size:12.5px;line-height:1.5;padding:6px 0;border-bottom:1px dashed #eee7da;}'
-      +'.note i{font-style:normal;color:#8f8878;font-size:10.5px;display:block;}'
-      +'.lnk a{display:inline-block;font-size:12.5px;color:#2f6f6f;margin:2px 14px 2px 0;}'
-      +'.foot{text-align:center;margin-top:26px;border-top:1px solid #e0d9cc;padding-top:14px;font-size:10.5px;color:#6b6b63;line-height:1.6;}'
-      +'.foot img{max-height:52px;margin-bottom:6px;}'
-      +'@page{size:A4;margin:10mm;}'
-      +'@media print{body{background:#fff;}.bar{display:none;}.page{border:none;max-width:none;margin:0;padding:8mm 10mm;}}'
+      +'.page{max-width:760px;margin:0 auto 40px;background:#fff;padding:34px 40px 24px;border:1px solid #ddd6c9;}'
+      +'.hd{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:22px;}'
+      +'.hd img{height:52px;}'
+      +'.hd .wordmark{font-family:'+fTitle+';font-size:28px;}.hd .wordmark i{font-style:italic;font-size:12px;letter-spacing:.26em;color:#8a5a1e;display:block;}'
+      +'.coord{text-align:right;font-size:10.5px;line-height:1.55;color:#4c4a45;}'
+      +'.coord b{color:#1a1a18;font-size:11px;}'
+      +'.cols{display:grid;grid-template-columns:1fr 236px;gap:24px;align-items:start;}'
+      +'.photo img{width:100%;max-height:300px;object-fit:cover;display:block;}'
+      +'.plan img{width:100%;max-height:230px;object-fit:contain;display:block;margin-top:10px;background:#faf7f2;}'
+      +'.adr{font-family:'+fTitle+';font-size:22px;letter-spacing:.02em;margin:14px 0 1px;text-transform:uppercase;}'
+      +'.prix{font-size:19px;color:#8a5a1e;font-weight:600;margin-bottom:10px;}'
+      +'.txt{font-size:12.5px;line-height:1.6;white-space:pre-wrap;color:#2e2c28;}'
+      +'.sec{font-family:'+fTitle+';font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:#8a5a1e;margin:15px 0 5px;}'
+      +'.interne{border:1px solid #e8c9a0;background:#fdf8ef;padding:9px 12px;margin-top:13px;}'
+      +'.interne .tag{font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:#8a5a1e;font-weight:700;}'
+      +'.note{font-size:12px;line-height:1.5;padding:4px 0;}'
+      +'.note i{font-style:normal;color:#8f8878;font-size:10px;}'
+      +'.lnk a{display:inline-block;font-size:11.5px;color:#2f6f6f;margin:1px 12px 1px 0;}'
+      +'.side-tt{font-size:14px;color:#6b6b63;margin:0 0 7px;font-family:'+fTitle+';letter-spacing:.04em;}'
+      +'.side .row{display:flex;justify-content:space-between;gap:8px;border-top:2px solid #2e2c28;padding:5px 1px 6px;font-size:11px;}'
+      +'.side .row:last-of-type{border-bottom:2px solid #2e2c28;}'
+      +'.side .row b{font-weight:600;}.side .row span{text-align:right;color:#2e2c28;}'
+      +'.side .dpe{margin-top:4px;}'
+      +'.dl{color:#fff;font-weight:700;font-size:10px;padding:2.5px 6px;margin:2px 0;border-radius:0 3px 3px 0;position:relative;}'
+      +'.dl.on{outline:2px solid #1a1a18;font-size:13px;padding:4px 8px;}'
+      +'.dl.on span{position:absolute;right:-16px;top:50%;transform:translateY(-50%);color:#1a1a18;font-size:11px;}'
+      +'.side-box{margin-bottom:18px;}'
+      +'.foot{text-align:center;margin-top:24px;border-top:1px solid #ddd6c9;padding-top:12px;font-size:10px;color:#6b6b63;line-height:1.6;}'
+      +'.foot img{max-height:48px;margin-bottom:5px;}'
+      +'@page{size:A4;margin:9mm;}'
+      +'@media print{body{background:#fff;}.bar{display:none;}.page{border:none;max-width:none;margin:0;padding:4mm 6mm;}}'
+      +'@media(max-width:620px){.cols{grid-template-columns:1fr;}.hd{flex-direction:column;gap:10px;}.coord{text-align:left;}}'
       +'</style></head><body>'
       +'<div class="bar"><button onclick="window.print()">📄 Enregistrer en PDF / Imprimer</button></div>'
       +'<div class="page">'
-      +'<div class="head">'+(a?'<img src="data:image/jpeg;base64,'+a.banner+'" alt="Achille Immobilier">':'<div class="wordmark">Achille<i>· immobilier ·</i></div>')+'</div>'
-      +'<div class="doctt">Fiche d\u2019information</div><div class="docdate">établie le '+dstr()+'</div>'
+      +'<div class="hd">'
+      +(a?'<img src="data:image/jpeg;base64,'+a.banner+'" alt="Achille Immobilier">':'<div class="wordmark">Achille<i>· immobilier ·</i></div>')
+      +'<div class="coord"><b>Achille Immobilier</b><br>115 Avenue Achille Peretti<br>92200 Neuilly-sur-Seine'
+      +(who?'<br><b>'+esc(who)+'</b>':'')+'<br>Téléphone : +33 1 40 67 00 55<br>achille-immobilier.fr</div>'
+      +'</div>'
+      +'<div class="cols"><div class="main">'
       +((o.photo&&r.photo&&(''+r.photo).indexOf('data:image')===0)?'<div class="photo"><img src="'+esc(r.photo)+'"></div>':'')
-      +'<div class="adr">'+esc(r.adresse||'Bien à l\u2019étude')+'</div>'
-      +(r.ville?'<div class="ville">'+esc(r.ville)+'</div>':'')
-      +(r.prix?'<div class="prix">'+fmtN(r.prix)+' €</div>':'')
-      +(pm2?'<div class="pm2">soit '+fmtN(pm2)+' €/m²</div>':'')
-      +(facts.length?'<div class="grid">'+facts.join('')+'</div>':'')
-      +(r.descriptif?'<div class="sec">Descriptif</div><div class="txt">'+esc(r.descriptif)+'</div>':'')
-      +((o.vendeur&&(r.vendeur||r.tel))?'<div class="sec">Contact propriétaire</div><div class="txt">'+esc(r.vendeur||'')+(r.tel?((r.vendeur?' — ':'')+esc(r.tel)):'')+'</div>':'')
-      +((o.notes&&r.notes&&r.notes.length)?'<div class="sec">Commentaires</div>'+r.notes.map(function(n){ return '<div class="note">'+esc(n.txt||'')+'<i>'+esc(n.u||'')+(n.t?' · '+dstr(n.t):'')+'</i></div>'; }).join(''):'')
+      +'<div class="adr">'+esc(r.adresse||'Bien à l\u2019étude')+(r.ville?' <span style="color:#8f8878;">· '+esc(r.ville)+'</span>':'')+'</div>'
+      +(r.prix?'<div class="prix">'+fmtN(r.prix)+' €'+(pm2?' <span style="font-size:12px;color:#8f8878;font-weight:400;">— '+fmtN(pm2)+' €/m²</span>':'')+'</div>':'')
+      +(r.descriptif?'<div class="txt">'+esc(r.descriptif)+'</div>':'')
+      +((o.photo&&r.plan&&(''+r.plan).indexOf('data:image')===0)?'<div class="sec">Plan</div><div class="plan"><img src="'+esc(r.plan)+'"></div>':'')
+      +((o.vendeur&&(r.vendeur||r.tel))?'<div class="interne"><span class="tag">Interne — contact propriétaire</span><div class="note">'+esc(r.vendeur||'')+(r.tel?((r.vendeur?' — ':'')+esc(r.tel)):'')+'</div></div>':'')
+      +((o.notes&&r.notes&&r.notes.length)?'<div class="interne"><span class="tag">Interne — commentaires</span>'+r.notes.map(function(n){ return '<div class="note">'+esc(n.txt||'')+' <i>('+esc(n.u||'')+(n.t?' · '+dstr(n.t):'')+')</i></div>'; }).join('')+'</div>':'')
       +(links.length?'<div class="sec">Annonce'+(links.length>1?'s':'')+'</div><div class="lnk">'+links.map(function(l){ return '<a href="'+esc(l.url)+'">'+esc(l.label)+' ↗</a>'; }).join('')+'</div>':'')
-      +'<div class="foot">'+(a?'<img src="data:image/jpeg;base64,'+a.footer+'"><br>':'<b>Achille Immobilier</b><br>115 Avenue Achille Peretti, 92200 Neuilly-sur-Seine<br>')
-      +'Document interne — merci d\u2019en préserver la confidentialité.</div>'
+      +'</div>'
+      +'<div class="side">'
+      +'<div class="side-box"><div class="side-tt">Informations</div>'+rows.join('')+'</div>'
+      +dpeHtml
+      +'</div></div>'
+      +'<div class="foot">'+(a?'<img src="data:image/jpeg;base64,'+a.footer+'"><br>':'<b>Achille Immobilier</b> — 115 Avenue Achille Peretti, 92200 Neuilly-sur-Seine<br>')
+      +'Fiche établie le '+dstr()+' — document interne, merci d\u2019en préserver la confidentialité.</div>'
       +'</div></body></html>';
     var w=window.open('','_blank');
     if(!w){ if(window.toast) toast('✗ Autorisez les fenêtres pop-up pour générer le PDF'); return; }
