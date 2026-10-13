@@ -1726,7 +1726,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     </div>
   </div>
   </div>
-  <div class="logo-ver app-ver">Achille App — v11.13</div>
+  <div class="logo-ver app-ver">Achille App — v11.14</div>
 </aside>
 <div id="mob-bk" onclick="mobNav(false)"></div>
 <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Réduire la barre latérale">‹</button>
@@ -13910,7 +13910,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     startRealtime();
     var ov=document.getElementById('ach-login-overlay'); if(ov) ov.classList.add('ach-hidden');
     var ub=document.getElementById('ach-userbar'); if(ub) ub.style.display='none';
-    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v11.13';
+    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v11.14';
     flag('Synchronis\u00e9');
     // fin de l'init : on autorise la journalisation des actions
     setTimeout(function(){ installInterceptor._init=false; }, 1500);
@@ -15096,6 +15096,7 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
     <div class="modal-actions" style="margin-top:16px;">
       <button class="btn btn-ghost btn-sm" id="pg-del-btn" style="color:var(--rouge);margin-right:auto;" onclick="pigeDelete()">Supprimer</button>
       <button class="btn btn-ghost btn-sm" id="pg-merge-btn" style="display:none;color:#5a4a75;margin-right:auto;" onclick="pigeMergeOpen()">🔀 Fusionner…</button>
+      <button class="btn btn-ghost btn-sm" id="pg-share-btn" type="button" style="color:var(--terra);" onclick="pgShareOpen()">🔗 Partager</button>
       <button class="btn btn-outline" onclick="pigeCancel()">Annuler</button>
       <button class="btn btn-sm" type="button" id="pg-rap-btn" style="display:none;border:1px solid var(--terra);color:var(--terra);background:#fff;margin-right:auto;" onclick="rapFicheBtnClick()">🔔 Ajouter un rappel</button><button class="btn btn-terra" onclick="pigeSave()">Enregistrer la fiche</button>
     </div>
@@ -23222,6 +23223,168 @@ body.pi-grabbing *{user-select:none!important;}
   }; }
   if(window.commSearch){ var _cq=window.commSearch; window.commSearch=function(v){ _cq(v); if(window._commTabCur==='mix'){ try{ cavRender(); idjRender(); }catch(e){window.achErr&&achErr(e)} } }; }
   if(window.commAdd){ var _ca=window.commAdd; window.commAdd=function(){ if(window._commTabCur==='mix'){ var e=document.getElementById('cav-titre'); if(e){ e.focus(); if(window.toast) toast('Écrivez le titre puis ＋ Ajouter — ou retenez une idée du matin ✅'); } return; } _ca(); }; }
+})();
+</script>
+<script>
+/* ══════════ v11.14 : lz-string 1.5.0 (MIT, pieroxy) — compression des liens de partage ══════════ */
+var LZString=function(){var r=String.fromCharCode,o="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=",n="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+-$",e={};function t(r,o){if(!e[r]){e[r]={};for(var n=0;n<r.length;n++)e[r][r.charAt(n)]=n}return e[r][o]}var i={compressToBase64:function(r){if(null==r)return"";var n=i._compress(r,6,function(r){return o.charAt(r)});switch(n.length%4){default:case 0:return n;case 1:return n+"===";case 2:return n+"==";case 3:return n+"="}},decompressFromBase64:function(r){return null==r?"":""==r?null:i._decompress(r.length,32,function(n){return t(o,r.charAt(n))})},compressToUTF16:function(o){return null==o?"":i._compress(o,15,function(o){return r(o+32)})+" "},decompressFromUTF16:function(r){return null==r?"":""==r?null:i._decompress(r.length,16384,function(o){return r.charCodeAt(o)-32})},compressToUint8Array:function(r){for(var o=i.compress(r),n=new Uint8Array(2*o.length),e=0,t=o.length;e<t;e++){var s=o.charCodeAt(e);n[2*e]=s>>>8,n[2*e+1]=s%256}return n},decompressFromUint8Array:function(o){if(null==o)return i.decompress(o);for(var n=new Array(o.length/2),e=0,t=n.length;e<t;e++)n[e]=256*o[2*e]+o[2*e+1];var s=[];return n.forEach(function(o){s.push(r(o))}),i.decompress(s.join(""))},compressToEncodedURIComponent:function(r){return null==r?"":i._compress(r,6,function(r){return n.charAt(r)})},decompressFromEncodedURIComponent:function(r){return null==r?"":""==r?null:(r=r.replace(/ /g,"+"),i._decompress(r.length,32,function(o){return t(n,r.charAt(o))}))},compress:function(o){return i._compress(o,16,function(o){return r(o)})},_compress:function(r,o,n){if(null==r)return"";var e,t,i,s={},u={},a="",p="",c="",l=2,f=3,h=2,d=[],m=0,v=0;for(i=0;i<r.length;i+=1)if(a=r.charAt(i),Object.prototype.hasOwnProperty.call(s,a)||(s[a]=f++,u[a]=!0),p=c+a,Object.prototype.hasOwnProperty.call(s,p))c=p;else{if(Object.prototype.hasOwnProperty.call(u,c)){if(c.charCodeAt(0)<256){for(e=0;e<h;e++)m<<=1,v==o-1?(v=0,d.push(n(m)),m=0):v++;for(t=c.charCodeAt(0),e=0;e<8;e++)m=m<<1|1&t,v==o-1?(v=0,d.push(n(m)),m=0):v++,t>>=1}else{for(t=1,e=0;e<h;e++)m=m<<1|t,v==o-1?(v=0,d.push(n(m)),m=0):v++,t=0;for(t=c.charCodeAt(0),e=0;e<16;e++)m=m<<1|1&t,v==o-1?(v=0,d.push(n(m)),m=0):v++,t>>=1}0==--l&&(l=Math.pow(2,h),h++),delete u[c]}else for(t=s[c],e=0;e<h;e++)m=m<<1|1&t,v==o-1?(v=0,d.push(n(m)),m=0):v++,t>>=1;0==--l&&(l=Math.pow(2,h),h++),s[p]=f++,c=String(a)}if(""!==c){if(Object.prototype.hasOwnProperty.call(u,c)){if(c.charCodeAt(0)<256){for(e=0;e<h;e++)m<<=1,v==o-1?(v=0,d.push(n(m)),m=0):v++;for(t=c.charCodeAt(0),e=0;e<8;e++)m=m<<1|1&t,v==o-1?(v=0,d.push(n(m)),m=0):v++,t>>=1}else{for(t=1,e=0;e<h;e++)m=m<<1|t,v==o-1?(v=0,d.push(n(m)),m=0):v++,t=0;for(t=c.charCodeAt(0),e=0;e<16;e++)m=m<<1|1&t,v==o-1?(v=0,d.push(n(m)),m=0):v++,t>>=1}0==--l&&(l=Math.pow(2,h),h++),delete u[c]}else for(t=s[c],e=0;e<h;e++)m=m<<1|1&t,v==o-1?(v=0,d.push(n(m)),m=0):v++,t>>=1;0==--l&&(l=Math.pow(2,h),h++)}for(t=2,e=0;e<h;e++)m=m<<1|1&t,v==o-1?(v=0,d.push(n(m)),m=0):v++,t>>=1;for(;;){if(m<<=1,v==o-1){d.push(n(m));break}v++}return d.join("")},decompress:function(r){return null==r?"":""==r?null:i._decompress(r.length,32768,function(o){return r.charCodeAt(o)})},_decompress:function(o,n,e){var t,i,s,u,a,p,c,l=[],f=4,h=4,d=3,m="",v=[],g={val:e(0),position:n,index:1};for(t=0;t<3;t+=1)l[t]=t;for(s=0,a=Math.pow(2,2),p=1;p!=a;)u=g.val&g.position,g.position>>=1,0==g.position&&(g.position=n,g.val=e(g.index++)),s|=(u>0?1:0)*p,p<<=1;switch(s){case 0:for(s=0,a=Math.pow(2,8),p=1;p!=a;)u=g.val&g.position,g.position>>=1,0==g.position&&(g.position=n,g.val=e(g.index++)),s|=(u>0?1:0)*p,p<<=1;c=r(s);break;case 1:for(s=0,a=Math.pow(2,16),p=1;p!=a;)u=g.val&g.position,g.position>>=1,0==g.position&&(g.position=n,g.val=e(g.index++)),s|=(u>0?1:0)*p,p<<=1;c=r(s);break;case 2:return""}for(l[3]=c,i=c,v.push(c);;){if(g.index>o)return"";for(s=0,a=Math.pow(2,d),p=1;p!=a;)u=g.val&g.position,g.position>>=1,0==g.position&&(g.position=n,g.val=e(g.index++)),s|=(u>0?1:0)*p,p<<=1;switch(c=s){case 0:for(s=0,a=Math.pow(2,8),p=1;p!=a;)u=g.val&g.position,g.position>>=1,0==g.position&&(g.position=n,g.val=e(g.index++)),s|=(u>0?1:0)*p,p<<=1;l[h++]=r(s),c=h-1,f--;break;case 1:for(s=0,a=Math.pow(2,16),p=1;p!=a;)u=g.val&g.position,g.position>>=1,0==g.position&&(g.position=n,g.val=e(g.index++)),s|=(u>0?1:0)*p,p<<=1;l[h++]=r(s),c=h-1,f--;break;case 2:return v.join("")}if(0==f&&(f=Math.pow(2,d),d++),l[c])m=l[c];else{if(c!==h)return null;m=i+i.charAt(0)}v.push(m),l[h++]=i+m.charAt(0),i=m,0==--f&&(f=Math.pow(2,d),d++)}}};return i}();"function"==typeof define&&define.amd?define(function(){return LZString}):"undefined"!=typeof module&&null!=module?module.exports=LZString:"undefined"!=typeof angular&&null!=angular&&angular.module("LZString",[]).factory("LZString",function(){return LZString});
+</script>
+<!-- ══════════ v11.14 : PIGE — partage d'une fiche (lien web autonome + version PDF) ══════════ -->
+<style>
+#pg-share-pop{position:fixed;inset:0;z-index:99998;background:rgba(26,26,24,.35);display:flex;align-items:center;justify-content:center;padding:16px;}
+.pgsh-card{background:#fff;border-radius:14px;max-width:460px;width:100%;padding:20px 22px;box-shadow:0 18px 50px rgba(0,0,0,.25);font-family:'Jost',sans-serif;}
+.pgsh-card h3{font-family:'Cormorant Garamond',serif;font-size:21px;color:var(--terra,#b47360);margin:0 0 2px;}
+.pgsh-sub{font-size:12.5px;color:#6b6b63;margin-bottom:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.pgsh-opt{display:flex;gap:9px;align-items:flex-start;margin:7px 0;font-size:13px;cursor:pointer;}
+.pgsh-opt input{margin-top:3px;}
+.pgsh-opt small{display:block;color:#8f8878;font-size:11px;}
+.pgsh-note{font-size:11px;color:#8a5a1e;background:#fdf3e7;border-radius:8px;padding:8px 11px;margin:12px 0;line-height:1.45;}
+.pgsh-btns{display:flex;gap:9px;flex-wrap:wrap;margin-top:6px;}
+.pgsh-btns .b{flex:1;min-width:150px;border:none;border-radius:9px;padding:10px 12px;font-size:13.5px;cursor:pointer;font-family:'Jost',sans-serif;}
+.b-link{background:var(--terra,#b47360);color:#fff;}
+.b-pdf{background:#fff;border:1px solid var(--terra,#b47360)!important;color:var(--terra,#b47360);}
+.b-close{background:#f0ebe3;color:#6b6b63;flex:0 0 auto!important;min-width:0!important;}
+/* ── vue « fiche partagée » (ouverte via #fiche=…) ── */
+body.ach-share>*:not(#ach-share-view){display:none!important;}
+#ach-share-view{position:fixed;inset:0;overflow:auto;z-index:99999;background:#f4efe7;font-family:'Jost',sans-serif;color:#1a1a18;padding:26px 14px 50px;}
+.shv-page{max-width:760px;margin:0 auto;background:#fff;border:1px solid #e0d9cc;border-radius:16px;overflow:hidden;box-shadow:0 10px 36px rgba(26,26,24,.08);}
+.shv-head{background:#1a1a18;color:#f7f3ee;text-align:center;padding:22px 16px 18px;}
+.shv-logo{font-family:'Cormorant Garamond',serif;font-size:30px;letter-spacing:.04em;}
+.shv-logo i{font-style:italic;font-size:15px;color:#e8c9a0;letter-spacing:.28em;display:block;margin-top:1px;}
+.shv-date{font-size:11px;color:#c9c2b6;margin-top:7px;letter-spacing:.08em;text-transform:uppercase;}
+.shv-photo img{width:100%;max-height:360px;object-fit:cover;display:block;}
+.shv-body{padding:24px 28px 26px;}
+.shv-adr{font-family:'Cormorant Garamond',serif;font-size:27px;font-weight:600;line-height:1.2;}
+.shv-ville{color:#8f8878;font-size:15px;margin-top:2px;}
+.shv-prix{font-size:23px;font-weight:600;color:var(--terra,#b47360);margin:12px 0 2px;}
+.shv-pm2{font-size:13px;color:#6b6b63;margin-bottom:14px;}
+.shv-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:9px;margin:14px 0 18px;}
+.shv-fact{background:#faf7f2;border:1px solid #eee7da;border-radius:10px;padding:9px 12px;}
+.shv-fact b{display:block;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:#8f8878;font-weight:600;margin-bottom:2px;}
+.shv-fact span{font-size:14.5px;}
+.shv-sec{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--terra,#b47360);font-weight:600;margin:18px 0 6px;border-top:1px solid #f0ebe3;padding-top:14px;}
+.shv-txt{font-size:14px;line-height:1.65;white-space:pre-wrap;color:#3c3832;}
+.shv-note{font-size:13px;line-height:1.5;color:#3c3832;padding:7px 0;border-bottom:1px dashed #eee7da;}
+.shv-note i{font-style:normal;color:#8f8878;font-size:11.5px;display:block;}
+.shv-links a{display:block;font-size:13px;color:#2f6f6f;word-break:break-all;margin:4px 0;}
+.shv-foot{background:#faf7f2;border-top:1px solid #eee7da;text-align:center;padding:16px;font-size:12px;color:#6b6b63;line-height:1.6;}
+.shv-foot b{font-family:'Cormorant Garamond',serif;font-size:15px;color:#1a1a18;letter-spacing:.03em;}
+.shv-bar{max-width:760px;margin:0 auto 14px;display:flex;gap:10px;justify-content:flex-end;}
+.shv-bar button{border:none;border-radius:9px;padding:10px 16px;font-size:13.5px;cursor:pointer;font-family:'Jost',sans-serif;background:var(--terra,#b47360);color:#fff;}
+@media print{
+  body.ach-share{background:#fff;}
+  #ach-share-view{position:static;overflow:visible;background:#fff;padding:0;}
+  .shv-bar{display:none!important;}
+  .shv-page{border:none;box-shadow:none;border-radius:0;max-width:none;}
+}
+@media(max-width:600px){ .shv-body{padding:18px 16px 20px;} .shv-adr{font-size:22px;} }
+</style>
+<script>
+(function(){
+  'use strict';
+  var LZ=window.LZString;
+  function esc(t){ return (''+(t==null?'':t)).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+  function fmtN(v){ v=parseFloat(v)||0; return v?v.toLocaleString('fr-FR'):''; }
+  function pigeGet(id){ try{ var a=JSON.parse(localStorage.getItem('ach_pige_v1')||'[]'); return (a||[]).filter(function(x){return x.id===id;})[0]||null; }catch(e){ return null; } }
+  function dstr(ms){ var d=ms?new Date(ms):new Date(); return ('0'+d.getDate()).slice(-2)+'/'+('0'+(d.getMonth()+1)).slice(-2)+'/'+d.getFullYear(); }
+
+  /* ── construction de la charge utile (champs choisis uniquement) ── */
+  function payload(r, o){
+    var d={ adresse:r.adresse||'', ville:r.ville||'', prix:r.prix||'', surface:r.surface||'',
+      pieces:r.pieces||'', chambres:r.chambres||'', etage:r.etage||'', annee:r.annee||'', dpe:r.dpe||'',
+      cave:r.cave||0, parking:r.parking||0, balcon:r.balcon||0, terrasse:r.terrasse||0, jardin:r.jardin||0,
+      descriptif:r.descriptif||'' };
+    if(o.vendeur){ d.vendeur=r.vendeur||''; d.tel=r.tel||''; }
+    if(o.notes){ d.notes=(r.notes||[]).map(function(n){ return {u:n.u||'',t:n.t||0,txt:n.txt||''}; }); }
+    if(o.links){ d.links=[]; (r.links&&r.links.length?r.links:(r.url?[{src:r.src,url:r.url}]:[])).forEach(function(l){ if(l&&l.url) d.links.push({src:l.src||'',url:l.url}); }); }
+    if(o.photo && r.photo && (''+r.photo).indexOf('data:image')===0) d.photo=r.photo;
+    return {v:1,t:'pige',g:Date.now(),d:d};
+  }
+  window.pgShareUrl=function(id,o){
+    var r=pigeGet(id); if(!r||!LZ) return '';
+    var base=location.origin+location.pathname;
+    return base+'#fiche='+LZ.compressToEncodedURIComponent(JSON.stringify(payload(r,o||{})));
+  };
+
+  /* ── petite fenêtre de partage sur la fiche ── */
+  window.pgShareOpen=function(){
+    var id=(document.getElementById('pg-edit-id')||{}).value||'';
+    var r=id?pigeGet(id):null;
+    if(!r){ if(window.toast) toast('Enregistrez d\u2019abord la fiche, puis partagez-la 😉'); return; }
+    var old=document.getElementById('pg-share-pop'); if(old) old.remove();
+    var w=document.createElement('div'); w.id='pg-share-pop';
+    w.innerHTML='<div class="pgsh-card">'
+      +'<h3>🔗 Partager la fiche</h3><div class="pgsh-sub">'+esc(r.adresse||r.ville||'')+(r.prix?' · '+fmtN(r.prix)+' €':'')+'</div>'
+      +'<label class="pgsh-opt"><input type="checkbox" id="pgsh-vendeur"><span>Inclure le propriétaire et son téléphone<small>décoché = la fiche partagée reste anonyme</small></span></label>'
+      +'<label class="pgsh-opt"><input type="checkbox" id="pgsh-notes"><span>Inclure les commentaires internes<small>vos échanges d\u2019équipe sur la fiche</small></span></label>'
+      +'<label class="pgsh-opt"><input type="checkbox" id="pgsh-links" checked><span>Inclure les liens des annonces<small>le destinataire pourra voir l\u2019annonce (et ses photos)</small></span></label>'
+      +'<div class="pgsh-note">Le lien contient la fiche telle qu\u2019elle est maintenant (une photographie à l\u2019instant du partage, sans mise à jour ensuite) et s\u2019ouvre sans connexion : ne l\u2019envoyez qu\u2019à des personnes de confiance.</div>'
+      +'<div class="pgsh-btns">'
+      +'<button class="b b-link" onclick="pgShareCopy(\''+esc(id)+'\')">🔗 Copier le lien web</button>'
+      +'<button class="b b-pdf" onclick="pgSharePdf(\''+esc(id)+'\')">📄 Version PDF</button>'
+      +'<button class="b b-close" onclick="document.getElementById(\'pg-share-pop\').remove()">✕</button>'
+      +'</div></div>';
+    w.addEventListener('click',function(e){ if(e.target===w) w.remove(); });
+    document.body.appendChild(w);
+  };
+  function opts(){ function c(i){ var e=document.getElementById(i); return !!(e&&e.checked); }
+    return {vendeur:c('pgsh-vendeur'), notes:c('pgsh-notes'), links:c('pgsh-links')}; }
+  window.pgShareCopy=function(id){
+    var o=opts(); o.photo=false;   /* la photo rendrait le lien trop lourd pour SMS/WhatsApp */
+    var u=pgShareUrl(id,o); if(!u){ if(window.toast) toast('✗ Partage impossible'); return; }
+    function ok(){ if(window.toast) toast('🔗 Lien copié — collez-le dans un e-mail, SMS ou WhatsApp'); try{ if(window.achLog) achLog('modification','Pige','partage (lien) : '+((pigeGet(id)||{}).adresse||'')); }catch(e){} }
+    function fb(){ try{ var ta=document.createElement('textarea'); ta.value=u; ta.style.position='fixed'; ta.style.left='-9999px'; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta); ok(); }catch(e){ prompt('Copiez le lien :',u); } }
+    try{ if(navigator.clipboard&&navigator.clipboard.writeText){ navigator.clipboard.writeText(u).then(ok,fb); } else fb(); }catch(e){ fb(); }
+  };
+  window.pgSharePdf=function(id){
+    var o=opts(); o.photo=true;   /* en PDF la photo passe (le lien reste dans ce navigateur) */
+    var u=pgShareUrl(id,o); if(!u) return;
+    window.open(u,'_blank');
+    if(window.toast) toast('📄 Dans l\u2019onglet ouvert : bouton « Enregistrer en PDF »');
+    try{ if(window.achLog) achLog('modification','Pige','partage (PDF) : '+((pigeGet(id)||{}).adresse||'')); }catch(e){}
+  };
+
+  /* ── vue autonome : l'app ouverte avec #fiche=… affiche la fiche, sans connexion ── */
+  function renderShare(pl){
+    var d=pl.d||{};
+    document.title='Fiche — '+(d.adresse||d.ville||'Achille Immobilier');
+    document.body.classList.add('ach-share');
+    var pm2=(parseFloat(d.prix)&&parseFloat(d.surface))?Math.round(parseFloat(d.prix)/parseFloat(d.surface)):0;
+    var facts=[];
+    function F(l,v){ if(v!==''&&v!=null&&v!==0) facts.push('<div class="shv-fact"><b>'+l+'</b><span>'+esc(v)+'</span></div>'); }
+    F('Surface', d.surface?fmtN(d.surface)+' m²':'');
+    F('Pièces', d.pieces); F('Chambres', d.chambres); F('Étage', d.etage);
+    F('Année', d.annee); F('DPE', d.dpe?(''+d.dpe).toUpperCase():'');
+    var ext=[]; if(d.balcon) ext.push(d.balcon>1?d.balcon+' balcons':'balcon'); if(d.terrasse) ext.push(d.terrasse>1?d.terrasse+' terrasses':'terrasse'); if(d.jardin) ext.push('jardin');
+    F('Extérieur', ext.join(' · ')); if(d.cave) F('Cave', d.cave>1?d.cave:'oui'); if(d.parking) F('Parking', d.parking>1?d.parking:'oui');
+    var h='<div class="shv-bar"><button onclick="window.print()">📄 Enregistrer en PDF / Imprimer</button></div>'
+      +'<div class="shv-page">'
+      +'<div class="shv-head"><div class="shv-logo">Achille<i>· immobilier ·</i></div><div class="shv-date">Fiche d\u2019information · partagée le '+dstr(pl.g)+'</div></div>'
+      +(d.photo?'<div class="shv-photo"><img src="'+esc(d.photo)+'" alt=""></div>':'')
+      +'<div class="shv-body">'
+      +'<div class="shv-adr">'+esc(d.adresse||'Bien à l\u2019étude')+'</div>'
+      +(d.ville?'<div class="shv-ville">'+esc(d.ville)+'</div>':'')
+      +(d.prix?'<div class="shv-prix">'+fmtN(d.prix)+' €</div>':'')
+      +(pm2?'<div class="shv-pm2">soit '+fmtN(pm2)+' €/m²</div>':'')
+      +(facts.length?'<div class="shv-grid">'+facts.join('')+'</div>':'')
+      +(d.descriptif?'<div class="shv-sec">Descriptif</div><div class="shv-txt">'+esc(d.descriptif)+'</div>':'')
+      +((d.vendeur||d.tel)?'<div class="shv-sec">Contact propriétaire</div><div class="shv-txt">'+esc(d.vendeur||'')+(d.tel?(d.vendeur?' — ':'')+esc(d.tel):'')+'</div>':'')
+      +((d.notes&&d.notes.length)?'<div class="shv-sec">Commentaires</div>'+d.notes.map(function(n){ return '<div class="shv-note">'+esc(n.txt)+'<i>'+esc(n.u||'')+(n.t?' · '+dstr(n.t):'')+'</i></div>'; }).join(''):'')
+      +((d.links&&d.links.length)?'<div class="shv-sec">Annonce'+(d.links.length>1?'s':'')+'</div><div class="shv-links">'+d.links.map(function(l){ return '<a href="'+esc(l.url)+'" target="_blank" rel="noopener">'+esc(l.url)+'</a>'; }).join('')+'</div>':'')
+      +'</div>'
+      +'<div class="shv-foot"><b>Achille Immobilier</b><br>Neuilly-sur-Seine · Paris 16ᵉ · Paris 17ᵉ · Levallois<br>Document transmis à titre d\u2019information — merci d\u2019en préserver la confidentialité.</div>'
+      +'</div>';
+    var v=document.createElement('div'); v.id='ach-share-view'; v.innerHTML=h;
+    document.body.appendChild(v);
+  }
+  (function boot(){
+    var m=(location.hash||'').match(/^#fiche=([A-Za-z0-9+\-$]+)$/); if(!m||!LZ) return;
+    var pl=null;
+    try{ pl=JSON.parse(LZ.decompressFromEncodedURIComponent(m[1])||'null'); }catch(e){}
+    if(!pl||pl.t!=='pige'||!pl.d) return;
+    if(document.body){ renderShare(pl); }
+    else document.addEventListener('DOMContentLoaded', function(){ renderShare(pl); });
+  })();
 })();
 </script>
 <script>
