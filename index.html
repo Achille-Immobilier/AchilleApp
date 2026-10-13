@@ -1726,7 +1726,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     </div>
   </div>
   </div>
-  <div class="logo-ver app-ver">Achille App — v11.16</div>
+  <div class="logo-ver app-ver">Achille App — v11.17</div>
 </aside>
 <div id="mob-bk" onclick="mobNav(false)"></div>
 <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Réduire la barre latérale">‹</button>
@@ -13910,7 +13910,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     startRealtime();
     var ov=document.getElementById('ach-login-overlay'); if(ov) ov.classList.add('ach-hidden');
     var ub=document.getElementById('ach-userbar'); if(ub) ub.style.display='none';
-    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v11.16';
+    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v11.17';
     flag('Synchronis\u00e9');
     // fin de l'init : on autorise la journalisation des actions
     setTimeout(function(){ installInterceptor._init=false; }, 1500);
@@ -23296,6 +23296,7 @@ body.pi-grabbing *{user-select:none!important;}
   /* ── PDF : brochure à la française (modèle Apimo validé par Laurent 13/10) —
      en-tête logo + bloc contact, grande photo, colonne « Informations », étiquette
      énergie dessinée, descriptif ; charte Belleza/Kenoky si installée sur le poste. */
+  function shImg(v){ v=''+(v==null?'':v); return (v.indexOf('data:image')===0 || /^https?:\/\//.test(v)) ? v : ''; }   /* v11.17 : photo/plan = data: OU url cloud (v8.46) */
   window.pgSharePdf=function(id){
     var r=pigeGet(id); if(!r) return;
     function c(i){ var e=document.getElementById(i); return !!(e&&e.checked); }
@@ -23375,11 +23376,11 @@ body.pi-grabbing *{user-select:none!important;}
       +(who?'<br><b>'+esc(who)+'</b>':'')+'<br>Téléphone : +33 1 40 67 00 55<br>achille-immobilier.fr</div>'
       +'</div>'
       +'<div class="cols"><div class="main">'
-      +((o.photo&&r.photo&&(''+r.photo).indexOf('data:image')===0)?'<div class="photo"><img src="'+esc(r.photo)+'"></div>':'')
+      +((o.photo&&shImg(r.photo))?'<div class="photo"><img src="'+esc(shImg(r.photo))+'"></div>':'')
       +'<div class="adr">'+esc(r.adresse||'Bien à l\u2019étude')+(r.ville?' <span style="color:#8f8878;">· '+esc(r.ville)+'</span>':'')+'</div>'
       +(r.prix?'<div class="prix">'+fmtN(r.prix)+' €'+(pm2?' <span style="font-size:12px;color:#8f8878;font-weight:400;">— '+fmtN(pm2)+' €/m²</span>':'')+'</div>':'')
       +(r.descriptif?'<div class="txt">'+esc(r.descriptif)+'</div>':'')
-      +((o.photo&&r.plan&&(''+r.plan).indexOf('data:image')===0)?'<div class="sec">Plan</div><div class="plan"><img src="'+esc(r.plan)+'"></div>':'')
+      +((o.photo&&shImg(r.plan))?'<div class="sec">Plan</div><div class="plan"><img src="'+esc(shImg(r.plan))+'"></div>':'')
       +((o.vendeur&&(r.vendeur||r.tel))?'<div class="interne"><span class="tag">Interne — contact propriétaire</span><div class="note">'+esc(r.vendeur||'')+(r.tel?((r.vendeur?' — ':'')+esc(r.tel)):'')+'</div></div>':'')
       +((o.notes&&r.notes&&r.notes.length)?'<div class="interne"><span class="tag">Interne — commentaires</span>'+r.notes.map(function(n){ return '<div class="note">'+esc(n.txt||'')+' <i>('+esc(n.u||'')+(n.t?' · '+dstr(n.t):'')+')</i></div>'; }).join('')+'</div>':'')
       +(links.length?'<div class="sec">Annonce'+(links.length>1?'s':'')+'</div><div class="lnk">'+links.map(function(l){ return '<a href="'+esc(l.url)+'">'+esc(l.label)+' ↗</a>'; }).join('')+'</div>':'')
