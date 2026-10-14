@@ -1726,7 +1726,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     </div>
   </div>
   </div>
-  <div class="logo-ver app-ver">Achille App — v11.23</div>
+  <div class="logo-ver app-ver">Achille App — v11.24</div>
 </aside>
 <div id="mob-bk" onclick="mobNav(false)"></div>
 <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Réduire la barre latérale">‹</button>
@@ -1774,6 +1774,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     <!-- v8.22 : titre de page retiré (déjà affiché dans le bandeau du haut — demande Laurent, captures 27/07) -->
     <div class="sec-hd"><div><div class="dash-hello" id="dash-hello-main">Bonjour</div><div class="sec-sub" id="dash-hello-sub">Vue d'ensemble de l'activité</div></div><button class="btn btn-terra btn-sm" onclick="affNew()">+ Nouvelle affaire</button></div>
     <div id="rap-dash"></div>
+    <div id="dash-agenda"></div><!-- v11.24 : agenda du jour + semaine -->
     <div id="dash-body"></div>
   </div>
 
@@ -8432,7 +8433,7 @@ CABLE|1|Villa Nova|48.73478|2.46475`;
         if(planVisib(e)==='masked') return '<div class="month-event et-masked" onclick="planPrivateInfo(event)" style="font-size:10px;">🔒 Privé</div>';
         return '<div class="month-event '+t.cls+'" onclick="planEditEvent(\''+e.id+'\')" style="font-size:10px;">'+t.icon+' '+escH(e.title)+'</div>';
       }).join('');
-      hdr+='<div class="week-allday-cell" onclick="if(event.target===this)planQuickAddAllDay(\''+ds+'\')" title="Cliquez pour créer un événement sur toute la journée">'+planFetesDot(ds)+planFetesBands(ds,true)+planVacMark(ds)+planLiloeMark(ds)+cells+'</div>';
+      hdr+='<div class="week-allday-cell" onclick="if(event.target===this)planQuickAddAllDay(\''+ds+'\')" title="Cliquez pour créer un événement sur toute la journée">'+planFetesDot(ds)+planFetesBands(ds,true)+planVacMark(ds)+planLiloeMark(ds)+cells+(window.rapChipsForDate?rapChipsForDate(ds):'')+'</div>';
     });
     hdr+='</div>';
 
@@ -8509,6 +8510,7 @@ CABLE|1|Villa Nova|48.73478|2.46475`;
           : '<div class="month-event '+t.cls+'" onclick="event.stopPropagation();planEditEvent(\''+e.id+'\')">'+t.icon+' '+escH(e.title)+'</div>';
       });
       if(dayEvs.length>3) h+='<div class="month-more">+'+( dayEvs.length-3)+' autres</div>';
+      h+=(window.rapChipsForDate?rapChipsForDate(ds):'');   /* v11.24 : rappels du jour */
       h+='</div>';
     });
     h+='</div></div>';
@@ -13912,7 +13914,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     startRealtime();
     var ov=document.getElementById('ach-login-overlay'); if(ov) ov.classList.add('ach-hidden');
     var ub=document.getElementById('ach-userbar'); if(ub) ub.style.display='none';
-    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v11.23';
+    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v11.24';
     flag('Synchronis\u00e9');
     // fin de l'init : on autorise la journalisation des actions
     setTimeout(function(){ installInterceptor._init=false; }, 1500);
@@ -21254,6 +21256,22 @@ window.rapDashRender=function(){
 };
 window.rapPlanRender=function(){
   var box=document.getElementById('rap-plan'); if(box) box.innerHTML=rapStripHtml('plan');
+  /* v11.24 : les pastilles 🔔 du calendrier suivent les rappels */
+  try{ var pg=document.getElementById('page-planning'); if(pg && pg.classList.contains('active') && window.planRender) planRender(); }catch(e){window.achErr&&achErr(e)}
+  try{ if(window.dashAgendaRender) dashAgendaRender(); }catch(e){window.achErr&&achErr(e)}
+};
+/* v11.24 : les rappels OUVERTS d'une date (exposé pour le Planning et l'accueil) */
+window.rapOpenForDate=function(ds){ return rapOpen().filter(function(r){ return r.date===ds; }); };
+/* v11.24 : pastilles des rappels d'une date, posées dans les cases du Planning */
+window.rapChipsForDate=function(ds){
+  try{
+    var list=window.rapOpenForDate(ds);
+    if(!list||!list.length) return '';
+    return list.slice(0,3).map(function(r){
+      var mm=RAP_MODS[r.mod]||RAP_MODS.libre;
+      return '<div class="plan-rap-chip" title="'+rEsc('Rappel — '+(r.label||'')+(r.note?' · '+r.note:''))+'" onclick="event.stopPropagation();openNotifs()">'+mm.ico+' '+rEsc((''+(r.label||'Rappel')).slice(0,26))+'</div>';
+    }).join('')+(list.length>3?'<div class="plan-rap-chip more" onclick="event.stopPropagation();openNotifs()">+'+(list.length-3)+'</div>':'');
+  }catch(e){ return ''; }
 };
 window.rapBadge=function(){
   var n=rapLate().length + rapToday().length;
@@ -23680,6 +23698,166 @@ body.pi-grabbing *{user-select:none!important;}
   };
 })();
 </script>
+<script>
+/* ══════════ v11.24 : AGENDA D'ACCUEIL + ALERTE 1 H AVANT (demande Laurent, 14/10/2026) ══════════
+   • Accueil : « Aujourd'hui » (événements + rappels du jour) puis « Cette semaine » (jours suivants).
+   • Alerte : un pop-up s'affiche 1 h avant chaque événement qui me concerne, tant que
+     l'application est ouverte. Une seule alerte par événement et par poste (clé locale). */
+(function(){
+  'use strict';
+  var SEEN_K='achille_alertes_vues';           /* local (par poste), jamais synchronisé */
+  var TYPES={ visite:['🏠','Visite'], rdv:['🤝','Rendez-vous'], estimation:['📐','Estimation'],
+              signature:['✒️','Signature'], perso:['🌿','Personnel'], autre:['📌','Événement'] };
+  function esc(t){ return (''+(t==null?'':t)).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+  function dISO(d){ d=d||new Date(); return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2); }
+  function addD(n){ var d=new Date(); d.setDate(d.getDate()+n); return dISO(d); }
+  function frJour(ds){
+    try{ var t=new Date(ds+'T12:00:00').toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'});
+      return t.charAt(0).toUpperCase()+t.slice(1); }catch(e){ return ds; }
+  }
+  function evs(){ try{ var a=JSON.parse(localStorage.getItem('ach_plan_events')||'[]'); return Array.isArray(a)?a:[]; }catch(e){ return []; } }
+  function mine(e){
+    try{ if(window.ACH_USER && Array.isArray(e.users) && e.users.length){ return e.users.indexOf(window.ACH_USER.key)>=0; } }catch(x){}
+    return true;
+  }
+  function visible(e){ try{ return !(window.planVisib && window.planVisib(e)==='masked'); }catch(x){ return true; } }
+  function evOfDay(ds){
+    return evs().filter(function(e){ return e && e.date===ds && mine(e) && visible(e); })
+      .sort(function(a,b){ return (a.allDay?'00:00':(a.timeStart||'23:59')).localeCompare(b.allDay?'00:00':(b.timeStart||'23:59')); });
+  }
+  function rapOfDay(ds){ try{ return (window.rapOpenForDate?window.rapOpenForDate(ds):[]); }catch(e){ return []; } }
+
+  /* ───────── Accueil : agenda du jour et de la semaine ───────── */
+  function ligneEv(e){
+    var T=TYPES[e.type]||TYPES.autre;
+    var h=e.allDay?'Journée':((e.timeStart||'')+(e.timeEnd?' – '+e.timeEnd:''));
+    return '<div class="ag-row" onclick="navTo(\'planning\')" title="Ouvrir le planning">'
+      +'<span class="ag-h">'+esc(h)+'</span>'
+      +'<span class="ag-ico">'+T[0]+'</span>'
+      +'<span class="ag-t">'+esc(e.title||T[1])+'</span>'
+      +(e.adresse?'<span class="ag-sub">'+esc(e.adresse)+'</span>':'')
+      +'</div>';
+  }
+  function ligneRap(r){
+    return '<div class="ag-row rap" onclick="openNotifs()" title="Ouvrir les rappels">'
+      +'<span class="ag-h">🔔</span><span class="ag-ico"></span>'
+      +'<span class="ag-t">'+esc(r.label||'Rappel')+'</span>'
+      +(r.note?'<span class="ag-sub">'+esc(r.note)+'</span>':'')
+      +'</div>';
+  }
+  window.dashAgendaRender=function(){
+    var box=document.getElementById('dash-agenda'); if(!box) return;
+    try{ if(document.body.classList.contains('ach-agence')){ box.innerHTML=''; return; } }catch(e){}
+    var t=dISO(), eT=evOfDay(t), rT=rapOfDay(t);
+    var h='<div class="ag-wrap"><div class="ag-card">'
+      +'<div class="ag-hd"><span class="ag-hd-t">📅 Aujourd\u2019hui</span><span class="ag-hd-d">'+esc(frJour(t))+'</span>'
+      +'<span class="ag-hd-go" onclick="navTo(\'planning\')">Voir le planning ›</span></div>';
+    if(!eT.length && !rT.length){ h+='<div class="ag-empty">Aucun rendez-vous ni rappel aujourd\u2019hui.</div>'; }
+    else { h+=eT.map(ligneEv).join('')+rT.map(ligneRap).join(''); }
+    h+='</div>';
+    /* 6 jours suivants */
+    var days=[];
+    for(var i=1;i<=6;i++){ var ds=addD(i), e=evOfDay(ds), r=rapOfDay(ds); if(e.length||r.length) days.push({ds:ds,e:e,r:r}); }
+    h+='<div class="ag-card"><div class="ag-hd"><span class="ag-hd-t">🗓 Cette semaine</span>'
+      +'<span class="ag-hd-d">'+(days.length?days.reduce(function(n,d){return n+d.e.length+d.r.length;},0)+' à venir':'')+'</span></div>';
+    if(!days.length){ h+='<div class="ag-empty">Rien de prévu dans les 6 prochains jours.</div>'; }
+    else days.forEach(function(d){
+      h+='<div class="ag-day">'+esc(frJour(d.ds))+'</div>'+d.e.map(ligneEv).join('')+d.r.map(ligneRap).join('');
+    });
+    h+='</div></div>';
+    box.innerHTML=h;
+  };
+
+  /* ───────── Alerte 1 h avant ───────── */
+  function seen(){ try{ var a=JSON.parse(localStorage.getItem(SEEN_K)||'[]'); return Array.isArray(a)?a:[]; }catch(e){ return []; } }
+  function markSeen(id){
+    var a=seen(); if(a.indexOf(id)<0) a.push(id);
+    if(a.length>400) a=a.slice(-200);
+    try{ localStorage.setItem(SEEN_K, JSON.stringify(a)); }catch(e){}
+  }
+  window.achAlerteClose=function(){ var e=document.getElementById('ach-alerte'); if(e) e.remove(); };
+  function montrer(e){
+    var T=TYPES[e.type]||TYPES.autre;
+    var old=document.getElementById('ach-alerte'); if(old) old.remove();
+    var w=document.createElement('div'); w.id='ach-alerte';
+    w.innerHTML='<div class="alrt-card">'
+      +'<div class="alrt-top">⏰ Dans une heure</div>'
+      +'<div class="alrt-tt">'+T[0]+' '+esc(e.title||T[1])+'</div>'
+      +'<div class="alrt-h">'+esc((e.timeStart||'')+(e.timeEnd?' – '+e.timeEnd:''))+'</div>'
+      +(e.adresse?'<div class="alrt-sub">📍 '+esc(e.adresse)+'</div>':'')
+      +(e.visiteur?'<div class="alrt-sub">👤 '+esc(e.visiteur)+'</div>':'')
+      +(e.notes?'<div class="alrt-note">'+esc(e.notes)+'</div>':'')
+      +'<div class="alrt-bar"><button class="alrt-b2" onclick="achAlerteClose()">Vu</button>'
+      +'<button class="alrt-b1" onclick="achAlerteClose();navTo(\'planning\')">Ouvrir le planning</button></div>'
+      +'</div>';
+    w.addEventListener('click', function(ev){ if(ev.target===w) window.achAlerteClose(); });
+    document.body.appendChild(w);
+    try{ if(window.toast) toast('⏰ Rendez-vous dans une heure'); }catch(x){}
+  }
+  function check(){
+    try{
+      if(document.body.classList.contains('ach-agence')) return;        /* écran d'agence : jamais d'alerte */
+      if(document.getElementById('ach-alerte')) return;                 /* une seule à la fois */
+      var now=new Date(), t=dISO(now), vus=seen();
+      evOfDay(t).forEach(function(e){
+        if(e.allDay || !e.timeStart) return;
+        if(vus.indexOf(e.id)>=0) return;
+        var p=(''+e.timeStart).split(':');
+        var d=new Date(now); d.setHours(parseInt(p[0],10)||0, parseInt(p[1],10)||0, 0, 0);
+        var min=(d-now)/60000;
+        if(min<=60 && min>0){ markSeen(e.id); montrer(e); }
+      });
+    }catch(x){window.achErr&&achErr(x)}
+  }
+  function boot(){
+    try{ window.dashAgendaRender(); }catch(e){}
+    setTimeout(check, 4000);        /* après la connexion et la première synchro */
+    setInterval(check, 60000);      /* puis chaque minute */
+    setInterval(function(){ try{ var p=document.getElementById('page-dashboard'); if(p&&p.classList.contains('active')) window.dashAgendaRender(); }catch(e){} }, 300000);
+  }
+  /* l'accueil se rafraîchit à chaque retour sur la page */
+  if(window.navTo){ var _nav=window.navTo; window.navTo=function(id){ _nav.apply(this,arguments);
+    try{ if(id==='dashboard') window.dashAgendaRender(); }catch(e){} }; }
+  if(document.readyState!=='loading') boot(); else document.addEventListener('DOMContentLoaded', boot);
+})();
+</script>
+<style>
+/* v11.24 : agenda d'accueil */
+.ag-wrap{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:0 0 16px;}
+.ag-card{background:#fff;border:1px solid var(--border);border-radius:12px;box-shadow:var(--shadow);overflow:hidden;}
+.ag-hd{display:flex;align-items:baseline;gap:9px;padding:11px 16px 9px;border-bottom:1px solid #f3eee6;}
+.ag-hd-t{font-family:'Cormorant Garamond',serif;font-size:17px;color:var(--noir);}
+.ag-hd-d{font-size:11.5px;color:var(--gris-2);}
+.ag-hd-go{margin-left:auto;font-size:11.5px;color:var(--terra);cursor:pointer;white-space:nowrap;}
+.ag-hd-go:hover{text-decoration:underline;}
+.ag-row{display:flex;align-items:baseline;gap:9px;padding:8px 16px;border-bottom:1px solid #f8f5f0;cursor:pointer;font-size:13px;}
+.ag-row:last-child{border-bottom:none;}
+.ag-row:hover{background:#fbf8f3;}
+.ag-h{font-variant-numeric:tabular-nums;font-size:12px;color:var(--gris);white-space:nowrap;min-width:84px;}
+.ag-row.rap .ag-h{min-width:auto;}
+.ag-ico{flex:none;}
+.ag-t{flex:1;min-width:0;color:var(--noir);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.ag-sub{font-size:11.5px;color:var(--gris-2);max-width:40%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.ag-day{font-size:10.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--gris-2);background:#faf7f2;padding:5px 16px;border-bottom:1px solid #f3eee6;}
+.ag-empty{padding:14px 16px;font-size:12.5px;color:var(--gris-2);font-style:italic;}
+/* pastilles de rappel dans le calendrier */
+.plan-rap-chip{display:block;font-size:10px;line-height:1.3;padding:2px 6px;margin:2px 0 0;border-radius:5px;background:#fdf3e7;color:#8a5a1e;border:1px solid #e8c9a0;cursor:pointer;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.plan-rap-chip:hover{background:#f8e8d2;}
+.plan-rap-chip.more{text-align:center;color:var(--gris-2);background:#faf7f2;border-color:var(--beige-3);}
+/* alerte 1 h avant */
+#ach-alerte{position:fixed;inset:0;z-index:99996;background:rgba(26,26,24,.45);display:flex;align-items:center;justify-content:center;padding:18px;}
+.alrt-card{background:#fff;border-radius:14px;max-width:420px;width:100%;padding:20px 24px 18px;box-shadow:0 20px 60px rgba(0,0,0,.33);font-family:'Jost',sans-serif;border-top:4px solid var(--terra);}
+.alrt-top{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--terra);font-weight:600;}
+.alrt-tt{font-family:'Cormorant Garamond',serif;font-size:23px;line-height:1.25;margin:6px 0 4px;color:var(--noir);}
+.alrt-h{font-size:14px;color:var(--noir);font-variant-numeric:tabular-nums;}
+.alrt-sub{font-size:13px;color:var(--gris);margin-top:4px;}
+.alrt-note{font-size:12.5px;color:var(--gris);background:#faf7f2;border-radius:8px;padding:8px 11px;margin-top:9px;white-space:pre-wrap;}
+.alrt-bar{display:flex;gap:9px;margin-top:16px;}
+.alrt-bar button{flex:1;border:none;border-radius:9px;padding:10px 14px;font-size:13.5px;cursor:pointer;font-family:'Jost',sans-serif;}
+.alrt-b1{background:var(--terra);color:#fff;}
+.alrt-b2{background:#f0ebe3;color:var(--gris);}
+@media(max-width:900px){ .ag-wrap{grid-template-columns:1fr;} .ag-sub{display:none;} }
+</style>
 <script>
 /* ══════════ v10.00 : MANDATS — registre des mandats (vente & location) ══════════ */
 (function(){
