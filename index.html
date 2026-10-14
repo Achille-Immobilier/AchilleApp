@@ -407,6 +407,13 @@ body.sb-collapsed .sidebar::-webkit-scrollbar{width:3px;}
 .pi-color-choice.active{border-color:var(--kaki);box-shadow:0 0 0 2px white,0 0 0 3px var(--kaki);}
 
 /* NOTIF PANEL */
+.rap-we{background:#fdf3e7;border:1px solid #e8c9a0;border-radius:8px;padding:8px 11px;margin-top:8px;font-size:12px;color:#8a5a1e;display:flex;align-items:center;gap:7px;flex-wrap:wrap;}
+.rap-we-t{font-weight:600;}
+.rap-we button{border:1px solid #d9b98a;background:#fff;color:#8a5a1e;border-radius:7px;font-size:11.5px;padding:4px 10px;cursor:pointer;font-family:'Jost',sans-serif;}
+.rap-we button:hover{background:#f8e8d2;}
+.rap-we-k{font-size:11px;color:var(--gris-2);font-style:italic;}
+.rap-i-del{border:1px solid var(--border);background:#fff;color:var(--gris-2);border-radius:6px;font-size:11px;padding:3px 7px;cursor:pointer;flex:none;font-family:'Jost',sans-serif;margin-left:4px;}
+.rap-i-del:hover{border-color:var(--rouge);color:var(--rouge);}
 .notif-panel{position:fixed;top:54px;right:0;width:320px;max-width:94vw;max-height:calc(100vh - 70px);overflow-y:auto;background:var(--blanc);border-left:1px solid var(--border);border-bottom-left-radius:10px;z-index:200;display:none;box-shadow:var(--shadow-m);}
 .notif-panel.open{display:block;}
 .notif-ph{position:sticky;top:0;padding:12px 16px;border-bottom:1px solid var(--border);font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--gris);display:flex;justify-content:space-between;align-items:center;background:var(--beige);z-index:2;}
@@ -1726,7 +1733,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     </div>
   </div>
   </div>
-  <div class="logo-ver app-ver">Achille App — v11.24</div>
+  <div class="logo-ver app-ver">Achille App — v11.25</div>
 </aside>
 <div id="mob-bk" onclick="mobNav(false)"></div>
 <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Réduire la barre latérale">‹</button>
@@ -13914,7 +13921,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     startRealtime();
     var ov=document.getElementById('ach-login-overlay'); if(ov) ov.classList.add('ach-hidden');
     var ub=document.getElementById('ach-userbar'); if(ub) ub.style.display='none';
-    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v11.24';
+    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v11.25';
     flag('Synchronis\u00e9');
     // fin de l'init : on autorise la journalisation des actions
     setTimeout(function(){ installInterceptor._init=false; }, 1500);
@@ -15104,6 +15111,7 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
       <button class="btn btn-outline" onclick="pigeCancel()">Annuler</button>
       <button class="btn btn-sm" type="button" id="pg-rap-btn" style="display:none;border:1px solid var(--terra);color:var(--terra);background:#fff;margin-right:auto;" onclick="rapFicheBtnClick()">🔔 Ajouter un rappel</button><button class="btn btn-terra" onclick="pigeSave()">Enregistrer la fiche</button>
     </div>
+    <div id="pg-rap-list"></div><!-- v11.25 : tous les rappels de la fiche, avec ✓ fait et 🗑 supprimer -->
   </div>
 </div>
 <div class="modal-overlay" id="modal-pige-zoom" style="z-index:600;" onclick="closeModal('modal-pige-zoom')">
@@ -21147,10 +21155,12 @@ function ensureModal(){
     +'<div class="rap-box-src" id="rap-m-src"></div>'
     +'<label class="rap-lbl">Pour quand ?</label>'
     +'<div class="rap-quick">'
-      +'<button onclick="rapQuick(1)">Demain</button><button onclick="rapQuick(3)">+3 j</button>'
-      +'<button onclick="rapQuick(7)">+7 j</button><button onclick="rapQuick(21)">+21 j</button><button onclick="rapQuick(60)">+2 mois</button>'
+      +'<button onclick="rapQuick(1)">Demain</button><button onclick="rapQuick(2)">+2 j</button><button onclick="rapQuick(3)">+3 j</button>'
+      +'<button onclick="rapQuick(7)">+7 j</button><button onclick="rapQuick(21)">+21 j</button>'
+      +'<button onclick="rapQuickMois(1)">+1 mois</button><button onclick="rapQuickMois(2)">+2 mois</button>'
     +'</div>'
-    +'<input type="date" class="rap-inp" id="rap-m-date">'
+    +'<input type="date" class="rap-inp" id="rap-m-date" onchange="rapWeekend()">'
+    +'<div class="rap-we" id="rap-m-we" style="display:none;"></div>'
     +'<label class="rap-lbl">Note (facultatif)</label>'
     +'<input class="rap-inp" id="rap-m-note" placeholder="Ex. : rappeler après ses congés, parler du prix…">'
     +'<div class="rap-box-btns"><button class="rap-btn-sec" onclick="rapModalClose()">Annuler</button><button class="rap-btn" onclick="rapModalSave()">Enregistrer le rappel</button></div>'
@@ -21173,9 +21183,39 @@ window.rapOpenModal=function(mod, refId, label){
   }
   document.getElementById('rap-m-date').value=addDaysISO(1);
   document.getElementById('rap-m-note').value='';
+  try{ window.rapWeekend(); }catch(e){}
   document.getElementById('rap-modal').style.display='flex';
 };
-window.rapQuick=function(n){ document.getElementById('rap-m-date').value=addDaysISO(n); };
+window.rapQuick=function(n){ document.getElementById('rap-m-date').value=addDaysISO(n); window.rapWeekend(); };
+/* v11.25 : raccourcis en MOIS (date calendaire, pas 30 jours) */
+window.rapQuickMois=function(n){
+  var d=new Date(); var j=d.getDate();
+  d.setDate(1); d.setMonth(d.getMonth()+n);
+  var last=new Date(d.getFullYear(), d.getMonth()+1, 0).getDate();
+  d.setDate(Math.min(j,last));
+  document.getElementById('rap-m-date').value=d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2);
+  window.rapWeekend();
+};
+/* v11.25 : si la date tombe un samedi ou un dimanche, on le signale et on propose
+   le vendredi d'avant ou le lundi d'après (demande Laurent 14/10). */
+window.rapWeekend=function(){
+  var box=document.getElementById('rap-m-we'); if(!box) return;
+  var v=(document.getElementById('rap-m-date')||{}).value||'';
+  if(!v){ box.style.display='none'; return; }
+  var d=new Date(v+'T12:00:00'); if(isNaN(d)){ box.style.display='none'; return; }
+  var dow=d.getDay();   /* 0 = dimanche, 6 = samedi */
+  if(dow!==0 && dow!==6){ box.style.display='none'; box.innerHTML=''; return; }
+  var av=new Date(d), ap=new Date(d);
+  av.setDate(av.getDate()-(dow===6?1:2));   /* vendredi précédent */
+  ap.setDate(ap.getDate()+(dow===6?2:1));   /* lundi suivant */
+  function iso(x){ return x.getFullYear()+'-'+('0'+(x.getMonth()+1)).slice(-2)+'-'+('0'+x.getDate()).slice(-2); }
+  box.style.display='';
+  box.innerHTML='<span class="rap-we-t">⚠️ Le '+frDate(v)+' tombe un '+(dow===6?'samedi':'dimanche')+'.</span> '
+    +'<button type="button" onclick="rapSetDate(\''+iso(av)+'\')">Vendredi '+frDate(iso(av))+'</button>'
+    +'<button type="button" onclick="rapSetDate(\''+iso(ap)+'\')">Lundi '+frDate(iso(ap))+'</button>'
+    +'<span class="rap-we-k">ou gardez cette date</span>';
+};
+window.rapSetDate=function(v){ var e=document.getElementById('rap-m-date'); if(e){ e.value=v; } window.rapWeekend(); };
 window.rapModalClose=function(){ var m=document.getElementById('rap-modal'); if(m) m.style.display='none'; };
 window.rapModalSave=function(){
   var date=document.getElementById('rap-m-date').value;
@@ -21204,6 +21244,23 @@ window.rapDone=function(id){
   rapRefreshAll();
 };
 
+/* v11.25 : SUPPRIMER un rappel (n'existait pas — seul « ✓ Fait » était possible). */
+window.rapDelete=function(id, silencieux){
+  var list=rapAll(), f=null;
+  list.forEach(function(r){ if(r.id===id) f=r; });
+  if(!f) return false;
+  if(!silencieux && !confirm('Supprimer le rappel « '+(f.label||'sans titre')+' » du '+frDate(f.date)+' ?')) return false;
+  rapSave(list.filter(function(r){ return r.id!==id; }));
+  if(window.toast) toast('🗑 Rappel supprimé');
+  try{ if(window.achLog) achLog('suppression','Rappels',(f.label||'')+' — '+frDate(f.date)); }catch(e){window.achErr&&achErr(e)}
+  rapRefreshAll();
+  return true;
+};
+/* v11.25 : tous les rappels OUVERTS d'une fiche (la fiche n'en montrait qu'un seul). */
+window.rapAllPendingFor=function(mod, refId){
+  return rapAll().filter(function(r){ return !r.done && r.mod===mod && r.refId===refId; })
+    .sort(function(a,b){ return (a.date||'').localeCompare(b.date||''); });
+};
 window.rapGo=function(mod, refId){
   function nav(p){ var el=document.querySelector('.nav-item[onclick*="\''+p+'\'"]'); if(window.navTo) navTo(p, el); }
   if(mod==='pige'){ nav('pige'); if(refId) setTimeout(function(){ if(window.pigeEdit) pigeEdit(refId); }, 180); }
@@ -21222,6 +21279,7 @@ function itemHtml(r, compact){
     +(late?' <span class="rap-i-late">⚠ prévu le '+frDate(r.date)+'</span>':(compact?'':' <span class="rap-i-date">'+frDate(r.date)+'</span>'))+'</span>'
     +openBtn
     +'<button class="rap-i-done" title="Marquer fait" onclick="rapDone(\''+r.id+'\')">✓ Fait</button>'
+    +'<button class="rap-i-del" title="Supprimer ce rappel" onclick="rapDelete(\''+r.id+'\')">🗑</button>'
     +'</div>';
 }
 /* v7.20 : le detail des rappels vit desormais dans la CLOCHE (panneau notif).
@@ -21269,7 +21327,9 @@ window.rapChipsForDate=function(ds){
     if(!list||!list.length) return '';
     return list.slice(0,3).map(function(r){
       var mm=RAP_MODS[r.mod]||RAP_MODS.libre;
-      return '<div class="plan-rap-chip" title="'+rEsc('Rappel — '+(r.label||'')+(r.note?' · '+r.note:''))+'" onclick="event.stopPropagation();openNotifs()">'+mm.ico+' '+rEsc((''+(r.label||'Rappel')).slice(0,26))+'</div>';
+      return '<div class="plan-rap-chip" title="'+rEsc('Rappel — '+(r.label||'')+(r.note?' · '+r.note:'')+' — cliquez pour ouvrir, ✕ pour supprimer')+'" onclick="event.stopPropagation();openNotifs()">'
+        +mm.ico+' <span class="prc-t">'+rEsc((''+(r.label||'Rappel')).slice(0,26))+'</span>'
+        +'<span class="prc-x" title="Supprimer ce rappel" onclick="event.stopPropagation();rapDelete(\''+r.id+'\')">✕</span></div>';
     }).join('')+(list.length>3?'<div class="plan-rap-chip more" onclick="event.stopPropagation();openNotifs()">+'+(list.length-3)+'</div>':'');
   }catch(e){ return ''; }
 };
@@ -21293,11 +21353,28 @@ window.rapRefreshAll=rapRefreshAll;
 function rapFicheBtn(){
   var btn=document.getElementById('pg-rap-btn'); if(!btn) return;
   var id=(document.getElementById('pg-edit-id')||{}).value||'';
-  if(!id){ btn.style.display='none'; return; }
+  var box=document.getElementById('pg-rap-list');
+  if(!id){ btn.style.display='none'; if(box) box.innerHTML=''; return; }
   btn.style.display='';
-  var p=window.rapPendingFor('pige', id);
-  btn.innerHTML=p? '🔔 Rappel le '+frDate(p.date) : '🔔 Ajouter un rappel';
-  btn.classList.toggle('rap-has', !!p);
+  /* v11.25 : TOUS les rappels de la fiche (avant : seul le plus proche, d'où le
+     « Rappel le 21/10 » alors que Laurent venait d'en poser un au 04/11). */
+  var list=window.rapAllPendingFor('pige', id);
+  btn.innerHTML = list.length ? ('🔔 '+list.length+' rappel'+(list.length>1?'s':'')+' · ＋ ajouter') : '🔔 Ajouter un rappel';
+  btn.classList.toggle('rap-has', !!list.length);
+  if(box){
+    box.innerHTML = list.length
+      ? list.map(function(r){
+          var late=r.date<todayISO();
+          return '<div class="pg-rap-line'+(late?' late':'')+'">'
+            +'<span class="pg-rap-d">🔔 '+frDate(r.date)+'</span>'
+            +'<span class="pg-rap-l">'+rEsc(r.label||'')+(r.note?' — '+rEsc(r.note):'')+'</span>'
+            +(late?'<span class="pg-rap-late">en retard</span>':'')
+            +'<button type="button" class="pg-rap-x" title="Marquer fait" onclick="rapDone(\''+r.id+'\')">✓</button>'
+            +'<button type="button" class="pg-rap-x del" title="Supprimer ce rappel" onclick="rapDelete(\''+r.id+'\')">🗑</button>'
+            +'</div>';
+        }).join('')
+      : '';
+  }
 }
 window.rapFicheBtnClick=function(){
   var id=(document.getElementById('pg-edit-id')||{}).value||'';
@@ -23841,7 +23918,22 @@ body.pi-grabbing *{user-select:none!important;}
 .ag-day{font-size:10.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--gris-2);background:#faf7f2;padding:5px 16px;border-bottom:1px solid #f3eee6;}
 .ag-empty{padding:14px 16px;font-size:12.5px;color:var(--gris-2);font-style:italic;}
 /* pastilles de rappel dans le calendrier */
-.plan-rap-chip{display:block;font-size:10px;line-height:1.3;padding:2px 6px;margin:2px 0 0;border-radius:5px;background:#fdf3e7;color:#8a5a1e;border:1px solid #e8c9a0;cursor:pointer;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.plan-rap-chip{display:flex;align-items:center;gap:4px;font-size:10px;line-height:1.3;padding:2px 6px;margin:2px 0 0;border-radius:5px;background:#fdf3e7;color:#8a5a1e;border:1px solid #e8c9a0;cursor:pointer;overflow:hidden;white-space:nowrap;}
+.plan-rap-chip .prc-t{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;}
+.plan-rap-chip .prc-x{flex:none;opacity:0;color:#a03222;font-weight:700;padding:0 2px;border-radius:3px;transition:opacity .12s;}
+.plan-rap-chip:hover .prc-x{opacity:1;}
+.plan-rap-chip .prc-x:hover{background:#f7dcd8;}
+/* v11.25 : rappels listés dans la fiche de pige */
+#pg-rap-list{padding:0 2px 4px;}
+.pg-rap-line{display:flex;align-items:center;gap:8px;font-size:12.5px;padding:6px 10px;margin-top:6px;background:#fdf8ef;border:1px solid #eadfc9;border-radius:8px;}
+.pg-rap-line.late{background:#fdf0ee;border-color:#e8c4bd;}
+.pg-rap-d{font-weight:600;color:#8a5a1e;white-space:nowrap;}
+.pg-rap-line.late .pg-rap-d{color:var(--rouge);}
+.pg-rap-l{flex:1;min-width:0;color:var(--gris);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.pg-rap-late{font-size:10.5px;color:var(--rouge);white-space:nowrap;}
+.pg-rap-x{border:1px solid var(--border);background:#fff;border-radius:6px;font-size:11.5px;padding:3px 8px;cursor:pointer;flex:none;font-family:'Jost',sans-serif;}
+.pg-rap-x:hover{border-color:var(--vert);}
+.pg-rap-x.del:hover{border-color:var(--rouge);}
 .plan-rap-chip:hover{background:#f8e8d2;}
 .plan-rap-chip.more{text-align:center;color:var(--gris-2);background:#faf7f2;border-color:var(--beige-3);}
 /* alerte 1 h avant */
