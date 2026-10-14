@@ -1130,6 +1130,7 @@ body.lex-admin-editing .lex-save-btn{display:block;}
 .fin-enc-amounts{font-size:12px;color:var(--gris);}
 .fin-enc-amounts strong{color:var(--kaki);font-weight:600;}
 .fin-enc-count{font-size:11px;color:var(--gris-2);}
+.fin-enc-detail{display:block;font-size:9.5px;color:var(--gris-2);font-style:italic;font-weight:400;margin-top:2px;white-space:normal;}
 .fin-enc-rest{font-size:9px;color:var(--terra);font-weight:600;white-space:nowrap;}
 .fin-enc-line{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:2px 10px;margin-top:3px;}
 .fin-enc-line>.fin-enc-count{white-space:nowrap;}
@@ -1733,7 +1734,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     </div>
   </div>
   </div>
-  <div class="logo-ver app-ver">Achille App — v11.30</div>
+  <div class="logo-ver app-ver">Achille App — v11.32</div>
 </aside>
 <div id="mob-bk" onclick="mobNav(false)"></div>
 <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Réduire la barre latérale">‹</button>
@@ -4289,7 +4290,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
         <div class="fin-left">
           <div class="fin-enc-bar" id="fin-enc-bar">
         <div class="fin-enc-cell">
-          <div class="fin-enc-top"><span class="fin-enc-label">Ce mois</span><span class="fin-enc-pct" id="enc-pct-m">0 %</span></div>
+          <div class="fin-enc-top"><span class="fin-enc-label">Charges mensuelles — ce mois</span><span class="fin-enc-pct" id="enc-pct-m">0 %</span></div>
           <div class="fin-enc-prog-wrap"><div class="fin-enc-prog-bar" id="enc-bar-m" style="width:0%"></div></div>
           <div class="fin-enc-line">
             <span class="fin-enc-count"><span id="enc-n-m">0</span> / <span id="enc-tn-m">12</span> lignes</span>
@@ -4298,7 +4299,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
           </div>
         </div>
         <div class="fin-enc-cell">
-          <div class="fin-enc-top"><span class="fin-enc-label">Ce trimestre</span><span class="fin-enc-pct" id="enc-pct-q">0 %</span></div>
+          <div class="fin-enc-top"><span class="fin-enc-label">Charges trimestrielles — ce trimestre</span><span class="fin-enc-pct" id="enc-pct-q">0 %</span></div>
           <div class="fin-enc-prog-wrap"><div class="fin-enc-prog-bar" id="enc-bar-q" style="width:0%"></div></div>
           <div class="fin-enc-line">
             <span class="fin-enc-count"><span id="enc-n-q">0</span> / <span id="enc-tn-q">7</span> lignes</span>
@@ -4307,7 +4308,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
           </div>
         </div>
         <div class="fin-enc-cell">
-          <div class="fin-enc-top"><span class="fin-enc-label">Cette année</span><span class="fin-enc-pct" id="enc-pct-a">0 %</span></div>
+          <div class="fin-enc-top"><span class="fin-enc-label">Charges annuelles — cette année</span><span class="fin-enc-pct" id="enc-pct-a">0 %</span></div>
           <div class="fin-enc-prog-wrap"><div class="fin-enc-prog-bar" id="enc-bar-a" style="width:0%"></div></div>
           <div class="fin-enc-line">
             <span class="fin-enc-count"><span id="enc-n-a">0</span> / <span id="enc-tn-a">25</span> lignes</span>
@@ -4335,7 +4336,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
           <div class="fin-enc-top"><span class="fin-enc-label">Charges annuelles</span><span class="fin-enc-pct" id="enc-pct-g">0 %</span></div>
           <div class="fin-enc-prog-wrap"><div class="fin-enc-prog-bar" id="enc-bar-g" style="width:0%"></div></div>
           <div class="fin-enc-line">
-            <span class="fin-enc-count"><span id="enc-n-g">0</span> / <span id="enc-tn-g">0</span> lignes</span>
+            <span class="fin-enc-count"><span id="enc-n-g">0</span> / <span id="enc-tn-g">0</span> échéances</span>
             <span class="fin-enc-amounts"><strong id="enc-val-g">0 €</strong> / <span id="enc-tot-g">—</span></span>
             <span class="fin-enc-rest">Restant dû : <strong id="enc-rest-g">—</strong></span>
           </div>
@@ -9808,8 +9809,13 @@ CABLE|1|Villa Nova|48.73478|2.46475`;
     var occTotal=_sM.oc+_sQ.oc+_sA.oc, occPaid=_sM.op+_sQ.op+_sA.op, yearPaid=_sM.paid+_sQ.paid+_sA.paid;
     _stn('enc-tn-g', occTotal);
 
-    function set(idPct,idBar,idVal,idTot,idN,idRest, val,tot,n) {
-      var pct = tot > 0 ? Math.max(0, Math.min(100, Math.round(val/tot*100))) : 0;
+    /* v11.32 : la jauge et le % reposent désormais sur les LIGNES VALIDÉES, pas sur les
+       montants : une ligne NÉGATIVE (aide, subvention) faisait bondir le pourcentage à
+       100 % alors que 8 charges restaient à régler (constat Laurent 14/10). Les montants
+       restent affichés tels quels, et « Restant dû » détaille charges / aides. */
+    function set(idPct,idBar,idVal,idTot,idN,idRest, val,tot,n, nTot, detail) {
+      var pct = (nTot>0) ? Math.max(0, Math.min(100, Math.round(n/nTot*100)))
+                         : (tot > 0 ? Math.max(0, Math.min(100, Math.round(val/tot*100))) : 0);
       var full = pct >= 100;
       var pe = document.getElementById(idPct), be = document.getElementById(idBar);
       if (pe) { pe.textContent = pct + ' %'; pe.className = 'fin-enc-pct' + (full?' full':''); }
@@ -9817,12 +9823,35 @@ CABLE|1|Villa Nova|48.73478|2.46475`;
       var ve = document.getElementById(idVal); if (ve) ve.textContent = fmtE(val);
       var te = document.getElementById(idTot); if (te) te.textContent = fmtE(tot);
       var ne = document.getElementById(idN);   if (ne) ne.textContent = n;
-      var re = document.getElementById(idRest); if (re) re.textContent = fmtE(tot-val);
+      var re = document.getElementById(idRest);
+      if (re) {
+        re.textContent = fmtE(tot-val);
+        /* v11.32 : quand des aides (lignes négatives) restent à percevoir, on explique le net */
+        var host = re.parentNode && re.parentNode.parentNode;   /* la ligne .fin-enc-line */
+        if (host) {
+          var old = host.querySelector('.fin-enc-detail'); if (old) old.parentNode.removeChild(old);
+          if (detail && detail.aide > 0) {
+            var sp = document.createElement('span'); sp.className = 'fin-enc-detail';
+            sp.textContent = 'soit ' + fmtE(detail.charges) + ' de charges − ' + fmtE(detail.aide) + ' d\u2019aide à percevoir';
+            host.appendChild(sp);
+          }
+        }
+      }
     }
-    set('enc-pct-m','enc-bar-m','enc-val-m','enc-tot-m','enc-n-m','enc-rest-m', sumM,totM,cntM);
-    set('enc-pct-q','enc-bar-q','enc-val-q','enc-tot-q','enc-n-q','enc-rest-q', sumQ,totQ,cntQ);
-    set('enc-pct-a','enc-bar-a','enc-val-a','enc-tot-a','enc-n-a','enc-rest-a', sumA,totA,cntA);
-    set('enc-pct-g','enc-bar-g','enc-val-g','enc-tot-g','enc-n-g','enc-rest-g', yearPaid, globalBudget, occPaid);
+    /* v11.32 : détail « charges restantes / aides à percevoir » par section */
+    function detailOf(arr, estPayee){
+      var ch=0, ai=0;
+      arr.forEach(function(l){ var a=Number(l.amt)||0; if(a===0) return; if(estPayee(l)) return;
+        if(a>0) ch+=a; else ai+=(-a); });
+      return {charges:ch, aide:ai};
+    }
+    var payeeM=function(l){ var d=hist[l.id]||[]; return d.length && dsToMonth(d[0])===cm; };
+    var payeeQ=function(l){ var d=hist[l.id]||[]; return d.length && dsToQuarter(d[0])===cq; };
+    var payeeA=function(l){ var d=hist[l.id]||[]; return d.length && dsToYear(d[0])===ca; };
+    set('enc-pct-m','enc-bar-m','enc-val-m','enc-tot-m','enc-n-m','enc-rest-m', sumM,totM,cntM, nzM, detailOf(_L.m,payeeM));
+    set('enc-pct-q','enc-bar-q','enc-val-q','enc-tot-q','enc-n-q','enc-rest-q', sumQ,totQ,cntQ, nzQ, detailOf(_L.q,payeeQ));
+    set('enc-pct-a','enc-bar-a','enc-val-a','enc-tot-a','enc-n-a','enc-rest-a', sumA,totA,cntA, nzA, detailOf(_L.a,payeeA));
+    set('enc-pct-g','enc-bar-g','enc-val-g','enc-tot-g','enc-n-g','enc-rest-g', yearPaid, globalBudget, occPaid, occTotal, null);
   }
 
   /* ── check / hist ── */
@@ -13924,7 +13953,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     startRealtime();
     var ov=document.getElementById('ach-login-overlay'); if(ov) ov.classList.add('ach-hidden');
     var ub=document.getElementById('ach-userbar'); if(ub) ub.style.display='none';
-    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v11.30';
+    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v11.32';
     flag('Synchronis\u00e9');
     // fin de l'init : on autorise la journalisation des actions
     setTimeout(function(){ installInterceptor._init=false; }, 1500);
@@ -21182,7 +21211,7 @@ function ensureModal(){
   var m=document.createElement('div');
   m.id='rap-modal'; m.className='rap-overlay'; m.style.display='none';
   m.innerHTML='<div class="rap-box">'
-    +'<div class="rap-box-t">🔔 Nouveau rappel</div>'
+    +'<div class="rap-box-t" id="rap-m-title">🔔 Nouveau rappel</div>'
     +'<div class="rap-box-src" id="rap-m-src"></div>'
     +'<label class="rap-lbl">Pour quand ?</label>'
     +'<div class="rap-quick">'
@@ -21194,14 +21223,34 @@ function ensureModal(){
     +'<div class="rap-we" id="rap-m-we" style="display:none;"></div>'
     +'<label class="rap-lbl">Note (facultatif)</label>'
     +'<input class="rap-inp" id="rap-m-note" placeholder="Ex. : rappeler après ses congés, parler du prix…">'
-    +'<div class="rap-box-btns"><button class="rap-btn-sec" onclick="rapModalClose()">Annuler</button><button class="rap-btn" onclick="rapModalSave()">Enregistrer le rappel</button></div>'
+    +'<div class="rap-box-btns"><button class="rap-btn-sec" onclick="rapModalClose()">Annuler</button><button class="rap-btn" id="rap-m-save" onclick="rapModalSave()">Enregistrer le rappel</button></div>'
     +'</div>';
   m.addEventListener('click', function(e){ if(e.target===m) window.rapModalClose(); });
   document.body.appendChild(m);
 }
-var _mCtx=null;
+var _mCtx=null, _mEdit=null;   /* v11.31 : _mEdit = id du rappel en cours de modification */
+/* v11.31 : MODIFIER un rappel existant (date, note, sujet) — demande Laurent 14/10 */
+window.rapEditOpen=function(id){
+  var r=rapAll().filter(function(x){ return x.id===id; })[0]; if(!r) return;
+  ensureModal();
+  _mEdit=id;
+  _mCtx={mod:r.mod||'libre', refId:r.refId||'', label:r.label||''};
+  var mm=RAP_MODS[_mCtx.mod]||RAP_MODS.libre;
+  var tt=document.getElementById('rap-m-title'); if(tt) tt.innerHTML='🔔 Modifier le rappel';
+  document.getElementById('rap-m-src').innerHTML=
+    '<span class="rap-src-chip" style="margin-bottom:7px;display:inline-block;">'+mm.ico+' '+mm.nom+'</span>'
+    +'<input class="rap-inp" id="rap-m-label" placeholder="Sujet du rappel" value="'+rEsc(r.label||'')+'">';
+  document.getElementById('rap-m-date').value=r.date||'';
+  document.getElementById('rap-m-note').value=r.note||'';
+  var sv=document.getElementById('rap-m-save'); if(sv) sv.textContent='Enregistrer les modifications';
+  document.getElementById('rap-modal').style.display='flex';
+  try{ window.rapWeekend(); }catch(e){}
+};
 window.rapOpenModal=function(mod, refId, label){
   ensureModal();
+  _mEdit=null;
+  var _tt=document.getElementById('rap-m-title'); if(_tt) _tt.innerHTML='🔔 Nouveau rappel';
+  var _sv=document.getElementById('rap-m-save'); if(_sv) _sv.textContent='Enregistrer le rappel';
   _mCtx={mod:mod||'libre', refId:refId||'', label:label||''};
   var mm=RAP_MODS[_mCtx.mod]||RAP_MODS.libre;
   var src=document.getElementById('rap-m-src');
@@ -21247,7 +21296,7 @@ window.rapWeekend=function(){
     +'<span class="rap-we-k">ou gardez cette date</span>';
 };
 window.rapSetDate=function(v){ var e=document.getElementById('rap-m-date'); if(e){ e.value=v; } window.rapWeekend(); };
-window.rapModalClose=function(){ var m=document.getElementById('rap-modal'); if(m) m.style.display='none'; };
+window.rapModalClose=function(){ var m=document.getElementById('rap-modal'); if(m) m.style.display='none'; _mEdit=null; };
 window.rapModalSave=function(){
   var date=document.getElementById('rap-m-date').value;
   if(!date){ if(window.toast) toast('Choisissez une date'); return; }
@@ -21256,6 +21305,25 @@ window.rapModalSave=function(){
   var label=_mCtx.label || (lblEl?lblEl.value.trim():'');
   if(!label){ if(window.toast) toast('Indiquez le sujet du rappel'); return; }
   var list=rapAll();
+  if(_mEdit){
+    /* v11.31 : modification d'un rappel existant */
+    var done=false;
+    list.forEach(function(r){ if(r.id===_mEdit){ r.date=date; r.note=note; r.label=label; r.updated=new Date().toISOString(); done=true; } });
+    rapSave(list);
+    /* le rappel AUTOMATIQUE d'une fiche : on aligne la date du bandeau, sinon
+       l'enregistrement de la fiche remettrait l'ancienne date. */
+    try{
+      var m=(''+_mEdit).match(/^rap-pg-relance-(.+)$/);
+      if(m){ var fe=document.getElementById('pg-edit-id'), de=document.getElementById('pg-rap2-date');
+        if(fe && fe.value===m[1] && de) de.value=date; }
+    }catch(e){window.achErr&&achErr(e)}
+    var _id=_mEdit;
+    window.rapModalClose();
+    if(window.toast && done) toast('✏️ Rappel modifié — '+frDate(date));
+    try{ if(window.achLog) achLog('modification','Rappels',label+' — '+frDate(date)); }catch(e){window.achErr&&achErr(e)}
+    rapRefreshAll();
+    return;
+  }
   list.push({ id:'rap-'+Date.now()+'-'+Math.floor(Math.random()*1000),
     mod:_mCtx.mod, refId:_mCtx.refId, label:label, date:date, note:note,
     done:0, created:new Date().toISOString(),
@@ -21339,6 +21407,7 @@ function itemHtml(r, compact){
     +'<span class="rap-i-txt"><b>'+rEsc(r.label||mm.nom)+'</b>'+(r.note?' — '+rEsc(r.note):'')
     +(late?' <span class="rap-i-late">⚠ prévu le '+frDate(r.date)+'</span>':(compact?'':' <span class="rap-i-date">'+frDate(r.date)+'</span>'))+'</span>'
     +openBtn
+    +'<button class="rap-i-del" title="Modifier la date ou la note" onclick="rapEditOpen(\''+r.id+'\')">✏️</button>'
     +'<button class="rap-i-done" title="Marquer fait" onclick="rapDone(\''+r.id+'\')">✓ Fait</button>'
     +'<button class="rap-i-del" title="Supprimer ce rappel" onclick="rapDelete(\''+r.id+'\')">🗑</button>'
     +'</div>';
@@ -21438,8 +21507,9 @@ function rapFicheBtn(){
           var late=r.date<todayISO();
           return '<div class="pg-rap-line'+(late?' late':'')+'">'
             +'<span class="pg-rap-d">🔔 '+frDate(r.date)+'</span>'
-            +'<span class="pg-rap-l">'+rEsc(r.label||'')+(r.note?' — '+rEsc(r.note):'')+'</span>'
+            +'<span class="pg-rap-l">'+rEsc(r.label||'')+(r.note?' <i class="pg-rap-note">— '+rEsc(r.note)+'</i>':'')+'</span>'
             +(late?'<span class="pg-rap-late">en retard</span>':'')
+            +'<button type="button" class="pg-rap-x" title="Modifier la date ou la note" onclick="rapEditOpen(\''+r.id+'\')">✏️</button>'
             +'<button type="button" class="pg-rap-x" title="Marquer fait" onclick="rapDone(\''+r.id+'\')">✓</button>'
             +'<button type="button" class="pg-rap-x del" title="Supprimer ce rappel" onclick="rapDelete(\''+r.id+'\')">🗑</button>'
             +'</div>';
@@ -24018,6 +24088,7 @@ body.pi-grabbing *{user-select:none!important;}
 .pg-rap-d{font-weight:600;color:#8a5a1e;white-space:nowrap;}
 .pg-rap-line.late .pg-rap-d{color:var(--rouge);}
 .pg-rap-l{flex:1;min-width:0;color:var(--gris);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.pg-rap-note{font-style:italic;color:var(--gris-2);}
 .pg-rap-late{font-size:10.5px;color:var(--rouge);white-space:nowrap;}
 .pg-rap-x{border:1px solid var(--border);background:#fff;border-radius:6px;font-size:11.5px;padding:3px 8px;cursor:pointer;flex:none;font-family:'Jost',sans-serif;}
 .pg-rap-x:hover{border-color:var(--vert);}
