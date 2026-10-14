@@ -1726,7 +1726,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     </div>
   </div>
   </div>
-  <div class="logo-ver app-ver">Achille App — v11.20</div>
+  <div class="logo-ver app-ver">Achille App — v11.21</div>
 </aside>
 <div id="mob-bk" onclick="mobNav(false)"></div>
 <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Réduire la barre latérale">‹</button>
@@ -13911,7 +13911,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     startRealtime();
     var ov=document.getElementById('ach-login-overlay'); if(ov) ov.classList.add('ach-hidden');
     var ub=document.getElementById('ach-userbar'); if(ub) ub.style.display='none';
-    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v11.20';
+    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v11.21';
     flag('Synchronis\u00e9');
     // fin de l'init : on autorise la journalisation des actions
     setTimeout(function(){ installInterceptor._init=false; }, 1500);
@@ -18278,25 +18278,6 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
     return 'Nous f\u00eatons les '+nm;
   }
   window._vFeteTxt=_vFeteTxt;   /* exposé pour les tests */
-  /* v9.18 : éphéméride multi-prénoms. Le fichier ephemeride.json (mis à jour chaque matin par la
-     routine planifiée) donne TOUS les prénoms du jour. S'il est absent, illisible ou d'un autre jour,
-     l'écran retombe sur le tableau V_FETES ci-dessus (un seul prénom) : jamais d'écran vide. */
-  var _vEph=null, _vEphTry=0;
-  function _vTodayKey(t){ return t.getFullYear()+'-'+('0'+(t.getMonth()+1)).slice(-2)+'-'+('0'+t.getDate()).slice(-2); }
-  function _vEphLoad(){
-    var now=Date.now(); if(now-_vEphTry<600000) return;   /* au plus un essai toutes les 10 min */
-    _vEphTry=now;
-    try{
-      fetch('ephemeride.json?v='+now,{cache:'no-store'}).then(function(r){ return r.ok?r.json():null; })
-      .then(function(j){ if(j&&j.date&&Array.isArray(j.prenoms)){ _vEph=j; _vTick(); } }).catch(function(){});
-    }catch(e){window.achErr&&achErr(e)}
-  }
-  function _vFeteMulti(arr){
-    var a=arr.filter(function(x){ return x&&String(x).trim(); }).map(function(x){ return String(x).trim(); });
-    if(!a.length) return '';
-    if(a.length===1) return _vFeteTxt(a[0]);
-    return 'Nous fêtons '+a.slice(0,-1).join(', ')+' et '+a[a.length-1];
-  }
   function _vTick(){
     var t=new Date(), c=document.querySelector('#ach-veille .v-clock'), d=document.querySelector('#ach-veille .v-date');
     if(c) c.textContent=t.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
@@ -18304,11 +18285,9 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
     try{
       var f=document.getElementById('v-fete');
       if(f){
-        _vEphLoad();
         var nm=(V_FETES[t.getMonth()]||[])[t.getDate()-1]||'';
         var jn=V_JOURNEES[(t.getMonth()+1)+'-'+t.getDate()]||'';
-        var txt=(_vEph&&_vEph.date===_vTodayKey(t)&&_vEph.prenoms.length)?_vFeteMulti(_vEph.prenoms):(nm?_vFeteTxt(nm):'');
-        f.innerHTML=(txt?_vEsc(txt):'')+(jn?('<span class="fj">'+_vEsc(jn)+'</span>'):'');
+        f.innerHTML=(nm?_vEsc(_vFeteTxt(nm)):'')+(jn?('<span class="fj">'+_vEsc(jn)+'</span>'):'');
       }
     }catch(e){window.achErr&&achErr(e)}
   }
@@ -22872,25 +22851,25 @@ body.pi-grabbing *{user-select:none!important;}
       list.sort(function(x,y){ return (x.th||'').localeCompare(y.th||'') || (''+x.created).localeCompare(''+y.created); });
       return {n:list.length, h:list.map(function(o){
         var T=THEMES[o.th]||['📌',o.th||'—','#7a7570'];
-        var open=!!_open[o.id];
-        var h='<div class="cav-row">'
-          +'<button class="cav-car'+(o.texte?' has':'')+'" onclick="cavToggle(\''+o.id+'\')" title="'+(o.texte?'Voir / modifier le texte complet du post':'Ajouter le texte complet du post')+'">'+(open?'▾':'▸')+'</button>'
+        /* v11.21 : carte compacte unifiée — titre, auteur, date, extrait, réseaux ; détail en pop-up */
+        function fd(d){ d=''+(d||''); var m=d.match(/^(\d{4})-(\d{2})-(\d{2})/); return m?(m[3]+'/'+m[2]):''; }
+        var auteur=(o.origin==='claude')
+          ? '<span class="cav-claude" title="Suggestion du matin de Claude">💡 Claude</span><span>'+(o.pdate?'proposée le '+esc(fd(o.pdate)):'')+'</span>'
+          : '<span class="cav-by" style="background:'+(INI_COL[o.by]||'#7a7570')+';" title="Proposé par '+esc(o.by)+'">'+esc(o.by)+'</span><span>'+(o.created?'ajoutée le '+esc(fd(o.created)):'')+'</span>';
+        var ex=(''+(o.texte||'')).trim().split('\n')[0];
+        var btns=(st==='idee'
+            ? '<button class="cav-act ok" onclick="event.stopPropagation();cavStatut(\''+o.id+'\',\'valide\')" title="Valider : à mettre en place">✔ Valider</button>'
+            : '<button class="cav-act ok" onclick="event.stopPropagation();cavPublie(\''+o.id+'\')" title="C\u2019est publié ! La ligne part dans l\u2019onglet Posts réseaux">📣 Publié !</button><button class="cav-act" onclick="event.stopPropagation();cavStatut(\''+o.id+'\',\'idee\')" title="Repasser au stade d\u2019idée">↩ Idée</button>')
+          +'<button class="cav-act del" onclick="event.stopPropagation();cavDel(\''+o.id+'\')" title="Supprimer">✕</button>';
+        var h='<div class="icard" onclick="cavPop(\''+o.id+'\')" title="Voir / modifier le détail complet">'
+          +'<div class="icard-top">'
           +'<span class="cav-th" style="background:'+T[2]+'18;color:'+T[2]+';border:1px solid '+T[2]+'44;">'+T[0]+' '+T[1]+'</span>'
-          +'<input class="cav-tt" value="'+esc(o.titre)+'" onchange="cavEdit(\''+o.id+'\',this.value)" title="Cliquez pour modifier le titre">'
-          +(o.res?'<span class="cav-res">'+esc(o.res)+'</span>':'')
-          +(o.origin==='claude'
-            ? '<span class="cav-claude" title="Suggestion du matin de Claude'+(o.pdate?' — proposée le '+esc((''+o.pdate).split('-').reverse().slice(0,2).join('/')):'')+'">💡 Claude'+(o.pdate?' · '+esc((''+o.pdate).split('-').reverse().slice(0,2).join('/')):'')+'</span>'
-            : '<span class="cav-by" style="background:'+(INI_COL[o.by]||'#7a7570')+';" title="Proposé par '+esc(o.by)+'">'+esc(o.by)+'</span>')
-          +(st==='idee'
-            ? '<button class="cav-act ok" onclick="cavStatut(\''+o.id+'\',\'valide\')" title="Valider : à mettre en place">✔ Valider</button>'
-            : '<button class="cav-act ok" onclick="cavPublie(\''+o.id+'\')" title="C\u2019est publié ! La ligne part dans l\u2019onglet Posts réseaux">📣 Publié !</button><button class="cav-act" onclick="cavStatut(\''+o.id+'\',\'idee\')" title="Repasser au stade d\u2019idée">↩ Idée</button>')
-          +'<button class="cav-act del" onclick="cavDel(\''+o.id+'\')" title="Supprimer">✕</button>'
+          +'<span class="icard-tt">'+esc(o.titre)+'</span>'
+          +btns
+          +'</div>'
+          +(ex?'<div class="icard-ex">'+esc(ex)+'</div>':'')
+          +'<div class="icard-meta">'+auteur+(o.res?'<span>·</span><span class="idj-reco">⭐ '+esc(o.res)+'</span>':'')+'</div>'
           +'</div>';
-        if(open){
-          h+='<div class="cav-body"><textarea class="cav-txt" placeholder="Écrivez ici le texte complet du post…" onchange="cavTexte(\''+o.id+'\',this.value)">'+esc(o.texte||'')+'</textarea>'
-            +'<div class="cav-body-bar"><button class="cav-copy" onclick="cavCopy(\''+o.id+'\',this)">📋 Copier le texte</button>'
-            +'<span class="cav-body-hint">Modifiez librement — enregistré dès que vous cliquez ailleurs.</span></div></div>';
-        }
         return h;
       }).join('')};
     }
@@ -22902,11 +22881,11 @@ body.pi-grabbing *{user-select:none!important;}
     return rv.n+ri.n;
   };
   var _open={};
-  window.cavToggle=function(id){ _open[id]=!_open[id]; cavRender(); };
+  window.cavToggle=function(id){ if(window.cavPop) cavPop(id); };   /* v11.21 : détail en pop-up */
   window.cavTexte=function(id,val){
     var a=load(), o=a.filter(function(x){return x.id===id;})[0]; if(!o) return;
     o.texte=val||''; o.updated=new Date().toISOString(); save(a);
-    cavRender();   /* met à jour l'indicateur ▸ orange */
+    try{ cavRender(); }catch(e){}   /* v11.21 : rafraîchit l'extrait des cartes (le pop-up, lui, reste ouvert) */
   };
   window.cavCopy=function(id,btn){
     var o=load().filter(function(x){return x.id===id;})[0]; if(!o||!o.texte) return;
@@ -23026,6 +23005,25 @@ body.pi-grabbing *{user-select:none!important;}
 .idj-ec-btn{border:1px solid var(--border);background:#fff;border-radius:7px;font-size:11px;padding:3px 8px;cursor:pointer;flex:none;}
 .idj-ec-btn.del:hover{border-color:var(--rouge);color:var(--rouge);}
 .idj-ec-arrow{font-size:11px;color:var(--gris-2);}
+/* v11.21 : cartes compactes unifiées (suggestions / validés / idées) + pop-up de détail */
+.icard{padding:9px 14px;border-bottom:1px solid #f3eee6;cursor:pointer;}
+.icard:hover{background:#fbf8f3;}
+.icard-top{display:flex;align-items:center;gap:7px;flex-wrap:wrap;}
+.icard-tt{flex:1;min-width:140px;font-size:13.5px;font-weight:600;color:var(--noir);line-height:1.3;}
+.icard-ex{font-size:11.8px;color:var(--gris);line-height:1.45;margin-top:3px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+.icard-meta{font-size:10.5px;color:var(--gris-2);margin-top:4px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
+#ipop{position:fixed;inset:0;z-index:99997;background:rgba(26,26,24,.4);display:flex;align-items:center;justify-content:center;padding:18px;}
+.ipop-card{background:#fff;border-radius:14px;max-width:700px;width:100%;max-height:88vh;overflow-y:auto;box-shadow:0 18px 60px rgba(0,0,0,.3);padding:20px 24px 18px;font-family:'Jost',sans-serif;}
+.ipop-head{display:flex;align-items:center;gap:9px;flex-wrap:wrap;}
+.ipop-head .sp{flex:1;}
+.ipop-tt{font-family:'Cormorant Garamond',serif;font-size:21px;font-weight:600;line-height:1.25;color:var(--noir);margin-top:8px;}
+.ipop-tt-in{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:600;border:1px dashed transparent;border-radius:7px;padding:2px 6px;color:var(--noir);background:transparent;width:100%;box-sizing:border-box;margin-top:8px;}
+.ipop-tt-in:hover,.ipop-tt-in:focus{border-color:var(--beige-3);background:#fbf8f3;outline:none;}
+.ipop-x{border:none;background:#f0ebe3;color:#6b6b63;border-radius:8px;font-size:14px;padding:6px 11px;cursor:pointer;flex:none;}
+.ipop-meta{font-size:11.5px;color:var(--gris-2);margin:7px 0 10px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
+.ipop-bar{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;border-top:1px solid #f0ebe3;padding-top:12px;}
+#ipop .idj-nets{grid-template-columns:1fr;}
+@media(max-width:640px){.ipop-card{padding:14px;}}
 .idj-reco{font-size:10px;font-weight:700;padding:2px 9px;border-radius:12px;white-space:nowrap;flex:none;background:rgba(180,115,96,.10);color:var(--terra);border:1px solid rgba(180,115,96,.35);}
 .idj-net.reco{border-color:var(--terra);box-shadow:0 0 0 1px rgba(180,115,96,.25);}
 .idj-net.reco .idj-net-hd{color:var(--terra);background:rgba(180,115,96,.08);}
@@ -23097,6 +23095,74 @@ body.pi-grabbing *{user-select:none!important;}
     if(window._commTabCur!=='idees') return;
     var el=document.getElementById('comm-count'); if(el) el.textContent=n+' idée'+(n>1?'s':'');
   }
+  /* ── v11.21 : pop-up de détail — un seul composant pour les suggestions ET les posts à venir ── */
+  function _ipKey(e){ if(e.key==='Escape') ipopClose(); }
+  window.ipopClose=function(){ var e=document.getElementById('ipop'); if(e) e.remove(); document.removeEventListener('keydown', _ipKey); };
+  function ipopShow(inner){
+    ipopClose();
+    var w=document.createElement('div'); w.id='ipop';
+    w.innerHTML='<div class="ipop-card">'+inner+'</div>';
+    w.addEventListener('click', function(e){ if(e.target===w) ipopClose(); });
+    document.body.appendChild(w);
+    document.addEventListener('keydown', _ipKey);
+  }
+  function chipTheme(T){ return '<span class="cav-th" style="background:'+T[2]+'18;color:'+T[2]+';border:1px solid '+T[2]+'44;">'+T[0]+' '+esc(T[1])+'</span>'; }
+  window.idjPop=function(eid){
+    var id=decodeURIComponent(eid), p=byId(id); if(!p) return;
+    var T=THEMES[p.theme]||['📌',p.theme||'—','#7a7570'], Fm=FORMATS[p.format]||['📌',p.format||'—'];
+    var acted=cavItemFor(id);
+    var h='<div class="ipop-head">'+chipTheme(T)+'<span class="idj-fmt">'+Fm[0]+' '+esc(Fm[1])+'</span><span class="sp"></span><button class="ipop-x" onclick="ipopClose()">✕</button></div>'
+      +'<div class="ipop-tt">'+esc(p.titre)+'</div>'
+      +'<div class="ipop-meta"><span class="cav-claude">💡 Claude</span><span>proposée le '+esc(fdate(p.date))+'</span>'
+      +(recos(p).length?'<span class="idj-reco" title="'+esc(p.conseil||'')+'">⭐ '+recos(p).map(function(n){return n[1];}).join(' · ')+'</span>':'')+'</div>';
+    if(p.actu){ h+='<div class="idj-meta"><b>Actu :</b> '+esc(p.actu);
+      if(p.source&&p.source.url){ h+=' — <a href="'+esc(p.source.url)+'" target="_blank" rel="noopener">'+esc(p.source.nom||'source')+(p.source.date?' · '+esc(p.source.date):'')+'</a>'; }
+      h+='</div>'; }
+    if(p.angle) h+='<div class="idj-meta"><b>Angle Achille :</b> '+esc(p.angle)+'</div>';
+    if(p.concurrent) h+='<div class="idj-meta"><b>Concurrent :</b> '+esc(p.concurrent)+'</div>';
+    if(recos(p).length&&p.conseil) h+='<div class="idj-meta"><b>Conseil :</b> '+esc(p.conseil)+'</div>';
+    var nets=NETS.filter(function(n){ return (''+(p[n[0]]||'')).trim(); });
+    if(nets.length){
+      var rk=recos(p).map(function(n){return n[0];});
+      h+='<div class="idj-nets" style="margin-top:12px;">'+nets.map(function(n){
+        var isR=rk.indexOf(n[0])>=0;
+        return '<div class="idj-net'+(isR?' reco':'')+'"><div class="idj-net-hd"><span>'+n[1]+(isR?' <span title="Réseau conseillé">⭐</span>':'')+'</span>'
+          +'<button class="cav-copy" onclick="idjCopy(\''+eid+'\',\''+n[0]+'\',this)">📋 Copier</button></div>'
+          +'<div class="idj-net-tx">'+esc(p[n[0]])+'</div></div>';
+      }).join('')+'</div>';
+    }
+    if(p.statut==='propose' && !acted){
+      h+='<div class="ipop-bar">'
+        +'<button class="cav-act ok" onclick="idjAct(\''+eid+'\',\'val\');ipopClose()">✅ Valider — à mettre en place</button>'
+        +'<button class="cav-act" onclick="idjAct(\''+eid+'\',\'later\');ipopClose()">🕐 Plus tard</button>'
+        +'<button class="cav-act del" onclick="idjAct(\''+eid+'\',\'off\');ipopClose()">❌ Écarter</button>'
+        +'</div>';
+    } else if(acted){
+      h+='<div class="ipop-bar"><span class="idj-done '+(acted.st==='idee'?'lat':'val')+'">'+(acted.st==='idee'?'🕐 De côté — dans Idées de l\u2019équipe':(acted.st==='publie'?'📣 Publiée':'✅ Validée — à mettre en place'))+'</span></div>';
+    }
+    ipopShow(h);
+  };
+  window.cavPop=function(id){
+    var o=cavList().filter(function(x){return x.id===id;})[0]; if(!o) return;
+    var T=THEMES[o.th]||['📌',o.th||'—','#7a7570'];
+    var auteur=(o.origin==='claude')
+      ? '<span class="cav-claude">💡 Claude</span><span>proposée le '+esc(fdate(o.pdate||''))+'</span>'
+      : '<span><b>'+esc(o.by||'')+'</b></span><span>ajoutée le '+esc(fdate((''+(o.created||'')).slice(0,10)))+'</span>';
+    var h='<div class="ipop-head">'+chipTheme(T)+'<span class="sp"></span><button class="ipop-x" onclick="ipopClose()">✕</button></div>'
+      +'<input class="ipop-tt-in" value="'+esc(o.titre||'')+'" title="Cliquez pour modifier le titre" onchange="cavEdit(\''+esc(id)+'\',this.value);try{cavRender()}catch(e){}">'
+      +'<div class="ipop-meta">'+auteur+(o.res?'<span class="idj-reco">⭐ '+esc(o.res)+'</span>':'')+'</div>'
+      +'<textarea class="cav-txt" style="min-height:220px;" placeholder="Écrivez ici le texte complet du post…" onchange="cavTexte(\''+esc(id)+'\',this.value)">'+esc(o.texte||'')+'</textarea>'
+      +'<div class="cav-body-bar"><button class="cav-copy" onclick="cavCopy(\''+esc(id)+'\',this)">📋 Copier le texte</button>'
+      +'<span class="cav-body-hint">Modifiez librement — enregistré dès que vous cliquez ailleurs.</span></div>'
+      +'<div class="ipop-bar">'
+      +(o.st==='idee'
+        ? '<button class="cav-act ok" onclick="ipopClose();cavStatut(\''+esc(id)+'\',\'valide\')">✔ Valider — à mettre en place</button>'
+        : '<button class="cav-act ok" onclick="ipopClose();cavPublie(\''+esc(id)+'\')">📣 Publié !</button>'
+          +'<button class="cav-act" onclick="ipopClose();cavStatut(\''+esc(id)+'\',\'idee\')">↩ Repasser en idée</button>')
+      +'<button class="cav-act del" onclick="ipopClose();cavDel(\''+esc(id)+'\')">✕ Supprimer</button>'
+      +'</div>';
+    ipopShow(h);
+  };
   window.idjRender=function(){
     var box=document.getElementById('idj-list'); if(!box) return;
     try{ idjMigrate(); }catch(e){window.achErr&&achErr(e)}
@@ -23104,7 +23170,7 @@ body.pi-grabbing *{user-select:none!important;}
     var list=visibles();
     compteur(list.length);
     if(!list.length){
-      box.innerHTML='<div class="cav-sec"><div class="cav-empty">'+(_q?'Aucune proposition ne correspond à la recherche.':'Aucune proposition pour le moment — elles arrivent chaque matin vers 9h.')+'</div></div>';
+      box.innerHTML='<div class="cav-sec"><div class="cav-empty">'+(_q?'Aucune suggestion ne correspond à la recherche.':'Aucune suggestion pour le moment — elles arrivent chaque matin vers 9h.')+'</div></div>';
       try{ ecartRender(); }catch(e){window.achErr&&achErr(e)}
       return;
     }
@@ -23112,7 +23178,7 @@ body.pi-grabbing *{user-select:none!important;}
     var h='';
     Object.keys(jours).sort().reverse().forEach(function(d){
       var g=jours[d];
-      h+='<div class="cav-sec"><div class="cav-sec-tt">'+esc(jourTitre(d))+' · '+g.length+' proposition'+(g.length>1?'s':'')+'</div>';
+      h+='<div class="cav-sec"><div class="cav-sec-tt">'+esc(jourTitre(d))+' · '+g.length+' suggestion'+(g.length>1?'s':'')+'</div>';
       g.forEach(function(p){
         var id=''+p.id, eid=encodeURIComponent(id), open=!!_open[id];
         var T=THEMES[p.theme]||['📌',p.theme||'—','#7a7570'];
@@ -23125,9 +23191,9 @@ body.pi-grabbing *{user-select:none!important;}
           else if(acted && acted.st==='publie') tail='<span class="idj-done val" title="Publiée (ligne dans Posts réseaux)">📣 Publiée</span>';
           else if(acted) tail='<span class="idj-done lat" title="Gardée dans « Idées de l\u2019équipe »">🕐 De côté</span>';
           else tail='<span class="idj-acts">'
-            +'<button class="idj-qa ok" onclick="idjAct(\''+eid+'\',\'val\')" title="✅ Valider — part dans « Validés, à mettre en place »">✅</button>'
-            +'<button class="idj-qa lat" onclick="idjAct(\''+eid+'\',\'later\')" title="🕐 Plus tard — gardée dans « Idées de l\u2019équipe », marquée Claude">🕐</button>'
-            +'<button class="idj-qa off" onclick="idjAct(\''+eid+'\',\'off\')" title="❌ Écarter — archivée dans le dossier Écartées">❌</button>'
+            +'<button class="idj-qa ok" onclick="event.stopPropagation();idjAct(\''+eid+'\',\'val\')" title="✅ Valider — part dans « Validés, à mettre en place »">✅</button>'
+            +'<button class="idj-qa lat" onclick="event.stopPropagation();idjAct(\''+eid+'\',\'later\')" title="🕐 Plus tard — gardée dans « Idées de l\u2019équipe », marquée Claude">🕐</button>'
+            +'<button class="idj-qa off" onclick="event.stopPropagation();idjAct(\''+eid+'\',\'off\')" title="❌ Écarter — archivée dans le dossier Écartées">❌</button>'
             +'</span>';
         } else { tail='<span class="idj-st" style="background:'+St[1]+'18;color:'+St[1]+';border:1px solid '+St[1]+'44;">'+esc(St[0])+'</span>'; }
         var note='';
@@ -23135,51 +23201,29 @@ body.pi-grabbing *{user-select:none!important;}
            Claude — l'app n'affiche que le classement (et l'éventuelle autre forme suggérée). */
         if(p.statut==='rejete'&&p.reproposer&&REPRO[p.reproposer]){
           var r=REPRO[p.reproposer]+(p.reproposer==='autre_forme'&&p.reproposer_forme?' ('+esc(p.reproposer_forme)+')':'');
-          note='<span class="idj-note" title="'+r+'">'+r+'</span>';
+          note='<span class="idj-note" style="max-width:none;" title="'+r+'">'+r+'</span>';
         }
-        h+='<div class="cav-row">'
-          +'<button class="cav-car has" onclick="idjToggle(\''+eid+'\')" title="Voir le détail">'+(open?'▾':'▸')+'</button>'
+        /* v11.21 : carte compacte — le clic ouvre le détail complet en pop-up */
+        var metas=['<span class="cav-claude">💡 Claude</span>','proposée le '+esc(fdate(p.date))];
+        if(recos(p).length) metas.push('<span class="idj-reco" title="'+esc(p.conseil||'Réseau(x) conseillé(s)')+'">⭐ '+recos(p).map(function(n){return n[1];}).join(' · ')+'</span>');
+        if(note) metas.push(note);
+        h+='<div class="icard" onclick="idjPop(\''+eid+'\')" title="Voir le détail complet">'
+          +'<div class="icard-top">'
           +'<span class="cav-th" style="background:'+T[2]+'18;color:'+T[2]+';border:1px solid '+T[2]+'44;">'+T[0]+' '+esc(T[1])+'</span>'
           +'<span class="idj-fmt">'+Fm[0]+' '+esc(Fm[1])+'</span>'
-          +'<span class="idj-tt" title="'+esc(p.titre)+'">'+esc(p.titre)+'</span>'
-          +(recos(p).length?'<span class="idj-reco" title="'+esc(p.conseil||'Réseau(x) conseillé(s)')+'">⭐ '+recos(p).map(function(n){return n[1];}).join(' · ')+'</span>':'')
-          +note
+          +'<span class="icard-tt">'+esc(p.titre)+'</span>'
           +tail
+          +'</div>'
+          +(p.actu?'<div class="icard-ex">'+esc(p.actu)+'</div>':'')
+          +'<div class="icard-meta">'+metas.join('<span>·</span>')+'</div>'
           +'</div>';
-        if(open){
-          h+='<div class="idj-body">';
-          if(p.actu){ h+='<div class="idj-meta"><b>Actu :</b> '+esc(p.actu);
-            if(p.source&&p.source.url){ h+=' — <a href="'+esc(p.source.url)+'" target="_blank" rel="noopener">'+esc(p.source.nom||'source')+(p.source.date?' · '+esc(p.source.date):'')+'</a>'; }
-            h+='</div>'; }
-          if(p.angle) h+='<div class="idj-meta"><b>Angle Achille :</b> '+esc(p.angle)+'</div>';
-          if(p.concurrent) h+='<div class="idj-meta"><b>Concurrent :</b> '+esc(p.concurrent)+'</div>';
-          if(recos(p).length) h+='<div class="idj-meta"><b>Conseil :</b> ⭐ '+recos(p).map(function(n){return n[1];}).join(' · ')+(p.conseil?' — '+esc(p.conseil):'')+'</div>';
-          var nets=NETS.filter(function(n){ return (''+(p[n[0]]||'')).trim(); });
-          if(nets.length){
-            var rk=recos(p).map(function(n){return n[0];});
-            h+='<div class="idj-nets">'+nets.map(function(n){
-              var isR=rk.indexOf(n[0])>=0;
-              return '<div class="idj-net'+(isR?' reco':'')+'"><div class="idj-net-hd"><span>'+n[1]+(isR?' <span title="Réseau conseillé">⭐</span>':'')+'</span>'
-                +'<button class="cav-copy" onclick="idjCopy(\''+eid+'\',\''+n[0]+'\',this)">📋 Copier</button></div>'
-                +'<div class="idj-net-tx">'+esc(p[n[0]])+'</div></div>';
-            }).join('')+'</div>';
-          }
-          if(p.statut==='propose' && !cavItemFor(id)){
-            h+='<div class="idj-send-bar">'
-              +'<button class="cav-act ok" onclick="idjAct(\''+eid+'\',\'val\')">✅ Valider — à mettre en place</button>'
-              +'<button class="cav-act" onclick="idjAct(\''+eid+'\',\'later\')">🕐 Plus tard</button>'
-              +'<button class="cav-act del" onclick="idjAct(\''+eid+'\',\'off\')">❌ Écarter</button>'
-              +'</div>';
-          }
-          h+='</div>';
-        }
       });
       h+='</div>';
     });
     box.innerHTML=h;
     try{ ecartRender(); }catch(e){window.achErr&&achErr(e)}
   };
-  window.idjToggle=function(eid){ var id=decodeURIComponent(eid); _open[id]=!_open[id]; idjRender(); };
+  window.idjToggle=function(eid){ idjPop(eid); };   /* v11.21 : le détail s'ouvre en pop-up */
   window.idjCopy=function(eid,net,btn){
     var p=byId(decodeURIComponent(eid)); if(!p) return;
     var tx=''+(p[net]||''); if(!tx) return;
@@ -23363,7 +23407,7 @@ body.pi-grabbing *{user-select:none!important;}
   function mixCount(){
     if(window._commTabCur!=='mix') return;
     var el=document.getElementById('comm-count'); if(!el) return;
-    var ni=document.querySelectorAll('#idj-list .cav-row').length;
+    var ni=document.querySelectorAll('#idj-list .icard').length;
     var nv=parseInt((document.getElementById('cav-n-val')||{}).textContent||'0',10)||0;
     var np=parseInt((document.getElementById('cav-n-idee')||{}).textContent||'0',10)||0;
     el.textContent=ni+' idée'+(ni>1?'s':'')+' · '+(nv+np)+' post'+((nv+np)>1?'s':'')+' à venir';
