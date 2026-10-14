@@ -18278,6 +18278,25 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
     return 'Nous f\u00eatons les '+nm;
   }
   window._vFeteTxt=_vFeteTxt;   /* exposé pour les tests */
+  /* v9.18 : éphéméride multi-prénoms. Le fichier ephemeride.json (mis à jour chaque matin par la
+     routine planifiée) donne TOUS les prénoms du jour. S'il est absent, illisible ou d'un autre jour,
+     l'écran retombe sur le tableau V_FETES ci-dessus (un seul prénom) : jamais d'écran vide. */
+  var _vEph=null, _vEphTry=0;
+  function _vTodayKey(t){ return t.getFullYear()+'-'+('0'+(t.getMonth()+1)).slice(-2)+'-'+('0'+t.getDate()).slice(-2); }
+  function _vEphLoad(){
+    var now=Date.now(); if(now-_vEphTry<600000) return;   /* au plus un essai toutes les 10 min */
+    _vEphTry=now;
+    try{
+      fetch('ephemeride.json?v='+now,{cache:'no-store'}).then(function(r){ return r.ok?r.json():null; })
+      .then(function(j){ if(j&&j.date&&Array.isArray(j.prenoms)){ _vEph=j; _vTick(); } }).catch(function(){});
+    }catch(e){window.achErr&&achErr(e)}
+  }
+  function _vFeteMulti(arr){
+    var a=arr.filter(function(x){ return x&&String(x).trim(); }).map(function(x){ return String(x).trim(); });
+    if(!a.length) return '';
+    if(a.length===1) return _vFeteTxt(a[0]);
+    return 'Nous fêtons '+a.slice(0,-1).join(', ')+' et '+a[a.length-1];
+  }
   function _vTick(){
     var t=new Date(), c=document.querySelector('#ach-veille .v-clock'), d=document.querySelector('#ach-veille .v-date');
     if(c) c.textContent=t.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
@@ -18285,9 +18304,11 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
     try{
       var f=document.getElementById('v-fete');
       if(f){
+        _vEphLoad();
         var nm=(V_FETES[t.getMonth()]||[])[t.getDate()-1]||'';
         var jn=V_JOURNEES[(t.getMonth()+1)+'-'+t.getDate()]||'';
-        f.innerHTML=(nm?_vEsc(_vFeteTxt(nm)):'')+(jn?('<span class="fj">'+_vEsc(jn)+'</span>'):'');
+        var txt=(_vEph&&_vEph.date===_vTodayKey(t)&&_vEph.prenoms.length)?_vFeteMulti(_vEph.prenoms):(nm?_vFeteTxt(nm):'');
+        f.innerHTML=(txt?_vEsc(txt):'')+(jn?('<span class="fj">'+_vEsc(jn)+'</span>'):'');
       }
     }catch(e){window.achErr&&achErr(e)}
   }
