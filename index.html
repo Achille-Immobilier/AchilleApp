@@ -1726,7 +1726,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     </div>
   </div>
   </div>
-  <div class="logo-ver app-ver">Achille App — v11.17</div>
+  <div class="logo-ver app-ver">Achille App — v11.18</div>
 </aside>
 <div id="mob-bk" onclick="mobNav(false)"></div>
 <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Réduire la barre latérale">‹</button>
@@ -2769,8 +2769,9 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
         <div class="mix-grid">
           <div class="mix-col">
             <div class="mix-col-tt">💡 Les idées du matin</div>
-            <div class="idj-head"><span class="idj-hint">Proposées chaque matin par la veille automatique. ✅ Retenir : l’idée passe à droite, dans Posts à venir. Vos retours (je prends / non) se donnent à Claude, dans la conversation du matin.</span><span style="display:flex;align-items:center;gap:10px;"><label class="idj-import" id="idj-import-btn" title="Importer le fichier idees-posts.json joint au message du matin — partagé aussitôt avec toute l’équipe via le cloud">📥 Importer les idées du matin<input type="file" accept=".json,application/json" style="display:none" onchange="idjImport(this)"></label><span class="idj-maj" id="idj-maj"></span></span></div>
+            <div class="idj-head"><span class="idj-hint">Proposées chaque matin par la veille automatique — triez en un clic : ✅ validée (à mettre en place), 🕐 plus tard (idées de l’équipe), ❌ écartée (dossier en bas). Vos retours à Claude se donnent toujours dans la conversation du matin.</span><span style="display:flex;align-items:center;gap:10px;"><label class="idj-import" id="idj-import-btn" title="Importer le fichier idees-posts.json joint au message du matin — partagé aussitôt avec toute l’équipe via le cloud">📥 Importer les idées du matin<input type="file" accept=".json,application/json" style="display:none" onchange="idjImport(this)"></label><span class="idj-maj" id="idj-maj"></span></span></div>
             <div id="idj-list"></div>
+            <div id="idj-ecart"></div><!-- v11.18 : dossier des idées écartées (consultable, suppression définitive) -->
           </div>
           <div class="mix-col">
             <div class="mix-col-tt">🗓 Posts à venir</div>
@@ -13209,7 +13210,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     ach_fin_solde_v3:'Finances', ach_encours_v1:'Affaires en cours', ach_audit_v1:'Journal', ach_pige_v1:'Pige', ach_mandats_v1:'Mandats', ach_docaff_v1:'Documents par affaire', ach_docs_cfg_v1:'Documents (réglages)', ach_docgen_assets_v1:'Générateur (charte & polices)', ach_dghist_v1:'Documents (historique des générations)', ach_rappels_v1:'Rappels', ach_evol_v1:'Évolutions', ach_redac_v1:'Rédaction quotidienne', ach_routines_v1:'Routines & Objectifs', ach_tomb_v2:'(technique) suppressions',
     ach_affaires_v1:'Pipeline (affaires)', ach_aff_pins_v1:'Pipeline (épingles)', ach_locations_v1:'Locations', ach_trash_v1:'Corbeille', ach_trash_log_v1:'Corbeille (mouvements)', ach_pige_dossiers_v1:'Pige (dossiers)', ach_conc_v1:'Honoraires (concurrence)',
     ach_perms_v1:'Droits & Accès', ach_vsb_v1:'Visites sans bon', ach_bv_accomp:'Bons de visite (accompagnateurs)',
-    ach_bv_cr_v1:'Comptes rendus de visite'
+    ach_bv_cr_v1:'Comptes rendus de visite', ach_idj_ecart_v1:'Idées du matin (écartées)'
   };
   function labelFor(k){ if(/^ach_pgread_/.test(k)) return 'Pige (fiches lues)'; if(/mig|democlean|seeded|datereset|diagflow|normmig/.test(k)&&!LABELS[k]) return '(technique) migration'; return LABELS[k] || k; }
   /* v8.03 : clés OBSOLÈTES (anciens registres pige v1) — jamais réimportées du cloud */
@@ -13910,7 +13911,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     startRealtime();
     var ov=document.getElementById('ach-login-overlay'); if(ov) ov.classList.add('ach-hidden');
     var ub=document.getElementById('ach-userbar'); if(ub) ub.style.display='none';
-    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v11.17';
+    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v11.18';
     flag('Synchronis\u00e9');
     // fin de l'init : on autorise la journalisation des actions
     setTimeout(function(){ installInterceptor._init=false; }, 1500);
@@ -22856,7 +22857,9 @@ body.pi-grabbing *{user-select:none!important;}
           +'<span class="cav-th" style="background:'+T[2]+'18;color:'+T[2]+';border:1px solid '+T[2]+'44;">'+T[0]+' '+T[1]+'</span>'
           +'<input class="cav-tt" value="'+esc(o.titre)+'" onchange="cavEdit(\''+o.id+'\',this.value)" title="Cliquez pour modifier le titre">'
           +(o.res?'<span class="cav-res">'+esc(o.res)+'</span>':'')
-          +'<span class="cav-by" style="background:'+(INI_COL[o.by]||'#7a7570')+';" title="Proposé par '+esc(o.by)+'">'+esc(o.by)+'</span>'
+          +(o.origin==='claude'
+            ? '<span class="cav-claude" title="Suggestion du matin de Claude'+(o.pdate?' — proposée le '+esc((''+o.pdate).split('-').reverse().slice(0,2).join('/')):'')+'">💡 Claude'+(o.pdate?' · '+esc((''+o.pdate).split('-').reverse().slice(0,2).join('/')):'')+'</span>'
+            : '<span class="cav-by" style="background:'+(INI_COL[o.by]||'#7a7570')+';" title="Proposé par '+esc(o.by)+'">'+esc(o.by)+'</span>')
           +(st==='idee'
             ? '<button class="cav-act ok" onclick="cavStatut(\''+o.id+'\',\'valide\')" title="Valider : à mettre en place">✔ Valider</button>'
             : '<button class="cav-act ok" onclick="cavPublie(\''+o.id+'\')" title="C\u2019est publié ! La ligne part dans l\u2019onglet Posts réseaux">📣 Publié !</button><button class="cav-act" onclick="cavStatut(\''+o.id+'\',\'idee\')" title="Repasser au stade d\u2019idée">↩ Idée</button>')
@@ -22985,6 +22988,23 @@ body.pi-grabbing *{user-select:none!important;}
 .idj-net-hd{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:6px 11px;background:#f6f1e9;border-bottom:1px solid var(--border);font-size:10.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--gris);}
 .idj-net-tx{padding:10px 12px;font-size:12.5px;line-height:1.6;color:var(--noir);white-space:pre-wrap;word-break:break-word;}
 .idj-send-bar{display:flex;align-items:center;gap:10px;margin-top:12px;}
+/* v11.18 : actions rapides sur les cartes du matin + dossier Écartées + marquage Claude */
+.idj-acts{display:inline-flex;gap:4px;flex:none;margin-left:2px;}
+.idj-qa{border:1px solid var(--border);background:#fff;border-radius:7px;font-size:12px;line-height:1;padding:4px 7px;cursor:pointer;}
+.idj-qa:hover{transform:scale(1.08);}
+.idj-qa.ok:hover{border-color:var(--vert);}
+.idj-qa.lat:hover{border-color:#b0883b;}
+.idj-qa.off:hover{border-color:var(--rouge);}
+.idj-done{font-size:10px;font-weight:700;padding:2px 9px;border-radius:12px;white-space:nowrap;flex:none;}
+.idj-done.val{background:rgba(46,110,80,.12);color:var(--vert);border:1px solid rgba(46,110,80,.35);}
+.idj-done.lat{background:rgba(176,136,59,.12);color:#8a5a1e;border:1px solid rgba(176,136,59,.35);}
+.cav-claude{font-size:9.5px;font-weight:600;padding:2px 8px;border-radius:12px;white-space:nowrap;flex:none;background:rgba(90,74,117,.10);color:#5a4a75;border:1px solid rgba(90,74,117,.35);}
+.idj-ec-row{display:flex;align-items:center;gap:8px;padding:7px 14px;border-bottom:1px solid #f3eee6;font-size:12.5px;}
+.idj-ec-tt{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.idj-ec-meta{font-size:10.5px;color:var(--gris-2);white-space:nowrap;flex:none;}
+.idj-ec-btn{border:1px solid var(--border);background:#fff;border-radius:7px;font-size:11px;padding:3px 8px;cursor:pointer;flex:none;}
+.idj-ec-btn.del:hover{border-color:var(--rouge);color:var(--rouge);}
+.idj-ec-arrow{font-size:11px;color:var(--gris-2);}
 .idj-reco{font-size:10px;font-weight:700;padding:2px 9px;border-radius:12px;white-space:nowrap;flex:none;background:rgba(180,115,96,.10);color:var(--terra);border:1px solid rgba(180,115,96,.35);}
 .idj-net.reco{border-color:var(--terra);box-shadow:0 0 0 1px rgba(180,115,96,.25);}
 .idj-net.reco .idj-net-hd{color:var(--terra);background:rgba(180,115,96,.08);}
@@ -23014,10 +23034,24 @@ body.pi-grabbing *{user-select:none!important;}
   function byId(id){ return props().filter(function(p){ return (''+p.id)===id; })[0]; }
   function cavList(){ try{ var a=JSON.parse(localStorage.getItem(CAV_KEY)||'[]'); return Array.isArray(a)?a:[]; }catch(e){ return []; } }
   function dejaEnvoyee(id){ return cavList().some(function(o){ return o.src===id; }); }
+  /* v11.18 : état d'une idée du matin déjà triée (validée / mise de côté) */
+  function cavItemFor(id){ return cavList().filter(function(o){ return o.src===id; })[0]||null; }
+  /* v11.18 : écartées — clé synchronisée (partagée équipe) ; del:1 = supprimée définitivement
+     (pierre tombale conservée pour que l'idée ne réapparaisse pas, purgée après 60 jours) */
+  var ECART_K='ach_idj_ecart_v1';
+  function ecartList(){ try{ var a=JSON.parse(localStorage.getItem(ECART_K)||'[]'); return Array.isArray(a)?a:[]; }catch(e){ return []; } }
+  function ecartSave(a){
+    var cut=Date.now()-60*864e5;
+    a=a.filter(function(o){ return !(o.del && o.le && new Date(o.le).getTime()<cut); });
+    try{ localStorage.setItem(ECART_K, JSON.stringify(a)); }catch(e){window.achErr&&achErr(e)}
+  }
+  function ecartFor(id){ return ecartList().filter(function(o){ return (''+o.id)===(''+id); })[0]||null; }
+  function fdate(d){ d=''+(d||''); var m=d.match(/^(\d{4})-(\d{2})-(\d{2})/); return m?(m[3]+'/'+m[2]):d; }
   function visibles(){
     var cut=new Date(Date.now()-13*864e5), cutS=cut.getFullYear()+'-'+('0'+(cut.getMonth()+1)).slice(-2)+'-'+('0'+cut.getDate()).slice(-2);
     return props().filter(function(p){
       if((''+(p.date||''))<cutS) return false;
+      if(ecartFor(p.id)) return false;   /* v11.18 : écartée → visible seulement dans le dossier */
       if(!_q) return true;
       var th=(THEMES[p.theme]||['','',''])[1];
       var hay=[p.titre,p.actu,p.angle,p.concurrent,p.conseil,th,p.linkedin,p.instagram,p.facebook,p.tiktok].join(' ').toLowerCase();
@@ -23049,6 +23083,7 @@ body.pi-grabbing *{user-select:none!important;}
     compteur(list.length);
     if(!list.length){
       box.innerHTML='<div class="cav-sec"><div class="cav-empty">'+(_q?'Aucune proposition ne correspond à la recherche.':'Aucune proposition pour le moment — elles arrivent chaque matin vers 9h.')+'</div></div>';
+      try{ ecartRender(); }catch(e){window.achErr&&achErr(e)}
       return;
     }
     var jours={}; list.forEach(function(p){ var d=''+(p.date||''); (jours[d]=jours[d]||[]).push(p); });
@@ -23061,6 +23096,18 @@ body.pi-grabbing *{user-select:none!important;}
         var T=THEMES[p.theme]||['📌',p.theme||'—','#7a7570'];
         var Fm=FORMATS[p.format]||['📌',p.format||'—'];
         var St=STATUTS[p.statut]||[p.statut||'—','#7a7570'];
+        /* v11.18 : fin de ligne = actions rapides (idée à trier) ou pastille d'état (déjà triée) */
+        var acted=cavItemFor(id), tail='';
+        if(p.statut==='propose'){
+          if(acted && acted.st==='valide') tail='<span class="idj-done val" title="Dans « Validés — à mettre en place »">✅ Validée</span>';
+          else if(acted && acted.st==='publie') tail='<span class="idj-done val" title="Publiée (ligne dans Posts réseaux)">📣 Publiée</span>';
+          else if(acted) tail='<span class="idj-done lat" title="Gardée dans « Idées de l\u2019équipe »">🕐 De côté</span>';
+          else tail='<span class="idj-acts">'
+            +'<button class="idj-qa ok" onclick="idjAct(\''+eid+'\',\'val\')" title="✅ Valider — part dans « Validés, à mettre en place »">✅</button>'
+            +'<button class="idj-qa lat" onclick="idjAct(\''+eid+'\',\'later\')" title="🕐 Plus tard — gardée dans « Idées de l\u2019équipe », marquée Claude">🕐</button>'
+            +'<button class="idj-qa off" onclick="idjAct(\''+eid+'\',\'off\')" title="❌ Écarter — archivée dans le dossier Écartées">❌</button>'
+            +'</span>';
+        } else { tail='<span class="idj-st" style="background:'+St[1]+'18;color:'+St[1]+';border:1px solid '+St[1]+'44;">'+esc(St[0])+'</span>'; }
         var note='';
         if(p.statut==='rejete'&&(p.raison||p.reproposer)){
           var r=[]; if(p.raison) r.push(esc(p.raison));
@@ -23074,7 +23121,7 @@ body.pi-grabbing *{user-select:none!important;}
           +'<span class="idj-tt" title="'+esc(p.titre)+'">'+esc(p.titre)+'</span>'
           +(recos(p).length?'<span class="idj-reco" title="'+esc(p.conseil||'Réseau(x) conseillé(s)')+'">⭐ '+recos(p).map(function(n){return n[1];}).join(' · ')+'</span>':'')
           +note
-          +'<span class="idj-st" style="background:'+St[1]+'18;color:'+St[1]+';border:1px solid '+St[1]+'44;">'+esc(St[0])+'</span>'
+          +tail
           +'</div>';
         if(open){
           h+='<div class="idj-body">';
@@ -23094,16 +23141,20 @@ body.pi-grabbing *{user-select:none!important;}
                 +'<div class="idj-net-tx">'+esc(p[n[0]])+'</div></div>';
             }).join('')+'</div>';
           }
-          h+='<div class="idj-send-bar">'+(dejaEnvoyee(id)
-            ? '<span class="idj-sent">✓ Retenue — dans Posts à venir</span>'
-            : '<button class="cav-act ok" onclick="idjSend(\''+eid+'\')">✅ Retenir — à faire</button>')
-            +'</div>';
+          if(p.statut==='propose' && !cavItemFor(id)){
+            h+='<div class="idj-send-bar">'
+              +'<button class="cav-act ok" onclick="idjAct(\''+eid+'\',\'val\')">✅ Valider — à mettre en place</button>'
+              +'<button class="cav-act" onclick="idjAct(\''+eid+'\',\'later\')">🕐 Plus tard</button>'
+              +'<button class="cav-act del" onclick="idjAct(\''+eid+'\',\'off\')">❌ Écarter</button>'
+              +'</div>';
+          }
           h+='</div>';
         }
       });
       h+='</div>';
     });
     box.innerHTML=h;
+    try{ ecartRender(); }catch(e){window.achErr&&achErr(e)}
   };
   window.idjToggle=function(eid){ var id=decodeURIComponent(eid); _open[id]=!_open[id]; idjRender(); };
   window.idjCopy=function(eid,net,btn){
@@ -23113,8 +23164,21 @@ body.pi-grabbing *{user-select:none!important;}
     function fb(){ try{ var ta=document.createElement('textarea'); ta.value=tx; ta.style.position='fixed'; ta.style.left='-9999px'; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta); ok(); }catch(e){window.achErr&&achErr(e)} }
     try{ if(navigator.clipboard&&navigator.clipboard.writeText){ navigator.clipboard.writeText(tx).then(ok,fb); } else fb(); }catch(e){ fb(); }
   };
-  window.idjSend=function(eid){
+  /* v11.18 : tri d'une idée du matin — 'val' → Validés à mettre en place ;
+     'later' → Idées de l'équipe (marquée 💡 Claude + date) ; 'off' → dossier Écartées. */
+  window.idjAct=function(eid, act){
     var id=decodeURIComponent(eid), p=byId(id); if(!p) return;
+    if(act==='off'){
+      if(ecartFor(id)) { idjRender(); return; }
+      var e=ecartList();
+      e.push({ id:''+p.id, date:p.date||'', theme:p.theme||'', format:p.format||'', titre:''+(p.titre||''),
+        actu:''+(p.actu||''), conseil:''+(p.conseil||''), par:(window.ACH_USER&&ACH_USER.initials)||'LS', le:new Date().toISOString() });
+      ecartSave(e);
+      if(window.toast) toast('❌ Écartée — retrouvez-la dans le dossier Écartées');
+      try{ if(window.achLog) achLog('modification','Communication','idée du matin écartée : '+(p.titre||'')); }catch(e2){window.achErr&&achErr(e2)}
+      idjRender();
+      return;
+    }
     if(dejaEnvoyee(id)){ idjRender(); return; }
     var nets=NETS.filter(function(n){ return (''+(p[n[0]]||'')).trim(); });
     var rec=recos(p).filter(function(n){ return (''+(p[n[0]]||'')).trim(); });
@@ -23122,16 +23186,56 @@ body.pi-grabbing *{user-select:none!important;}
     var texte=pick.length?(''+p[pick[0][0]]).trim():(''+(p.linkedin||'')).trim();
     if(rec.length) nets=rec;   /* la mention réseaux reprend le(s) conseillé(s) */
     var a=cavList();
-    a.push({ id:'cav-'+Date.now().toString(36)+Math.floor(Math.random()*1000), st:'valide',   /* v11.12 : retenu = validé, à faire */
+    a.push({ id:'cav-'+Date.now().toString(36)+Math.floor(Math.random()*1000), st:(act==='later'?'idee':'valide'),
       th:p.theme||'astuce', titre:''+(p.titre||''), res:nets.map(function(n){return n[1];}).join(' · '),
       texte:texte, by:(window.ACH_USER&&ACH_USER.initials)||'LS',
+      origin:'claude', pdate:''+(p.date||''),   /* v11.18 : provenance affichée dans Posts à venir */
       created:new Date().toISOString(), updated:new Date().toISOString(), src:id });
     try{ localStorage.setItem(CAV_KEY, JSON.stringify(a)); }catch(e){window.achErr&&achErr(e)}
-    if(window.toast) toast('✅ Retenu — ajouté dans Posts à venir (validés)');
+    if(window.toast) toast(act==='later' ? '🕐 Gardée dans Idées de l\u2019équipe (marquée 💡 Claude)' : '✅ Validée — dans « À mettre en place »');
     try{ if(window.achLog) achLog('ajout','Posts à venir',''+(p.titre||'')); }catch(e){window.achErr&&achErr(e)}
     if(typeof window.cavRender==='function'&&document.getElementById('cav-list-valide')) try{ cavRender(); }catch(e){}
     idjRender();
   };
+  window.idjSend=function(eid){ idjAct(eid,'val'); };   /* compatibilité */
+  /* v11.18 : dossier Écartées — consultable, restaurer ou supprimer définitivement */
+  var _ecOpen=false;
+  window.idjEcartToggle=function(){ _ecOpen=!_ecOpen; idjRender(); };
+  window.idjEcartRestore=function(id){
+    id=decodeURIComponent(id);
+    ecartSave(ecartList().filter(function(o){ return (''+o.id)!==id; }));
+    if(window.toast) toast('↩ Idée restaurée dans la liste du matin');
+    idjRender();
+  };
+  window.idjEcartDel=function(id){
+    id=decodeURIComponent(id);
+    var o=ecartFor(id); if(!o) return;
+    if(!confirm('Supprimer définitivement « '+(o.titre||'')+' » ?\n\nElle ne réapparaîtra plus nulle part.')) return;
+    var a=ecartList().map(function(x){ if((''+x.id)===id){ return {id:x.id, del:1, le:new Date().toISOString()}; } return x; });
+    ecartSave(a);
+    try{ if(window.achLog) achLog('suppression','Communication','idée écartée supprimée : '+(o.titre||'')); }catch(e){window.achErr&&achErr(e)}
+    idjRender();
+  };
+  function ecartRender(){
+    var box=document.getElementById('idj-ecart'); if(!box) return;
+    var list=ecartList().filter(function(o){ return !o.del; });
+    if(!list.length){ box.innerHTML=''; return; }
+    var h='<div class="cav-sec" style="margin-top:12px;"><div class="cav-sec-tt" style="cursor:pointer;" onclick="idjEcartToggle()">🗂 Écartées <span class="n">'+list.length+'</span><span class="idj-ec-arrow">'+(_ecOpen?'▾ replier':'▸ consulter')+'</span></div>';
+    if(_ecOpen){
+      list.sort(function(a,b){ return (''+b.le).localeCompare(''+a.le); });
+      h+=list.map(function(o){
+        var T=THEMES[o.theme]||['📌',o.theme||'—','#7a7570'], ei=encodeURIComponent(''+o.id);
+        return '<div class="idj-ec-row">'
+          +'<span class="cav-th" style="background:'+T[2]+'18;color:'+T[2]+';border:1px solid '+T[2]+'44;">'+T[0]+' '+esc(T[1])+'</span>'
+          +'<span class="idj-ec-tt" title="'+esc(o.actu||o.titre)+'">'+esc(o.titre)+'</span>'
+          +'<span class="idj-ec-meta">proposée le '+esc(fdate(o.date))+' · écartée le '+esc(fdate((''+(o.le||'')).slice(0,10)))+(o.par?' par '+esc(o.par):'')+'</span>'
+          +'<button class="idj-ec-btn" onclick="idjEcartRestore(\''+ei+'\')" title="Rendre l\u2019idée à la liste du matin">↩</button>'
+          +'<button class="idj-ec-btn del" onclick="idjEcartDel(\''+ei+'\')" title="Supprimer définitivement">🗑</button>'
+          +'</div>';
+      }).join('');
+    }
+    box.innerHTML=h+'</div>';
+  }
   window.idjLoad=function(){
     /* v11.11 : deux sources — le cloud interne (import du matin, partagé équipe) et le fichier
        du dépôt (héritage) ; on affiche la plus récente (champ maj). */
