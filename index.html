@@ -1733,7 +1733,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     </div>
   </div>
   </div>
-  <div class="logo-ver app-ver">Achille App — v11.27</div>
+  <div class="logo-ver app-ver">Achille App — v11.30</div>
 </aside>
 <div id="mob-bk" onclick="mobNav(false)"></div>
 <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Réduire la barre latérale">‹</button>
@@ -13924,7 +13924,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     startRealtime();
     var ov=document.getElementById('ach-login-overlay'); if(ov) ov.classList.add('ach-hidden');
     var ub=document.getElementById('ach-userbar'); if(ub) ub.style.display='none';
-    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v11.27';
+    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v11.30';
     flag('Synchronis\u00e9');
     // fin de l'init : on autorise la journalisation des actions
     setTimeout(function(){ installInterceptor._init=false; }, 1500);
@@ -15487,11 +15487,32 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
       var prev=document.getElementById('pg-rap2-date');
       var val=(prev&&prev.value)||'';
       if(!val){ var d=new Date(); d.setDate(d.getDate()+7); val=d.getFullYear()+'-'+pgPad2(d.getMonth()+1)+'-'+pgPad2(d.getDate()); }
-      box.innerHTML='<div class="pg-auto ra">🔔 <b>Rappel automatique :</b>&nbsp;« Relancer ce vendeur » sera créé dans la cloche pour le&nbsp;<input type="date" id="pg-rap2-date" value="'+val+'"><span class="pg-auto-hint">(modifiable — créé à l\'enregistrement de la fiche)</span></div>';
+      if(id && window.pgRelanceIsOff(id)){
+        /* v11.28 : l'utilisateur a supprimé ce rappel — on ne le recrée plus, et on le dit. */
+        box.innerHTML='<div class="pg-auto ga">🔕 <b>Rappel automatique désactivé</b> pour cette fiche (vous l\'avez supprimé).<button type="button" class="pg-auto-b" onclick="pgRelanceOff(\''+id+'\',false)">🔔 Réactiver</button></div>';
+      } else {
+        box.innerHTML='<div class="pg-auto ra">🔔 <b>Rappel automatique :</b>&nbsp;« Relancer ce vendeur » sera créé dans la cloche pour le&nbsp;<input type="date" id="pg-rap2-date" value="'+val+'"><span class="pg-auto-hint">(modifiable — créé à l\'enregistrement de la fiche)</span></div>';
+      }
     } else { box.innerHTML=''; }
   };
   /* À l'enregistrement : crée/met à jour le rappel de relance (id déterministe → dédoublonné par la synchro),
      ou le solde si le suivi n'est plus « à relancer ». */
+  /* v11.28 : quand on SUPPRIME (ou solde) à la main le rappel automatique d'une fiche,
+     la fiche garde la consigne — sinon l'enregistrement suivant le recréait aussitôt
+     (« je supprime, il revient », retour Laurent 14/10). Le drapeau se lève dès qu'on
+     change le suivi ou qu'on remet une date dans le bandeau. */
+  window.pgRelanceOff=function(fid, off){
+    if(!fid) return;
+    var a=load(), r=a.filter(function(x){return x.id===fid;})[0]; if(!r) return;
+    if(off){ r.relanceOff=1; } else { delete r.relanceOff; }
+    r.updated=new Date().toISOString();
+    save(a);
+    try{ window.pigeSuiviAutoRefresh(); }catch(e){window.achErr&&achErr(e)}
+  };
+  window.pgRelanceIsOff=function(fid){
+    var r=load().filter(function(x){return x.id===fid;})[0];
+    return !!(r&&r.relanceOff);
+  };
   function pigeRelanceRappel(fid, sv){
     if(!fid) return;
     var rapId='rap-pg-relance-'+fid;
@@ -15502,6 +15523,11 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
     var _dv0=(_de0&&_de0.value)||'';
     /* v8.21 : pour « Refus à relancer », la date est une PROPOSITION — champ vidé = AUCUN rappel créé
        (et le passage en Réticent n'est pas bloqué). « Bon contact à relancer » garde son défaut +7 jours. */
+    if(window.pgRelanceIsOff(fid)){   /* v11.28 : rappel automatique désactivé sur cette fiche */
+      if(ex && !ex.done){ ex.done=1; ex.doneAt=new Date().toISOString(); localStorage.setItem('ach_rappels_v1', JSON.stringify(raps));
+        try{ if(window.rapRefreshAll) rapRefreshAll(); }catch(e){window.achErr&&achErr(e)} }
+      return;
+    }
     if((sv==='relance') || (sv==='refus-rel' && _dv0)){
       var d=_dv0;
       if(!d){ var t=new Date(); t.setDate(t.getDate()+7); d=t.getFullYear()+'-'+pgPad2(t.getMonth()+1)+'-'+pgPad2(t.getDate()); }
@@ -16805,6 +16831,8 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
     return s;
   };
   window.pigeSuiviChanged=function(){
+    /* v11.28 : choisir un nouveau suivi relance la règle automatique */
+    try{ var _fid=(document.getElementById('pg-edit-id')||{}).value||''; if(_fid && window.pgRelanceIsOff(_fid)) window.pgRelanceOff(_fid,false); }catch(e){window.achErr&&achErr(e)}
     var sv=document.getElementById('pg-suivi'), dt=document.getElementById('pg-suivi-date');
     if(!sv||!dt) return;
     if(sv.value){ dt.value=today(); } else { dt.value=''; }
@@ -21243,6 +21271,12 @@ window.rapDone=function(id){
   var list=rapAll(), f=null;
   list.forEach(function(r){ if(r.id===id){ r.done=1; r.doneAt=new Date().toISOString(); f=r; } });
   rapSave(list);
+  /* v11.28 : un rappel automatique marqué « fait » ne doit pas revenir au prochain
+     enregistrement de la fiche (il revenait avec done remis à 0). */
+  try{
+    var m=(''+id).match(/^rap-pg-relance-(.+)$/);
+    if(m && window.pgRelanceOff) window.pgRelanceOff(m[1], true);
+  }catch(e){window.achErr&&achErr(e)}
   if(window.toast&&f) toast('✓ Rappel fait'+(f.label?' — '+f.label:''));
   rapRefreshAll();
 };
@@ -21254,7 +21288,15 @@ window.rapDelete=function(id, silencieux){
   if(!f) return false;
   if(!silencieux && !confirm('Supprimer le rappel « '+(f.label||'sans titre')+' » du '+frDate(f.date)+' ?')) return false;
   rapSave(list.filter(function(r){ return r.id!==id; }));
-  if(window.toast) toast('🗑 Rappel supprimé');
+  /* v11.28 : rappel AUTOMATIQUE d'une fiche de pige → on désactive la règle sur la fiche,
+     sinon le prochain enregistrement le recrée (« je supprime, il revient »). */
+  try{
+    var m=(''+id).match(/^rap-pg-relance-(.+)$/);
+    if(m && window.pgRelanceOff) window.pgRelanceOff(m[1], true);
+  }catch(e){window.achErr&&achErr(e)}
+  if(window.toast) toast(/^rap-pg-relance-/.test(''+id)
+    ? '🗑 Rappel supprimé — la relance automatique est désactivée sur cette fiche'
+    : '🗑 Rappel supprimé');
   try{ if(window.achLog) achLog('suppression','Rappels',(f.label||'')+' — '+frDate(f.date)); }catch(e){window.achErr&&achErr(e)}
   rapRefreshAll();
   return true;
@@ -21329,7 +21371,10 @@ window.rapNotifRender=function(){
   box.innerHTML=h;
 };
 window.rapDashRender=function(){
-  var box=document.getElementById('rap-dash'); if(box) box.innerHTML=rapStripHtml('dash');
+  /* v11.30 : bandeau « Rappels du jour » RETIRÉ de l'accueil (demande Laurent 14/10) —
+     l'information est déjà dans la carte « Aujourd'hui » (rappels du jour + retards,
+     v11.29) et dans la cloche. On garde la fonction : d'autres modules l'appellent. */
+  var box=document.getElementById('rap-dash'); if(box) box.innerHTML='';
 };
 window.rapPlanRender=function(){
   var box=document.getElementById('rap-plan'); if(box) box.innerHTML=rapStripHtml('plan');
@@ -21339,6 +21384,11 @@ window.rapPlanRender=function(){
 };
 /* v11.24 : les rappels OUVERTS d'une date (exposé pour le Planning et l'accueil) */
 window.rapOpenForDate=function(ds){ return rapOpen().filter(function(r){ return r.date===ds; }); };
+/* v11.29 : tous les rappels ouverts JUSQU'À cette date (retards compris), du plus récent au plus ancien */
+window.rapOpenUpTo=function(ds){
+  return rapOpen().filter(function(r){ return (''+(r.date||''))<=ds; })
+    .sort(function(a,b){ return (''+(b.date||'')).localeCompare(''+(a.date||'')); });
+};
 /* v11.24 : pastilles des rappels d'une date, posées dans les cases du Planning */
 window.rapChipsForDate=function(ds){
   try{
@@ -23824,6 +23874,8 @@ body.pi-grabbing *{user-select:none!important;}
       .sort(function(a,b){ return (a.allDay?'00:00':(a.timeStart||'23:59')).localeCompare(b.allDay?'00:00':(b.timeStart||'23:59')); });
   }
   function rapOfDay(ds){ try{ return (window.rapOpenForDate?window.rapOpenForDate(ds):[]); }catch(e){ return []; } }
+  /* v11.29 : pour la carte du jour — tout ce qui est dû AUJOURD'HUI OU AVANT (demande Laurent) */
+  function rapUpTo(ds){ try{ return (window.rapOpenUpTo?window.rapOpenUpTo(ds):rapOfDay(ds)); }catch(e){ return []; } }
 
   /* ───────── Accueil : agenda du jour et de la semaine ───────── */
   function ligneEv(e){
@@ -23836,24 +23888,35 @@ body.pi-grabbing *{user-select:none!important;}
       +(e.adresse?'<span class="ag-sub">'+esc(e.adresse)+'</span>':'')
       +'</div>';
   }
-  function ligneRap(r){
-    /* v11.27 : le rappel mène à sa fiche (pige, affaire…) quand il en a une */
+  function frCourt(ds){
+    try{ var t=new Date(ds+'T12:00:00').toLocaleDateString('fr-FR',{weekday:'short',day:'numeric',month:'short'}); return t; }catch(e){ return ds; }
+  }
+  function ligneRap(r, tRef){
+    /* v11.27 : le rappel mène à sa fiche (pige, affaire…) quand il en a une
+       v11.29 : un rappel en retard affiche SA date et le nombre de jours */
     var lbl=(window.rapCibleLabel?window.rapCibleLabel(r):'le rappel');
-    return '<div class="ag-row rap" onclick="rapOuvrir&&rapOuvrir(\''+(r.id||'')+'\')" title="Ouvrir '+esc(lbl)+'">'
-      +'<span class="ag-h">🔔</span><span class="ag-ico"></span>'
+    var late = tRef && (''+(r.date||''))<tRef;
+    var jours = 0;
+    if(late){ try{ jours=Math.round((new Date(tRef+'T12:00:00')-new Date(r.date+'T12:00:00'))/864e5); }catch(e){} }
+    return '<div class="ag-row rap'+(late?' late':'')+'" onclick="rapOuvrir&&rapOuvrir(\''+(r.id||'')+'\')" title="Ouvrir '+esc(lbl)+(late?' — prévu le '+esc(frCourt(r.date)):'')+'">'
+      +'<span class="ag-h">'+(late?esc(frCourt(r.date)):'🔔')+'</span>'
+      +'<span class="ag-ico">'+(late?'🔔':'')+'</span>'
       +'<span class="ag-t">'+esc(r.label||'Rappel')+'</span>'
+      +(late?'<span class="ag-retard">'+jours+' j</span>':'')
       +(r.note?'<span class="ag-sub">'+esc(r.note)+'</span>':'')
       +'</div>';
   }
   window.dashAgendaRender=function(){
     var box=document.getElementById('dash-agenda'); if(!box) return;
     try{ if(document.body.classList.contains('ach-agence')){ box.innerHTML=''; return; } }catch(e){}
-    var t=dISO(), eT=evOfDay(t), rT=rapOfDay(t);
+    var t=dISO(), eT=evOfDay(t), rT=rapUpTo(t);   /* v11.29 : rappels du jour ET en retard */
+    var nRet=rT.filter(function(r){ return (''+(r.date||''))<t; }).length;
     var h='<div class="ag-wrap"><div class="ag-card">'
-      +'<div class="ag-hd"><span class="ag-hd-t">📅 Aujourd\u2019hui</span><span class="ag-hd-d">'+esc(frJour(t))+'</span>'
+      +'<div class="ag-hd"><span class="ag-hd-t">📅 Aujourd\u2019hui</span><span class="ag-hd-d">'+esc(frJour(t))
+      +(nRet?' · <b style="color:var(--rouge);font-weight:600;">'+nRet+' en retard</b>':'')+'</span>'
       +'<span class="ag-hd-go" onclick="navTo(\'planning\')">Voir le planning ›</span></div>';
     if(!eT.length && !rT.length){ h+='<div class="ag-empty">Aucun rendez-vous ni rappel aujourd\u2019hui.</div>'; }
-    else { h+=eT.map(ligneEv).join('')+rT.map(ligneRap).join(''); }
+    else { h+=eT.map(ligneEv).join('')+rT.map(function(r){ return ligneRap(r,t); }).join(''); }
     h+='</div>';
     /* 6 jours suivants */
     var days=[];
@@ -23862,7 +23925,7 @@ body.pi-grabbing *{user-select:none!important;}
       +'<span class="ag-hd-d">'+(days.length?days.reduce(function(n,d){return n+d.e.length+d.r.length;},0)+' à venir':'')+'</span></div>';
     if(!days.length){ h+='<div class="ag-empty">Rien de prévu dans les 6 prochains jours.</div>'; }
     else days.forEach(function(d){
-      h+='<div class="ag-day">'+esc(frJour(d.ds))+'</div>'+d.e.map(ligneEv).join('')+d.r.map(ligneRap).join('');
+      h+='<div class="ag-day">'+esc(frJour(d.ds))+'</div>'+d.e.map(ligneEv).join('')+d.r.map(function(r){ return ligneRap(r,null); }).join('');
     });
     h+='</div></div>';
     box.innerHTML=h;
@@ -23938,6 +24001,8 @@ body.pi-grabbing *{user-select:none!important;}
 .ag-ico{flex:none;}
 .ag-t{flex:1;min-width:0;color:var(--noir);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .ag-sub{font-size:11.5px;color:var(--gris-2);max-width:40%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.ag-row.late .ag-h{color:var(--rouge);font-size:11px;}
+.ag-retard{font-size:10.5px;color:var(--rouge);background:var(--rouge-p,#fdf0ee);border-radius:10px;padding:1px 7px;white-space:nowrap;flex:none;}
 .ag-day{font-size:10.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--gris-2);background:#faf7f2;padding:5px 16px;border-bottom:1px solid #f3eee6;}
 .ag-empty{padding:14px 16px;font-size:12.5px;color:var(--gris-2);font-style:italic;}
 /* pastilles de rappel dans le calendrier */
