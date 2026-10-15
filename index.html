@@ -414,14 +414,19 @@ body.sb-collapsed .sidebar::-webkit-scrollbar{width:3px;}
 .rap-we-k{font-size:11px;color:var(--gris-2);font-style:italic;}
 .rap-i-del{border:1px solid var(--border);background:#fff;color:var(--gris-2);border-radius:6px;font-size:11px;padding:3px 7px;cursor:pointer;flex:none;font-family:'Jost',sans-serif;margin-left:4px;}
 .rap-i-del:hover{border-color:var(--rouge);color:var(--rouge);}
-.notif-panel{position:fixed;top:54px;right:0;width:320px;max-width:94vw;max-height:calc(100vh - 70px);overflow-y:auto;background:var(--blanc);border-left:1px solid var(--border);border-bottom-left-radius:10px;z-index:200;display:none;box-shadow:var(--shadow-m);}
+.notif-panel{position:fixed;top:54px;right:0;width:400px;max-width:94vw;max-height:calc(100vh - 70px);overflow-y:auto;background:var(--blanc);border-left:1px solid var(--border);border-bottom-left-radius:10px;z-index:200;display:none;box-shadow:var(--shadow-m);}
 .notif-panel.open{display:block;}
 .notif-ph{position:sticky;top:0;padding:12px 16px;border-bottom:1px solid var(--border);font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--gris);display:flex;justify-content:space-between;align-items:center;background:var(--beige);z-index:2;}
 .notif-ph button{background:none;border:none;color:var(--gris);cursor:pointer;font-size:16px;}
 .notif-actions{padding:10px 14px 4px;display:flex;}
 .notif-sec{padding:9px 16px 3px;font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--gris-2);}
 .notif-empty{padding:22px 16px;font-size:12.5px;color:var(--gris);text-align:center;line-height:1.7;}
-#notif-body .rap-item{padding:8px 16px;border-top:1px solid rgba(76,83,59,.08);}
+/* v11.42 : le sujet du rappel sur sa ligne, les boutons dessous — sinon, avec le badge
+   de la personne, il restait 90 px pour le texte et chaque rappel tenait sur 4 lignes. */
+#notif-body .rap-item{padding:9px 16px 10px;border-top:1px solid rgba(76,83,59,.08);flex-wrap:wrap;gap:6px;row-gap:7px;}
+#notif-body .rap-i-txt{flex:1 1 calc(100% - 104px);min-width:150px;line-height:1.45;}
+.rap-i-act{display:flex;align-items:center;gap:4px;flex:none;margin-left:auto;}
+.rap-i-act .rap-i-del{margin-left:0;}
 #notif-body .rap-next{padding:9px 16px 12px;}
 .notif-item{padding:12px 16px;border-bottom:1px solid rgba(0,0,0,.05);cursor:pointer;transition:background .2s;}
 .notif-item:hover{background:var(--beige);}
@@ -1734,7 +1739,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     </div>
   </div>
   </div>
-  <div class="logo-ver app-ver">Achille App — v11.40</div>
+  <div class="logo-ver app-ver">Achille App — v11.42</div>
 </aside>
 <div id="mob-bk" onclick="mobNav(false)"></div>
 <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Réduire la barre latérale">‹</button>
@@ -14125,7 +14130,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     startRealtime();
     var ov=document.getElementById('ach-login-overlay'); if(ov) ov.classList.add('ach-hidden');
     var ub=document.getElementById('ach-userbar'); if(ub) ub.style.display='none';
-    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v11.40';
+    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v11.42';
     flag('Synchronis\u00e9');
     // fin de l'init : on autorise la journalisation des actions
     setTimeout(function(){ installInterceptor._init=false; }, 1500);
@@ -15143,12 +15148,19 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
     var hono=(priv && window.ecHonoAVenir)? ecHonoAVenir() : null;
     /* v11.39 : un honoraire s'affiche au centime près — « 48 k€ » ne veut rien dire sur une facture */
     function eurX(v){ try{ return Math.round(v||0).toLocaleString('fr-FR')+' \u20ac'; }catch(e){ return Math.round(v||0)+' \u20ac'; } }
+    /* v11.41 : « 25 Rue du Château 92200 Neuilly-sur-Seine » → « 25 Rue du Château » */
+    function adrCourte(a){ a=''+(a||''); a=a.split(',')[0]; a=a.replace(/\s*\b\d{5}\b.*$/,''); return a.trim(); }
     if(hono){
       kpis+='<div class="dash-kpi dash-kpi-go" onclick="navTo(\'encours\')" title="Ouvrir Ventes / En cours">'
         +'<div class="card-sub">Honoraires \u00e0 venir</div>'
         +'<div class="kpi-val kpi-val-s">'+eurX(hono.ttc)+'<span class="kpi-u">TTC</span></div>'
-        +'<div class="kpi-tr">'+(hono.n? (eurX(hono.ht)+' HT \u00b7 '+hono.n+' vente'+(hono.n>1?'s':'')+' en cours')
-                                      : 'aucune vente en cours')+'</div></div>';
+        +'<div class="kpi-tr"'+(hono.n===1? ' title="'+esc(hono.lignes[0].addr||'')+'"':'')+'>'
+        +(!hono.n? 'aucune vente en cours'
+          : (hono.n===1
+             ? (eurX(hono.ht)+' HT \u00b7 '+esc(adrCourte(hono.lignes[0].addr))
+                +(hono.lignes[0].acte? ' \u00b7 '+esc(hono.lignes[0].acte) : ' \u00b7 date \u00e0 fixer'))
+             : (eurX(hono.ht)+' HT \u00b7 '+hono.n+' ventes en cours')))
+        +'</div></div>';
     } else if(mdVu && md.actifs){
       kpis+=kpi('Biens sous mandat',fmtEur(md.caVente),'',md.vente+' bien'+(md.vente>1?'s':'')+' en vente');
     } else {
@@ -15197,8 +15209,11 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
     var topRow='<div class="dash-top'+(priv?'':' dash-top-collab')+'">'+kpis+activity+'</div>';
 
     /* v11.39 : le détail des honoraires attendus — une ligne par vente, date d'acte, HT et TTC */
+    /* v11.41 : avec UNE seule vente en cours, le pavé répétait mot pour mot l'encadré du dessus
+       (demande Laurent). Le détail passe alors dans le sous-titre de l'encadré, et le pavé ne
+       s'affiche qu'à partir de 2 ventes, là où il apporte vraiment une lecture ligne à ligne. */
     var honoBloc='';
-    if(hono && hono.n){
+    if(hono && hono.n>1){
       honoBloc='<div class="hono-bloc"><div class="hono-hd"><span class="hono-t">\ud83d\udcb6 Honoraires \u00e0 venir</span>'
         +'<span class="hono-go" onclick="navTo(\'encours\')">Ouvrir Ventes / En cours \u203a</span></div>'
         +hono.lignes.map(function(l){
@@ -15365,6 +15380,7 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
           <div class="form-group fg-pm2"><label class="form-label">Prix au m²</label><input class="form-input" id="pg-prixm2" readonly tabindex="-1" style="background:var(--beige);color:var(--kaki);font-weight:600;" placeholder="—"></div>
           <div class="form-group fg-pieces"><label class="form-label">Pièces</label><input class="form-input" inputmode="numeric" id="pg-pieces" placeholder="4"></div>
         </div>
+        <div id="pg-hist"></div><!-- v11.41 : évolution du prix (horodatée automatiquement) -->
         <div id="pg-conf-prix" style="display:none;border:1px solid #2f6f6f33;background:#2f6f6f0a;border-radius:10px;padding:10px 12px 7px;margin-bottom:11px;">
           <div class="form-label" style="color:#2f6f6f;">Partage confrère — les prix du bien</div>
           <div class="form-row" style="margin-bottom:0;">
@@ -16050,6 +16066,79 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
     if(!list||!list.length){ pigeLinkAdd('seloger',''); return; }
     list.forEach(function(l){ pigeLinkAdd(l.src||'seloger', l.url||''); });
   }
+  /* ═══ v11.41 : ÉVOLUTION DU PRIX (demande Laurent, modèle Fipac) ═══
+     Chaque changement de prix est horodaté tout seul au moment de l'enregistrement, avec le
+     support (SeLoger, PAP…) sur lequel le bien est publié et le sens de la variation. Un
+     nouveau support ajouté sans changement de prix est tracé aussi (ligne « support » chez
+     Fipac). Stocké dans r.phist = [{d, p, s, m, u}] — date, prix, support, motif, initiales. */
+  function pgSrcLbl(k){ return (SRC[k]&&SRC[k][0])||(k||'\u2014'); }
+  function pgSupportTxt(links){
+    var vus=[], out=[];
+    (links||[]).forEach(function(l){ var k=l&&l.src; if(!k||k==='manuel') return; if(vus.indexOf(k)>=0) return; vus.push(k); out.push(pgSrcLbl(k)); });
+    return out.join(' \u00b7 ');
+  }
+  function pgSupportKeys(links){
+    var out=[];
+    (links||[]).forEach(function(l){ var k=l&&l.src; if(!k||k==='manuel') return; if(out.indexOf(k)<0) out.push(k); });
+    return out.sort();
+  }
+  function pgIni(){ try{ return (window.ACH_USER&&ACH_USER.initials)||''; }catch(e){ return ''; } }
+  function pgHistList(r){ var a=(r&&r.phist); return Array.isArray(a)?a:[]; }
+  /* ajoute une entrée, sans jamais doublonner (même jour + même prix + même support) */
+  function pgHistAdd(h, d, prix, support, motif){
+    var e={ d:(''+(d||'')).slice(0,10), p:(parseFloat(prix)||0), s:''+(support||''), m:''+(motif||''), u:pgIni() };
+    var last=h[h.length-1];
+    if(last && last.d===e.d && last.p===e.p && last.s===e.s){ last.m=e.m; return h; }
+    h.push(e); return h;
+  }
+  /* appelé à l'enregistrement : compare l'ancienne fiche et la nouvelle saisie */
+  window.pgHistMaj=function(ancien, nouveau){
+    var h=pgHistList(ancien).slice();
+    var supNew=pgSupportTxt(nouveau.links), supOld=pgSupportTxt(ancien&&ancien.links);
+    var pNew=parseFloat(nouveau.prix)||0, pOld=parseFloat(ancien&&ancien.prix)||0;
+    var jour=(window.achDayFR? achDayFR() : new Date().toISOString().slice(0,10));
+    if(!ancien){   /* création */
+      if(pNew>0) pgHistAdd(h, jour, pNew, supNew, 'Première parution');
+      return h;
+    }
+    if(pNew!==pOld){
+      /* fiche d'avant la v11.41 : on pose d'abord le prix connu jusqu'ici, à sa dernière date certaine */
+      if(!h.length && pOld>0) pgHistAdd(h, (ancien.updated||ancien.created||jour), pOld, supOld, 'Prix relevé');
+      if(pNew>0) pgHistAdd(h, jour, pNew, supNew, pNew<pOld? 'Baisse' : 'Hausse');
+      else pgHistAdd(h, jour, 0, supNew, 'Prix retiré');
+      return h;
+    }
+    /* prix inchangé : on ne trace QUE l'arrivée d'un nouveau support */
+    var kNew=pgSupportKeys(nouveau.links), kOld=pgSupportKeys(ancien.links);
+    var ajout=kNew.filter(function(k){ return kOld.indexOf(k)<0; });
+    if(ajout.length && pNew>0){
+      if(!h.length && pOld>0) pgHistAdd(h, (ancien.updated||ancien.created||jour), pOld, supOld, 'Prix relevé');
+      pgHistAdd(h, jour, pNew, supNew, 'Nouveau support : '+ajout.map(pgSrcLbl).join(', '));
+    }
+    return h;
+  };
+  window.pgHistRender=function(r){
+    var box=document.getElementById('pg-hist'); if(!box) return;
+    var h=pgHistList(r);
+    if(h.length<1){ box.innerHTML=''; return; }
+    var lignes=h.slice().sort(function(a,b){ return (''+a.d).localeCompare(''+b.d); });
+    var p0=lignes[0].p, pN=lignes[lignes.length-1].p, ecart=(p0&&pN)? (pN-p0) : 0;
+    var pct=(p0&&pN)? Math.round((pN-p0)/p0*1000)/10 : 0;
+    box.innerHTML='<div class="pgh-box"><div class="pgh-hd">\ud83d\udcc9 \u00c9volution du prix'
+      +(ecart? '<span class="pgh-delta '+(ecart<0?'down':'up')+'">'+(ecart<0?'\u2193':'\u2191')+' '
+        +fmtN(Math.abs(ecart))+' \u20ac ('+(pct>0?'+':'')+(''+pct).replace('.',',')+' %) depuis la 1re parution</span>' : '')
+      +'</div><table class="pgh-t"><thead><tr><th>Date</th><th>Support</th><th>Prix</th><th>Modification</th></tr></thead><tbody>'
+      +lignes.map(function(e,i){
+        var prev=i>0? lignes[i-1].p : 0;
+        var dd=(prev&&e.p)? (e.p-prev) : 0;
+        return '<tr><td>'+esc(pgDateFr(e.d))+'</td><td>'+esc(e.s||'\u2014')+'</td>'
+          +'<td class="pgh-p">'+(e.p? fmtN(e.p)+' \u20ac' : '\u2014')+'</td>'
+          +'<td>'+esc(e.m||'')+(dd? ' <span class="pgh-d '+(dd<0?'down':'up')+'">'+(dd<0?'\u2212':'+')+fmtN(Math.abs(dd))+' \u20ac</span>':'')
+          +(e.u?' <span class="pgh-u">'+esc(e.u)+'</span>':'')+'</td></tr>';
+      }).join('')
+      +'</tbody></table></div>';
+  };
+  function pgDateFr(d){ try{ var x=new Date(d+'T12:00:00'); if(isNaN(x)) return d; return ('0'+x.getDate()).slice(-2)+'/'+('0'+(x.getMonth()+1)).slice(-2)+'/'+x.getFullYear(); }catch(e){ return d; } }
   function pigeLinksRead(){
     var out=[];
     document.querySelectorAll('#pg-links .pg-link-row').forEach(function(row){
@@ -17693,6 +17782,7 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
     pigeLinksRender(pigeMainSources(r));
     S('pg-fipac', pigeFipacLink(r));
     S('pg-prix-net', r.prixNet? fmtN(r.prixNet):''); S('pg-hono-tot', r.honoTot? fmtN(r.honoTot):''); S('pg-hono-ach', r.honoAch? fmtN(r.honoAch):'');
+    try{ window.pgHistRender(r); }catch(e){window.achErr&&achErr(e)}   /* v11.41 */
     _pgHonoAuto=null; pgConfPrixShow();   /* v10.21 : prix du partage confrère */
     var dw=document.getElementById('pg-dup-warn'); if(dw) dw.style.display='none';
     document.getElementById('pg-suivi').value=(r.suivi&&SUIVI[r.suivi])?r.suivi:'';
@@ -17869,10 +17959,12 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
           var who=''; try{ var lk2=achLockCheck(id); if(lk2) who=' (par '+lk2.u+')'; }catch(e){window.achErr&&achErr(e)}
           if(!confirm('⚠️ Cette fiche a été modifiée'+who+' pendant que vous l’aviez ouverte.\nEnregistrer quand même écrasera ces changements. Continuer ?')) return;
         }
+        try{ obj.phist=window.pgHistMaj(r, obj); }catch(e){window.achErr&&achErr(e)}   /* v11.41 */
         Object.assign(r,obj); r.updated=new Date().toISOString();
       } }
     else{ obj.id='pg-'+Date.now()+Math.floor(Math.random()*1000);
       obj.created=new Date().toISOString();
+      try{ obj.phist=window.pgHistMaj(null, obj); }catch(e){window.achErr&&achErr(e)}   /* v11.41 */
       obj.notes=(window._pgNewComs&&window._pgNewComs.length)? window._pgNewComs.slice() : [];
       window._pgNewComs=[]; a.push(obj);
       if(window.pgReadMark) pgReadMark(obj.id);   /* v6.32 : pas de « Nouveau » pour son créateur */ }
@@ -18999,6 +19091,32 @@ input:focus,textarea:focus,select:focus{border-color:var(--terra-l);}
 .dash-act-item:last-child,.dash-act-item:nth-last-child(2){border-bottom:none;}
 .dash-act-item span:first-child{color:var(--gris);}
 .dash-act-item span:last-child{font-weight:600;color:var(--noir);}
+/* v11.42 : à qui est le rappel + filtre d'affichage */
+.rap-who{flex-shrink:0;font-size:10px;font-weight:700;letter-spacing:.03em;padding:1px 5px;border-radius:5px;line-height:1.5;}
+.rap-filt{display:flex;flex-wrap:wrap;align-items:center;gap:5px;padding:7px 14px 9px;border-bottom:1px solid #f3eee6;}
+.rap-filt-l{font-size:11px;color:var(--gris-2);margin-right:2px;}
+.rap-filt-n{font-size:10px;color:var(--terra);margin-left:auto;}
+.rap-f{display:inline-flex;align-items:center;gap:3px;border:1px solid var(--border);background:#fff;color:var(--gris);border-radius:20px;padding:2px 9px;font-size:11px;font-weight:600;cursor:pointer;font-family:'Jost',sans-serif;}
+.rap-f:hover{filter:brightness(.97);}
+.rap-f.on{background:var(--noir);border-color:var(--noir);color:#fff;}
+.rap-f-n{font-size:9.5px;opacity:.75;font-weight:400;}
+.prc-w{margin-left:4px;font-size:9.5px;font-weight:700;flex-shrink:0;}
+/* v11.41 : évolution du prix dans la fiche de pige (modèle Fipac, en plus sobre) */
+.pgh-box{border:1px solid var(--border);border-radius:10px;background:#fcfaf7;padding:9px 12px 4px;margin:0 0 11px;}
+.pgh-hd{display:flex;align-items:baseline;gap:9px;flex-wrap:wrap;font-family:'Jost',sans-serif;font-size:12.5px;font-weight:600;letter-spacing:.02em;color:var(--noir);margin-bottom:6px;}
+.pgh-delta{font-size:11.5px;font-weight:600;}
+.pgh-delta.down{color:var(--vert,#2e6e50);}
+.pgh-delta.up{color:var(--rouge);}
+.pgh-t{width:100%;border-collapse:collapse;font-size:12px;}
+.pgh-t th{text-align:left;font-weight:600;color:var(--gris-2);font-size:10.5px;letter-spacing:.04em;text-transform:uppercase;padding:0 8px 4px 0;border-bottom:1px solid #eee5d8;}
+.pgh-t td{padding:5px 8px 5px 0;border-bottom:1px solid #f4efe7;color:var(--noir);vertical-align:top;}
+.pgh-t tr:last-child td{border-bottom:none;}
+.pgh-p{font-weight:600;white-space:nowrap;}
+.pgh-d{font-size:11px;font-weight:600;}
+.pgh-d.down{color:var(--vert,#2e6e50);}
+.pgh-d.up{color:var(--rouge);}
+.pgh-u{font-size:10px;color:var(--gris-2);}
+@media(max-width:700px){ .pgh-t th:nth-child(2),.pgh-t td:nth-child(2){display:none;} }
 /* v11.40 : lien du post en ligne + surlignage de la ligne qui vient d'être créée */
 .comm-lien{border:none;background:transparent;cursor:pointer;font-size:12px;line-height:1;padding:2px;opacity:.28;flex-shrink:0;}
 .comm-lien:hover{opacity:.75;}
@@ -19007,6 +19125,7 @@ tr.comm-new td{background:#fdf6e9!important;transition:background 1.2s ease;}
 /* v11.39 : honoraires attendus (Tableau de bord) */
 .dash-kpi-go{cursor:pointer;}
 .kpi-val.kpi-val-s{font-size:26px;}
+.dash-kpi-go .kpi-tr{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 @media(max-width:900px){ .kpi-val.kpi-val-s{font-size:22px;} }
 .dash-kpi-go:hover{background:#fcfaf7;}
 .hono-bloc{background:#fff;border:1px solid var(--border);border-radius:12px;box-shadow:var(--shadow);margin:0 0 16px;overflow:hidden;}
@@ -21553,7 +21672,55 @@ window.rapPendingFor=function(mod, refId){
   return rapAll().filter(function(r){ return !r.done && r.mod===mod && r.refId===refId; })
     .sort(function(a,b){ return (a.date||'').localeCompare(b.date||''); })[0]||null;
 };
-function rapOpen(){ return rapAll().filter(function(r){ return !r.done; }); }
+/* ═══ v11.42 : À QUI EST LE RAPPEL, ET LESQUELS J'AFFICHE (demande Laurent) ═══
+   Chaque rappel porte déjà `by` = la clé du compte qui l'a créé (admin, gerant,
+   collaborateur, alternant) ; on l'affiche désormais, et on peut le réattribuer à
+   quelqu'un d'autre à la création comme à la modification. Le filtre d'affichage est une
+   préférence PROPRE À CHAQUE POSTE (clé `achille_rap_filtre`, jamais synchronisée) :
+   rien de coché = tout le monde, sinon seulement les personnes cochées. */
+var RAP_FILT_K='achille_rap_filtre';
+window.rapGens=function(){
+  var R=window.ROLES||{}; var out=[];
+  Object.keys(R).forEach(function(k){ out.push({k:k, nom:R[k].name||k, ini:R[k].initials||'?'}); });
+  return out;
+};
+window.rapQui=function(k){
+  var R=window.ROLES||{}; var d=R[k];
+  if(d) return {k:k, nom:d.name||k, ini:d.initials||'?'};
+  if(!k) return {k:'', nom:'Non attribué', ini:'—'};
+  return {k:k, nom:k, ini:(''+k).slice(0,2).toUpperCase()};
+};
+var RAP_COUL={admin:'#4c533b',gerant:'#b47360',collaborateur:'#5b8aa6',alternant:'#b0883b'};
+window.rapCoul=function(k){ return RAP_COUL[k]||'#7a807b'; };
+window.rapQuiBadge=function(r){
+  var q=window.rapQui(r&&r.by), c=window.rapCoul(r&&r.by);
+  return '<span class="rap-who" title="Rappel de '+rEsc(q.nom)+'" style="color:'+c+';background:'+c+'14;border:1px solid '+c+'40;">'+rEsc(q.ini)+'</span>';
+};
+window.rapFiltre=function(){
+  try{ var a=JSON.parse(localStorage.getItem(RAP_FILT_K)||'[]'); return Array.isArray(a)?a:[]; }catch(e){ return []; }
+};
+window.rapFiltreSet=function(a){
+  try{ localStorage.setItem(RAP_FILT_K, JSON.stringify(a||[])); }catch(e){window.achErr&&achErr(e)}
+};
+window.rapFiltreToggle=function(k){
+  var a=window.rapFiltre(), i=a.indexOf(k);
+  if(i>=0) a.splice(i,1); else a.push(k);
+  window.rapFiltreSet(a); rapRefreshAll(); window.rapNotifRender();
+};
+window.rapFiltreTous=function(){ window.rapFiltreSet([]); rapRefreshAll(); window.rapNotifRender(); };
+window.rapMoi=function(){ try{ return (window.ACH_USER&&window.ACH_USER.key)||''; }catch(e){ return ''; } };
+window.rapFiltreMoi=function(){
+  var k=window.rapMoi();
+  if(!k){ if(window.toast) toast('Identifiez-vous pour n\u2019afficher que vos rappels'); return; }   /* hors connexion : ACH_USER absent */
+  window.rapFiltreSet([k]); rapRefreshAll(); window.rapNotifRender();
+};
+window.rapGarde=function(r){
+  var f=window.rapFiltre(); if(!f.length) return true;
+  return f.indexOf((r&&r.by)||'')>=0;
+};
+/* le filtre s'applique PARTOUT où l'on affiche des rappels (cloche, pastille, accueil,
+   planning) — jamais à la liste des rappels d'une fiche, qui doit rester complète. */
+function rapOpen(){ return rapAll().filter(function(r){ return !r.done && window.rapGarde(r); }); }
 function rapLate(){ var t=todayISO(); return rapOpen().filter(function(r){ return r.date<t; }).sort(function(a,b){return a.date.localeCompare(b.date);}); }
 function rapToday(){ var t=todayISO(); return rapOpen().filter(function(r){ return r.date===t; }); }
 function rapAVenir(n){ var t=todayISO(), lim=addDaysISO(n); return rapOpen().filter(function(r){ return r.date>t && r.date<=lim; }); }
@@ -21599,6 +21766,8 @@ function ensureModal(){
     +'<div class="rap-we" id="rap-m-we" style="display:none;"></div>'
     +'<label class="rap-lbl">Note (facultatif)</label>'
     +'<input class="rap-inp" id="rap-m-note" placeholder="Ex. : rappeler après ses congés, parler du prix…">'
+    +'<label class="rap-lbl" for="rap-m-qui">Pour qui ?</label>'
+    +'<select class="rap-inp" id="rap-m-qui"></select>'
     +'<div class="rap-box-btns"><button class="rap-btn-sec" onclick="rapModalClose()">Annuler</button><button class="rap-btn" id="rap-m-save" onclick="rapModalSave()">Enregistrer le rappel</button></div>'
     +'</div>';
   m.addEventListener('click', function(e){ if(e.target===m) window.rapModalClose(); });
@@ -21613,6 +21782,7 @@ window.rapEditOpen=function(id){
   _mCtx={mod:r.mod||'libre', refId:r.refId||'', label:r.label||''};
   var mm=RAP_MODS[_mCtx.mod]||RAP_MODS.libre;
   var tt=document.getElementById('rap-m-title'); if(tt) tt.innerHTML='🔔 Modifier le rappel';
+  try{ rapQuiFill(r.by); }catch(e){window.achErr&&achErr(e)}   /* v11.42 */
   document.getElementById('rap-m-src').innerHTML=
     '<span class="rap-src-chip" style="margin-bottom:7px;display:inline-block;">'+mm.ico+' '+mm.nom+'</span>'
     +'<input class="rap-inp" id="rap-m-label" placeholder="Sujet du rappel" value="'+rEsc(r.label||'')+'">';
@@ -21627,6 +21797,7 @@ window.rapOpenModal=function(mod, refId, label){
   _mEdit=null;
   var _tt=document.getElementById('rap-m-title'); if(_tt) _tt.innerHTML='🔔 Nouveau rappel';
   var _sv=document.getElementById('rap-m-save'); if(_sv) _sv.textContent='Enregistrer le rappel';
+  try{ rapQuiFill(null); }catch(e){window.achErr&&achErr(e)}   /* v11.42 */
   _mCtx={mod:mod||'libre', refId:refId||'', label:label||''};
   var mm=RAP_MODS[_mCtx.mod]||RAP_MODS.libre;
   var src=document.getElementById('rap-m-src');
@@ -21673,6 +21844,18 @@ window.rapWeekend=function(){
 };
 window.rapSetDate=function(v){ var e=document.getElementById('rap-m-date'); if(e){ e.value=v; } window.rapWeekend(); };
 window.rapModalClose=function(){ var m=document.getElementById('rap-modal'); if(m) m.style.display='none'; _mEdit=null; };
+/* v11.42 : remplit « Pour qui ? » et sélectionne la bonne personne */
+function rapQuiFill(sel){
+  var e=document.getElementById('rap-m-qui'); if(!e) return;
+  var moi=window.rapMoi();
+  e.innerHTML=window.rapGens().map(function(g){
+    return '<option value="'+rEsc(g.k)+'">'+rEsc(g.nom)+(g.k===moi?' (moi)':'')+'</option>'; }).join('');
+  var v=(sel===undefined||sel===null)? moi : sel;
+  if(v && !Array.prototype.some.call(e.options,function(o){return o.value===v;})){
+    e.insertAdjacentHTML('afterbegin','<option value="'+rEsc(v)+'">'+rEsc(window.rapQui(v).nom)+'</option>');
+  }
+  e.value=v||moi;
+}
 window.rapModalSave=function(){
   var date=document.getElementById('rap-m-date').value;
   if(!date){ if(window.toast) toast('Choisissez une date'); return; }
@@ -21684,7 +21867,10 @@ window.rapModalSave=function(){
   if(_mEdit){
     /* v11.31 : modification d'un rappel existant */
     var done=false;
-    list.forEach(function(r){ if(r.id===_mEdit){ r.date=date; r.note=note; r.label=label; r.updated=new Date().toISOString(); done=true; } });
+    var _qui=((document.getElementById('rap-m-qui')||{}).value);
+    list.forEach(function(r){ if(r.id===_mEdit){ r.date=date; r.note=note; r.label=label;
+      if(_qui!==undefined && _qui!==null) r.by=_qui;   /* v11.42 : réattribution */
+      r.updated=new Date().toISOString(); done=true; } });
     rapSave(list);
     /* le rappel AUTOMATIQUE d'une fiche : on aligne la date du bandeau, sinon
        l'enregistrement de la fiche remettrait l'ancienne date. */
@@ -21703,7 +21889,7 @@ window.rapModalSave=function(){
   list.push({ id:'rap-'+Date.now()+'-'+Math.floor(Math.random()*1000),
     mod:_mCtx.mod, refId:_mCtx.refId, label:label, date:date, note:note,
     done:0, created:new Date().toISOString(),
-    by:(window.ACH_USER&&window.ACH_USER.key)||'' });
+    by:((document.getElementById('rap-m-qui')||{}).value)||((window.ACH_USER&&window.ACH_USER.key)||'') });   /* v11.42 */
   rapSave(list);
   window.rapModalClose();
   if(window.toast) toast('🔔 Rappel enregistré pour le '+frDate(date));
@@ -21780,13 +21966,14 @@ function itemHtml(r, compact){
   var openBtn=((r.mod==='pige'||r.mod==='encours')&&r.refId)?'<button class="rap-i-open" title="Ouvrir '+rEsc(window.rapCibleLabel(r))+'" onclick="rapGo(\''+r.mod+'\',\''+rEsc(r.refId)+'\')">ouvrir</button>':'';
   return '<div class="rap-item'+(late?' rap-late':'')+'">'
     +'<span class="rap-i-ico">'+mm.ico+'</span>'
+    +window.rapQuiBadge(r)
     +'<span class="rap-i-txt"><b>'+rEsc(r.label||mm.nom)+'</b>'+(r.note?' — '+rEsc(r.note):'')
     +(late?' <span class="rap-i-late">⚠ prévu le '+frDate(r.date)+'</span>':(compact?'':' <span class="rap-i-date">'+frDate(r.date)+'</span>'))+'</span>'
-    +openBtn
+    +'<span class="rap-i-act">'+openBtn
     +'<button class="rap-i-del" title="Modifier la date ou la note" onclick="rapEditOpen(\''+r.id+'\')">✏️</button>'
     +'<button class="rap-i-done" title="Marquer fait" onclick="rapDone(\''+r.id+'\')">✓ Fait</button>'
     +'<button class="rap-i-del" title="Supprimer ce rappel" onclick="rapDelete(\''+r.id+'\')">🗑</button>'
-    +'</div>';
+    +'</span></div>';
 }
 /* v7.20 : le detail des rappels vit desormais dans la CLOCHE (panneau notif).
    Le Tableau de bord et le Planning n'affichent plus qu'un bandeau COMPACT d'une ligne. */
@@ -21806,6 +21993,7 @@ window.rapNotifRender=function(){
   var box=document.getElementById('notif-body'); if(!box) return;
   var late=rapLate(), tod=rapToday(), next=rapAVenir(7);
   var h='<div class="notif-actions"><button class="rap-new" onclick="rapOpenModal(\'libre\',\'\',\'\')">\uff0b Nouveau rappel</button></div>';
+  h+=window.rapFiltreBar();
   if(!late.length && !tod.length){
     h+='<div class="notif-empty">Rien a relancer aujourd\u2019hui \u2713'+(next.length?'<br><span style="color:var(--gris-2);font-size:12px;">'+next.length+' rappel'+(next.length>1?'s':'')+' a venir sous 7 jours</span>':'')+'</div>';
   } else {
@@ -21814,6 +22002,27 @@ window.rapNotifRender=function(){
     if(next.length) h+='<div class="rap-next">\uff0b '+next.length+' rappel'+(next.length>1?'s':'')+' a venir sous 7 jours</div>';
   }
   box.innerHTML=h;
+};
+/* v11.42 : la barre « Rappels de : » — chips à cocher, mémorisées sur ce poste */
+window.rapFiltreBar=function(){
+  try{
+    var f=window.rapFiltre(), gens=window.rapGens(), moi=window.rapMoi();
+    var tot={}; rapAll().forEach(function(r){ if(r.done) return; var k=r.by||''; tot[k]=(tot[k]||0)+1; });
+    var chips=gens.map(function(g){
+      var on=f.indexOf(g.k)>=0, c=window.rapCoul(g.k), n=tot[g.k]||0;
+      return '<button class="rap-f'+(on?' on':'')+'" style="'+(on?'background:'+c+';border-color:'+c+';color:#fff;':'color:'+c+';border-color:'+c+'55;')+'"'
+        +' title="'+rEsc(g.nom+' — '+n+' rappel'+(n>1?'s':'')+' en cours')+'" onclick="rapFiltreToggle(\''+g.k+'\')">'
+        +rEsc(g.ini)+(g.k===moi?' (moi)':'')+(n?'<span class="rap-f-n">'+n+'</span>':'')+'</button>';
+    }).join('');
+    var orph=(tot['']||0);
+    if(orph){ var onO=f.indexOf('')>=0;
+      chips+='<button class="rap-f'+(onO?' on':'')+'" title="Rappels sans personne attribuée" onclick="rapFiltreToggle(\'\')">\u2014<span class="rap-f-n">'+orph+'</span></button>'; }
+    return '<div class="rap-filt"><span class="rap-filt-l">Rappels de :</span>'
+      +'<button class="rap-f'+(f.length?'':' on')+'" onclick="rapFiltreTous()" title="Afficher les rappels de toute l\'\u00e9quipe">Tous</button>'
+      +chips
+      +(f.length? '<span class="rap-filt-n" title="Certains rappels sont masqu\u00e9s par ce filtre">filtre actif</span>' : '')
+      +'</div>';
+  }catch(e){ return ''; }
 };
 window.rapDashRender=function(){
   /* v11.30 : bandeau « Rappels du jour » RETIRÉ de l'accueil (demande Laurent 14/10) —
@@ -21843,8 +22052,9 @@ window.rapChipsForDate=function(ds){
       var mm=RAP_MODS[r.mod]||RAP_MODS.libre;
       /* v11.27 : le clic ouvre la FICHE concernée (pige, affaire…) et non plus la cloche */
       var cible=window.rapCibleLabel(r);
-      return '<div class="plan-rap-chip" title="'+rEsc('Rappel — '+(r.label||'')+(r.note?' · '+r.note:'')+' — cliquez pour ouvrir '+cible+', ✕ pour supprimer')+'" onclick="event.stopPropagation();rapOuvrir(\''+r.id+'\')">'
+      return '<div class="plan-rap-chip" title="'+rEsc('Rappel de '+window.rapQui(r.by).nom+' — '+(r.label||'')+(r.note?' · '+r.note:'')+' — cliquez pour ouvrir '+cible+', ✕ pour supprimer')+'" onclick="event.stopPropagation();rapOuvrir(\''+r.id+'\')">'
         +mm.ico+' <span class="prc-t">'+rEsc((''+(r.label||'Rappel')).slice(0,26))+'</span>'
+        +'<span class="prc-w" style="color:'+window.rapCoul(r.by)+';">'+rEsc(window.rapQui(r.by).ini)+'</span>'
         +'<span class="prc-x" title="Supprimer ce rappel" onclick="event.stopPropagation();rapDelete(\''+r.id+'\')">✕</span></div>';
     }).join('')+(list.length>3?'<div class="plan-rap-chip more" onclick="event.stopPropagation();openNotifs()">+'+(list.length-3)+'</div>':'');
   }catch(e){ return ''; }
@@ -21874,7 +22084,7 @@ function rapFicheBtn(){
   btn.style.display='';
   /* v11.25 : TOUS les rappels de la fiche (avant : seul le plus proche, d'où le
      « Rappel le 21/10 » alors que Laurent venait d'en poser un au 04/11). */
-  var list=window.rapAllPendingFor('pige', id);
+  var list=window.rapAllPendingFor('pige', id);   /* v11.42 : jamais filtrée — une fiche montre TOUS ses rappels */
   btn.innerHTML = list.length ? ('🔔 '+list.length+' rappel'+(list.length>1?'s':'')+' · ＋ ajouter') : '🔔 Ajouter un rappel';
   btn.classList.toggle('rap-has', !!list.length);
   if(box){
