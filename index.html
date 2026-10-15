@@ -1734,7 +1734,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     </div>
   </div>
   </div>
-  <div class="logo-ver app-ver">Achille App — v11.38</div>
+  <div class="logo-ver app-ver">Achille App — v11.39</div>
 </aside>
 <div id="mob-bk" onclick="mobNav(false)"></div>
 <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Réduire la barre latérale">‹</button>
@@ -10262,7 +10262,11 @@ CABLE|1|Villa Nova|48.73478|2.46475`;
   function isPassee(acte) {
     if(!acte || acte.trim()==='' || acte==='—') return false;
     // Chercher une date connue dans la chaîne
-    var today = new Date(2026,2,10); // 10 mars 2026
+    /* v11.39 — CORRECTION : « aujourd'hui » était FIGÉ au 10 mars 2026 (date d'écriture du code).
+       Toute vente dont l'acte tombait après cette date restait « en cours » pour toujours.
+       On compare désormais à la vraie date du jour (heure de Paris). */
+    var today = new Date(); try{ if(window.achDayFR){ var _d=achDayFR(); if(_d) today=new Date(_d+'T00:00:00'); } }catch(e){}
+    today.setHours(0,0,0,0);
     var jours=['lundi','mardi','mercredi','jeudi','vendredi','samedi','dimanche'];
     var moisMap={janvier:0,février:1,mars:2,avril:3,mai:4,juin:5,juillet:6,août:7,septembre:8,octobre:9,novembre:10,décembre:11};
     var m = acte.match(/(\d{1,2})\s+(\w+)\s+(\d{4})/);
@@ -10282,6 +10286,43 @@ CABLE|1|Villa Nova|48.73478|2.46475`;
   window.ecListForDocs=function(){ try{ return ecVisibleData(loadData()).map(function(r){ return {id:r.id, addr:r.addr||('Affaire '+r.id), st:ecStatus(r)}; }); }catch(e){ return []; } };
   /* v11.37 : caEncours = valeur des ventes sous compromis non encore actées (pour le Tableau de bord) */
   window.ecCounts=function(){ try{ var d=loadData(),enc=0,pas=0,caPas=0,caEnc=0; d.forEach(function(r){ var s=ecStatus(r); if(s==='passee'){pas++;caPas+=(r.prix||0);} else if(s==='encours'){enc++;caEnc+=(r.prix||0);} }); return {encours:enc,passee:pas,caPassee:caPas,caEncours:caEnc}; }catch(e){ return {encours:0,passee:0,caPassee:0,caEncours:0}; } };
+
+  /* ═══ v11.39 : HONORAIRES À VENIR (demande Laurent) ═══
+     « Dans le CA Pipeline ce qui m'intéresse c'est les honoraires de l'agence et non pas les
+     montants des transactions. » Honoraires TTC d'une vente = prix FAI − net vendeur (même
+     calcul que la fiche, ecCalcHon) ; HT = TTC / 1,2. On ne retient que les ventes EN COURS
+     (compromis signé, acte pas encore passé) et on rend la date d'acte prévue telle qu'elle
+     est saisie, plus une version triable. */
+  function ecDateMs(sv){
+    if(!sv) return null; var s0=(''+sv).toLowerCase().trim();
+    try{ if(window.achDateFr){ var f=achDateFr(s0); if(f&&f!==s0) s0=(''+f).toLowerCase(); } }catch(e){}
+    var m=s0.match(/(\d{1,2})\/(\d{1,2})\/(\d{2,4})/);
+    if(m){ var y=+m[3]; if(y<100) y+=2000; return new Date(y,(+m[2])-1,+m[1]).getTime(); }
+    var MO={janvier:0,'f\u00e9vrier':1,fevrier:1,mars:2,avril:3,mai:4,juin:5,juillet:6,'ao\u00fbt':7,aout:7,septembre:8,octobre:9,novembre:10,'d\u00e9cembre':11,decembre:11};
+    var m2=s0.match(/(\d{1,2})\s+([a-z\u00e0-\u00ff]+)\s+(\d{4})/);
+    if(m2 && MO[m2[2]]!==undefined) return new Date(+m2[3], MO[m2[2]], +m2[1]).getTime();
+    var m3=s0.match(/(\d{4})-(\d{2})-(\d{2})/);
+    if(m3) return new Date(+m3[1], (+m3[2])-1, +m3[3]).getTime();
+    return null;
+  }
+  window.ecHonoAVenir=function(){ try{
+    var out={ttc:0, ht:0, n:0, lignes:[]};
+    loadData().forEach(function(r){
+      if(ecStatus(r)!=='encours') return;
+      var prix=parseFloat(r.prix)||0, net=parseFloat(r.net)||0;
+      var ttc=prix-net; if(!(ttc>0)) return;         /* net vendeur non renseigné : on ne devine pas */
+      var ht=ttc/1.2;
+      out.ttc+=ttc; out.ht+=ht; out.n++;
+      out.lignes.push({ id:r.id, addr:(r.addr||'(sans adresse)'), vendeur:(r.vendeur||''),
+        acte:(r.acte||''), acteMs:ecDateMs(r.acte), ttc:ttc, ht:ht, prix:prix });
+    });
+    out.lignes.sort(function(a,b){
+      var x=(a.acteMs==null?Infinity:a.acteMs), y=(b.acteMs==null?Infinity:b.acteMs);
+      if(x!==y) return x-y;
+      return b.ttc-a.ttc;
+    });
+    return out;
+  }catch(e){ return {ttc:0,ht:0,n:0,lignes:[]}; } };
 
   /* ── RENDU DE LA PAGE ── */
   function renderPage() {
@@ -14042,7 +14083,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     startRealtime();
     var ov=document.getElementById('ach-login-overlay'); if(ov) ov.classList.add('ach-hidden');
     var ub=document.getElementById('ach-userbar'); if(ub) ub.style.display='none';
-    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v11.38';
+    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v11.39';
     flag('Synchronis\u00e9');
     // fin de l'init : on autorise la journalisation des actions
     setTimeout(function(){ installInterceptor._init=false; }, 1500);
@@ -14913,32 +14954,38 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
     var out={};
     try{
       if(!window.achCan || achCan('pige','view')){
-        var pp=(window.pgPipeline?pgPipeline():{echanges:[],visite:[]});
-        out['\u00c9changes']=(pp.echanges||[]).map(function(r){
+        var pp=(window.pgPipeline?pgPipeline():{echanges:[],visite:[],nEch:0,nVis:0});
+        function cartePg(r){
           return { src:'pige', id:r.id, ico:'\ud83d\udcde', srcLbl:'Pige', adresse:r.adresse, ville:r.ville,
-                   prix:r.prix, qui:r.qui, sous:r.sous, alerte:r.rappel? ('relance le '+frCourtP(r.rappel)) : '' };
-        });
-        out['Visite']=(pp.visite||[]).map(function(r){
-          return { src:'pige', id:r.id, ico:'\ud83d\udcde', srcLbl:'Pige', adresse:r.adresse, ville:r.ville,
-                   prix:r.prix, qui:r.qui, sous:r.sous, alerte:'' };
-        });
+                   prix:r.prix, qui:r.qui, sous:r.sous, alerte:r.motif, urgent:(r.urg>=2) };
+        }
+        out['\u00c9changes']=(pp.echanges||[]).map(cartePg);
+        out['Visite']=(pp.visite||[]).map(cartePg);
+        out._reste={'\u00c9changes':Math.max(0,(pp.nEch||0)-(pp.echanges||[]).length),
+                    'Visite':Math.max(0,(pp.nVis||0)-(pp.visite||[]).length)};
       }
       if(!window.achCan || achCan('mandats','view')){
-        out['Mandat']=(window.mdPipeline?mdPipeline():[]).map(function(m){
-          var al='';
-          if(m.jours!=null && m.jours<0) al='expir\u00e9 depuis '+(-m.jours)+' j';
-          else if(m.jours!=null && m.jours<=30) al='\u00e9ch\u00e9ance dans '+m.jours+' j';
+        var tous=(window.mdPipeline?mdPipeline():[]);
+        var urg=tous.filter(function(m){ return m.jours!=null && m.jours<=30; });   /* v11.39 : seulement ce qui demande une action */
+        out['Mandat']=urg.map(function(m){
+          var al=(m.jours<0)? ('expir\u00e9 depuis '+(-m.jours)+' j') : ('\u00e9ch\u00e9ance dans '+m.jours+' j');
           return { src:'mandat', id:m.id, ico:'\ud83d\udcdc', srcLbl:'Mandat'+(m.num?' n\u00b0 '+m.num:''),
                    adresse:m.adresse, ville:m.ville, prix:m.prix, qui:m.qui,
                    sous:(m.kind==='location'?'Location':'Vente')+(m.typ?' \u00b7 '+({exclusif:'Exclusif',semi:'Semi-excl.',simple:'Simple'}[m.typ]||''):''),
-                   alerte:al, urgent:(m.jours!=null && m.jours<=30),
+                   alerte:al, urgent:true,
                    prixTxt:(m.kind==='location' && m.prix) ? (m.prix.toLocaleString('fr-FR')+' \u20ac / mois') : '' };
         });
+        out._reste=out._reste||{}; out._reste['Mandat']=Math.max(0, tous.length-urg.length);
       }
     }catch(e){window.achErr&&achErr(e)}
     return out;
   }
   function frCourtP(ds){ try{ return new Date(ds+'T12:00:00').toLocaleDateString('fr-FR',{day:'numeric',month:'short'}); }catch(e){ return ds; } }
+  /* v11.39 : ce que chaque colonne remonte vraiment — dit en clair sous le titre */
+  var HINT={'\u00c9changes':'\u2b50 chauds \u00b7 relances en retard \u00b7 oubli\u00e9s',
+            'Visite':'accords de visite \u00e0 relancer',
+            'Mandat':'\u00e9ch\u00e9ance sous 30 jours ou expir\u00e9'};
+  window.pipeVoirTout=function(p){ var el=document.querySelector('.nav-item[onclick*="\''+p+'\'"]'); if(window.navTo) navTo(p, el); };
   window.pipeOuvrir=function(src,id){
     function nav(p){ var el=document.querySelector('.nav-item[onclick*="\''+p+'\'"]'); if(window.navTo) navTo(p, el); }
     if(src==='pige'){ nav('pige'); setTimeout(function(){ try{ if(window.pigeEdit) pigeEdit(id); }catch(e){} }, 180); }
@@ -14949,12 +14996,12 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
     affFillNego();
     var wrap=document.getElementById('pipe-wrap'); if(!wrap) return;
     var data=visible(load());
-    var MIR=pipeMiroirs();
+    var MIR=pipeMiroirs(), RESTE=MIR._reste||{}; delete MIR._reste;
     var nMir=Object.keys(MIR).reduce(function(n,k){ return n+MIR[k].length; },0);
     var sub=document.getElementById('pipe-sub');
     if(sub){ var act=data.length;
       sub.textContent=act+' affaire'+(act>1?'s':'')+' saisie'+(act>1?'s':'')
-        +(nMir? ' \u00b7 '+nMir+' repris'+(nMir>1?'es':'e')+' de la Pige et des Mandats' : ''); }
+        +(nMir? ' \u00b7 '+nMir+' \u00e0 traiter, repris'+(nMir>1?'es':'e')+' de la Pige et des Mandats' : ''); }
     wrap.innerHTML=STAGES.map(function(st){
       var items=data.filter(function(a){return a.stage===st;});
       var miroirs=MIR[st]||[];
@@ -14989,7 +15036,13 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
           +'</div>';
       }).join('');
       var tot=items.length+miroirs.length;
-      return '<div class="p-col"><div class="p-head"><span class="p-head-name">'+st+'</span><span class="p-cnt">'+tot+'</span></div><div class="p-cards">'+cards+mcards+'</div></div>';
+      /* v11.39 : le reste du stock n'encombre plus la colonne — un lien vers le module suffit */
+      var reste=RESTE[st]||0, cible=(st==='Mandat')?'mandats':'pige';
+      var plus=reste? '<div class="mir-plus" onclick="pipeVoirTout(\''+cible+'\')">+ '+reste+' autre'+(reste>1?'s':'')+' dans '+(st==='Mandat'?'les Mandats':'la Pige')+' \u203a</div>' : '';
+      var hint=HINT[st]||'';
+      return '<div class="p-col"><div class="p-head"><span class="p-head-name">'+st+'</span><span class="p-cnt">'+tot+'</span></div>'
+        +(hint?'<div class="p-hint">'+hint+'</div>':'')
+        +'<div class="p-cards">'+cards+mcards+plus+'</div></div>';
     }).join('');
   };
 
@@ -15038,11 +15091,26 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
       var sousTitre=[]; if(md.vente) sousTitre.push(md.vente+' vente'+(md.vente>1?'s':''));
       if(md.location) sousTitre.push(md.location+' location'+(md.location>1?'s':''));
       if(md.expires) sousTitre.push('<span style="color:var(--rouge);">'+md.expires+' expir\u00e9'+(md.expires>1?'s':'')+'</span>');
-      kpis=kpi('Mandats actifs',md.actifs,'biens',sousTitre.join(' \u00b7 '))
-        +kpi('CA pipeline',fmtEur(md.caVente),'',md.vente+' bien'+(md.vente>1?'s':'')+' sous mandat de vente');
+      kpis=kpi('Mandats actifs',md.actifs,'biens',sousTitre.join(' \u00b7 '));
     } else {
-      kpis=kpi('Mandats actifs',mandats.length,'biens',data.length+' au pipeline')
-        +kpi('CA pipeline',fmtEur(caPipe),'','potentiel en cours');
+      kpis=kpi('Mandats actifs',mandats.length,'biens',data.length+' au pipeline');
+    }
+    /* v11.39 : le 2e encadré parle d'ARGENT DE L'AGENCE, pas du prix des biens (demande Laurent).
+       Les honoraires ne regardent que la direction : pour les autres rôles, on garde la valeur
+       des biens sous mandat. */
+    var hono=(priv && window.ecHonoAVenir)? ecHonoAVenir() : null;
+    /* v11.39 : un honoraire s'affiche au centime près — « 48 k€ » ne veut rien dire sur une facture */
+    function eurX(v){ try{ return Math.round(v||0).toLocaleString('fr-FR')+' \u20ac'; }catch(e){ return Math.round(v||0)+' \u20ac'; } }
+    if(hono){
+      kpis+='<div class="dash-kpi dash-kpi-go" onclick="navTo(\'encours\')" title="Ouvrir Ventes / En cours">'
+        +'<div class="card-sub">Honoraires \u00e0 venir</div>'
+        +'<div class="kpi-val kpi-val-s">'+eurX(hono.ttc)+'<span class="kpi-u">TTC</span></div>'
+        +'<div class="kpi-tr">'+(hono.n? (eurX(hono.ht)+' HT \u00b7 '+hono.n+' vente'+(hono.n>1?'s':'')+' en cours')
+                                      : 'aucune vente en cours')+'</div></div>';
+    } else if(mdVu && md.actifs){
+      kpis+=kpi('Biens sous mandat',fmtEur(md.caVente),'',md.vente+' bien'+(md.vente>1?'s':'')+' en vente');
+    } else {
+      kpis+=kpi('CA pipeline',fmtEur(caPipe),'','potentiel en cours');
     }
     if(priv){
       var ec=(window.ecCounts?window.ecCounts():{encours:0,passee:0,caPassee:0,caEncours:0});
@@ -15086,6 +15154,25 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
     var activity='<div class="dash-activity"><div class="dash-activity-hd"><div class="dash-activity-t">'+(priv?'Activit\u00e9 de l\u2019agence':'Mon activit\u00e9')+'</div>'+selHtml+'</div><div class="dash-act-grid">'+lines+'</div></div>';
     var topRow='<div class="dash-top'+(priv?'':' dash-top-collab')+'">'+kpis+activity+'</div>';
 
+    /* v11.39 : le détail des honoraires attendus — une ligne par vente, date d'acte, HT et TTC */
+    var honoBloc='';
+    if(hono && hono.n){
+      honoBloc='<div class="hono-bloc"><div class="hono-hd"><span class="hono-t">\ud83d\udcb6 Honoraires \u00e0 venir</span>'
+        +'<span class="hono-go" onclick="navTo(\'encours\')">Ouvrir Ventes / En cours \u203a</span></div>'
+        +hono.lignes.map(function(l){
+          var quand=l.acte? esc(l.acte) : '<i>date d\u2019acte \u00e0 fixer</i>';
+          var tard=(l.acteMs!=null && l.acteMs<Date.now());
+          return '<div class="hono-l" onclick="navTo(\'encours\')">'
+            +'<span class="hono-n">'+esc((l.addr||'').split(',')[0])+(l.vendeur?'<span class="hono-v"> \u00b7 '+esc(l.vendeur)+'</span>':'')+'</span>'
+            +'<span class="hono-d'+(tard?' late':'')+'">'+quand+'</span>'
+            +'<span class="hono-m">'+eurX(l.ht)+' HT<span class="hono-ttc">'+eurX(l.ttc)+' TTC</span></span>'
+            +'</div>';
+        }).join('')
+        +'<div class="hono-tot"><span>Total</span><span>'+eurX(hono.ht)+' HT'
+        +'<span class="hono-ttc">'+eurX(hono.ttc)+' TTC</span></span></div>'
+        +'</div>';
+    }
+
     /* ---- Affaires : une seule zone, vue sélectionnable, grille multi-colonnes ---- */
     function miniCard(a){
       var s=affStars(a.id);
@@ -15111,7 +15198,7 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
       +(isPins?'<span class="dash-aff-note">tri\u00e9es par priorit\u00e9 \u2605\u2605\u2605 \u2192 \u2605</span>':'<span class="dash-aff-note">de la plus r\u00e9cente \u00e0 la plus ancienne</span>')
       +'</div><div class="dash-aff-grid">'+cards+'</div></div>';
 
-    box.innerHTML=topRow+affBlock;
+    box.innerHTML=topRow+honoBloc+affBlock;
   };
 
   /* ---------- REPORTING ---------- */
@@ -16746,25 +16833,44 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
      Les biens partagés par des confrères (src='confrere') restent dans leur dossier. */
   window.pgPipeline=function(){
     try{
-      var out={echanges:[], visite:[]};
+      var AUJ=Date.now(), JOUR=864e5, OUBLI=30;   /* v11.39 : « oublié » = 30 jours sans rien */
+      function derniere(r){
+        var t=0;
+        (r.notes||[]).forEach(function(n){ if(n && n.t && n.t>t) t=n.t; });
+        [r.updated, r.created].forEach(function(d){ var v=Date.parse(d||''); if(v && v>t) t=v; });
+        if(r.called && r.called.d){ var v2=Date.parse(r.called.d+'T12:00:00'); if(v2 && v2>t) t=v2; }
+        return t||0;
+      }
+      function rapDe(r){
+        try{ var a=(window.rapAllPendingFor? rapAllPendingFor('pige', r.id) : [])||[];
+          a.sort(function(x,y){ return (''+(x.date||'')).localeCompare(''+(y.date||'')); });
+          return a[0]||null; }catch(e){ return null; }
+      }
+      var auj=new Date(); auj.setHours(0,0,0,0);
+      var out={echanges:[], visite:[], nEch:0, nVis:0};
       load().forEach(function(r){
         if(!r || r.src==='confrere') return;
         var sv=(r.suivi||''), et=pgEtape(r);
+        if(sv!=='visite' && et!=='attente') return;
+        var chaud=(pgStatutOf(r)==='chaud');
+        var d=derniere(r), jours=d? Math.floor((AUJ-d)/JOUR) : 999;
+        var rap=rapDe(r), retard=0;
+        if(rap && rap.date){ var rd=new Date(rap.date+'T00:00:00'); if(rd<auj) retard=Math.round((auj-rd)/JOUR); }
         var base={ id:r.id, adresse:(r.adresse||''), ville:(r.ville||''), prix:(parseFloat(r.prix)||0),
-                   qui:(r.nom||r.contact||''), statut:pgStatutOf(r) };
-        if(sv==='visite'){ base.sous='Accord de visite'; out.visite.push(base); return; }
-        if(et==='attente'){
-          base.sous=(SUIVI[sv]?SUIVI[sv][0]:(r.called?'Appelée — sans réponse':'En attente'));
-          var rap=null;
-          try{ if(window.rapAllPendingFor) rap=(window.rapAllPendingFor('pige', r.id)||[])[0]; }catch(e){}
-          if(rap && rap.date) base.rappel=rap.date;
-          out.echanges.push(base);
-        }
+                   qui:(r.nom||r.contact||''), chaud:chaud, jours:jours, retard:retard,
+                   rappel:(rap&&rap.date)||'', sous:(SUIVI[sv]?SUIVI[sv][0]:(r.called?'Appel\u00e9e \u2014 sans r\u00e9ponse':'En attente')) };
+        /* urgence : relance en retard > oubli > sujet chaud. 0 = on ne remonte pas la fiche. */
+        base.urg = retard? 3 : ((jours>=OUBLI && !rap)? 2 : (chaud? 1 : 0));
+        base.motif = retard? ('relance en retard de '+retard+' j')
+                   : (base.urg===2? ('sans nouvelle depuis '+jours+' j')
+                   : (base.urg===1? '\u2b50 Prioritaire' : ''));
+        if(sv==='visite'){ out.nVis++; if(base.urg) out.visite.push(base); return; }
+        out.nEch++; if(base.urg) out.echanges.push(base);
       });
-      function tri(a,b){ return (''+(a.rappel||'9999')).localeCompare(''+(b.rappel||'9999')) || (''+a.adresse).localeCompare(''+b.adresse); }
+      function tri(a,b){ return (b.urg-a.urg) || (b.retard-a.retard) || (b.jours-a.jours); }
       out.echanges.sort(tri); out.visite.sort(tri);
       return out;
-    }catch(e){ return {echanges:[], visite:[]}; }
+    }catch(e){ return {echanges:[], visite:[], nEch:0, nVis:0}; }
   };
   window.pgCalledToggle=function(id,ev){
     try{ if(ev) ev.stopPropagation(); }catch(e){window.achErr&&achErr(e)}
@@ -18851,6 +18957,30 @@ input:focus,textarea:focus,select:focus{border-color:var(--terra-l);}
 .dash-act-item:last-child,.dash-act-item:nth-last-child(2){border-bottom:none;}
 .dash-act-item span:first-child{color:var(--gris);}
 .dash-act-item span:last-child{font-weight:600;color:var(--noir);}
+/* v11.39 : honoraires attendus (Tableau de bord) */
+.dash-kpi-go{cursor:pointer;}
+.kpi-val.kpi-val-s{font-size:26px;}
+@media(max-width:900px){ .kpi-val.kpi-val-s{font-size:22px;} }
+.dash-kpi-go:hover{background:#fcfaf7;}
+.hono-bloc{background:#fff;border:1px solid var(--border);border-radius:12px;box-shadow:var(--shadow);margin:0 0 16px;overflow:hidden;}
+.hono-hd{display:flex;align-items:baseline;gap:10px;padding:11px 16px 9px;border-bottom:1px solid #f3eee6;}
+.hono-t{font-family:'Jost',sans-serif;font-size:13.5px;font-weight:600;letter-spacing:.03em;color:var(--noir);}
+.hono-go{margin-left:auto;font-size:11.5px;color:var(--terra);cursor:pointer;}
+.hono-go:hover{text-decoration:underline;}
+.hono-l{display:flex;align-items:baseline;gap:12px;padding:9px 16px;border-bottom:1px solid #f7f3ec;cursor:pointer;}
+.hono-l:hover{background:#fcfaf7;}
+.hono-n{flex:1;min-width:0;font-size:13px;color:var(--noir);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.hono-v{color:var(--gris);}
+.hono-d{font-size:12px;color:var(--gris);white-space:nowrap;}
+.hono-d.late{color:var(--rouge);font-weight:600;}
+.hono-m{font-size:13px;font-weight:600;color:var(--noir);white-space:nowrap;text-align:right;}
+.hono-ttc{display:block;font-size:11px;font-weight:400;color:var(--gris-2);}
+.hono-tot{display:flex;justify-content:space-between;align-items:baseline;padding:10px 16px;background:#fcfaf7;font-size:13px;font-weight:600;color:var(--terra);}
+.hono-tot .hono-ttc{text-align:right;}
+@media(max-width:700px){ .hono-l{flex-wrap:wrap;gap:4px 10px;} .hono-n{flex:1 0 100%;} }
+.p-hint{font-size:10.5px;color:var(--gris-2);padding:0 2px 7px;letter-spacing:.02em;}
+.mir-plus{font-size:11.5px;color:var(--terra);padding:7px 2px 2px;cursor:pointer;}
+.mir-plus:hover{text-decoration:underline;}
 /* v11.38 : cartes « miroir » du Pipeline — reflets de la Pige et des Mandats, en lecture seule */
 .deal-card.mir{border-left:3px solid var(--terra);background:#fcfaf7;cursor:pointer;}
 .deal-card.mir:hover{background:#f7f2ea;}
