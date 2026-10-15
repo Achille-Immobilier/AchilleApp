@@ -1739,7 +1739,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     </div>
   </div>
   </div>
-  <div class="logo-ver app-ver">Achille App — v11.42</div>
+  <div class="logo-ver app-ver">Achille App — v11.43</div>
 </aside>
 <div id="mob-bk" onclick="mobNav(false)"></div>
 <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Réduire la barre latérale">‹</button>
@@ -14130,7 +14130,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     startRealtime();
     var ov=document.getElementById('ach-login-overlay'); if(ov) ov.classList.add('ach-hidden');
     var ub=document.getElementById('ach-userbar'); if(ub) ub.style.display='none';
-    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v11.42';
+    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v11.43';
     flag('Synchronis\u00e9');
     // fin de l'init : on autorise la journalisation des actions
     setTimeout(function(){ installInterceptor._init=false; }, 1500);
@@ -24578,16 +24578,41 @@ body.pi-grabbing *{user-select:none!important;}
   function ligneEv(e){
     var T=TYPES[e.type]||TYPES.autre;
     var h=e.allDay?'Journée':((e.timeStart||'')+(e.timeEnd?' – '+e.timeEnd:''));
-    return '<div class="ag-row" onclick="navTo(\'planning\')" title="Ouvrir le planning">'
+    /* v11.43 : les initiales des personnes concernées par le rendez-vous (planning : e.users
+       contient des NOMS ou des initiales ; vide = toute l'agence). */
+    var qui=evQui(e);
+    return '<div class="ag-row" onclick="navTo(\'planning\')" title="'+esc((e.title||T[1])+(qui.nom?' — '+qui.nom:'')+(e.adresse?' · '+e.adresse:'')+' — ouvrir le planning')+'">'
       +'<span class="ag-h">'+esc(h)+'</span>'
       +'<span class="ag-ico">'+T[0]+'</span>'
+      +qui.html
       +'<span class="ag-t">'+esc(e.title||T[1])+'</span>'
       +(e.adresse?'<span class="ag-sub">'+esc(e.adresse)+'</span>':'')
       +'</div>';
   }
+  /* v11.43 : à qui est ce rendez-vous ? */
+  function evQui(e){
+    var us=(e&&e.users)||[];
+    if(!us.length) return {html:'<span class="ag-who ag-who-tous" title="Toute l\u2019agence">\u2726</span>', nom:'Toute l\u2019agence'};
+    var R=window.ROLES||{}, vus=[], noms=[], bouts=[];
+    us.forEach(function(u){
+      var k=null;
+      if(R[u]) k=u;   /* e.users contient des CLÉS de rôle (voir mine()) */
+      if(!k) Object.keys(R).forEach(function(kk){ if(R[kk].name===u || R[kk].initials===u) k=kk; });
+      var ini=k? R[k].initials : (''+u).slice(0,2).toUpperCase();
+      var nom=k? R[k].name : u;
+      if(vus.indexOf(ini)>=0) return;
+      vus.push(ini); noms.push(nom);
+      var c=(window.rapCoul? rapCoul(k||'') : '#7a807b');
+      bouts.push('<span class="ag-who" style="color:'+c+';background:'+c+'14;border:1px solid '+c+'40;">'+esc(ini)+'</span>');
+    });
+    return {html:bouts.join(''), nom:noms.join(', ')};
+  }
   function frCourt(ds){
     try{ var t=new Date(ds+'T12:00:00').toLocaleDateString('fr-FR',{weekday:'short',day:'numeric',month:'short'}); return t; }catch(e){ return ds; }
   }
+  /* v11.43 : l'icône du module d'où vient le rappel (table locale : RAP_MODS vit dans une autre portée) */
+  var AG_MOD_ICO={pige:'\ud83d\udd0e', visites:'\ud83c\udfe0', encours:'\u25c8', finances:'\ud83d\udcb6',
+                  communication:'\ud83d\udce3', routines:'\ud83d\udd01', libre:''};
   function ligneRap(r, tRef){
     /* v11.27 : le rappel mène à sa fiche (pige, affaire…) quand il en a une
        v11.29 : un rappel en retard affiche SA date et le nombre de jours */
@@ -24595,9 +24620,13 @@ body.pi-grabbing *{user-select:none!important;}
     var late = tRef && (''+(r.date||''))<tRef;
     var jours = 0;
     if(late){ try{ jours=Math.round((new Date(tRef+'T12:00:00')-new Date(r.date+'T12:00:00'))/864e5); }catch(e){} }
-    return '<div class="ag-row rap'+(late?' late':'')+'" onclick="rapOuvrir&&rapOuvrir(\''+(r.id||'')+'\')" title="Ouvrir '+esc(lbl)+(late?' — prévu le '+esc(frCourt(r.date)):'')+'">'
+    /* v11.43 : qui est concerné (demande Laurent) + d'où vient le rappel */
+    var qui=(window.rapQui? rapQui(r.by) : {nom:'',ini:''});
+    var ico=AG_MOD_ICO[r.mod]||'';
+    return '<div class="ag-row rap'+(late?' late':'')+'" onclick="rapOuvrir&&rapOuvrir(\''+(r.id||'')+'\')" title="'+esc('Rappel de '+(qui.nom||'?')+' — '+(r.label||'')+(r.note?' · '+r.note:'')+' — ouvrir '+lbl+(late?' (prévu le '+frCourt(r.date)+')':''))+'">'
       +'<span class="ag-h">'+(late?esc(frCourt(r.date)):'🔔')+'</span>'
-      +'<span class="ag-ico">'+(late?'🔔':'')+'</span>'
+      +'<span class="ag-ico">'+(late?'🔔':ico)+'</span>'
+      +'<span class="ag-who" title="'+esc('Rappel de '+(qui.nom||'?'))+'" style="color:'+(window.rapCoul?rapCoul(r.by):'#7a807b')+';background:'+(window.rapCoul?rapCoul(r.by):'#7a807b')+'14;border:1px solid '+(window.rapCoul?rapCoul(r.by):'#7a807b')+'40;">'+esc(qui.ini||'—')+'</span>'
       +'<span class="ag-t">'+esc(r.label||'Rappel')+'</span>'
       +(late?'<span class="ag-retard">'+jours+' j</span>':'')
       +(r.note?'<span class="ag-sub">'+esc(r.note)+'</span>':'')
@@ -24614,6 +24643,10 @@ body.pi-grabbing *{user-select:none!important;}
       +'<div class="ag-wrap"><div class="ag-card">'
       +'<div class="ag-hd"><span class="ag-hd-t">📅 Aujourd\u2019hui</span><span class="ag-hd-d">'+esc(frJour(t))
       +(nRet?' · <b style="color:var(--rouge);font-weight:600;">'+nRet+' en retard</b>':'')+'</span>'
+      +(window.rapFiltre && rapFiltre().length
+        ? '<span class="ag-filt" title="Un filtre est actif sur les rappels — cliquez pour revoir ceux de toute l\u2019équipe" onclick="event.stopPropagation();rapFiltreTous();">'
+          +'filtre : '+rapFiltre().map(function(k){ return esc(rapQui(k).ini); }).join(' · ')+' ✕</span>'
+        : '')
       +'<span class="ag-hd-go" onclick="navTo(\'planning\')">Voir le planning ›</span></div>';
     if(!eT.length && !rT.length){ h+='<div class="ag-empty">Aucun rendez-vous ni rappel aujourd\u2019hui.</div>'; }
     else { h+=eT.map(ligneEv).join('')+rT.map(function(r){ return ligneRap(r,t); }).join(''); }
@@ -24709,6 +24742,11 @@ body.pi-grabbing *{user-select:none!important;}
 .ag-sub{font-size:11.5px;color:var(--gris-2);max-width:40%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .ag-row.late .ag-h{color:var(--rouge);font-size:11px;}
 .ag-retard{font-size:10.5px;color:var(--rouge);background:var(--rouge-p,#fdf0ee);border-radius:10px;padding:1px 7px;white-space:nowrap;flex:none;}
+/* v11.43 : à qui est la ligne (rappel ou rendez-vous) */
+.ag-who{flex:none;font-size:9.5px;font-weight:700;letter-spacing:.03em;padding:1px 5px;border-radius:5px;line-height:1.6;}
+.ag-who-tous{color:var(--gris-2);background:#f3eee6;border:1px solid #e8e0d2;}
+.ag-filt{font-size:10.5px;color:var(--terra);background:#f7efe6;border-radius:10px;padding:1px 7px;margin-left:8px;cursor:pointer;white-space:nowrap;}
+.ag-filt:hover{background:#efe2d4;}
 .ag-day{font-size:10.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--gris-2);background:#faf7f2;padding:5px 16px;border-bottom:1px solid #f3eee6;}
 .ag-empty{padding:14px 16px;font-size:12.5px;color:var(--gris-2);font-style:italic;}
 /* pastilles de rappel dans le calendrier */
