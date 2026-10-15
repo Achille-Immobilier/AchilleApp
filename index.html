@@ -1734,7 +1734,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     </div>
   </div>
   </div>
-  <div class="logo-ver app-ver">Achille App — v11.35</div>
+  <div class="logo-ver app-ver">Achille App — v11.36</div>
 </aside>
 <div id="mob-bk" onclick="mobNav(false)"></div>
 <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Réduire la barre latérale">‹</button>
@@ -13264,6 +13264,28 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
   var pushTimers = {};
   var justPushed = {}; // anti-écho temps réel
   var _lastSyncErr = '';   // dernière erreur d'envoi (pour le diagnostic 🔌)
+  /* ═══ v11.36 : SYNCHRO ÉCONOME — trafic sortant Supabase 7 Go/mois pour 5 Go autorisés.
+     Deux fuites : (1) pullAll retéléchargeait TOUTES les valeurs à chaque chargement ;
+     (2) pushKey retéléchargeait la valeur complète d'un bloc avant chaque envoi.
+     Principe : chaque poste mémorise l'horodatage cloud (updated_at) de chaque bloc tel
+     qu'il l'a intégré la dernière fois (achille_sync_seen, clé LOCALE). Au chargement on
+     ne demande que la liste clé+horodatage (quelques centaines d'octets) et on ne
+     télécharge que ce qui a changé. À l'envoi, si le cloud n'a pas bougé depuis notre
+     dernière lecture, on envoie directement ; sinon on retélécharge et on fusionne comme
+     avant — la protection contre l'écrasement est intacte. Filets de sécurité :
+     rattrapage COMPLET (ancien comportement, toutes valeurs) une fois par 24 h et par
+     poste ; blocs « à réconcilier » (envoi raté, hors ligne) toujours retéléchargés ;
+     au moindre doute (horodatage absent, lecture impossible) → on retélécharge. */
+  var SEEN_K='achille_sync_seen', FULL_K='achille_sync_full_at', DIRTY_K='achille_sync_dirty', FULL_EVERY=24*3600*1000;
+  var ECO=window.ACH_SYNC_ECO={pulls:0, listes:0, telecharges:0, directs:0, fusions:0};
+  function _seenAll(){ try{ var o=JSON.parse(window.localStorage.getItem(SEEN_K)||'{}'); return (o&&typeof o==='object'&&!Array.isArray(o))?o:{}; }catch(e){ return {}; } }
+  function _seenGet(k){ return ''+(_seenAll()[k]||''); }
+  function _seenSet(k,ts){ if(!k) return; try{ var o=_seenAll(); if(ts){ o[k]=''+ts; } else { delete o[k]; } origSetItem(SEEN_K, JSON.stringify(o)); }catch(e){} }
+  function _dirtyAll(){ try{ var a=JSON.parse(window.localStorage.getItem(DIRTY_K)||'[]'); return Array.isArray(a)?a:[]; }catch(e){ return []; } }
+  function _dirtyAdd(k){ try{ var a=_dirtyAll(); if(a.indexOf(k)<0){ a.push(k); origSetItem(DIRTY_K, JSON.stringify(a)); } }catch(e){} }
+  function _dirtyDel(k){ try{ var a=_dirtyAll(), i=a.indexOf(k); if(i>=0){ a.splice(i,1); origSetItem(DIRTY_K, JSON.stringify(a)); } }catch(e){} }
+  function _fullDue(){ try{ var t=parseInt(window.localStorage.getItem(FULL_K)||'0',10)||0; return (Date.now()-t)>FULL_EVERY; }catch(e){ return true; } }
+  window.achSyncForceFull=function(){ try{ origSetItem(FULL_K,'0'); }catch(e){} };   /* diagnostic : forcer un rattrapage complet au prochain chargement */
   function _trace(t){ try{ var a=(window.ACH_SYNC_TRACE=window.ACH_SYNC_TRACE||[]); a.push(new Date().toISOString().slice(11,19)+' '+t); if(a.length>80) a.shift(); }catch(e){window.achErr&&achErr(e)} }
   /* ===== Rafraîchissement SILENCIEUX de la vue (remplace le pop-up "nouvelles données") ===== */
   var _softTimer=null, _pendingRefresh=false;
@@ -13542,39 +13564,82 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
   function _doUpsert(key, val){
     if(isPublicScreen()){ _trace('écran public : envoi bloqué ('+key+')'); return; }   /* v8.24 */
     justPushed[key]=Date.now();
-    db.from('app_data').upsert({ key:key, value:val, updated_at:new Date().toISOString(), updated_by:ME.id }, {onConflict:'key'})
-      .then(function(r){ if(r && r.error){ _lastSyncErr=(r.error.message||'?'); _trace('ERREUR envoi '+key+' : '+_lastSyncErr); flag('Erreur de synchro', true); } else { _lastSyncErr=''; _trace('envoyé ✓ '+key); flag('Synchronisé'); } },
-            function(e){ _lastSyncErr=((e&&e.message)||'réseau'); _trace('ERREUR réseau '+key+' : '+_lastSyncErr); flag('Erreur de synchro', true); });
+    db.from('app_data').upsert({ key:key, value:val, updated_at:new Date().toISOString(), updated_by:ME.id }, {onConflict:'key'}).select('updated_at')
+      .then(function(r){
+        if(r && r.error){ _lastSyncErr=(r.error.message||'?'); _trace('ERREUR envoi '+key+' : '+_lastSyncErr); flag('Erreur de synchro', true); _dirtyAdd(key); }
+        else {
+          _lastSyncErr=''; _trace('envoyé ✓ '+key); flag('Synchronisé');
+          /* v11.36 : l'horodatage que la base vient de poser devient notre référence pour ce bloc */
+          try{ var d=r&&r.data, ts=(Array.isArray(d)&&d[0])?d[0].updated_at:null; if(ts) _seenSet(key, ts); else _seenSet(key, ''); }catch(e){}
+          _dirtyDel(key);
+        }
+      }, function(e){ _lastSyncErr=((e&&e.message)||'réseau'); _trace('ERREUR réseau '+key+' : '+_lastSyncErr); flag('Erreur de synchro', true); _dirtyAdd(key); });
   }
-  function pushKey(key){
-    if(!db||!ME||!isSync(key)){ _trace('abandon '+key+' (connexion:'+(!!db)+' identité:'+(!!ME)+')'); return; }
+  /* v11.36 : envoi CONDITIONNEL (« compare-and-swap ») — la base ne remplace le bloc QUE si
+     son horodatage est encore celui qu'on a intégré. Si quelqu'un a écrit entre-temps, la
+     base ne touche à rien et on repasse par la fusion. Ferme la fenêtre de course qui
+     existait auparavant (deux envois croisés à la même seconde : le second écrasait le premier). */
+  function _casUpdate(key, val, expectTs){
+    return new Promise(function(res){
+      try{
+        justPushed[key]=Date.now();
+        db.from('app_data').update({ value:val, updated_at:new Date().toISOString(), updated_by:ME.id })
+          .eq('key',key).eq('updated_at',expectTs).select('updated_at')
+          .then(function(r){
+            if(r && r.error){ _trace('envoi conditionnel refusé '+key+' : '+(r.error.message||'?')); res(null); return; }
+            var d=r&&r.data, ts=(Array.isArray(d)&&d[0])?d[0].updated_at:null;
+            res(ts||null);   /* null = aucune ligne touchée = le cloud a bougé entre-temps */
+          }, function(e){ _trace('envoi conditionnel : réseau '+key); res(null); });
+      }catch(e){ res(null); }
+    });
+  }
+  function pushKey(key, _essai){
+    if(!db||!ME||!isSync(key)){ if(isSync(key)) _dirtyAdd(key); _trace('abandon '+key+' (connexion:'+(!!db)+' identité:'+(!!ME)+')'); return; }
+    if(isPublicScreen()){ _trace('écran public : envoi bloqué ('+key+')'); return; }   /* v8.24 */
     if(key!==TOMB_KEY && pushTimers[TOMB_KEY]){
       /* Un ordre de suppression est en attente : il part AVANT les données (sinon un élément supprimé
          pourrait réapparaître brièvement chez les collègues). */
       clearTimeout(pushTimers[TOMB_KEY]); pushTimers[TOMB_KEY]=null;
       try{ pushKey(TOMB_KEY); }catch(e){window.achErr&&achErr(e)}
     }
+    var essai=_essai||0;
     var localVal = window.localStorage.getItem(key);
-    _trace('envoi '+key);
-    /* On lit d'abord la version du cloud, on FUSIONNE, puis on renvoie le résultat fusionné */
-    db.from('app_data').select('value').eq('key',key).maybeSingle().then(function(res){
-      _trace('cloud lu '+key);
-      var merged;
-      try{
-        var cloudVal = (res && res.data) ? res.data.value : undefined;
-        if(cloudVal!==undefined && cloudVal!==null && typeof cloudVal!=='string'){ cloudVal=JSON.stringify(cloudVal); }
-        if(key===TOMB_KEY){ merged=JSON.stringify(_ach_mergeTomb(_ach_parse(localVal)||{}, _ach_parse(cloudVal)||{})); }
-        else if(cloudVal!==undefined && cloudVal!==null){ merged=_ach_mergeVal(localVal, cloudVal, _ach_tombAll()[key], 'local'); }
-        else { merged=localVal; }
-        if(merged!==localVal){ try{ origSetItem(key, merged); }catch(e2){} _ach_scheduleSoftRefresh(); }
-      }catch(e){
-        /* FILET DE SECOURS : si la fusion plante, on envoie quand même la valeur locale */
-        _lastSyncErr='fusion ('+key+') : '+((e&&e.message)||e);
-        _trace('ERREUR fusion '+key+' : '+((e&&e.message)||e));
-        merged=localVal;
-      }
-      _doUpsert(key, merged);
-    }, function(e){ _trace('lecture cloud échouée '+key+' → envoi direct'); _doUpsert(key, localVal); });
+    _trace('envoi '+key+(essai?' (essai '+(essai+1)+')':''));
+    function envoye(ts){ _lastSyncErr=''; _trace('envoyé ✓ '+key); flag('Synchronisé'); _seenSet(key, ts); _dirtyDel(key); }
+    function fusionPuisEnvoi(){
+      /* chemin historique : on lit la version du cloud, on FUSIONNE, puis on renvoie le résultat fusionné */
+      db.from('app_data').select('value,updated_at').eq('key',key).maybeSingle().then(function(res){
+        _trace('cloud lu '+key);
+        var merged, cloudTs=(res&&res.data)?(''+(res.data.updated_at||'')):'';
+        try{
+          var cloudVal = (res && res.data) ? res.data.value : undefined;
+          if(cloudVal!==undefined && cloudVal!==null && typeof cloudVal!=='string'){ cloudVal=JSON.stringify(cloudVal); }
+          if(key===TOMB_KEY){ merged=JSON.stringify(_ach_mergeTomb(_ach_parse(localVal)||{}, _ach_parse(cloudVal)||{})); }
+          else if(cloudVal!==undefined && cloudVal!==null){ merged=_ach_mergeVal(localVal, cloudVal, _ach_tombAll()[key], 'local'); }
+          else { merged=localVal; }
+          if(merged!==localVal){ try{ origSetItem(key, merged); }catch(e2){} _ach_scheduleSoftRefresh(); }
+        }catch(e){
+          /* FILET DE SECOURS : si la fusion plante, on envoie quand même la valeur locale */
+          _lastSyncErr='fusion ('+key+') : '+((e&&e.message)||e);
+          _trace('ERREUR fusion '+key+' : '+((e&&e.message)||e));
+          merged=localVal;
+        }
+        if(!(res&&res.data) || !cloudTs){ _doUpsert(key, merged); return; }   /* bloc absent du cloud : création */
+        ECO.fusions++;
+        _casUpdate(key, merged, cloudTs).then(function(ts){
+          if(ts){ envoye(ts); return; }
+          /* le cloud a encore bougé pendant la fusion : on refusionne (3 essais), puis envoi simple */
+          if(essai<2){ pushKey(key, essai+1); } else { _trace('envoi simple après 3 essais '+key); _doUpsert(key, merged); }
+        });
+      }, function(e){ _trace('lecture cloud échouée '+key+' → envoi direct'); _doUpsert(key, localVal); });
+    }
+    var seenTs=_seenGet(key);
+    if(key===TOMB_KEY || !seenTs || _dirtyAll().indexOf(key)>=0){ fusionPuisEnvoi(); return; }
+    /* v11.36 : envoi direct conditionnel — aucun téléchargement du bloc si le cloud n'a pas bougé */
+    _casUpdate(key, localVal, seenTs).then(function(ts){
+      if(ts){ ECO.directs++; _trace('envoi direct '+key+' (cloud inchangé)'); envoye(ts); return; }
+      fusionPuisEnvoi();   /* le cloud a bougé (ou bloc absent) : fusion comme avant */
+    });
   }
   function schedulePush(key){
     _trace('planifié '+key);
@@ -13708,10 +13773,13 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
   }
   function pullAll(cb){
     var _pullChanged=false;
-    db.from('app_data').select('key,value').then(function(res){
-      if(res.error){ return cb(false); }
-      var rows=res.data||[];
-      if(rows.length===0){
+    var full=_fullDue() || !Object.keys(_seenAll()).length;   /* v11.36 : complet si jamais fait ou > 24 h */
+    ECO.pulls++;
+    /* 1) la LISTE des blocs (clé + horodatage) : quelques centaines d'octets */
+    db.from('app_data').select('key,updated_at').then(function(lr){
+      if(lr.error){ return cb(false); }
+      var list=lr.data||[];
+      if(list.length===0){
         // Cloud vide : on y dépose les données actuelles de cet appareil (1ère mise en place)
         var ups=[];
         for(var i=0;i<window.localStorage.length;i++){
@@ -13721,13 +13789,25 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
         window.ACH_PULLED=true;   /* cloud vide = téléchargement effectué (base neuve) */
         if(ups.length && !isPublicScreen()){ db.from('app_data').upsert(ups,{onConflict:'key'}).then(function(){cb(true);},function(){cb(true);}); }
         else { cb(true); }
-      } else {
+        return;
+      }
+      var seen=_seenAll(), dirty=_dirtyAll(), want=[], cloudKeys={};
+      list.forEach(function(r){
+        if(!r || !isSync(r.key)) return;
+        if(_ach_obsoleteKey(r.key)){ try{ if(!isPublicScreen()) db.from('app_data').delete().eq('key',r.key).then(function(){},function(){}); }catch(e){window.achErr&&achErr(e)} return; }  /* v8.03 : nettoyage silencieux · v8.24 : jamais depuis l'écran public */
+        cloudKeys[r.key]=1;
+        var ts=''+(r.updated_at||'');
+        /* à télécharger : rattrapage complet, horodatage absent, horodatage différent de celui
+           qu'on a intégré, bloc à réconcilier, ou bloc inconnu en local */
+        if(full || !ts || seen[r.key]!==ts || dirty.indexOf(r.key)>=0 || window.localStorage.getItem(r.key)===null) want.push(r.key);
+      });
+      ECO.listes+=Object.keys(cloudKeys).length; ECO.telecharges+=want.length;
+      _trace((full?'rattrapage complet':'synchro économe')+' : '+want.length+' bloc(s) téléchargé(s) sur '+Object.keys(cloudKeys).length);
+      /* 2) application des blocs reçus — logique de fusion INCHANGÉE */
+      function apply(rows){
         rows.sort(function(a,b){ return (a.key===TOMB_KEY?-1:0)-(b.key===TOMB_KEY?-1:0); });  /* tombstones en premier */
-        var cloudKeys={};
         rows.forEach(function(row){
-          if(!isSync(row.key)) return;
-          if(_ach_obsoleteKey(row.key)){ try{ if(!isPublicScreen()) db.from('app_data').delete().eq('key',row.key).then(function(){},function(){}); }catch(e){window.achErr&&achErr(e)} return; }  /* v8.03 : nettoyage silencieux · v8.24 : jamais depuis l'écran public */
-          cloudKeys[row.key]=1;
+          if(!row || !isSync(row.key) || _ach_obsoleteKey(row.key)) return;
           var localVal=window.localStorage.getItem(row.key), merged;
           var cloudVal=row.value; if(cloudVal!==undefined && cloudVal!==null && typeof cloudVal!=='string'){ cloudVal=JSON.stringify(cloudVal); }
           try{
@@ -13739,6 +13819,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
           else if(merged===cloudVal && merged!==localVal){ _trace('reçu '+row.key+' : version cloud adoptée'); _pullChanged=true; }
           else if(merged!==localVal && merged!==cloudVal){ _trace('reçu '+row.key+' : fusion des deux'); _pullChanged=true; }
           try{ origSetItem(row.key, merged); }catch(e){window.achErr&&achErr(e)}
+          _seenSet(row.key, row.updated_at); _dirtyDel(row.key);   /* v11.36 : version cloud intégrée */
           if(merged!==cloudVal){ try{ schedulePush(row.key); }catch(e){window.achErr&&achErr(e)} }  /* renvoyer la fusion au cloud */
         });
         /* Clés présentes en local mais absentes du cloud : on les y dépose */
@@ -13746,9 +13827,15 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
           if(isSync(lk) && !cloudKeys[lk] && !_ach_obsoleteKey(lk)){ try{ schedulePush(lk); }catch(e){window.achErr&&achErr(e)} } }
         try{ _ach_applyTombLocal(); }catch(e){window.achErr&&achErr(e)}
         window.ACH_PULLED=true;   /* signal : le cloud a été téléchargé au moins une fois */
+        if(full){ try{ origSetItem(FULL_K, ''+Date.now()); }catch(e){} }
         if(_pullChanged){ try{ _ach_scheduleSoftRefresh(); }catch(e){window.achErr&&achErr(e)} }  /* la vue se met à jour toute seule */
         cb(true);
       }
+      if(!want.length){ apply([]); return; }
+      db.from('app_data').select('key,value,updated_at').in('key', want).then(function(res){
+        if(res.error){ return cb(false); }
+        apply(res.data||[]);
+      }, function(){ cb(false); });
     }, function(){ cb(false); });
   }
 
@@ -13762,7 +13849,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
           if(_ach_obsoleteKey(row.key)) return;  /* v8.03 */
           if(row.updated_by===ME.id) return; // mes propres changements
           var t=justPushed[row.key]; if(t && Date.now()-t<3000) return;
-          if(p.eventType==='DELETE'){ origRemoveItem(row.key); }
+          if(p.eventType==='DELETE'){ origRemoveItem(row.key); _seenSet(row.key,''); }
           else {
             var localVal=window.localStorage.getItem(row.key), merged;
             var cloudVal=row.value; if(cloudVal!==undefined && cloudVal!==null && typeof cloudVal!=='string'){ cloudVal=JSON.stringify(cloudVal); }
@@ -13771,6 +13858,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
               else { merged=_ach_mergeVal(localVal, cloudVal, _ach_tombAll()[row.key], 'cloud'); }
             }catch(e){ _trace('ERREUR fusion temps réel '+row.key+' : '+((e&&e.message)||e)); merged=cloudVal; }
             try{ origSetItem(row.key, merged); }catch(e){window.achErr&&achErr(e)}
+            _seenSet(row.key, row.updated_at);   /* v11.36 */
             if(row.key===TOMB_KEY){ _ach_applyTombLocal(); }
           }
           _ach_scheduleSoftRefresh();
@@ -13953,7 +14041,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     startRealtime();
     var ov=document.getElementById('ach-login-overlay'); if(ov) ov.classList.add('ach-hidden');
     var ub=document.getElementById('ach-userbar'); if(ub) ub.style.display='none';
-    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v11.35';
+    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v11.36';
     flag('Synchronis\u00e9');
     // fin de l'init : on autorise la journalisation des actions
     setTimeout(function(){ installInterceptor._init=false; }, 1500);
@@ -18349,25 +18437,6 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
     return 'Nous f\u00eatons les '+nm;
   }
   window._vFeteTxt=_vFeteTxt;   /* exposé pour les tests */
-  /* v9.18 : éphéméride multi-prénoms. Le fichier ephemeride.json (mis à jour chaque matin par la
-     routine planifiée) donne TOUS les prénoms du jour. S'il est absent, illisible ou d'un autre jour,
-     l'écran retombe sur le tableau V_FETES ci-dessus (un seul prénom) : jamais d'écran vide. */
-  var _vEph=null, _vEphTry=0;
-  function _vTodayKey(t){ return t.getFullYear()+'-'+('0'+(t.getMonth()+1)).slice(-2)+'-'+('0'+t.getDate()).slice(-2); }
-  function _vEphLoad(){
-    var now=Date.now(); if(now-_vEphTry<600000) return;   /* au plus un essai toutes les 10 min */
-    _vEphTry=now;
-    try{
-      fetch('ephemeride.json?v='+now,{cache:'no-store'}).then(function(r){ return r.ok?r.json():null; })
-      .then(function(j){ if(j&&j.date&&Array.isArray(j.prenoms)){ _vEph=j; _vTick(); } }).catch(function(){});
-    }catch(e){window.achErr&&achErr(e)}
-  }
-  function _vFeteMulti(arr){
-    var a=arr.filter(function(x){ return x&&String(x).trim(); }).map(function(x){ return String(x).trim(); });
-    if(!a.length) return '';
-    if(a.length===1) return _vFeteTxt(a[0]);
-    return 'Nous fêtons '+a.slice(0,-1).join(', ')+' et '+a[a.length-1];
-  }
   function _vTick(){
     var t=new Date(), c=document.querySelector('#ach-veille .v-clock'), d=document.querySelector('#ach-veille .v-date');
     if(c) c.textContent=t.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
@@ -18375,11 +18444,9 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
     try{
       var f=document.getElementById('v-fete');
       if(f){
-        _vEphLoad();
         var nm=(V_FETES[t.getMonth()]||[])[t.getDate()-1]||'';
         var jn=V_JOURNEES[(t.getMonth()+1)+'-'+t.getDate()]||'';
-        var txt=(_vEph&&_vEph.date===_vTodayKey(t)&&_vEph.prenoms.length)?_vFeteMulti(_vEph.prenoms):(nm?_vFeteTxt(nm):'');
-        f.innerHTML=(txt?_vEsc(txt):'')+(jn?('<span class="fj">'+_vEsc(jn)+'</span>'):'');
+        f.innerHTML=(nm?_vEsc(_vFeteTxt(nm)):'')+(jn?('<span class="fj">'+_vEsc(jn)+'</span>'):'');
       }
     }catch(e){window.achErr&&achErr(e)}
   }
@@ -19247,6 +19314,7 @@ select.pg-chip{padding:6px 10px;}
         if(st2.err) L.push('⚠️ Dernière erreur d’envoi : '+st2.err);
         var tr=(window.ACH_SYNC_TRACE||[]).slice(-10);
         if(tr.length){ L.push(''); L.push('— Boîte noire (dernières étapes) —'); tr.forEach(function(t){ L.push(t); }); }
+        var eco=window.ACH_SYNC_ECO; if(eco){ L.push(''); L.push('— Trafic (synchro économe v11.36) — chargements : '+eco.pulls+' · blocs listés : '+eco.listes+' · téléchargés : '+eco.telecharges+' · envois directs : '+eco.directs+' · envois avec fusion : '+eco.fusions); }
         achShowDiag('RAPPORT DU CIRCUIT DE SYNCHRONISATION\n\n'+L.join('\n')+(ok?'\n\n🎉 Tout fonctionne sur cet appareil.':'\n\n👉 Utilisez « Tout copier » et envoyez le rapport à Claude.'));
       }, function(e){
         L.push('❌ Vérification impossible : '+((e&&e.message)||e));
