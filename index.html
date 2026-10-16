@@ -1739,7 +1739,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     </div>
   </div>
   </div>
-  <div class="logo-ver app-ver">Achille App — v11.45</div>
+  <div class="logo-ver app-ver">Achille App — v11.46</div>
 </aside>
 <div id="mob-bk" onclick="mobNav(false)"></div>
 <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Réduire la barre latérale">‹</button>
@@ -14130,7 +14130,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     startRealtime();
     var ov=document.getElementById('ach-login-overlay'); if(ov) ov.classList.add('ach-hidden');
     var ub=document.getElementById('ach-userbar'); if(ub) ub.style.display='none';
-    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v11.45';
+    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v11.46';
     flag('Synchronis\u00e9');
     // fin de l'init : on autorise la journalisation des actions
     setTimeout(function(){ installInterceptor._init=false; }, 1500);
@@ -17831,9 +17831,11 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
   };
   function pgComRenderNew(){
     var box=document.getElementById('pg-com-list'); if(!box) return;
-    var n=window._pgNewComs||[];
-    box.innerHTML=n.length? n.map(function(c,idx){ return '<div class="pg-com"><b>'+esc(c.u)+'</b> <span>'+dstr(new Date(c.t).toISOString())+' · sera enregistré avec la fiche</span><button type="button" class="pg-com-del" title="Retirer ce suivi" onclick="pigeComDelNew('+idx+')">✕</button><div>'+esc(c.txt)+'</div></div>'; }).join('')
+    /* v11.46 : le plus récent en haut, ici aussi — l'index d'origine reste celui du tampon */
+    var n=(window._pgNewComs||[]).map(function(c,i){ return {c:c, i:i}; }).slice().reverse();
+    box.innerHTML=n.length? n.map(function(o){ var c=o.c, idx=o.i; return '<div class="pg-com"><b>'+esc(c.u)+'</b> <span>'+dstr(new Date(c.t).toISOString())+' · sera enregistré avec la fiche</span><button type="button" class="pg-com-del" title="Retirer ce suivi" onclick="pigeComDelNew('+idx+')">✕</button><div>'+esc(c.txt)+'</div></div>'; }).join('')
       : '<div style="font-size:12px;color:var(--gris-2);padding:4px 2px;">Notez ici votre premier suivi (appel passé, RDV, avis…) — il sera enregistré avec la fiche.</div>';
+    try{ box.scrollTop=0; }catch(e){}
   }
   function pgObsPreview(r,nc){
     var ns=(r.notes||[]).slice(-3).reverse();   /* les 2-3 plus récentes, la dernière en premier */
@@ -17848,9 +17850,13 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
   function pgComCanDel(){ var k=(window.ACH_USER||{}).key; return k==='admin'; }   /* v8.05 : suppression d'un suivi/commentaire réservée à l'administrateur */
   function pgComRender(r){
     var box=document.getElementById('pg-com-list');
-    var n=(r.notes||[]);
+    /* v11.46 (demande Laurent) : du PLUS RÉCENT au plus ancien, et la liste s'ouvre en haut.
+       On garde l'index d'origine (idx) : il sert aux boutons ✎ et ✕, qui travaillent sur
+       r.notes dans son ordre de stockage — le renverser casserait les suppressions. */
+    var n=(r.notes||[]).map(function(c,i){ return {c:c, i:i}; }).slice().reverse();
     var canEdit=pgComCanEdit();
-    box.innerHTML=n.length? n.map(function(c,idx){
+    box.innerHTML=n.length? n.map(function(o){
+      var c=o.c, idx=o.i;
       if(canEdit && window._pgComEditIdx===idx){
         var d=new Date(c.t), pad=function(x){return (x<10?'0':'')+x;};
         var dval=d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
@@ -17866,6 +17872,7 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
         +'<div>'+esc(c.txt)+'</div></div>';
     }).join('')
       : '<div style="font-size:12px;color:var(--gris-2);padding:4px 2px;">Aucun commentaire pour l’instant.</div>';
+    try{ box.scrollTop=0; }catch(e){}   /* v11.46 */
   }
   window.pigeComRefresh=function(){
     var id=(document.getElementById('pg-edit-id')||{}).value||''; if(!id) return;
