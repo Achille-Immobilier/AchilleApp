@@ -1741,7 +1741,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     </div>
   </div>
   </div>
-  <div class="logo-ver app-ver">Achille App — v11.47</div>
+  <div class="logo-ver app-ver">Achille App — v11.48</div>
 </aside>
 <div id="mob-bk" onclick="mobNav(false)"></div>
 <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Réduire la barre latérale">‹</button>
@@ -8361,6 +8361,7 @@ CABLE|1|Villa Nova|48.73478|2.46475`;
     if(ev.prive || (ev.prive===undefined && ev.type==='perso')) return (users.indexOf(cu)>=0 || (ev.createdBy&&ev.createdBy===cu))?'full':'masked';
     return 'full';
   }
+  window.planVisib = planVisib;   /* v11.48 : utilisé par l'agenda d'accueil, l'alerte 1 h et la recherche globale */
   /* v7.38 : migration douce — anciens événements « Personnel » = privés par défaut (confidentialité conservée) ;
      éventuels événements typés « direction » (v7.36-37) → coche Direction + type Réunion. Idempotent. */
   function planPrivMigrate(){
@@ -14127,7 +14128,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     startRealtime();
     var ov=document.getElementById('ach-login-overlay'); if(ov) ov.classList.add('ach-hidden');
     var ub=document.getElementById('ach-userbar'); if(ub) ub.style.display='none';
-    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v11.47';
+    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v11.48';
     flag('Synchronis\u00e9');
     // fin de l'init : on autorise la journalisation des actions
     setTimeout(function(){ installInterceptor._init=false; }, 1500);
@@ -25386,7 +25387,7 @@ body.pi-grabbing *{user-select:none!important;}
 <!-- ============ v10.48 : RECHERCHE GLOBALE ============ -->
 <div id="gs-ov" onclick="if(event.target===this) gsHide()">
   <div class="gs-box">
-    <input class="gs-in" id="gs-in" placeholder="Rechercher partout — adresse, nom, téléphone, mandat…" autocomplete="off" oninput="gsType()" onkeydown="gsKeys(event)">
+    <input class="gs-in" id="gs-in" placeholder="Rechercher partout — adresse, nom, téléphone, mandat, visite…" autocomplete="off" oninput="gsType()" onkeydown="gsKeys(event)">
     <div class="gs-res" id="gs-res"><div class="gs-empty">Tapez au moins 2 caractères…</div></div>
     <div class="gs-hint"><span>↑↓ naviguer</span><span>Entrée ouvrir</span><span>Échap fermer</span></div>
   </div>
@@ -25449,6 +25450,67 @@ body.pi-grabbing *{user-select:none!important;}
      sub:function(r){ return [r.owner, (r.col==='clients'?'Client':'Produit'), r.date].filter(Boolean).join(' · '); },
      go:function(r){ nav('postits'); setTimeout(function(){ if(window.piView) piView(r.id); },250); }}
   ];
+  /* ═══ v11.48 : la recherche globale ignorait les VISITES et le PLANNING (constat Laurent :
+     « LAVEISSIÈRE » introuvable alors que la page Visites le trouve). On y ajoute :
+       • les bons de visite (liste de base + bons ajoutés/modifiés + bons en attente de validation)
+         et les visites sans bon — avec le texte de leur compte rendu de visite ;
+       • les événements du planning (sauf ceux qui me sont masqués : privés, Direction).
+     Un clic ouvre la page Visites filtrée sur le visiteur, ou l'événement dans le planning. */
+  function gsRaw(){ var e=document.getElementById('gs-in'); return e? (''+e.value).trim() : ''; }
+  function crTextes(){
+    var out={};
+    readArr('ach_bv_cr_v1').forEach(function(c){ if(c && c.id) out[''+c.id]=hay(c,0); });
+    return out;
+  }
+  function visitesTout(){
+    var CR=crTextes(), out=[], vu={};
+    var obs={}; try{ obs=JSON.parse(localStorage.getItem('ach_bv_obs')||'{}')||{}; }catch(e){}
+    var extra=readArr('ach_bv_extra'), byN={};
+    extra.forEach(function(b){ if(b && b.n!=null) byN[b.n]=b; });
+    function bon(b, attente){
+      if(!b || b.n==null || vu[b.n]) return; vu[b.n]=1;
+      var x=Object.assign({}, b, byN[b.n]||{});
+      if(obs[x.n]!==undefined && !x.obs) x.obs=obs[x.n];
+      out.push({ id:'bv'+x.n, kind:'bv', n:x.n, d:x.d||x.date||'', v:x.v||x.visiteur||'', a:x.a||x.adresse||'',
+                 addrs:Array.isArray(x.addrs)?x.addrs.join(' '):'', obs:x.obs||'', attente:!!attente, cr:CR['cr:bv'+x.n]||'' });
+    }
+    (window.BV_DATA||[]).forEach(function(b){ bon(b,false); });
+    extra.forEach(function(b){ bon(b,false); });
+    readArr('ach_bv_pending').forEach(function(b){ bon(b,true); });
+    readArr('ach_vsb_v1').forEach(function(o){
+      if(!o || !o.id) return;
+      out.push({ id:'vsb:'+o.id, kind:'vsb', vid:o.id, d:o.d||'', v:o.v||'', a:o.a||'', obs:o.obs||'', cr:CR['cr:vsb:'+o.id]||'' });
+    });
+    out.sort(function(a,b){ return dCle(b.d).localeCompare(dCle(a.d)); });   /* les plus récentes d'abord */
+    return out;
+  }
+  function dCle(d){ var m=(''+(d||'')).match(/(\d{1,2})\/(\d{1,2})\/(\d{2,4})/); if(!m) return ''+(d||''); var y=+m[3]; if(y<100) y+=2000; return y+'-'+('0'+m[2]).slice(-2)+'-'+('0'+m[1]).slice(-2); }
+  function ouvrirVisite(r){
+    nav('visites');
+    setTimeout(function(){
+      try{
+        var vue=(r.kind==='vsb')?'vsb':'bons';
+        if(window.bvShowView) bvShowView(vue);
+        var cle=r.v||r.a||gsRaw();
+        if(vue==='vsb'){ var i2=document.getElementById('vsb-search'); if(i2){ i2.value=cle; } if(window.vsbRender) vsbRender(); }
+        else { var i1=document.getElementById('bv-search'); if(i1){ i1.value=cle; } if(window.bvFilter) bvFilter(); }
+      }catch(e){ window.achErr&&achErr(e); }
+    },260);
+  }
+  function frD(ds){ try{ return new Date(ds+'T12:00:00').toLocaleDateString('fr-FR',{day:'numeric',month:'short',year:'numeric'}); }catch(e){ return ds; } }
+  MODS.push(
+    {key:'_visites', ico:'🏠', name:'Visites', perm:'visites',
+     read:visitesTout,
+     lab:function(r){ return (r.kind==='bv'?('Bon n° '+r.n+' — '):'Visite sans bon — ')+(r.v||'(visiteur non renseigné)'); },
+     sub:function(r){ return [r.d, r.a, r.attente?'en attente de validation':'', r.cr?'compte rendu ✓':''].filter(Boolean).join(' · '); },
+     go:function(r){ ouvrirVisite(r); }},
+    {key:'ach_plan_events', ico:'📅', name:'Planning', perm:'planning',
+     read:function(){ return readArr('ach_plan_events').filter(function(e){ try{ return !(window.planVisib && planVisib(e)==='masked'); }catch(x){ return true; } })
+                        .sort(function(a,b){ return (''+(b.date||'')).localeCompare(''+(a.date||'')); }); },
+     lab:function(r){ return r.title||'Événement'; },
+     sub:function(r){ return [r.date?frD(r.date):'', r.allDay?'journée':(r.timeStart||''), r.adresse, r.visiteur].filter(Boolean).join(' · '); },
+     go:function(r){ nav('planning'); setTimeout(function(){ if(window.planEditEvent) planEditEvent(r.id); },300); }}
+  );
   var _res=[], _sel=0;
   window.gsShow=function(){
     var ov=document.getElementById('gs-ov'); ov.classList.add('open');
