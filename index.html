@@ -1694,7 +1694,6 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     <div class="nav-item" id="nav-veille" onclick="agenceVeilleGo()"><span class="nav-icon">⛶</span><span class="nav-item-label">Plein écran</span></div><!-- v9.08 : compte Agence seul — atteignable aux flèches de la télécommande (demande Laurent : le bouton flottant restait hors de portée du navigateur de la télé) -->
     <!-- v10.42 : le lien « Tableau de bord » est retiré — le LOGO (haut gauche) ramène à l'accueil -->
     <div class="nav-item" onclick="navTo('pipeline',this)"><span class="nav-icon">⟶</span><span class="nav-item-label">Pipeline</span></div>
-    <div class="nav-item" onclick="navTo('estimation',this)"><span class="nav-icon">🏛</span><span class="nav-item-label">Estimation</span></div>
     <div class="nav-item" onclick="navTo('reporting',this)"><span class="nav-icon">◉</span><span class="nav-item-label">Reporting</span></div>
     <div class="nav-item" onclick="navTo('routines',this)"><span class="nav-icon">🔁</span><span class="nav-item-label">Routines &amp; Objectifs</span></div>
   </div>
@@ -1713,6 +1712,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
   <div class="nav-section" style="margin-top:8px;">
     <div class="nav-lbl">Gestion</div>
     <div class="nav-item" onclick="navTo('visites',this)"><span class="nav-icon">🏠</span><span class="nav-item-label">Visites</span></div>
+    <div class="nav-item" onclick="navTo('estimation',this)"><span class="nav-icon">🏛</span><span class="nav-item-label">Estimations</span></div>
     <div class="nav-item" onclick="navTo('documents',this)"><span class="nav-icon">◧</span><span class="nav-item-label">Documents</span></div>
     <div class="nav-item" onclick="navTo('equityliving',this)"><span class="nav-icon">🤝</span><span class="nav-item-label">Equity Living</span></div><!-- v9.19 -->
     <div class="nav-item" onclick="navTo('finances',this)"><span class="nav-icon">💶</span><span class="nav-item-label">Finances</span></div>
@@ -5153,7 +5153,7 @@ table.es-t td.del button{border:none;background:none;color:var(--gris-2);cursor:
     equityliving:'Equity <span>Living</span>',   /* v9.27 : sans cette entrée, le bandeau affichait « equityliving » brut */
     droits:'Gestion des <span>Droits</span>',
     dashboard:'Tableau de <span>Bord</span>',pipeline:'Pipeline <span>Vente & Location</span>',
-    estimation:'<span>Estimation</span> de valeur',   /* v11.50 */
+    estimation:'<span>Estimations</span> de valeur',   /* v11.50 */
     reporting:'Reporting <span>Avancé</span>',
     documents:'Gestion des <span>Documents</span>',
     sectorisation:'Sectorisation <span>&amp; Transports</span>',prospection:'Outils de <span>Prospection</span>',lexique:'<span>Lexique</span> Immobilier',planning:'Planning <span>&amp; To-Do</span>',postits:'Post-its <span>Equipe</span>',
@@ -15134,7 +15134,7 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
     {id:'lexique',label:'Lexique'},{id:'visites',label:'Visites'},{id:'documents',label:'Documents'},
     {id:'finances',label:'Finances'},{id:'encours',label:'En cours'},{id:'pige',label:'Pige'},
     {id:'equityliving',label:'Equity Living'},   /* v9.19 */
-    {id:'estimation',label:'Estimation'}   /* v11.50 */
+    {id:'estimation',label:'Estimations'}   /* v11.50 */
   ];
   window.PERM_SECTIONS=PERM_SECTIONS;
   var DEFAULTS={finances:'none',documents:'read',encours:'read',visites:'create'};
