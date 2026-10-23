@@ -2543,7 +2543,7 @@ table.es-t td.del button{border:none;background:none;color:var(--gris-2);cursor:
       var e=v.map(function(c){ return num(c.eur_m2); }).sort(function(a,b){return a-b;});
       var med=e[Math.floor(e.length/2)];
       var f=function(x){ return Math.round(x).toLocaleString('fr-FR')+' €/m²'; };
-      s.push('Les ventes récentes de biens comparables à '+ville+' se situent entre '+f(e[0])+' et '+f(e[e.length-1])+(e.length>=3?' (médiane '+f(med)+')':'')+'.');
+      s.push(e.length>1?('Les ventes récentes de biens comparables à '+ville+' se situent entre '+f(e[0])+' et '+f(e[e.length-1])+(e.length>=3?' (médiane '+f(med)+')':'')+'.'):('La vente récente de référence à '+ville+' ressort à '+f(e[0])+'.'));
       var refs=v.slice(0,3).map(function(c){ return (c.adresse||'')+(c.surface?' ('+c.surface+' m²'+(c.prix?', '+eur(c.prix):'')+(c.date?', '+c.date:'')+')':''); });
       s.push('Références retenues : '+refs.join(' ; ')+'.');
     }
