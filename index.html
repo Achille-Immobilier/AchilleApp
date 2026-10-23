@@ -1694,6 +1694,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     <div class="nav-item" id="nav-veille" onclick="agenceVeilleGo()"><span class="nav-icon">⛶</span><span class="nav-item-label">Plein écran</span></div><!-- v9.08 : compte Agence seul — atteignable aux flèches de la télécommande (demande Laurent : le bouton flottant restait hors de portée du navigateur de la télé) -->
     <!-- v10.42 : le lien « Tableau de bord » est retiré — le LOGO (haut gauche) ramène à l'accueil -->
     <div class="nav-item" onclick="navTo('pipeline',this)"><span class="nav-icon">⟶</span><span class="nav-item-label">Pipeline</span></div>
+    <div class="nav-item" onclick="navTo('estimation',this)"><span class="nav-icon">🏛</span><span class="nav-item-label">Estimation</span></div>
     <div class="nav-item" onclick="navTo('reporting',this)"><span class="nav-icon">◉</span><span class="nav-item-label">Reporting</span></div>
     <div class="nav-item" onclick="navTo('routines',this)"><span class="nav-icon">🔁</span><span class="nav-item-label">Routines &amp; Objectifs</span></div>
   </div>
@@ -1741,7 +1742,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     </div>
   </div>
   </div>
-  <div class="logo-ver app-ver">Achille App — v11.49</div>
+  <div class="logo-ver app-ver">Achille App — v11.50</div>
 </aside>
 <div id="mob-bk" onclick="mobNav(false)"></div>
 <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Réduire la barre latérale">‹</button>
@@ -2216,6 +2217,389 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
   </div>
 
   <!-- CALCULS RENTA -->
+<!-- ══════════ v11.50 : ESTIMATION DE VALEUR (demande Laurent 23/10/2026) ══════════
+     Onglet « Estimation » : ① saisie du bien (mêmes champs que le formulaire Word),
+     ② résultats proposés par Claude (collés en JSON) OU saisis à la main (mode libre),
+     relus et corrigés, ③ pont vers Documents → « Estimation de Valeur » pré-rempli.
+     Données : ach_estim_v1 (synchronisé via Achille Cloud comme toute clé ach_*). -->
+<style>
+.es-wrap{max-width:1040px;margin:0 auto;padding:0 24px 40px;}
+.es-card{background:var(--blanc);border-radius:14px;padding:22px 24px;box-shadow:var(--shadow);margin-bottom:18px;}
+.es-sec{font-family:'Jost',sans-serif;font-size:11px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--terra);margin:14px 0 8px;}
+.es-sec:first-child{margin-top:0;}
+.es-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:10px 12px;}
+.es-f{display:flex;flex-direction:column;gap:4px;}
+.es-f.c6{grid-column:span 6;}.es-f.c4{grid-column:span 4;}.es-f.c3{grid-column:span 3;}.es-f.c2{grid-column:span 2;}.es-f.c1{grid-column:span 1;}
+.es-f label{font-size:11.5px;font-weight:600;color:var(--gris);letter-spacing:.04em;}
+.es-f label .req{color:var(--terra);}
+.es-f label .hint{font-weight:400;font-style:italic;color:var(--gris-2);margin-left:4px;}
+.es-f input,.es-f select,.es-f textarea{font-family:'Jost',sans-serif;font-size:13.5px;padding:8px 10px;border:1px solid var(--border);border-radius:7px;background:#fff;color:var(--noir);width:100%;box-sizing:border-box;}
+.es-f input:focus,.es-f textarea:focus,.es-f select:focus{outline:none;border-color:var(--terra);}
+.es-f textarea{resize:vertical;min-height:58px;}
+.es-bar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:16px;}
+.es-btn{font-family:'Jost',sans-serif;font-size:13px;font-weight:500;padding:9px 16px;border-radius:20px;border:1px solid var(--terra);background:var(--terra);color:#fff;cursor:pointer;}
+.es-btn.sec{background:#fff;color:var(--terra);}
+.es-btn.ghost{background:transparent;color:var(--gris);border-color:var(--border);}
+.es-btn:disabled{opacity:.45;cursor:default;}
+.es-mode{display:flex;gap:0;border:1px solid var(--border);border-radius:20px;overflow:hidden;margin-left:auto;}
+.es-mode button{font-family:'Jost',sans-serif;font-size:12.5px;padding:7px 14px;border:none;background:#fff;color:var(--gris);cursor:pointer;}
+.es-mode button.on{background:var(--kaki,#4c533b);color:#fff;}
+.es-note{font-size:12.5px;color:var(--gris);line-height:1.5;}
+.es-prices{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
+.es-price{border:1px solid var(--border);border-radius:12px;padding:14px 16px;background:#fff;}
+.es-price.mk{border-color:var(--terra);box-shadow:0 0 0 2px rgba(180,115,96,.12);}
+.es-price h4{margin:0 0 10px;font-family:'Cormorant Garamond',serif;font-size:20px;color:var(--noir);font-weight:500;}
+.es-price h4 small{display:block;font-family:'Jost',sans-serif;font-size:11px;color:var(--gris-2);letter-spacing:.06em;text-transform:uppercase;margin-top:2px;}
+.es-price .es-f{margin-bottom:8px;}
+table.es-t{width:100%;border-collapse:collapse;font-size:12.5px;}
+table.es-t th{text-align:left;font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--gris);padding:6px 6px;border-bottom:1px solid var(--border);}
+table.es-t td{padding:3px 4px;border-bottom:1px solid rgba(0,0,0,.05);vertical-align:top;}
+table.es-t td input,table.es-t td textarea{width:100%;box-sizing:border-box;font-family:'Jost',sans-serif;font-size:12.5px;padding:5px 7px;border:1px solid transparent;border-radius:5px;background:transparent;}
+table.es-t td input:focus,table.es-t td textarea:focus{outline:none;border-color:var(--terra);background:#fff;}
+table.es-t td.del{width:26px;text-align:center;}
+table.es-t td.del button{border:none;background:none;color:var(--gris-2);cursor:pointer;font-size:14px;}
+.es-hist{display:flex;align-items:center;gap:12px;padding:10px 14px;margin-bottom:7px;background:var(--blanc);border:1px solid var(--border);border-radius:9px;flex-wrap:wrap;}
+.es-hist .d{font-size:12px;color:var(--gris-2);min-width:90px;}
+.es-hist .a{font-weight:500;font-size:13.5px;}
+.es-hist .m{font-size:12px;color:var(--terra);font-style:italic;}
+.es-hist .p{font-size:12.5px;color:var(--gris);}
+.es-hist .act{margin-left:auto;display:flex;gap:6px;}
+.es-badge{display:inline-block;font-size:10.5px;padding:2px 8px;border-radius:10px;background:var(--beige-2,#efe9df);color:var(--gris);}
+.es-badge.libre{background:#f1ead9;color:#8a6d2a;}
+.es-badge.claude{background:#e8eee2;color:#4c533b;}
+#es-paste{width:100%;min-height:160px;font-family:ui-monospace,Menlo,monospace;font-size:12px;border:1px solid var(--border);border-radius:8px;padding:10px;box-sizing:border-box;}
+.es-steps{display:flex;gap:12px;align-items:center;font-size:12.5px;color:var(--gris);margin-bottom:14px;line-height:1.45;}
+.es-steps>span.txt{flex:1;}
+.es-steps b{color:var(--terra);}
+</style>
+
+<div class="page" id="page-estimation">
+  <div class="nx-wrap nx-wide">
+    <div class="nx-head"><span class="pg-lbl">Estimation de valeur</span><span class="nx-hint">Saisir le bien · demander les résultats à Claude ou les saisir soi-même · relire · générer l'avis de valeur</span></div>
+    <div class="std-tabs">
+      <button class="std-tab on" id="es-tab-1" onclick="esTab(1)">① Le bien</button>
+      <button class="std-tab" id="es-tab-2" onclick="esTab(2)">② Résultats</button>
+      <button class="std-tab" id="es-tab-3" onclick="esTab(3)">🕘 Historique</button>
+    </div>
+    <div style="height:8px;"></div>
+    <div class="es-wrap">
+      <div id="es-panel-1"></div>
+      <div id="es-panel-2" style="display:none;"></div>
+      <div id="es-panel-3" style="display:none;"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  var KEY='ach_estim_v1';
+  var CUR=null;          /* estimation en cours d'édition */
+
+  /* ---------- Champs du bien (= formulaire Word) ---------- */
+  var FIELDS=[
+    {sec:'Identification'},
+    {k:'demandeur',l:'Demandeur',c:'c2',ph:'Marine A. / Marine Z. / Liloé / Laurent'},
+    {k:'adresse',l:'Adresse complète',c:'c4',req:1,ph:'n°, rue, code postal, ville'},
+    {k:'type',l:'Type de bien',c:'c2',req:1,sel:['appartement','maison','parking','local']},
+    {sec:'Le bien'},
+    {k:'surface',l:'Surface Carrez',c:'c2',req:1,hint:'m²',ph:'ex. 100'},
+    {k:'surface_sol',l:'Surface au sol',c:'c2',hint:'si différente'},
+    {k:'pieces',l:'Pièces',c:'c1',req:1},
+    {k:'chambres',l:'Chambres',c:'c1',req:1},
+    {k:'etage',l:'Étage du bien',c:'c2',req:1,ph:'ex. 1er'},
+    {k:'nb_etages',l:'Nb étages immeuble',c:'c2',req:1},
+    {k:'ascenseur',l:'Ascenseur',c:'c2',req:1,sel:['','oui','non']},
+    {k:'immeuble',l:'Année ou type d’immeuble',c:'c3',req:1,ph:'ex. 1910 pierre de taille, 1967, récent 2005'},
+    {k:'etat',l:'État général',c:'c3',req:1,sel:['','rénové récent','bon état','à rafraîchir','à refaire']},
+    {k:'dpe',l:'DPE',c:'c1',req:1,sel:['','A','B','C','D','E','F','G']},
+    {k:'sdb',l:'Salles de bains',c:'c1'},
+    {k:'sde',l:'Salles d’eau',c:'c1'},
+    {k:'wc',l:'WC',c:'c1'},
+    {k:'hsp',l:'Hauteur sous plafond',c:'c2'},
+    {k:'expo',l:'Exposition / vue / vis-à-vis',c:'c6',ph:'ex. sud sur cour arborée, sans vis-à-vis'},
+    {sec:'Extérieurs et annexes'},
+    {k:'exterieur',l:'Balcon / terrasse / jardin',c:'c3',hint:'type et surface'},
+    {k:'cave',l:'Cave(s)',c:'c1'},
+    {k:'parking',l:'Parking / box',c:'c1',hint:'nb, int./ext.'},
+    {k:'chambre_service',l:'Ch. de service',c:'c1'},
+    {sec:'Copropriété'},
+    {k:'charges',l:'Charges annuelles',c:'c2'},
+    {k:'lots',l:'Nombre de lots',c:'c1'},
+    {k:'gardien',l:'Gardien',c:'c1',sel:['','oui','non']},
+    {k:'travaux',l:'Travaux votés ou à prévoir',c:'c2',ph:'ravalement, ascenseur, toiture…'},
+    {sec:'Contexte vendeur'},
+    {k:'delai',l:'Délai souhaité',c:'c2',ph:'ex. avant fin d’année / pas pressé'},
+    {k:'autres_estimations',l:'Autres estimations reçues',c:'c2',ph:'confrère, site : montant et source'},
+    {k:'prix_espere',l:'Prix espéré par le vendeur',c:'c2'},
+    {k:'remarques',l:'Remarques',c:'c6',ta:1,ph:'succession, locataire en place, atypique…'}
+  ];
+  var LABELS={}; FIELDS.forEach(function(f){ if(f.k) LABELS[f.k]=f.l; });
+
+  function esc(s){ return (''+(s==null?'':s)).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+  function all(){ try{ var a=JSON.parse(localStorage.getItem(KEY)||'[]'); return Array.isArray(a)?a:[]; }catch(e){ return []; } }
+  function saveAll(a){ try{ localStorage.setItem(KEY, JSON.stringify(a)); }catch(e){ window.achErr&&achErr(e); } }
+  function blank(){ return { id:'es-'+Date.now()+Math.floor(Math.random()*1000), t:new Date().toISOString(), u:(window.ACH_USER&&ACH_USER.name)||'—', mode:'reel', bien:{}, res:emptyRes(), statut:'brouillon' }; }
+  function emptyRes(){ return { prix:{competitif:{},marche:{},ambitieux:{}}, marche:[], comparables_ventes:[], comparables_annonces:[], leviers:[], reco:'', incertitudes:[], sources:[] }; }
+  function num(v){ if(v==null||v==='') return ''; if(typeof v==='number') return v; var n=parseFloat((''+v).replace(/[^\d.,-]/g,'').replace(/\s/g,'').replace(',','.')); return isNaN(n)?'':n; }
+  function eur(v){ v=num(v); if(v==='') return ''; return Math.round(v).toLocaleString('fr-FR')+' €'; }
+  function persist(){
+    if(!CUR) return;
+    CUR.t_maj=new Date().toISOString();
+    var a=all(), i=-1; a.forEach(function(e,j){ if(e.id===CUR.id) i=j; });
+    if(i>=0) a[i]=CUR; else a.push(CUR);
+    while(a.length>300) a.shift();
+    saveAll(a);
+  }
+
+  /* ---------- Onglets ---------- */
+  window.esTab=function(n){
+    for(var i=1;i<=3;i++){ var p=document.getElementById('es-panel-'+i), b=document.getElementById('es-tab-'+i); if(p) p.style.display=(i===n)?'':'none'; if(b) b.classList.toggle('on',i===n); }
+    if(n===1) renderForm(); if(n===2) renderRes(); if(n===3) renderHist();
+    var c=document.getElementById('content'); if(c) c.scrollTop=0;
+  };
+  window.esInit=function(){ if(!CUR) CUR=blank(); esTab(1); };
+
+  /* ---------- ① Saisie ---------- */
+  function readForm(){
+    if(!CUR) CUR=blank();
+    FIELDS.forEach(function(f){ if(!f.k) return; var el=document.getElementById('esf-'+f.k); if(el) CUR.bien[f.k]=el.value.trim(); });
+    return CUR.bien;
+  }
+  function renderForm(){
+    if(!CUR) CUR=blank();
+    var b=CUR.bien||{};
+    var h='<div class="es-card"><div class="es-steps"><span class="txt"><b>Étape 1</b> — décrivez le bien comme dans le formulaire Word. Les champs <span style="color:var(--terra)">*</span> pèsent le plus sur le prix ; laissez vide ce que vous ne savez pas.</span>'
+      +'<div class="es-mode"><button id="es-mode-reel" class="'+(CUR.mode!=='libre'?'on':'')+'" onclick="esMode(\'reel\')" title="Les résultats viennent de la recherche Claude (ventes réelles, annonces)">Mode réel</button><button id="es-mode-libre" class="'+(CUR.mode==='libre'?'on':'')+'" onclick="esMode(\'libre\')" title="Vous saisissez vous-même les résultats, sans recherche">Mode libre</button></div></div>';
+    h+='<div class="es-grid">';
+    FIELDS.forEach(function(f){
+      if(f.sec){ h+='<div class="es-sec" style="grid-column:span 6;">'+f.sec+'</div>'; return; }
+      var v=b[f.k]||'';
+      h+='<div class="es-f '+(f.c||'c2')+'"><label>'+f.l+(f.req?' <span class="req">*</span>':'')+(f.hint?'<span class="hint">('+f.hint+')</span>':'')+'</label>';
+      if(f.sel){ h+='<select id="esf-'+f.k+'" onchange="esDirty()">'; f.sel.forEach(function(o){ h+='<option value="'+esc(o)+'"'+(o===v?' selected':'')+'>'+(o||'—')+'</option>'; }); h+='</select>'; }
+      else if(f.ta){ h+='<textarea id="esf-'+f.k+'" oninput="esDirty()" placeholder="'+esc(f.ph||'')+'">'+esc(v)+'</textarea>'; }
+      else h+='<input id="esf-'+f.k+'" value="'+esc(v)+'" placeholder="'+esc(f.ph||'')+'" oninput="esDirty()">';
+      h+='</div>';
+    });
+    h+='</div>';
+    h+='<div class="es-bar" id="es-bar-reel" style="'+(CUR.mode==='libre'?'display:none':'')+'">'
+      +'<button class="es-btn" onclick="esCopyDemande()">📋 Copier la demande pour Claude</button>'
+      +'<button class="es-btn sec" onclick="esPasteOpen()">📥 Coller la réponse de Claude</button>'
+      +'<span class="es-note">Collez la demande dans la conversation <b>Estimations</b> de Claude ; il répond avec les trois prix et un bloc JSON. Copiez ce bloc et collez-le ici.</span></div>';
+    h+='<div class="es-bar" id="es-bar-libre" style="'+(CUR.mode!=='libre'?'display:none':'')+'">'
+      +'<button class="es-btn" onclick="esLibreGo()">✏️ Saisir les résultats moi-même →</button>'
+      +'<span class="es-note">Mode libre : aucune recherche, vous remplissez vous-même les trois fourchettes (estimation fictive, exercice, hypothèse).</span></div>';
+    h+='<div id="es-paste-zone" style="display:none;margin-top:16px;"><div class="es-sec">Réponse de Claude (JSON)</div><textarea id="es-paste" placeholder="Collez ici le bloc JSON (ou toute la réponse : le JSON sera extrait automatiquement)"></textarea>'
+      +'<div class="es-bar"><button class="es-btn" onclick="esImport()">Importer et passer aux résultats →</button><button class="es-btn ghost" onclick="document.getElementById(\'es-paste-zone\').style.display=\'none\'">Annuler</button><span class="es-note" id="es-paste-err" style="color:#a03222;"></span></div></div>';
+    h+='</div>';
+    document.getElementById('es-panel-1').innerHTML=h;
+  }
+  window.esDirty=function(){ readForm(); persist(); };
+  window.esMode=function(m){ if(!CUR) CUR=blank(); CUR.mode=m; persist(); renderForm(); };
+
+  function demandeTexte(){
+    var b=readForm(), L=['Estimation de',''];
+    FIELDS.forEach(function(f){ if(f.sec){ L.push(''); L.push(f.sec.toUpperCase()); return; } var v=b[f.k]; if(v) L.push(f.l+(f.k==='surface'?' (m²)':'')+' : '+v); });
+    L.push(''); L.push('Réponse attendue : trois prix nets vendeurs (compétitif / marché / ambitieux) + bloc JSON achille_estimation.');
+    return L.join('\n').replace(/\n{3,}/g,'\n\n');
+  }
+  window.esCopyDemande=function(){
+    var b=readForm(); persist();
+    if(!b.adresse||!b.surface){ if(window.toast) toast('Adresse et surface Carrez sont indispensables'); return; }
+    var txt=demandeTexte();
+    function ok(){ if(window.toast) toast('📋 Demande copiée — collez-la dans la conversation Estimations de Claude'); document.getElementById('es-paste-zone').style.display=''; }
+    if(navigator.clipboard&&navigator.clipboard.writeText){ navigator.clipboard.writeText(txt).then(ok,function(){ window.prompt('Copiez ce texte :',txt); ok(); }); }
+    else { window.prompt('Copiez ce texte :',txt); ok(); }
+  };
+  window.esPasteOpen=function(){ var z=document.getElementById('es-paste-zone'); z.style.display=''; var ta=document.getElementById('es-paste'); if(ta) ta.focus(); };
+  window.esLibreGo=function(){ readForm(); CUR.mode='libre'; CUR.source='manuel'; persist(); esTab(2); };
+
+  /* Extraction tolérante : accepte le JSON seul, ou toute la réponse de Claude. */
+  function extractJson(txt){
+    txt=(txt||'').trim();
+    try{ return JSON.parse(txt); }catch(e){}
+    var m=txt.match(/```(?:json)?\s*([\s\S]*?)```/); if(m){ try{ return JSON.parse(m[1]); }catch(e){} }
+    var i=txt.indexOf('{'), j=txt.lastIndexOf('}');
+    if(i>=0&&j>i){ try{ return JSON.parse(txt.slice(i,j+1)); }catch(e){} }
+    return null;
+  }
+  function normRes(j){
+    var r=emptyRes(); if(!j) return r;
+    var P=j.prix||{};
+    ['competitif','marche','ambitieux'].forEach(function(k){
+      var p=P[k]||P[{competitif:'attractif',marche:'marche',ambitieux:'ambitieux'}[k]]||{};
+      r.prix[k]={ eur_m2_net:num(p.eur_m2_net), net_vendeur:num(p.net_vendeur), affichage:num(p.affichage), lecture:p.lecture||'' };
+    });
+    r.marche=(j.marche||[]).map(function(x){ return {donnee:x.donnee||'',chiffre:x.chiffre||'',lecture:x.lecture||''}; });
+    r.comparables_ventes=(j.comparables_ventes||[]).map(function(x){ return {date:x.date||'',adresse:x.adresse||'',surface:num(x.surface),prix:num(x.prix),eur_m2:num(x.eur_m2),detail:x.detail||'',source:x.source||''}; });
+    r.comparables_annonces=(j.comparables_annonces||[]).map(function(x){ return {adresse:x.adresse||x.quartier||'',surface:num(x.surface),prix:num(x.prix),eur_m2:num(x.eur_m2),detail:[x.etage,(x.ascenseur===true?'asc.':x.ascenseur===false?'sans asc.':x.ascenseur),x.etat,x.agence].filter(Boolean).join(' · ')||(x.detail||''),source:x.source||''}; });
+    r.leviers=(j.leviers||[]).slice(); r.reco=j.reco||''; r.incertitudes=(j.incertitudes||[]).slice();
+    r.sources=(j.sources||[]).map(function(s){ return typeof s==='string'?{titre:s,url:s}:{titre:s.titre||s.url||'',url:s.url||''}; });
+    return r;
+  }
+  window.esImport=function(){
+    var err=document.getElementById('es-paste-err'); err.textContent='';
+    var j=extractJson(document.getElementById('es-paste').value);
+    if(!j){ err.textContent='Aucun JSON reconnu — collez le bloc entre accolades fourni par Claude.'; return; }
+    readForm();
+    if(j.bien){ Object.keys(j.bien).forEach(function(k){ if(LABELS[k]&&!CUR.bien[k]&&j.bien[k]!=null) CUR.bien[k]=''+j.bien[k]; }); }
+    CUR.res=normRes(j); CUR.mode='reel'; CUR.source='claude'; CUR.t_res=new Date().toISOString(); persist();
+    if(window.toast) toast('✓ Résultats importés — relisez et corrigez avant de générer le document');
+    esTab(2);
+  };
+
+  /* ---------- ② Résultats (éditables) ---------- */
+  function pf(k,f,l,ph){ var v=(CUR.res.prix[k]||{})[f]; return '<div class="es-f"><label>'+l+'</label><input data-p="'+k+'" data-f="'+f+'" value="'+esc(v==null?'':v)+'" placeholder="'+esc(ph||'')+'" oninput="esResDirty()"></div>'; }
+  function tbl(id,cols,rows,addLabel){
+    var h='<table class="es-t" id="'+id+'"><tr>'; cols.forEach(function(c){ h+='<th>'+c.l+'</th>'; }); h+='<th></th></tr>';
+    rows.forEach(function(r,i){ h+='<tr>'; cols.forEach(function(c){ h+='<td><input data-c="'+c.k+'" value="'+esc(r[c.k]==null?'':r[c.k])+'" oninput="esResDirty()"></td>'; }); h+='<td class="del"><button onclick="esRowDel(this)" title="Retirer">✕</button></td></tr>'; });
+    h+='</table><button class="es-btn ghost" style="margin-top:6px;" onclick="esRowAdd(\''+id+'\')">＋ '+addLabel+'</button>';
+    return h;
+  }
+  var COLS_V=[{k:'date',l:'Date'},{k:'adresse',l:'Adresse'},{k:'surface',l:'m²'},{k:'prix',l:'Prix'},{k:'eur_m2',l:'€/m²'},{k:'detail',l:'Détail'},{k:'source',l:'Source'}];
+  var COLS_A=[{k:'adresse',l:'Adresse / quartier'},{k:'surface',l:'m²'},{k:'prix',l:'Prix affiché'},{k:'eur_m2',l:'€/m²'},{k:'detail',l:'Étage · asc. · état · agence'},{k:'source',l:'Source'}];
+  var COLS_M=[{k:'donnee',l:'Donnée'},{k:'chiffre',l:'Chiffre'},{k:'lecture',l:'Lecture'}];
+  function renderRes(){
+    if(!CUR) CUR=blank();
+    var r=CUR.res||emptyRes(), b=CUR.bien||{};
+    var h='<div class="es-card"><div class="es-steps"><span class="txt"><b>Étape 2</b> — relisez, corrigez, supprimez ce qui ne vous convient pas. Rien ne part dans le document avant votre validation.</span>'
+      +'<span class="es-badge '+(CUR.source==='claude'?'claude':'libre')+'" style="margin-left:auto">'+(CUR.source==='claude'?'Résultats Claude du '+(CUR.t_res?new Date(CUR.t_res).toLocaleDateString('fr-FR'):''):'Saisie manuelle')+'</span></div>'
+      +'<div style="font-family:\'Cormorant Garamond\',serif;font-size:22px;color:var(--noir);margin-bottom:12px;">'+esc(b.adresse||'(adresse non renseignée)')+' <span style="color:var(--terra);font-size:16px;">'+esc([b.surface?b.surface+' m²':'',b.pieces?b.pieces+' p.':'',b.etage?b.etage+(b.ascenseur==='non'?' sans asc.':b.ascenseur==='oui'?' asc.':''):'',b.etat,b.dpe?'DPE '+b.dpe:''].filter(Boolean).join(' · '))+'</span></div>';
+    h+='<div class="es-sec">Les trois prix (net vendeur)</div><div class="es-prices">';
+    [['competitif','Compétitif','vente en 4-6 semaines'],['marche','Marché','prix défendu · 2-3 mois'],['ambitieux','Ambitieux','plafond si tous les signaux sont bons']].forEach(function(x){
+      h+='<div class="es-price'+(x[0]==='marche'?' mk':'')+'"><h4>'+x[1]+'<small>'+x[2]+'</small></h4>'
+        +pf(x[0],'net_vendeur','Net vendeur (€)','ex. 1050000')+pf(x[0],'affichage','Prix d’affichage (€)','honoraires inclus')+pf(x[0],'eur_m2_net','€/m² net','')
+        +'<div class="es-f"><label>Lecture</label><textarea data-p="'+x[0]+'" data-f="lecture" oninput="esResDirty()">'+esc((r.prix[x[0]]||{}).lecture||'')+'</textarea></div></div>';
+    });
+    h+='</div></div>';
+    h+='<div class="es-card"><div class="es-sec">Ce que dit le marché</div>'+tbl('es-t-m',COLS_M,r.marche,'Ajouter une ligne')
+      +'<div class="es-sec" style="margin-top:18px;">Ventes réelles comparables (DVF)</div>'+tbl('es-t-v',COLS_V,r.comparables_ventes,'Ajouter une vente')
+      +'<div class="es-sec" style="margin-top:18px;">Annonces en cours comparables</div>'+tbl('es-t-a',COLS_A,r.comparables_annonces,'Ajouter une annonce')+'</div>';
+    h+='<div class="es-card"><div class="es-grid">'
+      +'<div class="es-f c3"><label>Leviers propres au bien <span class="hint">(une ligne par levier — repris dans « Analyse du bien »)</span></label><textarea id="es-leviers" rows="5" oninput="esResDirty()">'+esc((r.leviers||[]).join('\n'))+'</textarea></div>'
+      +'<div class="es-f c3"><label>Reco de terrain <span class="hint">(usage interne, pas dans le document)</span></label><textarea id="es-reco" rows="5" oninput="esResDirty()">'+esc(r.reco||'')+'</textarea></div>'
+      +'<div class="es-f c3"><label>Ce qui ferait bouger le prix de ±5 % <span class="hint">(une ligne par point)</span></label><textarea id="es-incert" rows="3" oninput="esResDirty()">'+esc((r.incertitudes||[]).join('\n'))+'</textarea></div>'
+      +'<div class="es-f c3"><label>Sources <span class="hint">(une URL par ligne)</span></label><textarea id="es-sources" rows="3" oninput="esResDirty()">'+esc((r.sources||[]).map(function(s){return s.url||s.titre;}).join('\n'))+'</textarea></div>'
+      +'</div>';
+    h+='<div class="es-bar" style="margin-top:18px;">'
+      +'<button class="es-btn" onclick="esToDoc()">🏛 Valider et préparer l’Estimation de Valeur →</button>'
+      +'<select id="es-docprix" class="es-btn ghost" style="padding:8px 12px;"><option value="net">Prix du document : net vendeur</option><option value="aff">Prix du document : prix d’affichage</option></select>'
+      +'<button class="es-btn sec" onclick="esCopyResume()">📋 Copier le résumé</button>'
+      +'<button class="es-btn ghost" onclick="esTab(1)">← Revenir au bien</button>'
+      +'<button class="es-btn ghost" onclick="esNew()">＋ Nouvelle estimation</button></div></div>';
+    document.getElementById('es-panel-2').innerHTML=h;
+    if(CUR.docprix){ var s=document.getElementById('es-docprix'); if(s) s.value=CUR.docprix; }
+  }
+  function readRes(){
+    var r=CUR.res||emptyRes();
+    document.querySelectorAll('#es-panel-2 [data-p]').forEach(function(el){ var p=el.getAttribute('data-p'), f=el.getAttribute('data-f'); r.prix[p]=r.prix[p]||{}; r.prix[p][f]=(f==='lecture')?el.value:num(el.value); });
+    function rows(id,cols){ var out=[]; document.querySelectorAll('#'+id+' tr').forEach(function(tr){ var ins=tr.querySelectorAll('input[data-c]'); if(!ins.length) return; var o={},any=false; ins.forEach(function(i){ o[i.getAttribute('data-c')]=i.value; if(i.value.trim()) any=true; }); if(any) out.push(o); }); return out; }
+    r.marche=rows('es-t-m'); r.comparables_ventes=rows('es-t-v'); r.comparables_annonces=rows('es-t-a');
+    function lines(id){ var el=document.getElementById(id); return el?el.value.split('\n').map(function(s){return s.trim();}).filter(Boolean):[]; }
+    r.leviers=lines('es-leviers'); r.incertitudes=lines('es-incert'); r.reco=(document.getElementById('es-reco')||{}).value||'';
+    r.sources=lines('es-sources').map(function(u){ return {titre:u,url:u}; });
+    CUR.res=r; var s=document.getElementById('es-docprix'); if(s) CUR.docprix=s.value;
+    return r;
+  }
+  window.esResDirty=function(){ readRes(); persist(); };
+  window.esRowDel=function(btn){ var tr=btn.closest('tr'); if(tr) tr.remove(); esResDirty(); };
+  window.esRowAdd=function(id){ var t=document.getElementById(id); var cols=t.querySelectorAll('th').length-1; var tr=document.createElement('tr'); var h=''; var keys=(id==='es-t-v'?COLS_V:id==='es-t-a'?COLS_A:COLS_M); for(var i=0;i<cols;i++) h+='<td><input data-c="'+keys[i].k+'" oninput="esResDirty()"></td>'; h+='<td class="del"><button onclick="esRowDel(this)">✕</button></td>'; tr.innerHTML=h; t.appendChild(tr); tr.querySelector('input').focus(); };
+  window.esNew=function(){ CUR=blank(); persist(); esTab(1); };
+
+  function resume(){
+    var b=CUR.bien, r=CUR.res, L=[];
+    L.push('ESTIMATION — '+(b.adresse||''));
+    L.push([b.surface?b.surface+' m²':'',b.pieces?b.pieces+' pièces':'',b.chambres?b.chambres+' ch.':'',b.etage?b.etage+' étage':'',b.ascenseur==='non'?'sans ascenseur':b.ascenseur==='oui'?'avec ascenseur':'',b.immeuble,b.etat,b.dpe?'DPE '+b.dpe:''].filter(Boolean).join(' · '));
+    L.push('');
+    [['competitif','Compétitif'],['marche','Marché'],['ambitieux','Ambitieux']].forEach(function(x){ var p=r.prix[x[0]]||{}; L.push(x[1]+' : '+eur(p.net_vendeur)+' net vendeur'+(p.affichage?' (affichage '+eur(p.affichage)+')':'')+(p.eur_m2_net?' — '+Math.round(p.eur_m2_net).toLocaleString('fr-FR')+' €/m²':'')+(p.lecture?' — '+p.lecture:'')); });
+    if(r.leviers.length){ L.push(''); L.push('Leviers : '); r.leviers.forEach(function(x){ L.push('- '+x); }); }
+    if(r.reco){ L.push(''); L.push('Reco : '+r.reco); }
+    return L.join('\n');
+  }
+  window.esCopyResume=function(){ readRes(); persist(); var t=resume(); if(navigator.clipboard&&navigator.clipboard.writeText) navigator.clipboard.writeText(t).then(function(){ if(window.toast) toast('📋 Résumé copié'); }); else window.prompt('Copiez :',t); };
+
+  /* ---------- ③ Pont vers Documents → « Estimation de Valeur » ---------- */
+  function phraseBien(b){
+    var s=[]; var t=b.type||'appartement';
+    var p1='Le bien est un '+t+(b.pieces?' de '+b.pieces+' pièces':'')+(b.surface?' d’une surface de '+b.surface+' m² loi Carrez':'')+(b.surface_sol?' ('+b.surface_sol+' m² au sol)':'')
+      +(b.etage?', situé au '+b.etage+' étage':'')+(b.nb_etages?' d’un immeuble de '+b.nb_etages+' étages':'')+(b.immeuble?' ('+b.immeuble+')':'')+(b.ascenseur==='oui'?', avec ascenseur':b.ascenseur==='non'?', sans ascenseur':'')+'.';
+    s.push(p1);
+    var d=[]; if(b.chambres) d.push(b.chambres+' chambre'+(num(b.chambres)>1?'s':'')); if(b.sdb) d.push(b.sdb+' salle'+(num(b.sdb)>1?'s':'')+' de bains'); if(b.sde) d.push(b.sde+' salle'+(num(b.sde)>1?'s':'')+' d’eau'); if(b.wc) d.push(b.wc+' WC');
+    if(d.length) s.push('Il comprend '+d.join(', ')+'.');
+    var a=[]; if(b.exterieur) a.push(b.exterieur); if(b.cave) a.push('cave'+(num(b.cave)>1?'s ('+b.cave+')':'')); if(b.parking) a.push('stationnement ('+b.parking+')'); if(b.chambre_service) a.push('chambre de service');
+    if(a.length) s.push('Annexes et extérieurs : '+a.join(', ')+'.');
+    if(b.hsp) s.push('Hauteur sous plafond : '+b.hsp+'.');
+    if(b.expo) s.push('Exposition / vue : '+b.expo+'.');
+    if(b.etat) s.push('État général : '+b.etat+'.');
+    if(b.dpe) s.push('Performance énergétique : DPE '+b.dpe+'.');
+    if(b.gardien==='oui') s.push('Immeuble avec gardien.');
+    if(b.travaux) s.push('Travaux votés ou à prévoir en copropriété : '+b.travaux+'.');
+    return s.join(' ');
+  }
+  function phraseAnalyse(b,r){
+    var s=[];
+    if(r.marche&&r.marche.length){ s.push(r.marche.map(function(m){ return (m.donnee?m.donnee+' : ':'')+(m.chiffre||'')+(m.lecture?' ('+m.lecture+')':''); }).join('. ')+'.'); }
+    if(r.comparables_ventes&&r.comparables_ventes.length){ var v=r.comparables_ventes.slice(0,4).map(function(c){ return [c.adresse,c.surface?c.surface+' m²':'',c.prix?eur(c.prix):'',c.eur_m2?Math.round(num(c.eur_m2)).toLocaleString('fr-FR')+' €/m²':'',c.date].filter(Boolean).join(', '); }); s.push('Ventes récentes retenues comme références : '+v.join(' ; ')+'.'); }
+    if(r.leviers&&r.leviers.length){ s.push('Éléments propres au bien pris en compte : '+r.leviers.map(function(x){ return x.replace(/\.$/,''); }).join(' ; ')+'.'); }
+    return s.join(' ');
+  }
+  window.esToDoc=function(){
+    readRes(); readForm(); CUR.statut='valide'; persist();
+    if(!window.DOCGEN_TEMPLATES||!DOCGEN_TEMPLATES.estimation_vente||typeof window.dgOpenForm!=='function'){ if(window.toast) toast('Le générateur de documents n’est pas disponible'); return; }
+    var b=CUR.bien, r=CUR.res, useAff=(CUR.docprix==='aff');
+    function px(k){ var p=r.prix[k]||{}; var v=useAff?(p.affichage||p.net_vendeur):(p.net_vendeur||p.affichage); return v?eur(v):''; }
+    var notable=[b.etage?b.etage+' étage':'',b.ascenseur==='non'?'sans ascenseur':b.ascenseur==='oui'?'avec ascenseur':'',b.exterieur,b.parking?'parking':'',b.dpe?'DPE '+b.dpe:'',b.etat].filter(Boolean).join(' · ');
+    var data={
+      adresse:b.adresse||'',
+      surface:(b.surface?b.surface+' m² loi Carrez':'')+(b.surface_sol?' – '+b.surface_sol+' m² au sol':''),
+      notable:notable,
+      description:phraseBien(b),
+      analyse:phraseAnalyse(b,r)||undefined,
+      f_basse_prix:px('competitif'), f_mediane_prix:px('marche'), f_haute_prix:px('ambitieux'),
+      agent:(window.ACH_USER&&ACH_USER.name)||''
+    };
+    Object.keys(data).forEach(function(k){ if(data[k]===undefined||data[k]==='') delete data[k]; });
+    var nav=document.querySelector('.nav-item[onclick*="documents"]');
+    if(typeof window.navTo==='function') navTo('documents',nav);
+    /* l'ouverture de Documents (re)dessine le générateur de façon asynchrone : on attend qu'elle ait fini */
+    setTimeout(function(){
+      if(window.docsTab) docsTab('generer',null);   /* programme dgInit à +60 ms : on ouvre le formulaire APRÈS */
+      setTimeout(function(){
+        dgOpenForm('estimation_vente');
+        setTimeout(function(){
+          Object.keys(data).forEach(function(k){ var el=document.getElementById('f-'+k); if(el) el.value=data[k]; });
+          if(window.toast) toast('🏛 Estimation de Valeur pré-remplie — relisez les textes puis « Générer le PDF »');
+        },80);
+      },200);
+    },350);
+  };
+
+  /* ---------- Historique ---------- */
+  function renderHist(){
+    var box=document.getElementById('es-panel-3'); var a=all().slice().reverse();
+    if(!a.length){ box.innerHTML='<div class="es-card es-note">Aucune estimation enregistrée pour l’instant.</div>'; return; }
+    box.innerHTML=a.map(function(e){
+      var b=e.bien||{}, p=(e.res&&e.res.prix&&e.res.prix.marche)||{}; var d=new Date(e.t_maj||e.t);
+      return '<div class="es-hist"><span class="d">'+d.toLocaleDateString('fr-FR')+'</span><span class="a">'+esc(b.adresse||'(sans adresse)')+'</span>'
+        +'<span class="m">'+esc([b.surface?b.surface+' m²':'',b.pieces?b.pieces+' p.':''].filter(Boolean).join(' · '))+'</span>'
+        +(p.net_vendeur?'<span class="p">marché '+eur(p.net_vendeur)+'</span>':'')
+        +'<span class="es-badge '+(e.source==='claude'?'claude':'libre')+'">'+(e.source==='claude'?'Claude':e.mode==='libre'?'libre':'brouillon')+'</span>'
+        +'<span class="es-note" style="font-size:11.5px;">'+esc(e.u||'')+'</span>'
+        +'<span class="act"><button class="pg-mini" onclick="esOpen(\''+e.id+'\')">↻ Ouvrir</button><button class="pg-mini" onclick="esDup(\''+e.id+'\')" title="Dupliquer (ex. variante libre)">⧉</button><button class="pg-mini" onclick="esDel(\''+e.id+'\')">🗑</button></span></div>';
+    }).join('');
+  }
+  window.esOpen=function(id){ var e=all().filter(function(x){return x.id===id;})[0]; if(!e) return; CUR=e; esTab(e.res&&e.res.prix&&e.res.prix.marche&&e.res.prix.marche.net_vendeur?2:1); };
+  window.esDup=function(id){ var e=all().filter(function(x){return x.id===id;})[0]; if(!e) return; CUR=JSON.parse(JSON.stringify(e)); CUR.id='es-'+Date.now()+Math.floor(Math.random()*1000); CUR.t=new Date().toISOString(); CUR.statut='brouillon'; persist(); esTab(1); if(window.toast) toast('⧉ Copie créée'); };
+  window.esDel=function(id){ if(!confirm('Supprimer cette estimation ?')) return; saveAll(all().filter(function(x){return x.id!==id;})); if(CUR&&CUR.id===id) CUR=null; renderHist(); };
+
+  /* Rendu au premier affichage de la page */
+  document.addEventListener('DOMContentLoaded',function(){
+    var obs=new MutationObserver(function(){ var p=document.getElementById('page-estimation'); if(p&&p.classList.contains('active')&&!p.getAttribute('data-es-init')){ p.setAttribute('data-es-init','1'); esInit(); } });
+    var p=document.getElementById('page-estimation'); if(p){ obs.observe(p,{attributes:true,attributeFilter:['class']}); if(p.classList.contains('active')){ p.setAttribute('data-es-init','1'); esInit(); } }
+  });
+})();
+</script>
+<!-- ══════════ fin v11.50 ESTIMATION ══════════ -->
+
   <div class="page" id="page-renta">
   <div class="nx-wrap nx-wide">
   <div class="nx-head"><span class="pg-lbl">Calculs de rentabilité</span><span class="nx-hint">Coup d'œil 30 s · étude investisseur · opération marchand de biens</span></div>
@@ -4759,6 +5143,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     equityliving:'Equity <span>Living</span>',   /* v9.27 : sans cette entrée, le bandeau affichait « equityliving » brut */
     droits:'Gestion des <span>Droits</span>',
     dashboard:'Tableau de <span>Bord</span>',pipeline:'Pipeline <span>Vente & Location</span>',
+    estimation:'<span>Estimation</span> de valeur',   /* v11.50 */
     reporting:'Reporting <span>Avancé</span>',
     documents:'Gestion des <span>Documents</span>',
     sectorisation:'Sectorisation <span>&amp; Transports</span>',prospection:'Outils de <span>Prospection</span>',lexique:'<span>Lexique</span> Immobilier',planning:'Planning <span>&amp; To-Do</span>',postits:'Post-its <span>Equipe</span>',
@@ -14128,7 +14513,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     startRealtime();
     var ov=document.getElementById('ach-login-overlay'); if(ov) ov.classList.add('ach-hidden');
     var ub=document.getElementById('ach-userbar'); if(ub) ub.style.display='none';
-    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v11.49';
+    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v11.50';
     flag('Synchronis\u00e9');
     // fin de l'init : on autorise la journalisation des actions
     setTimeout(function(){ installInterceptor._init=false; }, 1500);
@@ -14738,7 +15123,8 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
     {id:'renta',label:'Calculs Renta'},{id:'prospection',label:'Prospection'},{id:'communication',label:'Communication'},
     {id:'lexique',label:'Lexique'},{id:'visites',label:'Visites'},{id:'documents',label:'Documents'},
     {id:'finances',label:'Finances'},{id:'encours',label:'En cours'},{id:'pige',label:'Pige'},
-    {id:'equityliving',label:'Equity Living'}   /* v9.19 */
+    {id:'equityliving',label:'Equity Living'},   /* v9.19 */
+    {id:'estimation',label:'Estimation'}   /* v11.50 */
   ];
   window.PERM_SECTIONS=PERM_SECTIONS;
   var DEFAULTS={finances:'none',documents:'read',encours:'read',visites:'create'};
