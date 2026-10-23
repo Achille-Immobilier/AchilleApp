@@ -18801,7 +18801,7 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
    ['Thierry','Martinien','Thomas','Florent','Antoine','Mariette','Raoul','Thibault','Amandine','Ulrich','Benoît','Olivier','Henri, Joël','Camille','Donald','N.-D. du Mont-Carmel','Charlotte','Frédéric','Arsène','Marina','Victor','Marie-Madeleine','Brigitte','Christine','Jacques','Anne, Joachim','Nathalie','Samson','Marthe','Juliette','Ignace de Loyola'],
    ['Alphonse','Julien Eymard','Lydie','Jean-Marie Vianney','Abel','Transfiguration','Gaétan','Dominique','Amour','Laurent','Claire','Clarisse','Hippolyte','Évrard','Assomption','Armel','Hyacinthe','Hélène','Jean Eudes','Bernard','Christophe','Fabrice','Rose de Lima','Barthélemy','Louis','Natacha','Monique','Augustin','Sabine','Fiacre','Aristide'],
    ['Gilles','Ingrid','Grégoire','Rosalie','Raïssa','Bertrand','Reine','Nativité de Marie','Alain','Inès','Adelphe','Apollinaire','Aimé','La Sainte-Croix','Roland','Édith','Renaud','Nadège','Émilie','Davy','Matthieu','Maurice','Constant','Thècle','Hermann','Côme, Damien','Vincent de Paul','Venceslas','Michel, Gabriel, Raphaël','Jérôme'],
-   ['Thérèse de l\u2019Enfant-Jésus','Léger','Gérard','François d\u2019Assise','Fleur','Bruno','Serge','Pélagie','Denis','Ghislain','Firmin','Wilfried','Géraud','Juste','Thérèse d\u2019Avila','Edwige','Baudouin','Luc','René','Adeline','Céline','Élodie','Jean de Capistran','Florentin','Crépin','Dimitri','Émeline','Simon, Jude','Narcisse','Bienvenue','Quentin'],
+   ['Thérèse de l\u2019Enfant-Jésus','Léger','Gérard','François d\u2019Assise','Fleur','Bruno','Serge','Pélagie','Denis','Ghislain','Firmin','Wilfried','Géraud','Juste','Thérèse d\u2019Avila','Edwige','Baudouin','Luc','René','Adeline','Céline','Élodie','Jean','Florentin','Crépin','Dimitri','Émeline','Simon, Jude','Narcisse','Bienvenue','Quentin'],
    ['Toussaint','Défunts','Hubert','Charles','Sylvie','Bertille','Carine','Geoffroy','Théodore','Léon','Martin','Christian','Brice','Sidoine','Albert','Marguerite','Élisabeth','Aude','Tanguy','Edmond','Présentation de Marie','Cécile','Clément','Flora','Catherine','Delphine','Séverin','Jacques de la Marche','Saturnin','André'],
    ['Florence','Viviane','François-Xavier','Barbara','Gérald','Nicolas','Ambroise','Immaculée Conception','Pierre Fourier','Romaric','Daniel','Jeanne de Chantal','Lucie','Odile','Ninon','Alice','Gaël','Gatien','Urbain','Théophile','Hiver / Pierre C.','Françoise-Xavière','Armand','Adèle','Noël','Étienne','Jean l\u2019Évangéliste','Innocents','David','Roger','Sylvestre']];
   /* v8.38 : fêtes nationales, mondiales et « journées de » les plus connues — clé 'mois-jour' */
@@ -18817,6 +18817,27 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
     return 'Nous f\u00eatons les '+nm;
   }
   window._vFeteTxt=_vFeteTxt;   /* exposé pour les tests */
+  /* v9.40 (23/10, écran réel : « Nous fêtons les Jean de Capistran ») : les prénoms du jour viennent
+     d'abord de ephemeride.json, mis à jour chaque matin par la tâche automatique (ephemeridedujour.com).
+     La table V_FETES ne sert plus que de secours si le fichier est absent ou pas à la bonne date. */
+  var _vEphem=null, _vEphemTimer=null;
+  function _vEphemLoad(){
+    try{
+      fetch('ephemeride.json?v='+Date.now(), {cache:'no-store'})
+      .then(function(r){ return r.ok?r.json():null; })
+      .then(function(j){
+        if(j&&typeof j.date==='string'&&Array.isArray(j.prenoms)&&j.prenoms.length){ _vEphem=j; _vTick(); }
+      }).catch(function(){});
+    }catch(e){window.achErr&&achErr(e)}
+  }
+  function _vEphemNom(t){
+    if(!_vEphem) return '';
+    var ds=t.getFullYear()+'-'+('0'+(t.getMonth()+1)).slice(-2)+'-'+('0'+t.getDate()).slice(-2);
+    if(_vEphem.date!==ds) return '';
+    var p=_vEphem.prenoms.filter(function(x){ return typeof x==='string'&&x.trim(); }).map(function(x){ return x.trim(); });
+    if(!p.length) return '';
+    return p.length===1?p[0]:(p.slice(0,-1).join(', ')+' et '+p[p.length-1]);
+  }
   function _vTick(){
     var t=new Date(), c=document.querySelector('#ach-veille .v-clock'), d=document.querySelector('#ach-veille .v-date');
     if(c) c.textContent=t.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
@@ -18824,7 +18845,7 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
     try{
       var f=document.getElementById('v-fete');
       if(f){
-        var nm=(V_FETES[t.getMonth()]||[])[t.getDate()-1]||'';
+        var nm=_vEphemNom(t)||(V_FETES[t.getMonth()]||[])[t.getDate()-1]||'';
         var jn=V_JOURNEES[(t.getMonth()+1)+'-'+t.getDate()]||'';
         f.innerHTML=(nm?_vEsc(_vFeteTxt(nm)):'')+(jn?('<span class="fj">'+_vEsc(jn)+'</span>'):'');
       }
@@ -18886,6 +18907,7 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
     try{ document.body.classList.add('ach-veille-live'); }catch(e){window.achErr&&achErr(e)}
     if(_vClock) clearInterval(_vClock); _vClock=setInterval(_vTick,15000);
     _vMeteo(); if(_vMeteoTimer) clearInterval(_vMeteoTimer); _vMeteoTimer=setInterval(_vMeteo,1800000);   /* v8.37 : météo toutes les 30 min */
+    _vEphemLoad(); if(_vEphemTimer) clearInterval(_vEphemTimer); _vEphemTimer=setInterval(_vEphemLoad,1800000);   /* v9.40 : prénoms du jour toutes les 30 min */
   };
   window.achVeilleStop=function(){
     var v=document.getElementById('ach-veille'); if(!v) return;
