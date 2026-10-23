@@ -2536,10 +2536,20 @@ table.es-t td.del button{border:none;background:none;color:var(--gris-2);cursor:
     return s.join(' ');
   }
   function phraseAnalyse(b,r){
-    var s=[];
-    if(r.marche&&r.marche.length){ s.push(r.marche.map(function(m){ return (m.donnee?m.donnee+' : ':'')+(m.chiffre||'')+(m.lecture?' ('+m.lecture+')':''); }).join('. ')+'.'); }
-    if(r.comparables_ventes&&r.comparables_ventes.length){ var v=r.comparables_ventes.slice(0,4).map(function(c){ return [c.adresse,c.surface?c.surface+' m²':'',c.prix?eur(c.prix):'',c.eur_m2?Math.round(num(c.eur_m2)).toLocaleString('fr-FR')+' €/m²':'',c.date].filter(Boolean).join(', '); }); s.push('Ventes récentes retenues comme références : '+v.join(' ; ')+'.'); }
-    if(r.leviers&&r.leviers.length){ s.push('Éléments propres au bien pris en compte : '+r.leviers.map(function(x){ return x.replace(/\.$/,''); }).join(' ; ')+'.'); }
+    /* Paragraphe destiné au CLIENT : prose propre, calculée depuis les comparables (les lignes « marché » restent internes). */
+    var s=[], v=(r.comparables_ventes||[]).filter(function(c){ return num(c.eur_m2)!==''; });
+    var ville=(b.adresse||'').replace(/^.*\d{5}\s*/,'').trim()||'le secteur';
+    if(v.length){
+      var e=v.map(function(c){ return num(c.eur_m2); }).sort(function(a,b){return a-b;});
+      var med=e[Math.floor(e.length/2)];
+      var f=function(x){ return Math.round(x).toLocaleString('fr-FR')+' €/m²'; };
+      s.push('Les ventes récentes de biens comparables à '+ville+' se situent entre '+f(e[0])+' et '+f(e[e.length-1])+(e.length>=3?' (médiane '+f(med)+')':'')+'.');
+      var refs=v.slice(0,3).map(function(c){ return (c.adresse||'')+(c.surface?' ('+c.surface+' m²'+(c.prix?', '+eur(c.prix):'')+(c.date?', '+c.date:'')+')':''); });
+      s.push('Références retenues : '+refs.join(' ; ')+'.');
+    }
+    var a=(r.comparables_annonces||[]).filter(function(c){ return num(c.eur_m2)!==''; });
+    if(a.length){ var ea=a.map(function(c){ return num(c.eur_m2); }).sort(function(x,y){return x-y;}); s.push('Les biens actuellement proposés à la vente sur des critères proches sont affichés entre '+Math.round(ea[0]).toLocaleString('fr-FR')+' et '+Math.round(ea[ea.length-1]).toLocaleString('fr-FR')+' €/m², prix de présentation avant négociation.'); }
+    if(r.leviers&&r.leviers.length){ s.push('Éléments propres à votre bien pris en compte dans notre analyse : '+r.leviers.map(function(x){ return x.replace(/\.$/,'').replace(/^./,function(c){return c.toLowerCase();}); }).join(' ; ')+'.'); }
     return s.join(' ');
   }
   window.esToDoc=function(){
