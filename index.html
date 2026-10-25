@@ -480,8 +480,8 @@ body.sb-collapsed .sidebar::-webkit-scrollbar{width:3px;}
 /* v7.30 : colonnes triables — flèche ↕ discrète par défaut ; ⓘ = info couleur des dates */
 .comm-sort .comm-arrow:empty::after{content:' ↕';opacity:.55;font-size:9px;}
 .comm-info{font-size:11px;opacity:.8;cursor:help;margin-left:3px;}
-.comm-refcell{display:flex;align-items:center;gap:5px;}
-.comm-refcell .comm-in{flex:1;min-width:0;}
+.comm-refcell{display:flex;align-items:center;gap:5px;min-width:230px;}   /* v11.55 : un titre de post doit se lire d'un coup d'œil (avant : 68 px) */
+.comm-refcell .comm-in{flex:1;min-width:150px;}
 .comm-refbadge{flex-shrink:0;display:inline-flex;align-items:center;height:18px;padding:0 6px;border-radius:9px;background:var(--terra-p,#f0d9d0);color:var(--terra);font-size:10.5px;font-weight:700;font-family:'Jost',sans-serif;cursor:pointer;transition:all .15s;}
 .comm-refbadge:hover{background:var(--terra);color:#fff;}
 .comm-alerts{margin:0 0 12px;}
@@ -1306,6 +1306,11 @@ body.lex-admin-editing .lex-save-btn{display:block;}
 .ec-frais-note{font-size:10.5px;color:var(--gris-2);margin-top:4px;line-height:1.35;}
 .ec-modal-full{grid-column:1/-1;}
 .ec-modal-label{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--gris-2);margin-bottom:4px;}
+.ec-dwrap{display:flex;gap:6px;align-items:stretch;position:relative;}
+.ec-dwrap .ec-modal-input{flex:1;min-width:0;}
+.ec-dpick{flex:none;width:38px;border:1px solid var(--border);border-radius:6px;background:var(--blanc);cursor:pointer;font-size:15px;line-height:1;}
+.ec-dpick:hover{border-color:var(--terra);}
+.ec-dhid{position:absolute;right:0;bottom:0;width:38px;height:1px;opacity:0;border:0;padding:0;display:block;}   /* v11.56 : sélecteur de date invisible, ouvert par le bouton 📅 */
 .ec-modal-input{width:100%;font-family:'Jost',sans-serif;font-size:14px;border:1px solid var(--border);border-radius:6px;padding:7px 10px;background:var(--blanc);color:var(--noir);outline:none;transition:border-color .15s;}
 .ec-modal-input:focus{border-color:var(--terra);}
 .ec-modal-input[readonly]{background:var(--beige);color:var(--gris);cursor:not-allowed;}
@@ -1544,6 +1549,10 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
 .gs-box{background:var(--blanc);border-radius:14px;width:100%;max-width:640px;box-shadow:0 30px 70px rgba(0,0,0,.4);overflow:hidden;display:flex;flex-direction:column;max-height:72vh;}
 .gs-in{border:none;outline:none;font-family:'Jost',sans-serif;font-size:17px;padding:16px 20px;border-bottom:1px solid var(--border);background:transparent;color:var(--noir);}
 .gs-res{overflow-y:auto;padding:6px 0 10px;}
+.gs-item.gs-more{display:none;}   /* v11.56 : au-delà de 6 résultats, repliés derrière « Voir les N autres » */
+.gs-plus{padding:6px 18px 8px 50px;font-size:12px;color:var(--terra);cursor:pointer;font-family:'Jost',sans-serif;}
+.gs-plus:hover{text-decoration:underline;}
+.gs-grp-n{font-weight:400;color:var(--gris-2);font-size:11px;margin-left:4px;}
 .gs-grp{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--gris-2);padding:10px 20px 4px;font-weight:600;}
 .gs-item{display:flex;align-items:center;gap:11px;padding:8px 20px;cursor:pointer;}
 .gs-item.on,.gs-item:hover{background:rgba(180,115,96,.08);}
@@ -1761,7 +1770,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     </div>
   </div>
   </div>
-  <div class="logo-ver app-ver">Achille App — v11.54</div>
+  <div class="logo-ver app-ver">Achille App — v11.56</div>
 </aside>
 <div id="mob-bk" onclick="mobNav(false)"></div>
 <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Réduire la barre latérale">‹</button>
@@ -1865,9 +1874,8 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
         <button class="pg-chip" id="pg-new-btn" onclick="pgNewToggle()" title="N'afficher que les fiches que vous n'avez pas encore ouvertes">✨ New</button>
         <span class="pg-sep"></span>
         <span id="pg-filt-villes" class="pg-filtset"></span>
-        <span class="pg-sep"></span>
-        <button class="pg-chip" id="pg-filters-btn" onclick="pigeFiltersToggle()">⚙ Filtres <span id="pg-filters-n"></span> <span id="pg-filters-arrow">▾</span></button>
         </span>
+        <button class="pg-chip" id="pg-filters-btn" onclick="pigeFiltersToggle()" title="Sites, équipe, …">⚙ Filtres <span id="pg-filters-n"></span> <span id="pg-filters-arrow">▾</span></button><!-- v11.55 : hors de la zone qui défile — toujours visible -->
         <button class="pg-chip pg-raz" onclick="pigeRAZ()" title="Tout réinitialiser : tri, filtres, villes, dossiers, recherche">↺ RAZ</button>
         <span id="pg-help-wrap"><button class="pg-chip pg-help-btn" onclick="pgHelpToggle(event)" title="Légende des couleurs et indicateurs">?</button>
         <div id="pg-legend">
@@ -3108,6 +3116,7 @@ table.es-t td.del button{border:none;background:none;color:var(--gris-2);cursor:
               <select id="cr-agent" onchange="crGenerate()" style="padding:5px 10px;border:1px solid var(--border);border-radius:6px;font-family:'Jost',sans-serif;font-size:13px;background:var(--blanc);color:var(--noir);outline:none;">
                 <option value="Laurent Sellem">Laurent Sellem</option>
                 <option value="Marine Attias">Marine Attias</option>
+                <option value="Marine Zoretic">Marine Zoretic</option><!-- v11.56 : manquait — son message partait sans signature -->
                 <option value="Liloé Pichat">Liloé Pichat</option>
               </select>
               <button type="button" class="crf-btn" style="margin-left:auto;padding:5px 11px;font-size:12px;" onclick="crGenerate()">↻ Régénérer</button>
@@ -3271,6 +3280,7 @@ table.es-t td.del button{border:none;background:none;color:var(--gris-2);cursor:
         <button class="plan-nav-btn" onclick="planNav(1)">▶</button>
         <button class="plan-today-btn" onclick="planGoToday()">Aujourd'hui</button>
         <div class="plan-view-toggle" style="flex-shrink:0;">
+          <button class="plan-view-btn" id="plan-view-day" onclick="planSetView('day',this)">Jour</button><!-- v11.55 -->
           <button class="plan-view-btn active" onclick="planSetView('week',this)">Semaine</button>
           <button class="plan-view-btn" onclick="planSetView('month',this)">Mois</button>
           <button class="plan-view-btn" onclick="planSetView('list',this)">Liste</button>
@@ -5300,6 +5310,7 @@ table.es-t td.del button{border:none;background:none;color:var(--gris-2);cursor:
     document.querySelectorAll('.role-btn').forEach(function(b){b.classList.remove('active');});
     if(btn) btn.classList.add('active');   /* v8.24 : le rôle public n'a pas de bouton — btn peut être null */
     if(window.dashHello) dashHello();   /* v10.42 : l'accueil suit l'identité */
+    try{ if(window.dashAgendaRender) dashAgendaRender(); }catch(e){}   /* v11.55 : l'agenda aussi (sinon il montrait tous les RDV de l'agence jusqu'au premier aller-retour) */
     toast(d.name+' — '+d.role);
   };
 
@@ -8813,7 +8824,9 @@ CABLE|1|Villa Nova|48.73478|2.46475`;
   function planRenderLabel(){
     var el=document.getElementById('plan-period-label');
     if(!el) return;
-    if(planView==='week'){
+    if(planView==='day'){   /* v11.55 */
+      var _t=planDate.toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'}); el.textContent=_t.charAt(0).toUpperCase()+_t.slice(1);
+    } else if(planView==='week'){
       var ws=planWeekStart(planDate), we=planAddDays(ws,6);
       var opts={day:'numeric',month:'short'};
       el.textContent=ws.toLocaleDateString('fr-FR',opts)+' – '+we.toLocaleDateString('fr-FR',{day:'numeric',month:'short',year:'numeric'});
@@ -8824,13 +8837,14 @@ CABLE|1|Villa Nova|48.73478|2.46475`;
 
   // ── Navigation ──
   window.planNav=function(dir){
-    if(planView==='week') planDate=planAddDays(planDate,dir*7);
+    if(planView==='day') planDate=planAddDays(planDate,dir);   /* v11.55 */
+    else if(planView==='week') planDate=planAddDays(planDate,dir*7);
     else { planDate=new Date(planDate.getFullYear(),planDate.getMonth()+dir,1); }
     planRender();
   };
   window.planGoToday=function(){ planDate=new Date(); planRender(); };
   window.planSetView=function(v,btn){
-    planView=v;
+    planView=v; window._planViewChoisie=true;   /* v11.55 : choix explicite, on n'impose plus la vue Jour mobile */
     document.querySelectorAll('.plan-view-btn').forEach(function(b){b.classList.remove('active');});
     if(btn) btn.classList.add('active');
     planRender();
@@ -8848,12 +8862,15 @@ CABLE|1|Villa Nova|48.73478|2.46475`;
     var cal=document.getElementById('plan-cal-inner');
     var ws=planWeekStart(planDate);
     var days=[]; for(var i=0;i<7;i++) days.push(planAddDays(ws,i));
+    var _dayMode=(planView==='day');   /* v11.55 : vue Jour = la grille de la semaine réduite à un jour */
+    if(_dayMode) days=[new Date(planDate.getFullYear(),planDate.getMonth(),planDate.getDate())];
+    try{ var _pc=document.getElementById('plan-cal'); if(_pc) _pc.classList.toggle('day-mode', _dayMode); }catch(e){}
     var events=planGetEvents().filter(planCanSeeEvent);
 
     var HOURS=[];
     for(var h=8;h<21;h++) HOURS.push(h);
 
-    var hdr='<div class="week-grid"><div class="week-header"><div class="week-header-time"></div>';
+    var hdr='<div class="week-grid'+(_dayMode?' day-mode':'')+'"><div class="week-header"><div class="week-header-time"></div>';
     days.forEach(function(d){
       var num='<div class="week-day-num'+(planIsToday(d)?' today':'')+'">'+d.getDate()+'</div>';
       hdr+='<div class="week-header-day"><div class="week-day-name">'+['Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi','Dimanche'][d.getDay()===0?6:d.getDay()-1]+'</div>'+num+'</div>';  /* v7.44 : jours en entier */
@@ -8893,7 +8910,19 @@ CABLE|1|Villa Nova|48.73478|2.46475`;
           +'</div>';
       });
       // overlay events
-      dayEvs.forEach(function(e){
+      /* v11.55 : les rendez-vous qui se chevauchent se partagent la largeur (avant : le second cachait le premier) */
+      var _pl=dayEvs.map(function(e){
+        var sh=parseInt((e.timeStart||'08:00').split(':')[0]), sm=parseInt((e.timeStart||'08:00').split(':')[1]||0);
+        var eh=parseInt((e.timeEnd||'09:00').split(':')[0]), em=parseInt((e.timeEnd||'09:00').split(':')[1]||0);
+        var a=sh*60+sm, b=Math.max(a+30, eh*60+em);
+        return {e:e, a:a, b:b, lane:0, n:1};
+      }).sort(function(x,y){ return (x.a-y.a)||(y.b-x.b); });
+      var _grp=[], _cur=[], _curEnd=-1;
+      _pl.forEach(function(p){ if(_cur.length && p.a>=_curEnd){ _grp.push(_cur); _cur=[]; _curEnd=-1; } _cur.push(p); if(p.b>_curEnd) _curEnd=p.b; });
+      if(_cur.length) _grp.push(_cur);
+      _grp.forEach(function(g){ var ends=[]; g.forEach(function(p){ var l=0; while(l<ends.length && ends[l]>p.a) l++; p.lane=l; ends[l]=p.b; }); g.forEach(function(p){ p.n=ends.length; }); });
+      _pl.forEach(function(p){
+        var e=p.e;
         var sh=parseInt((e.timeStart||'08:00').split(':')[0]);
         var sm=parseInt((e.timeStart||'08:00').split(':')[1]||0);
         var eh=parseInt((e.timeEnd||'09:00').split(':')[0]);
@@ -8902,7 +8931,8 @@ CABLE|1|Villa Nova|48.73478|2.46475`;
         var dur=Math.max(24,((eh-sh)*60+(em-sm))/60*48);
         var t=PLAN_TYPES[e.type]||PLAN_TYPES.visite;
         var col=e.users.length===1?(PLAN_USERS.find(function(u){return u.id===e.users[0];})||{}).color||t.cls.replace('et-','#'):'';
-        var style='top:'+top+'px;height:'+(dur-2)+'px;'+(col?'background:'+col+';':'');
+        var _w=100/p.n, _lx=p.lane*_w;
+        var style='top:'+top+'px;height:'+(dur-2)+'px;'+(col?'background:'+col+';':'')+(p.n>1?'left:calc('+_lx+'% + 2px);right:auto;width:calc('+_w+'% - 4px);':'');
         var masked=(planVisib(e)==='masked');
         hdr+='<div class="cal-event '+t.cls+(masked?' et-maskblock':'')+'" style="'+style+'" onclick="'+(masked?'planPrivateInfo(event)':'planEditEvent(\''+e.id+'\')')+'">';
         hdr+='<div class="cal-event-title">'+(masked?'🔒 Privé':(t.icon+' '+escH(e.title)))+'</div>';
@@ -8961,7 +8991,8 @@ CABLE|1|Villa Nova|48.73478|2.46475`;
     document.getElementById('plan-cal').style.display = (planView==='list') ? 'none' : '';
     var pl = document.getElementById('plan-list');
     if(pl) pl.style.display = (planView==='list') ? 'block' : 'none';
-    if(planView==='week') planRenderWeek();
+    if(planView!=='day'){ try{ var _pc2=document.getElementById('plan-cal'); if(_pc2) _pc2.classList.remove('day-mode'); }catch(e){} }
+    if(planView==='week'||planView==='day') planRenderWeek();
     else if(planView==='month') planRenderMonth();
     else planRenderList();
     planRenderTodos();
@@ -9212,14 +9243,14 @@ CABLE|1|Villa Nova|48.73478|2.46475`;
       '<div style="font-size:14px;color:var(--gris);margin-bottom:18px;">'+_sub+'</div>'+
       '<div style="background:var(--beige);border-radius:10px;padding:14px 16px;margin-bottom:18px;display:grid;grid-template-columns:auto 1fr;gap:8px 14px;align-items:center;font-size:14px;">'+
         '<span style="color:var(--gris);">N° du bon</span><input id="bvp-num" type="number" min="1" value="'+nextN+'" style="border:1px solid var(--border);border-radius:6px;padding:5px 9px;font-family:\'Cormorant Garamond\',serif;font-size:17px;font-weight:600;color:var(--terra);background:var(--blanc);outline:none;width:90px;">'+
-        '<span style="color:var(--gris);">Date</span><span style="font-weight:500;">'+dateStr+'</span>'+
+        '<span style="color:var(--gris);">Date</span><input id="bvp-date" type="date" value="'+bvpToIso(dateStr)+'" style="border:1px solid var(--border);border-radius:6px;padding:5px 9px;font-family:\'Jost\',sans-serif;font-size:14px;background:var(--blanc);color:var(--noir);outline:none;width:160px;">'+   /* v11.55 : date modifiable (visite d'hier saisie le lendemain) */
         '<span style="color:var(--gris);">Visiteur</span><input id="bvp-visiteur" value="'+(visiteur||'').replace(/"/g,'&quot;')+'" placeholder="Nom du visiteur…" style="border:1px solid var(--border);border-radius:6px;padding:6px 10px;font-family:\'Jost\',sans-serif;font-size:14px;background:var(--blanc);color:var(--noir);outline:none;width:100%;">'+
         '<span style="color:var(--gris);align-self:start;padding-top:7px;">Bien(s) visit\u00e9(s)</span><div id="bvp-addr-wrap" style="display:flex;flex-direction:column;gap:6px;">'+
         '<input class="bvp-addr" id="bvp-adresse" autocomplete="off" oninput="bvAddrAC(this)" value="'+(adresse||'').replace(/"/g,'&quot;')+'" placeholder="Adresse du bien…" style="border:1px solid var(--border);border-radius:6px;padding:6px 10px;font-family:\'Jost\',sans-serif;font-size:14px;background:var(--blanc);color:var(--noir);outline:none;width:100%;">'+
         '<button type="button" class="bvp-addr-more" onclick="bvpAddrAdd(\'\')" style="align-self:flex-start;border:1px dashed rgba(180,85,45,.55);color:var(--terra);background:transparent;border-radius:999px;padding:3px 12px;font-family:\'Jost\',sans-serif;font-size:12px;cursor:pointer;">+ Ajouter un bien</button>'+
         '</div>'+
         '<span style="color:var(--gris);">Observations</span><input id="bvp-obs" value="" placeholder="—" style="border:1px solid var(--border);border-radius:6px;padding:6px 10px;font-family:\'Jost\',sans-serif;font-size:14px;background:var(--blanc);color:var(--noir);outline:none;width:100%;">'+
-        '<span style="color:var(--gris);">Accompagnateur(s)</span><div id="bvp-acc-field" class="vt-acc-field" onclick="bvpAccOpen()"><span class="vt-acc-ph">+ ajouter un accompagnateur</span></div>'+
+        '<span style="color:var(--gris);align-self:start;padding-top:7px;">Accompagnateur(s)</span><div id="bvp-acc-field" class="vt-acc-inline">'+bvpInlineHtml()+'</div>'+   /* v11.55 : cases à cocher dans la fenêtre (le menu déroulant recouvrait le bouton d'enregistrement) */
       '</div>'+
       (isAdmin?'':
         '<div style="background:var(--orange-p);border-left:3px solid var(--orange);border-radius:6px;padding:9px 12px;font-size:13px;color:var(--orange);margin-bottom:14px;">'+
@@ -9257,9 +9288,13 @@ CABLE|1|Villa Nova|48.73478|2.46475`;
 
   window.bvConfirmProp=function(n, dateStr, isAdmin){
     var _ni=document.getElementById('bvp-num'); if(_ni){ var _nv=parseInt(_ni.value,10); if(!isNaN(_nv)&&_nv>0) n=_nv; }
-    var visiteur=document.getElementById('bvp-visiteur').value.trim()||'—';
+    var visiteur=document.getElementById('bvp-visiteur').value.trim();
     var _addrs=window.bvpAddrGet?bvpAddrGet():[];
-    var adresse=_addrs[0]||document.getElementById('bvp-adresse').value.trim()||'—';
+    var adresse=_addrs[0]||document.getElementById('bvp-adresse').value.trim();
+    /* v11.55 : plus de bon vide — visiteur et bien obligatoires ; la date vient du champ */
+    if(!visiteur){ toast('Indiquez le nom du visiteur'); try{ document.getElementById('bvp-visiteur').focus(); }catch(e){} return; }
+    if(!adresse){ toast('Indiquez le bien visité'); try{ document.getElementById('bvp-adresse').focus(); }catch(e){} return; }
+    try{ var _dEl=document.getElementById('bvp-date'); if(_dEl && _dEl.value){ var _m=_dEl.value.match(/^(\d{4})-(\d{2})-(\d{2})$/); if(_m) dateStr=_m[3]+'/'+_m[2]+'/'+_m[1]; } }catch(e){}
     var obs=document.getElementById('bvp-obs').value.trim();
     var newBon={n:n, d:dateStr, v:visiteur, a:adresse, aa:_addrs.slice(1), obs:obs, accomp:bvpAccGet()};   /* v10.06 : plusieurs biens possibles */
     if(isAdmin){
@@ -9329,17 +9364,8 @@ CABLE|1|Villa Nova|48.73478|2.46475`;
   window.bvInit=function(){
     if(!bvInited){
       bvLoadObs();
-      // Recharger les bons ajoutés (147, 148, …) depuis ach_bv_extra
-      try{
-        var extra=JSON.parse(localStorage.getItem('ach_bv_extra')||'[]');
-        extra.forEach(function(b){
-          if(!b || b.n==null) return;
-          var ex=BV_DATA.find(function(x){return x.n===b.n;});
-          if(ex) Object.assign(ex, b);   /* v10.06 : un bon modifié écrase sa version d'origine */
-          else BV_DATA.push(b);
-        });
-        bvLoadObs();   /* v10.06 : ré-applique les observations après la fusion (bons ajoutés/modifiés) */
-      }catch(e){window.achErr&&achErr(e)}
+      // Recharger les bons ajoutés (147, 148, …) depuis ach_bv_extra — v11.56 : marqueurs de suppression compris
+      window.bvReloadExtra();
       bvLoadAccomp(); bvMigrateAccomp(); bvInited=true;
     }
     if(typeof bvRenderNotifBadge==='function') bvRenderNotifBadge();
@@ -9489,11 +9515,15 @@ CABLE|1|Villa Nova|48.73478|2.46475`;
 
   window.planDeleteEvent=function(){
     if(!planEditId) return;
-    var evs=planGetEvents().filter(function(e){ return e.id!==planEditId; });
+    var all=planGetEvents(), ev=all.filter(function(e){ return e.id===planEditId; })[0];
+    /* v11.56 : confirmation + Corbeille 30 jours (la suppression était immédiate et définitive) */
+    if(ev && !confirm('Supprimer « '+(ev.title||'cet événement')+' »'+(ev.date?' du '+(window.achDateFr?achDateFr(ev.date.split('-').reverse().join('/')):ev.date):'')+' ?\n(Récupérable 30 jours dans la Corbeille)')) return;
+    var evs=all.filter(function(e){ return e.id!==planEditId; });
     planSaveEvents(evs);
+    try{ if(ev && window.achTrashAdd) achTrashAdd('ach_plan_events', (ev.title||'Événement'), [ev.date?ev.date.split('-').reverse().join('/'):'', ev.timeStart||'', ev.adresse||''].filter(Boolean).join(' · '), ev); }catch(e){window.achErr&&achErr(e)}
     planCloseModal();
     planRender();
-    toast('Événement supprimé');
+    toast('Événement supprimé — récupérable 30 jours dans la Corbeille');
   };
 
   window.planToggleUserCheck=function(el){
@@ -9573,6 +9603,7 @@ CABLE|1|Villa Nova|48.73478|2.46475`;
   function planRenderTodos(){
     var todos=todoLoad();
     var vis=tdVisible(todos);
+    try{ var _tp=document.querySelector('.plan-todo'); if(_tp) _tp.classList.toggle('todo-vide', !vis.some(function(t){ return !t.done; })); }catch(e){}   /* v11.55 : sur téléphone, un To-Do vide se replie */
     // Stats (sur pool complet du rôle)
     var role=tdRole(), me=tdUserInit();
     var pool=tdMyPool(todos);
@@ -9771,6 +9802,10 @@ CABLE|1|Villa Nova|48.73478|2.46475`;
     /* v11.26 : on arrive TOUJOURS sur la période qui contient aujourd'hui (demande Laurent
        14/10) — avant, le planning gardait la semaine/le mois consulté précédemment. */
     planDate=new Date();
+    /* v11.55 : sur téléphone, on arrive sur la vue Jour (la semaine à 7 colonnes ne tenait pas, aujourd'hui était hors écran) */
+    try{ if(!window._planViewChoisie && window.innerWidth<=880 && planView==='week'){ planView='day';
+      document.querySelectorAll('.plan-view-btn').forEach(function(b){ b.classList.remove('active'); });
+      var _db=document.getElementById('plan-view-day'); if(_db) _db.classList.add('active'); } }catch(e){}
     planSyncUsers();
     planMigrateUsers();
     planCleanDemoEvents();
@@ -10089,7 +10124,7 @@ CABLE|1|Villa Nova|48.73478|2.46475`;
       cont.innerHTML=lines[cat].map(function(l){
         var annual=(cat==='a')?'':finFmt(l.amt*mult[cat]);
         return '<div class="fin-row" id="fcr-'+l.id+'">'
-          +'<input type="checkbox" class="fin-cb" onchange="finCheck(\''+l.id+'\',this)" title="Marquer comme payé">'
+          +'<input type="checkbox" class="fin-cb" onchange="finCheck(\''+l.id+'\',this)" title="Pointer le paiement du jour — re-cliquez pour annuler">'
           +'<span class="fin-label">'+finEsc(l.label)+'</span>'
           +'<span class="fin-amt">'+finFmt(l.amt)+'</span>'
           +'<span class="fin-annual">'+annual+'</span>'
@@ -10113,6 +10148,7 @@ CABLE|1|Villa Nova|48.73478|2.46475`;
     ['m','q','a'].forEach(function(c){ L[c].forEach(function(l){
       finRenderHist(l.id, hist[l.id]||[]);
       if(hist[l.id]&&hist[l.id].length){ var r=document.getElementById('fcr-'+l.id); if(r) r.classList.add('fin-checked'); }
+      try{ var _td=new Date().toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit',year:'numeric'}); var _cb=document.querySelector('#fcr-'+l.id+' .fin-cb'); if(_cb) _cb.checked=!!(hist[l.id]&&hist[l.id].indexOf(_td)>=0); }catch(e){}   /* v11.56 : la case reflète le pointage du jour */
     }); });
   }
   function finRefresh(){ finRenderLines(); finApplyHist(); calcEncours(); finCheckRole(); }
@@ -10284,16 +10320,21 @@ CABLE|1|Villa Nova|48.73478|2.46475`;
   }
 
   /* ── check / hist ── */
+  /* v11.56 : la case POINTE le paiement du jour, et un second clic le DÉ-POINTE (avant : chaque clic
+     ajoutait une date de plus, impossible d'annuler sans être administrateur). L'historique cumulatif
+     des autres dates (modèle v7.18) n'est pas touché. */
   window.finCheck = function(key, cb) {
     var hist = loadHist();
     if (!hist[key]) hist[key] = [];
     var ds = new Date().toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit',year:'numeric'});
-    hist[key].unshift(ds);
+    var i = hist[key].indexOf(ds), on;
+    if (i >= 0) { hist[key].splice(i, 1); on=false; if(window.toast) toast('Pointage du '+ds+' annulé'); }
+    else { hist[key].unshift(ds); on=true; }
     saveHist(hist);
     finRenderHist(key, hist[key]);
     var row = document.getElementById('fcr-'+key);
-    if (row) row.classList.add('fin-checked');
-    if (cb) cb.checked = false;
+    if (row) row.classList.toggle('fin-checked', hist[key].length>0);
+    if (cb) cb.checked = on;
     calcEncours();
   };
 
@@ -11326,9 +11367,30 @@ CABLE|1|Villa Nova|48.73478|2.46475`;
   };
   /* ── v7.45 : mode lecture seule ── verrouille/déverrouille tous les champs de la fiche.
      Les flèches de dépliage (coordonnées, répartition) restent actives pour CONSULTER, mais rien n'est modifiable. */
+  /* v11.56 : SÉLECTEUR DE DATE sur les champs Promesse / Acte / Expiration (demande du test
+     utilisateur : « mi-novembre » était accepté sans pouvoir être trié). Le champ reste libre
+     (un statut comme « Accord verbal » y a sa place) : le calendrier écrit la date au format
+     jj/mm/aaaa, à la place d'une date déjà présente dans le texte, sinon en tête. */
+  window.ecDatePick = function(id){
+    var hid=document.getElementById(id+'-d'), txt=document.getElementById(id); if(!hid||!txt||txt.readOnly) return;
+    try{ var ms=ecDateMs(txt.value); if(ms){ var d=new Date(ms); hid.value=d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2); } }catch(e){}
+    try{ if(hid.showPicker) hid.showPicker(); else { hid.style.display='inline-block'; hid.focus(); hid.click(); } }catch(e){ hid.style.display='inline-block'; hid.focus(); }
+  };
+  window.ecDateFromPick = function(id, hid){
+    var txt=document.getElementById(id); if(!txt||!hid.value) return;
+    var m=hid.value.match(/^(\d{4})-(\d{2})-(\d{2})$/); if(!m) return;
+    var fr=m[3]+'/'+m[2]+'/'+m[1], v=(txt.value||'').trim();
+    var RX=/(?:(?:lundi|mardi|mercredi|jeudi|vendredi|samedi|dimanche)\s+)?\d{1,2}(?:er)?(?:[\/\-.]\d{1,2}(?:[\/\-.]\d{2,4})?|\s+(?:janvier|f\u00e9vrier|fevrier|mars|avril|mai|juin|juillet|ao\u00fbt|aout|septembre|octobre|novembre|d\u00e9cembre|decembre)(?:\s+\d{4})?)/i;
+    if(!v) txt.value=fr;
+    else if(RX.test(v)) txt.value=v.replace(RX, fr);
+    else txt.value=fr+' — '+v;
+    hid.style.display='';
+    try{ txt.dispatchEvent(new Event('input',{bubbles:true})); }catch(e){}
+  };
   window.ecSetReadonly = function(ro){
     var mo = document.getElementById('ec-modal');
     mo.classList.toggle('ec-modal-ro', !!ro);
+    mo.querySelectorAll('.ec-dpick').forEach(function(b){ b.disabled=!!ro; b.style.visibility=ro?'hidden':''; });   /* v11.56 */
     mo.querySelectorAll('input, textarea').forEach(function(el){
       if(el.type==='checkbox' || el.type==='radio'){ el.disabled=!!ro; }
       else { el.readOnly=!!ro; }
@@ -11827,10 +11889,10 @@ CABLE|1|Villa Nova|48.73478|2.46475`;
     try{var d={};BV_DATA.forEach(function(b){if(b.obs)d[b.n]=b.obs;});localStorage.setItem('ach_bv_obs',JSON.stringify(d));}catch(e){window.achErr&&achErr(e)}
   }
   // ===== Accompagnateurs des bons de visite (v3.58) =====
-  var BV_USERS=[
-    {key:'admin',name:'Laurent Sellem',short:'LS',col:'#6b7a5e'},
-    {key:'gerant',name:'Marine Attias',short:'MA',col:'#c77b58'},
-    {key:'collaborateur',name:'Marine Zoretic',short:'MZ',col:'#5b8aa6'},
+  var BV_USERS=[   /* v11.55 : couleurs = table unique ACH_COUL */
+    {key:'admin',name:'Laurent Sellem',short:'LS',col:(window.ACH_COUL||{}).admin||'#4c533b'},
+    {key:'gerant',name:'Marine Attias',short:'MA',col:(window.ACH_COUL||{}).gerant||'#b47360'},
+    {key:'collaborateur',name:'Marine Zoretic',short:'MZ',col:(window.ACH_COUL||{}).collaborateur||'#5b8aa6'},
     {key:'alternant',name:'Liloé Pichat',short:'LP',col:'#b0883b'}
   ];
   function bvUser(k){ for(var i=0;i<BV_USERS.length;i++){ if(BV_USERS[i].key===k) return BV_USERS[i]; } return null; }
@@ -11899,7 +11961,14 @@ CABLE|1|Villa Nova|48.73478|2.46475`;
   };
   var bvpAccomp=[];
   function bvpFieldHtml(){ if(!bvpAccomp.length) return '<span class="vt-acc-ph">+ ajouter un accompagnateur</span>'; return bvpAccomp.map(function(k){ var u=bvUser(k); return u?('<span class="vt-acc-b" style="background:'+u.col+'" title="'+u.name+'">'+u.short+'</span>'):''; }).join(''); }
-  window.bvpAccReset=function(){ bvpAccomp=[]; };
+  window.bvpAccReset=function(){ bvpAccomp=[]; try{ var _k=(window.ACH_USER&&ACH_USER.key)||''; if(_k && BV_USERS.some(function(u){return u.key===_k;})) bvpAccomp=[_k]; }catch(e){} };   /* v11.55 : la personne qui saisit est pré-cochée */
+  /* v11.55 : accompagnateurs en cases à cocher, dans la fenêtre */
+  function bvpInlineHtml(){
+    return BV_USERS.map(function(u){ var on=bvpAccomp.indexOf(u.key)>=0;
+      return '<label class="vt-acc-opt'+(on?' on':'')+'"><input type="checkbox" '+(on?'checked':'')+' onchange="bvpAccToggle(\''+u.key+'\',this.checked)"><span class="vt-acc-b" style="background:'+u.col+'">'+u.short+'</span>'+u.name+'</label>'; }).join('');
+  }
+  window.bvpAccToggle=function(k,on){ var a=bvpAccomp.filter(function(x){return x!==k;}); if(on) a.push(k); bvpAccomp=a; var f=document.getElementById('bvp-acc-field'); if(f) f.innerHTML=bvpInlineHtml(); };
+  function bvpToIso(d){ var m=(''+(d||'')).match(/^(\d{2})\/(\d{2})\/(\d{4})$/); if(m) return m[3]+'-'+m[2]+'-'+m[1]; var x=new Date(); return x.getFullYear()+'-'+('0'+(x.getMonth()+1)).slice(-2)+'-'+('0'+x.getDate()).slice(-2); }
   window.bvpAccOpen=function(){
     var f=document.getElementById('bvp-acc-field'); if(!f) return;
     bvAccPop(function(){return bvpAccomp;}, function(a){ bvpAccomp=a; }, f, function(a){ f.innerHTML=bvpFieldHtml(); });
@@ -11915,7 +11984,14 @@ CABLE|1|Villa Nova|48.73478|2.46475`;
   window.vsbAdd=function(){ if(window.achCan && !window.achCan('visites','create')) return; VSB.unshift({id:'v'+Date.now()+Math.floor(Math.random()*1000), d:vsbToday(), v:'', a:'', accomp:[], formalisation:'', obs:''}); vsbSave(); vsbRender(); };
   window.vsbGet=function(id){ for(var i=0;i<VSB.length;i++){ if(VSB[i] && VSB[i].id===id) return VSB[i]; } return null; };   /* v8.14 : accès au compte rendu de visite */
   window.vsbField=function(el){ var id=el.getAttribute('data-id'), f=el.getAttribute('data-f'); var o=VSB.find(function(x){return x.id===id;}); if(!o) return; o[f]=el.value; vsbSave(); };
-  window.vsbDelete=function(id){ if(window.achCan && !window.achCan('visites','modify')) return; VSB=VSB.filter(function(x){return x.id!==id;}); vsbSave(); vsbRender(); };
+  window.vsbDelete=function(id){ if(window.achCan && !window.achCan('visites','modify')) return;
+    var o=VSB.find(function(x){return x.id===id;}); if(!o) return;
+    /* v11.55 : confirmation + Corbeille 30 jours (avant : suppression immédiate et définitive) */
+    if(!confirm('Supprimer la visite sans bon'+(o.v?' de « '+o.v+' »':'')+(o.a?' ('+o.a+')':'')+' ?\n(Récupérable 30 jours dans la Corbeille)')) return;
+    try{ if(window.achTrashAdd) achTrashAdd('ach_vsb_v1', o.v||'Visite sans bon', [o.d,o.a].filter(Boolean).join(' · '), o); }catch(e){window.achErr&&achErr(e)}
+    VSB=VSB.filter(function(x){return x.id!==id;}); vsbSave(); vsbRender();
+    try{ if(window.achLog) achLog('suppression','Visites','visite sans bon : '+(o.v||'')); }catch(e){window.achErr&&achErr(e)}
+    if(window.toast) toast('\ud83d\uddd1 Visite supprim\u00e9e \u2014 r\u00e9cup\u00e9rable 30 jours dans la Corbeille'); };
   window.vsbAccOpen=function(id, cell){ if(window.achCan && !window.achCan('visites','modify')) return; var o=VSB.find(function(x){return x.id===id;}); if(!o) return; if(!o.accomp) o.accomp=[]; bvAccPop(function(){return o.accomp;}, function(a){o.accomp=a;}, cell, function(a){ vsbSave(); cell.innerHTML=window.bvAccBadges(a); }); };
   window.vsbRender=function(){
     var tb=document.getElementById('vsb-tbody'); if(!tb) return;
@@ -12029,18 +12105,39 @@ CABLE|1|Villa Nova|48.73478|2.46475`;
 
   window.bvEditDel=function(){
     var nOrig=parseInt(document.getElementById('bve-n-orig').value);
-    if(!confirm('Supprimer le bon de visite n°'+nOrig+' ? Cette action est irréversible.'))return;
+    /* v11.56 : Corbeille 30 jours (avant : « irréversible » — et un bon d'origine revenait au rechargement
+       car seule la copie en mémoire était retirée). Un marqueur {n, del:1} dans ach_bv_extra retire
+       durablement le bon ; la restauration depuis la Corbeille le remet (entrée plus récente). */
+    if(!confirm('Supprimer le bon de visite n°'+nOrig+' ?\n(Récupérable 30 jours dans la Corbeille — son compte rendu de visite est conservé)'))return;
     var idx=BV_DATA.findIndex(function(x){return x.n===nOrig;});
+    var bon=idx>=0? BV_DATA[idx] : null;
     if(idx>=0) BV_DATA.splice(idx,1);
     try{
       var extra=JSON.parse(localStorage.getItem('ach_bv_extra')||'[]');
       extra=extra.filter(function(x){return x.n!==nOrig;});
+      extra.push({n:nOrig, del:1, updated:new Date().toISOString()});
       localStorage.setItem('ach_bv_extra',JSON.stringify(extra));
     }catch(e){window.achErr&&achErr(e)}
+    try{ if(bon && window.achTrashAdd){ var it=Object.assign({id:'bv'+nOrig, updated:new Date().toISOString()}, bon); delete it.del; achTrashAdd('ach_bv_extra', 'Bon n° '+nOrig+(bon.v?' — '+bon.v:''), [bon.d||'', bon.a||''].filter(Boolean).join(' · '), it); } }catch(e){window.achErr&&achErr(e)}
     bvSaveObs();
     closeModal('modal-bv-edit');
     bvRender();
-    toast('Bon n°'+nOrig+' supprimé');
+    toast('Bon n°'+nOrig+' supprimé — récupérable 30 jours dans la Corbeille');
+  };
+  /* v11.56 : (re)fusion de ach_bv_extra dans la liste en mémoire — appelée au démarrage et après une
+     restauration depuis la Corbeille. Un marqueur del retire le bon ; une entrée plus loin le remet. */
+  window.bvReloadExtra=function(){
+    try{
+      var extra=JSON.parse(localStorage.getItem('ach_bv_extra')||'[]');
+      extra.forEach(function(b){
+        if(!b || b.n==null) return;
+        var ix=BV_DATA.findIndex(function(x){return x.n===b.n;});
+        if(b.del){ if(ix>=0) BV_DATA.splice(ix,1); return; }
+        var c=Object.assign({},b); delete c.id; delete c.updated;
+        if(ix>=0) Object.assign(BV_DATA[ix], c); else BV_DATA.push(c);
+      });
+      bvLoadObs();
+    }catch(e){window.achErr&&achErr(e)}
   };
 
   window.bvUpdateObs=function(inp){
@@ -12437,6 +12534,8 @@ CABLE|1|Villa Nova|48.73478|2.46475`;
     if(se) se.textContent = sub.length ? sub.join(' · ') : 'Visite';
 
     var o = window.crGet(ref) || {};
+    /* v11.56 : un compte rendu dont les listes sont absentes ou mal formées s'ouvre quand même */
+    ['suite','pos','neg'].forEach(function(k){ var v=o[k]; o[k]=Array.isArray(v)? v.filter(function(x){ return x!=null && x!==''; }).map(String) : (v? [''+v] : []); });
 
     /* Ressenti — v8.38 : les anciens libellés (v8.14) retrouvent leur pastille parmi les 4 nouvelles */
     var CR_R_ALIAS={'Très intéressé(e)':'Intérêt manifesté','Intéressé(e) mais hésitant(e)':'Hésitant','En réflexion':'Hésitant','Sans suite':'Négatif'};
@@ -12904,11 +13003,11 @@ CABLE|1|Villa Nova|48.73478|2.46475`;
         </div>
         <div>
           <div class="ec-modal-label">Date / statut promesse</div>
-          <input class="ec-modal-input" id="ecf-promesse" type="text">
+          <div class="ec-dwrap"><input class="ec-modal-input" id="ecf-promesse" type="text" placeholder="jj/mm/aaaa ou statut"><button type="button" class="ec-dpick" title="Choisir une date" onclick="ecDatePick('ecf-promesse')">📅</button><input type="date" class="ec-dhid" id="ecf-promesse-d" onchange="ecDateFromPick('ecf-promesse',this)" tabindex="-1"></div>
         </div>
         <div>
           <div class="ec-modal-label">Acte de vente (date ou statut)</div>
-          <input class="ec-modal-input" id="ecf-acte" type="text" placeholder="ex: mardi 3 mars 2026">
+          <div class="ec-dwrap"><input class="ec-modal-input" id="ecf-acte" type="text" placeholder="jj/mm/aaaa ou statut"><button type="button" class="ec-dpick" title="Choisir une date" onclick="ecDatePick('ecf-acte')">📅</button><input type="date" class="ec-dhid" id="ecf-acte-d" onchange="ecDateFromPick('ecf-acte',this)" tabindex="-1"></div>
         </div>
         <div>
           <div class="ec-modal-label">Acquéreur<button type="button" class="ec-coord-tog" onclick="ecCoordTog('ecf-acquereur')" title="Coordonnées">＋</button></div>
@@ -12959,7 +13058,7 @@ CABLE|1|Villa Nova|48.73478|2.46475`;
         </div>
         <div>
           <div class="ec-modal-label">Expiration promesse</div>
-          <input class="ec-modal-input" id="ecf-exp" type="text">
+          <div class="ec-dwrap"><input class="ec-modal-input" id="ecf-exp" type="text" placeholder="jj/mm/aaaa"><button type="button" class="ec-dpick" title="Choisir une date" onclick="ecDatePick('ecf-exp')">📅</button><input type="date" class="ec-dhid" id="ecf-exp-d" onchange="ecDateFromPick('ecf-exp',this)" tabindex="-1"></div>
         </div>
         <div class="ec-modal-full">
           <div class="ec-modal-label">Commentaire libre</div>
@@ -13196,7 +13295,7 @@ CABLE|1|Villa Nova|48.73478|2.46475`;
   else restoreLast();
   /* v10.42 : phrase d'accueil au démarrage (l'identité cloud peut arriver un peu après) */
   setTimeout(function(){ if(window.dashHello) dashHello(); },300);
-  setTimeout(function(){ if(window.dashHello) dashHello(); },2000);
+  setTimeout(function(){ if(window.dashHello) dashHello(); try{ if(window.dashAgendaRender) dashAgendaRender(); }catch(e){} },2000);   /* v11.55 */
 })();
 </script>
 <script>
@@ -13322,7 +13421,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     relirePosts();                     /* v11.40 : jamais d'écrasement du travail des autres */
     var id=uid();
     posts.unshift({ id:id, ref:''+(o.ref||''), adresse:''+(o.adresse||''), ville:'', superficie:'', chambres:'', clients:'',
-      date:(o.date||commToday()), reseaux:arr(o.reseaux), auteur:''+(o.auteur||''), pub:'', statut:'',
+      date:(o.date||commToday()), reseaux:arr(o.reseaux), auteur:''+(o.auteur||''), pub:'', statut:'publié',   /* v11.55 : la ligne vient d'être déclarée publiée */
       lien:''+(o.lien||''), texte:''+(o.texte||''), src:''+(o.src||'') });   /* v11.40 : lien + texte publié conservés */
     savePosts();
     try{ commRenderPosts(); }catch(e){window.achErr&&achErr(e)}
@@ -13632,6 +13731,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
   function commCountRefs(){ commRefCnt={}; posts.forEach(function(o){ var k=refKey(o.ref); if(k) commRefCnt[k]=(commRefCnt[k]||0)+1; }); }
   function isoToFr(s){ if(!s) return ''; var q=(''+s).split('-'); return q.length===3?(q[2]+'/'+q[1]+'/'+q[0]):s; }
   function commDaysSince(iso){ if(!iso) return null; var d=new Date(iso+'T00:00:00'); if(isNaN(d.getTime())) return null; var n=new Date(); n.setHours(0,0,0,0); return Math.round((n-d)/86400000); }
+  function commIsEditorial(o){ return !!(o && (o.src||o.texte) && !(o.adresse||'').trim()); }   /* v11.56 */
   function commIsInactive(st){ var s=commNorm(st); return s.indexOf('vendu')>=0||s.indexOf('retir')>=0||s.indexOf('offre')>=0||s.indexOf('compromis')>=0||s.indexOf('pause')>=0||s.indexOf('archiv')>=0; }
   function refCell(o){
     var rk=refKey(o.ref), cnt=rk?(commRefCnt[rk]||0):0;
@@ -13641,7 +13741,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     var tt=o.texte? ' title="'+esc((''+o.texte).slice(0,400))+'"' : '';
     var lien='<button class="comm-lien'+(o.lien?' on':'')+'"'+(o.lien?' title="Ouvrir le post en ligne \u2014 clic droit pour modifier"':' title="Ajouter le lien du post en ligne"')
       +' onclick="commLien(event,\''+o.id+'\')" oncontextmenu="commLienEdit(event,\''+o.id+'\');return false;">\ud83d\udd17</button>';
-    return '<td style="min-width:104px"><div class="comm-refcell"'+tt+'><input data-table="posts" data-id="'+o.id+'" data-field="ref" class="comm-in" value="'+esc(o.ref)+'" onchange="commField(this)">'+badge+lien+'</div></td>';
+    return '<td style="min-width:240px"><div class="comm-refcell"'+tt+'><input data-table="posts" data-id="'+o.id+'" data-field="ref" class="comm-in" value="'+esc(o.ref)+'" onchange="commField(this)">'+badge+lien+'</div></td>';
   }
   window.commRefHist=function(postId){
     var src=posts.find(function(x){return x.id===postId;}); if(!src) return;
@@ -13666,6 +13766,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     var host=document.getElementById('comm-alerts'); if(!host) return;
     var map={};
     posts.forEach(function(o){ var k=refKey(o.ref); if(!k) return;
+      if(commIsEditorial(o)) return;   /* v11.56 : un contenu éditorial (venu des idées du matin) n'est pas un bien à republier */
       if(!map[k]) map[k]={ref:o.ref,key:k,count:0,last:'',inactive:false};
       map[k].count++; if(o.ref) map[k].ref=o.ref;
       if(o.date && o.date>map[k].last) map[k].last=o.date;
@@ -14549,7 +14650,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     startRealtime();
     var ov=document.getElementById('ach-login-overlay'); if(ov) ov.classList.add('ach-hidden');
     var ub=document.getElementById('ach-userbar'); if(ub) ub.style.display='none';
-    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v11.54';
+    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v11.56';
     flag('Synchronis\u00e9');
     // fin de l'init : on autorise la journalisation des actions
     setTimeout(function(){ installInterceptor._init=false; }, 1500);
@@ -15692,13 +15793,10 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
       return (e.date||'')>=achDayFR();  /* v7.40 : heure de Paris */
     }).length;
     lines+=actMini(pr?'\u00c9v\u00e9nements':'\u00c9v\u00e9nements \u00e0 venir',evs);
-    var todos=lsArr('ach_todos_v1').filter(function(t){
-      if(t.done) return false;
-      if(priv) return true;
-      if(t.type==='perso') return (t.owner||'')===((window.ACH_USER&&ACH_USER.initials)||'');
-      return true;
-    }).length;
-    lines+=actMini('T\u00e2ches en cours',todos);
+    /* v11.55 : « Tâches en cours » comptait le To-Do (vide) alors que des rappels étaient dus — on compte les rappels ouverts */
+    var rapsOuv=lsArr('ach_rappels_v1').filter(function(r){ return r && !r.done && (priv || (r.by||'')===curKey()); });
+    var rapsDus=rapsOuv.filter(function(r){ return (''+(r.date||''))<=achDayFR(); }).length;
+    lines+=actMini('Rappels ouverts', rapsOuv.length+(rapsDus?' <span style="color:var(--rouge);font-size:11px;">(dont '+rapsDus+' d\u00fb'+(rapsDus>1?'s':'')+')</span>':''));
     var selHtml='<select class="dash-act-select" onchange="dashSetPeriod(this.value)">'
       +[['all','Vue globale'],['sem','Semaine en cours'],['mois','Mois en cours'],['trim','Trimestre en cours'],['semst','Semestre en cours'],['an','Ann\u00e9e en cours']].map(function(o){
         return '<option value="'+o[0]+'"'+(window.dashPeriod===o[0]?' selected':'')+'>'+o[1]+'</option>'; }).join('')
@@ -15753,7 +15851,30 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
       +(isPins?'<span class="dash-aff-note">tri\u00e9es par priorit\u00e9 \u2605\u2605\u2605 \u2192 \u2605</span>':'<span class="dash-aff-note">de la plus r\u00e9cente \u00e0 la plus ancienne</span>')
       +'</div><div class="dash-aff-grid">'+cards+'</div></div>';
 
-    box.innerHTML=topRow+honoBloc+affBlock;
+    box.innerHTML=(window.dashMatinHtml?dashMatinHtml():'')+topRow+honoBloc+affBlock;
+  };
+  /* ═══ v11.55 : « Aujourd'hui en un coup d'œil » — une ligne en tête de l'accueil qui répond à la
+     question du matin (quoi faire ?) sans déplacer les blocs : rappels dus (dont en retard), rendez-vous
+     du jour, pige à relancer / oubliée. Chaque chiffre est un lien vers l'endroit où agir. */
+  window.dashMatinHtml=function(){
+    try{
+      var k=curKey(), priv=dashPriv(), auj=achDayFR();
+      var raps=lsArr('ach_rappels_v1').filter(function(r){ return r && !r.done && (window.rapGarde? rapGarde(r) : true); });
+      var dus=raps.filter(function(r){ return (''+(r.date||''))<=auj; }), ret=dus.filter(function(r){ return (''+(r.date||''))<auj; }).length;
+      var evs=lsArr('ach_plan_events').filter(function(e){ if(!e||e.date!==auj) return false;
+        try{ if(window.planVisib && planVisib(e)==='masked') return false; }catch(x){}
+        var us=Array.isArray(e.users)?e.users:[]; return !us.length || us.indexOf(k)>=0 || priv; }).length;
+      var pg=(window.pgPipeline? pgPipeline() : {echanges:[],visite:[]});
+      var rel=(pg.echanges||[]).filter(function(x){ return x.urg===3; }).length, oub=(pg.echanges||[]).filter(function(x){ return x.urg===2; }).length;
+      var pgVu=(!window.achCan || achCan('pige','view'));
+      function it(ico,n,lbl,go,warn){ return '<span class="dm-it'+(warn&&n?' warn':'')+(n?'':' zero')+'" onclick="'+go+'">'+ico+' <b>'+n+'</b> '+lbl+'</span>'; }
+      return '<div class="dash-matin"><span class="dm-t">Aujourd\u2019hui</span>'
+        +it('\ud83d\udd14', dus.length, 'rappel'+(dus.length>1?'s':'')+' \u00e0 traiter'+(ret?' <i>(dont '+ret+' en retard)</i>':''), 'openNotifs&&openNotifs()', ret>0)
+        +it('\ud83d\udcc5', evs, 'rendez-vous', 'navTo(\'planning\')', false)
+        +(pgVu? it('\ud83d\udcde', rel, 'relance'+(rel>1?'s':'')+' de pige en retard', 'navTo(\'pige\');setTimeout(function(){try{pigeDossPick&&pigeDossPick(\'attente\')}catch(e){}},200)', true) : '')
+        +(pgVu? it('\u23f3', oub, 'fiche'+(oub>1?'s':'')+' sans nouvelle depuis 30 j', 'navTo(\'pige\');setTimeout(function(){try{pigeDossPick&&pigeDossPick(\'attente\')}catch(e){}},200)', false) : '')
+        +'<span class="dm-go" onclick="var a=document.getElementById(\'dash-agenda\');if(a)a.scrollIntoView({behavior:\'smooth\'})">Voir l\u2019agenda \u203a</span></div>';
+    }catch(e){ window.achErr&&achErr(e); return ''; }
   };
 
   /* ---------- REPORTING ---------- */
@@ -15959,7 +16080,11 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
   var SEED_KEY='ach_pige_seeded_v1';  /* marqueur one-shot, non synchronisé */
   var PIGE_SEED=[{"url": "https://www.seloger.com/annonces/achat/appartement/paris-8eme-75/hoche-friedland/267DCSK3S8LI.htm?utm_campaign=ali_seeker_sl_b2c_emailing_standard-alertwl-buy_x_x_france_x_x_x_fr_x_email_x_x&utm_content=adbutton&utm_medium=email&utm_source=crm-b2c&utm_term=1_1", "src": "seloger", "adresse": "Paris 8ème", "ville": "Paris 8ème"}, {"url": "https://www.seloger.com/annonces/achat/appartement/paris-8eme-75/saint-philippe-du-roule/2666CQP6M7S2.htm?utm_source=crm-b2c&utm_medium=email&utm_campaign=ali_seeker_sl_b2c_emailing_standard-alertwl-buy_x_x_france_x_x_x_fr_x_email_x_x&utm_content=adbutton&utm_term=1_1", "src": "seloger", "adresse": "Paris 8ème", "ville": "Paris 8ème"}, {"url": "https://www.seloger.com/annonces/achat/appartement/paris-8eme-75/saint-philippe-du-roule/26RT861QBUHY.htm?utm_source=crm-b2c&utm_medium=email&utm_campaign=ali_seeker_sl_b2c_emailing_standard-alertwl-buy_x_x_france_x_x_x_fr_x_email_x_x&utm_content=adbutton&utm_term=1_1", "src": "seloger", "adresse": "Paris 8ème", "ville": "Paris 8ème"}, {"url": "https://www.seloger.com/annonces/achat/appartement/paris-8eme-75/elysees-madeleine/26ILB1FAQMUD.htm?utm_source=crm-b2c&utm_medium=email&utm_campaign=ali_seeker_sl_b2c_emailing_standard-alertwl-buy_x_x_france_x_x_x_fr_x_email_x_x&utm_content=adbutton&utm_term=1_1", "src": "seloger", "adresse": "Paris 8ème", "ville": "Paris 8ème"}, {"url": "https://www.fipac.fr/client/fiche.php?fid=4643190&fid2=148999660", "src": "fipac", "adresse": "Paris 8ème", "ville": "Paris 8ème"}, {"url": "https://www.pap.fr/annonces/appartement-paris-16e-75016-r463302517?a=54873265&email=welcome%40achille-immobilier.fr&md5=13094bd1bfa0abcbe4b733139e59b2bf&utm_source=alerte_vente&utm_medium=email&utm_campaign=alerte_vente", "src": "pap", "adresse": "Paris 16ème", "ville": "Paris 16ème"}, {"url": "https://www.pap.fr/annonces/appartement-paris-16e-75016-r463602813?a=54873265&email=welcome%40achille-immobilier.fr&md5=13094bd1bfa0abcbe4b733139e59b2bf&utm_source=alerte_vente&utm_medium=email&utm_campaign=alerte_vente", "src": "pap", "adresse": "Paris 16ème", "ville": "Paris 16ème"}, {"url": "https://www.pap.fr/annonces/appartement-paris-16e-75016-r463501480?a=54873265&email=welcome%40achille-immobilier.fr&md5=13094bd1bfa0abcbe4b733139e59b2bf&utm_source=alerte_vente&utm_medium=email&utm_campaign=alerte_vente", "src": "pap", "adresse": "Paris 16ème", "ville": "Paris 16ème"}, {"url": "https://www.pap.fr/annonces/appartement-paris-16e-75016-r462400279?a=54873265&email=welcome%40achille-immobilier.fr&md5=13094bd1bfa0abcbe4b733139e59b2bf&utm_source=alerte_vente&utm_medium=email&utm_campaign=alerte_vente", "src": "pap", "adresse": "Paris 16ème", "ville": "Paris 16ème"}, {"url": "https://www.pap.fr/annonces/appartement-paris-16e-75016-r463500277?a=54873265&email=welcome%40achille-immobilier.fr&md5=13094bd1bfa0abcbe4b733139e59b2bf&utm_source=alerte_vente&utm_medium=email&utm_campaign=alerte_vente", "src": "pap", "adresse": "Paris 16ème", "ville": "Paris 16ème"}, {"url": "https://www.pap.fr/annonces/appartement-paris-16e-75016-r463302517?a=54873265&email=welcome%40achille-immobilier.fr&md5=13094bd1bfa0abcbe4b733139e59b2bf&utm_source=alerte_vente&utm_medium=email&utm_campaign=alerte_vente", "src": "pap", "adresse": "Paris 16ème", "ville": "Paris 16ème"}, {"url": "https://www.pap.fr/annonces/appartement-paris-16e-75016-r463601212?a=54873265&email=welcome%40achille-immobilier.fr&md5=13094bd1bfa0abcbe4b733139e59b2bf&utm_source=alerte_vente&utm_medium=email&utm_campaign=alerte_vente", "src": "pap", "adresse": "Paris 16ème", "ville": "Paris 16ème"}, {"url": "https://www.pap.fr/annonces/appartement-paris-16e-75016-r463301967?a=54873265&email=welcome%40achille-immobilier.fr&md5=13094bd1bfa0abcbe4b733139e59b2bf&utm_source=alerte_vente&utm_medium=email&utm_campaign=alerte_vente", "src": "pap", "adresse": "Paris 16ème", "ville": "Paris 16ème"}, {"url": "https://www.pap.fr/annonces/appartement-paris-16e-75016-r463500277?a=54873265&email=welcome%40achille-immobilier.fr&md5=13094bd1bfa0abcbe4b733139e59b2bf&utm_source=alerte_vente&utm_medium=email&utm_campaign=alerte_vente", "src": "pap", "adresse": "Paris 16ème", "ville": "Paris 16ème"}, {"url": "https://www.pap.fr/annonces/appartement-paris-16e-75016-r438100953?a=54873265&email=welcome%40achille-immobilier.fr&md5=13094bd1bfa0abcbe4b733139e59b2bf&utm_source=alerte_vente&utm_medium=email&utm_campaign=alerte_vente", "src": "pap", "adresse": "Paris 16ème", "ville": "Paris 16ème"}, {"url": "https://www.pap.fr/annonces/appartement-paris-16e-75016-r463901290?a=54873265&email=welcome%40achille-immobilier.fr&md5=13094bd1bfa0abcbe4b733139e59b2bf&utm_source=alerte_vente&utm_medium=email&utm_campaign=alerte_vente", "src": "pap", "adresse": "Paris 16ème", "ville": "Paris 16ème"}, {"url": "https://www.pap.fr/annonces/appartement-paris-16e-75016-r464202556?a=54873265&email=welcome%40achille-immobilier.fr&md5=13094bd1bfa0abcbe4b733139e59b2bf&utm_source=alerte_vente&utm_medium=email&utm_campaign=alerte_vente", "src": "pap", "adresse": "Paris 16ème", "ville": "Paris 16ème"}, {"url": "https://www.seloger.com/annonces/achat/appartement/paris-16eme-75/auteuil-nord/261WE57R38XR.htm?utm_source=crm-b2c&utm_medium=email&utm_campaign=ali_seeker_sl_b2c_emailing_alert-pricedrop-buy_x_x_france_x_x_x_fr_x_email_x_x&utm_content=adbutton&utm_term=1_1", "src": "seloger", "adresse": "Paris 16ème", "ville": "Paris 16ème"}, {"url": "https://www.seloger.com/annonces/achat/appartement/paris-16eme-75/muette-sud/26CREH71PI6R.htm?utm_source=crm-b2c&utm_medium=email&utm_campaign=ali_seeker_sl_b2c_emailing_standard-alertwl-buy_x_x_france_x_x_x_fr_x_email_x_x&utm_content=adbutton&utm_term=1_1", "src": "seloger", "adresse": "Paris 16ème", "ville": "Paris 16ème"}, {"url": "https://www.seloger.com/annonces/achat/appartement/paris-16eme-75/chaillot/26QMC5BDR7MA.htm?utm_campaign=ali_seeker_sl_b2c_emailing_standard-alertwl-buy_x_x_france_x_x_x_fr_x_email_x_x&utm_content=adbutton&utm_medium=email&utm_source=crm-b2c&utm_term=1_1", "src": "seloger", "adresse": "Paris 16ème", "ville": "Paris 16ème"}, {"url": "https://www.seloger.com/annonces/achat/appartement/paris-16eme-75/porte-dauphine/26FF6JS5X19P.htm?utm_source=crm-b2c&utm_medium=email&utm_campaign=ali_seeker_sl_b2c_emailing_standard-alertwl-buy_x_x_france_x_x_x_fr_x_email_x_x&utm_content=adbutton&utm_term=1_1", "src": "seloger", "adresse": "Paris 16ème", "ville": "Paris 16ème"}, {"url": "https://www.seloger.com/annonces/achat/appartement/paris-16eme-75/muette-nord/26RNBPQGQBFM.htm?utm_source=crm-b2c&utm_medium=email&utm_campaign=ali_seeker_sl_b2c_emailing_standard-alertwl-buy_x_x_france_x_x_x_fr_x_email_x_x&utm_content=adbutton&utm_term=1_1", "src": "seloger", "adresse": "Paris 16ème", "ville": "Paris 16ème"}, {"url": "https://www.seloger.com/annonces/achat/appartement/saint-cloud-92/centre/26V5FHIEKWEF.htm?utm_source=crm-b2c&utm_medium=email&utm_campaign=ali_seeker_sl_b2c_emailing_relaxed-alertwl-buy_x_x_france_x_x_x_fr_x_email_x_x&utm_content=adbutton&utm_term=1_1", "src": "seloger", "adresse": "Paris 16ème", "ville": "Paris 16ème"}, {"url": "https://www.seloger.com/annonces/achat/appartement/paris-16eme-75/porte-dauphine/26H157WZRZSJ.htm?utm_source=crm-b2c&utm_medium=email&utm_campaign=ali_seeker_sl_b2c_emailing_standard-alertwl-buy_x_x_france_x_x_x_fr_x_email_x_x&utm_content=adbutton&utm_term=1_1", "src": "seloger", "adresse": "Paris 16ème", "ville": "Paris 16ème"}, {"url": "https://www.seloger.com/annonces/achat/appartement/paris-16eme-75/chaillot/2632PFXWUDYB.htm?utm_source=crm-b2c&utm_medium=email&utm_campaign=ali_seeker_sl_b2c_emailing_standard-alertwl-buy_x_x_france_x_x_x_fr_x_email_x_x&utm_content=adbutton&utm_term=1_1", "src": "seloger", "adresse": "Paris 16ème", "ville": "Paris 16ème"}, {"url": "https://www.seloger.com/annonces/achat/appartement/paris-16eme-75/chaillot/26LER4DZLJMB.htm?utm_source=crm-b2c&utm_medium=email&utm_campaign=ali_seeker_sl_b2c_emailing_standard-alertwl-buy_x_x_france_x_x_x_fr_x_email_x_x&utm_content=adbutton&utm_term=1_1", "src": "seloger", "adresse": "Paris 16ème", "ville": "Paris 16ème"}, {"url": "https://www.seloger.com/annonces/achat/appartement/paris-16eme-75/porte-dauphine/26GX3WRFKUVD.htm?utm_source=crm-b2c&utm_medium=email&utm_campaign=ali_seeker_sl_b2c_emailing_standard-alertwl-buy_x_x_france_x_x_x_fr_x_email_x_x&utm_content=adbutton&utm_term=1_1", "src": "seloger", "adresse": "Paris 16ème", "ville": "Paris 16ème"}, {"url": "https://www.seloger.com/annonces/achat/appartement/paris-16eme-75/muette-nord/2619BV4SWSVW.htm?utm_source=crm-b2c&utm_medium=email&utm_campaign=ali_seeker_sl_b2c_emailing_standard-alertwl-buy_x_x_france_x_x_x_fr_x_email_x_x&utm_content=adbutton&utm_term=1_1", "src": "seloger", "adresse": "Paris 16ème", "ville": "Paris 16ème"}, {"url": "https://www.fipac.fr/client/fiche.php?fid=4641097&fid2=148948885", "src": "fipac", "adresse": "Paris 16ème", "ville": "Paris 16ème"}, {"url": "https://www.fipac.fr/client/fiche.php?fid=4641150&fid2=148948735", "src": "fipac", "adresse": "Paris 16ème", "ville": "Paris 16ème"}, {"url": "https://www.fipac.fr/client/fiche.php?fid=4641542&fid2=148957497", "src": "fipac", "adresse": "Paris 16ème", "ville": "Paris 16ème"}, {"url": "https://www.fipac.fr/client/fiche.php?fid=4644697&fid2=149052215", "src": "fipac", "adresse": "Paris 16ème", "ville": "Paris 16ème"}, {"url": "https://www.fipac.fr/client/fiche.php?fid=4645342&fid2=149059967", "src": "fipac", "adresse": "Paris 16ème", "ville": "Paris 16ème"}, {"url": "https://www.fipac.fr/client/fiche.php?fid=4640803&fid2=148937293", "src": "fipac", "adresse": "Paris 16ème", "ville": "Paris 16ème"}, {"url": "https://www.seloger.com/annonces/achat/appartement/paris-17eme-75/courcelles-wagram/26PBJ79TDLXF.htm?utm_source=crm-b2c&utm_medium=email&utm_campaign=ali_seeker_sl_b2c_emailing_standard-alertwl-buy_x_x_france_x_x_x_fr_x_email_x_x&utm_content=adbutton&utm_term=1_1", "src": "seloger", "adresse": "Paris 17ème", "ville": "Paris 17ème"}, {"url": "https://www.seloger.com/annonces/achat/appartement/paris-17eme-75/courcelles-wagram/26JXVDLJLCRT.htm?utm_source=crm-b2c&utm_medium=email&utm_campaign=ali_seeker_sl_b2c_emailing_standard-alertwl-buy_x_x_france_x_x_x_fr_x_email_x_x&utm_content=adbutton&utm_term=1_1", "src": "seloger", "adresse": "Paris 17ème", "ville": "Paris 17ème"}, {"url": "https://www.seloger.com/annonces/achat/appartement/paris-17eme-75/ternes-maillot/2685T3IVVMNR.htm?utm_source=crm-b2c&utm_medium=email&utm_campaign=ali_seeker_sl_b2c_emailing_alert-pricedrop-buy_x_x_france_x_x_x_fr_x_email_x_x&utm_content=adbutton&utm_term=1_1", "src": "seloger", "adresse": "Paris 17ème", "ville": "Paris 17ème"}, {"url": "https://www.seloger.com/annonces/achat/appartement/paris-17eme-75/ternes-maillot/26EM4RILFFVB.htm?utm_source=crm-b2c&utm_medium=email&utm_campaign=ali_seeker_sl_b2c_emailing_standard-alertwl-buy_x_x_france_x_x_x_fr_x_email_x_x&utm_content=adbutton&utm_term=1_1", "src": "seloger", "adresse": "Paris 17ème", "ville": "Paris 17ème"}, {"url": "https://www.seloger.com/annonces/achat/appartement/paris-17eme-75/courcelles-wagram/261I67Z9MQMP.htm?utm_source=crm-b2c&utm_medium=email&utm_campaign=ali_seeker_sl_b2c_emailing_alert-pricedrop-buy_x_x_france_x_x_x_fr_x_email_x_x&utm_content=adbutton&utm_term=1_1", "src": "seloger", "adresse": "Paris 17ème", "ville": "Paris 17ème"}, {"url": "https://www.seloger.com/annonces/achat/appartement/paris-17eme-75/pereire-malesherbes/2637EPQF6SEF.htm?utm_source=crm-b2c&utm_medium=email&utm_campaign=ali_seeker_sl_b2c_emailing_standard-alertwl-buy_x_x_france_x_x_x_fr_x_email_x_x&utm_content=adbutton&utm_term=1_1", "src": "seloger", "adresse": "Paris 17ème", "ville": "Paris 17ème"}, {"url": "https://www.seloger.com/annonces/achat/appartement/paris-17eme-75/courcelles-wagram/26JXVDLJLCRT.htm?utm_source=crm-b2c&utm_medium=email&utm_campaign=ali_seeker_sl_b2c_emailing_standard-alertwl-buy_x_x_france_x_x_x_fr_x_email_x_x&utm_content=adbutton&utm_term=1_1", "src": "seloger", "adresse": "Paris 17ème", "ville": "Paris 17ème"}, {"url": "https://www.fipac.fr/client/fiche.php?fid=4641904&fid2=148983341", "src": "fipac", "adresse": "Paris 17ème", "ville": "Paris 17ème"}, {"url": "https://www.fipac.fr/client/fiche.php?fid=4640948&fid2=148942242", "src": "fipac", "adresse": "Paris 17ème", "ville": "Paris 17ème"}, {"url": "https://www.fipac.fr/client/fiche.php?fid=4646071&fid2=149081995", "src": "fipac", "adresse": "Paris 17ème", "ville": "Paris 17ème"}, {"url": "https://www.pap.fr/annonces/appartement-levallois-perret-92300-r462101089?a=54873244&email=welcome%40achille-immobilier.fr&md5=13094bd1bfa0abcbe4b733139e59b2bf&utm_source=alerte_vente&utm_medium=email&utm_campaign=alerte_vente_2km_proximite", "src": "pap", "adresse": "Levallois", "ville": "Levallois"}, {"url": "https://www.pap.fr/annonces/appartement-levallois-perret-92300-r461800533?a=54873244&email=welcome%40achille-immobilier.fr&md5=13094bd1bfa0abcbe4b733139e59b2bf&utm_source=alerte_vente&utm_medium=email&utm_campaign=alerte_vente_2km_proximite", "src": "pap", "adresse": "Levallois", "ville": "Levallois"}, {"url": "https://www.pap.fr/annonces/appartement-levallois-perret-r463203143?a=54873244&email=welcome%40achille-immobilier.fr&md5=13094bd1bfa0abcbe4b733139e59b2bf&utm_source=alerte_vente&utm_medium=email&utm_campaign=alerte_vente_2km_proximite", "src": "pap", "adresse": "Levallois", "ville": "Levallois"}, {"url": "https://www.pap.fr/annonces/appartement-levallois-perret-92300-r463702634?a=54873244&email=welcome%40achille-immobilier.fr&md5=13094bd1bfa0abcbe4b733139e59b2bf&utm_source=alerte_vente&utm_medium=email&utm_campaign=alerte_vente_2km_proximite", "src": "pap", "adresse": "Levallois", "ville": "Levallois"}, {"url": "https://www.pap.fr/annonces/appartement-levallois-perret-92300-r463702634?a=54873244&email=welcome%40achille-immobilier.fr&md5=13094bd1bfa0abcbe4b733139e59b2bf&utm_source=alerte_vente&utm_medium=email&utm_campaign=alerte_vente_2km_proximite", "src": "pap", "adresse": "Levallois", "ville": "Levallois"}, {"url": "https://www.pap.fr/annonces/appartement-levallois-perret-92300-r464203125?a=54873244&email=welcome%40achille-immobilier.fr&md5=13094bd1bfa0abcbe4b733139e59b2bf&utm_source=alerte_vente&utm_medium=email&utm_campaign=alerte_vente_2km_proximite", "src": "pap", "adresse": "Levallois", "ville": "Levallois"}, {"url": "https://www.seloger.com/annonces/achat/appartement/levallois-perret-92/trezel/26RSVR5PCHZ4.htm?utm_source=crm-b2c&utm_medium=email&utm_campaign=ali_seeker_sl_b2c_emailing_standard-alertwl-buy_x_x_france_x_x_x_fr_x_email_x_x&utm_content=adbutton&utm_term=1_1", "src": "seloger", "adresse": "Levallois", "ville": "Levallois"}, {"url": "https://www.seloger.com/annonces/achat/appartement/levallois-perret-92/henri-barbusse/26ZQQ9FNB2GH.htm?utm_source=crm-b2c&utm_medium=email&utm_campaign=ali_seeker_sl_b2c_emailing_standard-alertwl-buy_x_x_france_x_x_x_fr_x_email_x_x&utm_content=adbutton&utm_term=1_2", "src": "seloger", "adresse": "Levallois", "ville": "Levallois"}, {"url": "https://www.seloger.com/annonces/achat/appartement/levallois-perret-92/hotel-de-ville-planchette/26QC73A53RH4.htm?utm_source=crm-b2c&utm_medium=email&utm_campaign=ali_seeker_sl_b2c_emailing_standard-alertwl-buy_x_x_france_x_x_x_fr_x_email_x_x&utm_content=adbutton&utm_term=1_1", "src": "seloger", "adresse": "Levallois", "ville": "Levallois"}, {"url": "https://www.fipac.fr/client/fiche.php?fid=4641858&fid2=148966012", "src": "fipac", "adresse": "Levallois", "ville": "Levallois"}, {"url": "https://www.fipac.fr/client/fiche.php?fid=4642949&fid2=148993174", "src": "fipac", "adresse": "Levallois", "ville": "Levallois"}, {"url": "https://www.fipac.fr/client/fiche.php?fid=4643345&fid2=149003882", "src": "fipac", "adresse": "Levallois", "ville": "Levallois"}, {"url": "https://www.fipac.fr/client/fiche.php?fid=4646785&fid2=149100250", "src": "fipac", "adresse": "Levallois", "ville": "Levallois"}, {"url": "https://www.fipac.fr/client/fiche.php?fid=4586373&fid2=147389553", "src": "fipac", "adresse": "Levallois", "ville": "Levallois"}, {"url": "https://www.fipac.fr/client/fiche.php?fid=4645336&fid2=149058826", "src": "fipac", "adresse": "Levallois", "ville": "Levallois"}, {"url": "https://www.seloger.com/annonces/achat/appartement/neuilly-sur-seine-92/saint-james-delabordere/26RKLX2HZFNV.htm?utm_source=crm-b2c&utm_medium=email&utm_campaign=ali_seeker_sl_b2c_emailing_standard-alertwl-buy_x_x_france_x_x_x_fr_x_email_x_x&utm_content=adbutton&utm_term=1_1", "src": "seloger", "adresse": "Neuilly", "ville": "Neuilly"}, {"url": "https://www.seloger.com/annonces/achat/appartement/neuilly-sur-seine-92/la-plaine-des-sablons/26N9IC9NJYAG.htm", "src": "seloger", "adresse": "Neuilly", "ville": "Neuilly"}, {"url": "https://www.seloger.com/annonces/achat/appartement/neuilly-sur-seine-92/la-plaine-des-sablons/26N9IC9NJYAG.htm", "src": "seloger", "adresse": "Neuilly", "ville": "Neuilly"}, {"url": "https://www.seloger.com/annonces/achat/appartement/neuilly-sur-seine-92/ile-de-la-jatte-parc-d-orleans/26QY59L5TN5T.htm?utm_source=crm-b2c&utm_medium=email&utm_campaign=ali_seeker_sl_b2c_emailing_standard-alertwl-buy_x_x_france_x_x_x_fr_x_email_x_x&utm_content=adbutton&utm_term=1_1", "src": "seloger", "adresse": "Neuilly", "ville": "Neuilly"}, {"url": "https://www.pap.fr/annonces/appartement-avec-balcons-neuilly-sur-seine-r460701656?a=54873244&email=welcome%40achille-immobilier.fr&md5=13094bd1bfa0abcbe4b733139e59b2bf&utm_source=alerte_vente&utm_medium=email&utm_campaign=alerte_vente_2km_exacte", "src": "pap", "adresse": "Neuilly", "ville": "Neuilly"}, {"url": "https://www.fipac.fr/client/fiche.php?fid=4641389&fid2=148953918", "src": "fipac", "adresse": "Neuilly", "ville": "Neuilly"}, {"url": "https://www.fipac.fr/client/fiche.php?fid=4640460&fid2=148927191&fallback=vente%3DV%26period%3D2m%26nego%3D%26agenda%3D%26type%3D0%26allSectors%3D1%26metro%255B0%255D%3D%26metro%255B1%255D%3D%26metro%255B2%255D%3D%26occupe%3D%26adr%3D%26tel%3D%26nom%3D%26email%3D%26f_mots_cles%3DUn%2Bappartement%2Bde%2Bcaract%25C3%25A8re%2Benti%25C3%25A8rement%2Br%25C3%25A9nov%25C3%25A9%252C%2Balliant%2Ble%2Bcharme%2Bde%2Bl%2527ancien%2Bet%2Ble%2Bconfort%2Bd%2527une%2Br%25C3%25A9novation%2Br%25C3%25A9cente.%26nbp1%3D%26nbp2%3D%26prix%3D%26prix2%3D%26s1%3D%26s2%3D%26pm1%3D%26pm2%3D%26st1%3D%26st2%3D%26sterrasse1%3D%26sterrasse2%3D%26f_mots_exclus%3D%26ascen%3D0%26etage_1%3D%26etage_2%3D%26modecons%3D%26anneecons%3D%26garage%3D%26parkingssol%3D%26parkingext%3D%26date1%3D%26date2%3D%26support%3D%26libimmo%3D%26card%3D4640460&search=dfd1daba1abc754d4ae44b3b8832e9dc&type=mes-fiches", "src": "fipac", "adresse": "Neuilly", "ville": "Neuilly"}, {"url": "https://www.fipac.fr/client/fiche.php?fid=4625272&fid2=148505372", "src": "fipac", "adresse": "Neuilly", "ville": "Neuilly"}, {"url": "https://www.fipac.fr/client/fiche.php?fid=4625272&fid2=148505372&fallback=vente%3DV%26period%3D2m%26nego%3D%26agenda%3D%26type%3D0%26allSectors%3D1%26metro%255B0%255D%3D%26metro%255B1%255D%3D%26metro%255B2%255D%3D%26occupe%3D%26adr%3D%26tel%3D%26nom%3D%26email%3D%26f_mots_cles%3DRefait%2B%25C3%25A0%2Bneuf%252C%2Bdot%25C3%25A9%2Bde%2B11m%25C2%25B2%2Bde%2Bbalcons%2Bet%2Bd%2527un%2Bagencement%2Ben%2B%25C3%25A9toile%2B%253A%2Bce%2B67%252C4m%25C2%25B2%2Bau%2B1er%2B%25C3%25A9tage%2Bavec%2Bascenseur%2Best%2Brare%2Bsur%2Ble%2Bmarch%25C3%25A9.%26nbp1%3D%26nbp2%3D%26prix%3D%26prix2%3D%26s1%3D%26s2%3D%26pm1%3D%26pm2%3D%26st1%3D%26st2%3D%26sterrasse1%3D%26sterrasse2%3D%26f_mots_exclus%3D%26ascen%3D0%26etage_1%3D%26etage_2%3D%26modecons%3D%26anneecons%3D%26garage%3D%26parkingssol%3D%26parkingext%3D%26date1%3D%26date2%3D%26support%3D%26libimmo%3D%26card%3D4625272&search=c781f5f54a27ebcce7b53272ef2fc1dd&type=mes-fiches", "src": "fipac", "adresse": "Neuilly", "ville": "Neuilly"}];
   function load(){ try{ var a=JSON.parse(localStorage.getItem(K)||'[]'); return Array.isArray(a)?a:[]; }catch(e){ return []; } }
-  function save(a){ try{ localStorage.setItem(K,JSON.stringify(a)); return true; }catch(e){ return false; } }   /* v8.45 : l'échec remonte à l'appelant */
+  function save(a){ try{ localStorage.setItem(K,JSON.stringify(a));
+      /* v11.55 : une écriture faite DEPUIS la fiche ouverte (commentaire, rappel, réactivation) n'est pas
+         une modification concurrente — on aligne le témoin de version, sinon « Enregistrer » criait au conflit */
+      try{ var _oid=(document.getElementById('pg-edit-id')||{}).value||''; if(_oid && window._pgSnap!==undefined){ var _or=a.filter(function(x){return x&&x.id===_oid;})[0]; if(_or) window._pgSnap=_or.updated||_or.created||''; } }catch(e2){}
+      return true; }catch(e){ return false; } }   /* v8.45 : l'échec remonte à l'appelant */
   /* ============ CLASSEMENT PIGE : statuts-couleurs + dossiers + pagination (v5.12) ============ */
   var DOSS_K='ach_pige_dossiers_v1';           /* dossiers personnalisés (synchronisé) */
   var STATUT_MIG='ach_pige_statutmig_v1';      /* marqueur migration one-shot (local) */
@@ -16254,6 +16379,16 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
     document.getElementById('pga-ov').classList.add('open');
   };
   window.pigeArchClose=function(){ var o=document.getElementById('pga-ov'); if(o) o.classList.remove('open'); _pgArchPend=null; };
+  /* v11.56 : archiver une fiche solde ses rappels ouverts (ils restaient dans la cloche) */
+  function pgCloseRappels(fid){
+    try{
+      var raps=JSON.parse(localStorage.getItem('ach_rappels_v1')||'[]')||[]; if(!Array.isArray(raps)) return 0;
+      var n=0, now=new Date().toISOString();
+      raps.forEach(function(x){ if(x && !x.done && x.mod==='pige' && x.refId===fid){ x.done=1; x.doneAt=now; x.note=((x.note||'')+' · soldé : fiche archivée').replace(/^ · /,''); n++; } });
+      if(n){ localStorage.setItem('ach_rappels_v1', JSON.stringify(raps)); try{ if(window.rapRefreshAll) rapRefreshAll(); }catch(e){} }
+      return n;
+    }catch(e){ window.achErr&&achErr(e); return 0; }
+  }
   window.pigeArchDo=function(m){
     var id=_pgArchPend; if(!id) return;
     var note='';
@@ -16263,8 +16398,9 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
     if(note) r.arch.note=note;
     delete r.unarch;   /* v8.29 : on archive de nouveau — l'ancienne réactivation ne compte plus */
     r.updated=new Date().toISOString(); save(a);
+    var _nr=pgCloseRappels(id);   /* v11.56 */
     pigeArchClose(); pigeRender();
-    if(window.toast) toast('📦 Fiche archivée — '+PG_MOTIFS[m][1]);
+    if(window.toast) toast('📦 Fiche archivée — '+PG_MOTIFS[m][1]+(_nr?' · '+_nr+' rappel'+(_nr>1?'s':'')+' soldé'+(_nr>1?'s':''):''));
     try{ if(window.achLog) achLog('modification','Pige','archivage ('+PG_MOTIFS[m][1]+') : '+(r.adresse||r.titre||'')); }catch(e){window.achErr&&achErr(e)}
   };
   window.pigeReactivate=function(id,ev){
@@ -16291,8 +16427,10 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
     r.arch={m:m, d:new Date().toISOString(), by:(window.ACH_USER&&ACH_USER.key)||'admin'};
     if(_ref){ r.apimoRef=_ref; r.arch.note='Réf. Apimo '+_ref; }
     delete r.unarch;   /* v8.29 */
-    r.updated=new Date().toISOString(); save(a); pigeRender();
-    if(window.toast) toast('📦 Fiche archivée — '+PG_MOTIFS[m][1]+(_ref?' · réf. Apimo '+_ref:''));
+    r.updated=new Date().toISOString(); save(a);
+    var _nr=pgCloseRappels(id);   /* v11.56 */
+    pigeRender();
+    if(window.toast) toast('📦 Fiche archivée — '+PG_MOTIFS[m][1]+(_ref?' · réf. Apimo '+_ref:'')+(_nr?' · '+_nr+' rappel'+(_nr>1?'s':'')+' soldé'+(_nr>1?'s':''):''));
     try{ if(window.achLog) achLog('modification','Pige','archivage ('+PG_MOTIFS[m][1]+(_ref?', réf. Apimo '+_ref:'')+') : '+(r.adresse||r.titre||'')); }catch(e){window.achErr&&achErr(e)}
   };
   /* v10.02 : le passage automatique en statut gris sur Refus est SUPPRIMÉ (le gris = importance « Moyen »). */
@@ -16321,12 +16459,17 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
     } else if(sv==='relance'||sv==='refus-rel'){
       var prev=document.getElementById('pg-rap2-date');
       var val=(prev&&prev.value)||'';
+      /* v11.55 : si la fiche a DÉJÀ sa relance (ouverte, pas faite), le bandeau la montre telle quelle —
+         avant, il proposait toujours aujourd'hui + 7 et l'enregistrement repoussait la relance en silence. */
+      var exRap=null; if(!val && id){ try{ exRap=(JSON.parse(localStorage.getItem('ach_rappels_v1')||'[]')||[]).filter(function(x){ return x && x.id==='rap-pg-relance-'+id && !x.done; })[0]||null; }catch(e){} }
+      if(!val && exRap && exRap.date) val=exRap.date;
       if(!val){ var d=new Date(); d.setDate(d.getDate()+7); val=d.getFullYear()+'-'+pgPad2(d.getMonth()+1)+'-'+pgPad2(d.getDate()); }
       if(id && window.pgRelanceIsOff(id)){
         /* v11.28 : l'utilisateur a supprimé ce rappel — on ne le recrée plus, et on le dit. */
         box.innerHTML='<div class="pg-auto ga">🔕 <b>Rappel automatique désactivé</b> pour cette fiche (vous l\'avez supprimé).<button type="button" class="pg-auto-b" onclick="pgRelanceOff(\''+id+'\',false)">🔔 Réactiver</button></div>';
       } else {
-        box.innerHTML='<div class="pg-auto ra">🔔 <b>Rappel automatique :</b>&nbsp;« Relancer ce vendeur » sera créé dans la cloche pour le&nbsp;<input type="date" id="pg-rap2-date" value="'+val+'"><span class="pg-auto-hint">(modifiable — créé à l\'enregistrement de la fiche)</span></div>';
+        var _late=(exRap && exRap.date && exRap.date<today());
+        box.innerHTML='<div class="pg-auto ra">🔔 <b>'+(exRap?'Relance pr\u00e9vue'+(_late?' <span style="color:var(--rouge);">\u2014 en retard</span>':''):'Rappel automatique')+' :</b>&nbsp;« Relancer ce vendeur »'+(exRap?' est dans la cloche pour le':' sera créé dans la cloche pour le')+'&nbsp;<input type="date" id="pg-rap2-date" value="'+val+'" data-init="'+val+'"><span class="pg-auto-hint">'+(exRap?'(changez la date pour la reporter)':'(modifiable — créé à l\'enregistrement de la fiche)')+'</span></div>';
       }
     } else { box.innerHTML=''; }
   };
@@ -16368,6 +16511,8 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
       if(!d){ var t=new Date(); t.setDate(t.getDate()+7); d=t.getFullYear()+'-'+pgPad2(t.getMonth()+1)+'-'+pgPad2(t.getDate()); }
       var r=load().filter(function(x){return x.id===fid;})[0]||{};
       var label='📞 Relancer '+(r.vendeur||r.adresse||'ce vendeur');
+      /* v11.55 : une relance déjà ouverte n'est reportée que si l'utilisateur a changé la date du bandeau */
+      if(ex && !ex.done && _de0 && _de0.getAttribute('data-init')===_dv0 && ex.date){ return; }
       if(ex){ ex.date=d; ex.label=label; ex.done=0; delete ex.doneAt; }
       else raps.push({id:rapId, mod:'pige', refId:fid, label:label, date:d, note:(sv==='refus-rel'?'Refus à relancer':'Bon contact à relancer'), done:0, created:new Date().toISOString(), by:(window.ACH_USER&&ACH_USER.key)||''});
       localStorage.setItem('ach_rappels_v1', JSON.stringify(raps));
@@ -16531,15 +16676,15 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
   }
 
   function esc(s){ return (''+(s||'')).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-  var SRC={seloger:['SeLoger','#e00034'],pap:['PAP','#0d6efd'],lbc:['Leboncoin','#ec5a13'],bd:['Belles Demeures','#9a7b4f'],manuel:['Manuelle','#7a7570'],fipac:['Fipac','#7a5c9e'],autre:['Autre site','#5b8aa6'],confrere:['Confrère','#2f6f6f']};
-  var SRC_MAIN=['seloger','pap','lbc','bd','manuel'];   /* sources principales proposées à tous */
+  var SRC={seloger:['SeLoger','#e00034'],pap:['PAP','#0d6efd'],lbc:['Leboncoin','#ec5a13'],bd:['Belles Demeures','#9a7b4f'],bienici:['Bien\u2019ici','#1f9d8a'],figaro:['Figaro Immo','#1c3a6b'],manuel:['Manuelle','#7a7570'],fipac:['Fipac','#7a5c9e'],autre:['Autre site','#5b8aa6'],confrere:['Confrère','#2f6f6f']};   /* v11.56 : Bien'ici et Figaro */
+  var SRC_MAIN=['seloger','pap','lbc','bd','bienici','figaro','manuel'];   /* sources principales proposées à tous */
   function admin(){ return (window.ACH_USER&&ACH_USER.key)==='admin'; }
   function srcOptions(cur){
     var keys=SRC_MAIN.slice();
     if(admin() && keys.indexOf('autre')<0) keys.push('autre');       /* « Autre » réservé à l'admin */
     if(keys.indexOf('confrere')<0) keys.splice(keys.indexOf('manuel')>=0?keys.indexOf('manuel'):keys.length,0,'confrere');   /* v10.21 : un bien partagé à la voix (sans PDF) se saisit à la main */
     if(cur && keys.indexOf(cur)<0) keys.push(cur);                    /* garde la valeur actuelle même si fipac/autre */
-    return keys.map(function(k){ return '<option value="'+k+'"'+(k===cur?' selected':'')+'>'+SRC[k][0]+'</option>'; }).join('');
+    return keys.map(function(k){ var _s=SRC[k]||[k]; return '<option value="'+k+'"'+(k===cur?' selected':'')+'>'+_s[0]+'</option>'; }).join('');   /* v11.56 : source inconnue tolérée */
   }
   /* Liste unifiée des sources d'une fiche (rétrocompatible avec src/url) */
   function pigeSources(r){
@@ -16551,10 +16696,19 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
   function linkRowHtml(src,url){
     return '<div class="pg-link-row">'
       +'<select class="form-select pg-link-src">'+srcOptions(src||'seloger')+'</select>'
-      +'<input class="form-input pg-link-url" placeholder="https://…" value="'+esc(url||'')+'" oninput="pigeDupCheck()">'
+      +'<input class="form-input pg-link-url" placeholder="https://…" value="'+esc(url||'')+'" oninput="pigeLinkUrlIn(this);pigeDupCheck()">'
       +'<button type="button" class="pg-link-del" title="Retirer ce lien" onclick="this.parentNode.remove();pigeDupCheck();">✕</button>'
       +'</div>';
   }
+  /* v11.56 : la source d'un lien se déduit de l'adresse collée (SeLoger, PAP, Bien'ici, Figaro…) */
+  window.pigeLinkUrlIn=function(inp){
+    try{
+      var row=inp&&inp.closest('.pg-link-row'); var sel=row&&row.querySelector('.pg-link-src'); if(!sel) return;
+      var k=srcOf((inp.value||'').trim()); if(k==='manuel'||k==='fipac') return;
+      if(![].some.call(sel.options,function(o){return o.value===k;})){ var o=document.createElement('option'); o.value=k; o.textContent=(SRC[k]||[k])[0]; sel.appendChild(o); }
+      sel.value=k;
+    }catch(e){window.achErr&&achErr(e)}
+  };
   window.pigeLinkAdd=function(src,url){
     var box=document.getElementById('pg-links'); if(!box) return;
     var tmp=document.createElement('div'); tmp.innerHTML=linkRowHtml(typeof src==='string'?src:'', typeof url==='string'?url:'');
@@ -16563,7 +16717,7 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
   function pigeLinksRender(list){
     var box=document.getElementById('pg-links'); if(!box) return;
     box.innerHTML='';
-    if(!list||!list.length){ pigeLinkAdd('seloger',''); return; }
+    if(!list||!list.length){ pigeLinkAdd('manuel',''); return; }   /* v11.56 : ligne vide = « Manuelle » (la source suit l'adresse collée) */
     list.forEach(function(l){ pigeLinkAdd(l.src||'seloger', l.url||''); });
   }
   /* ═══ v11.41 : ÉVOLUTION DU PRIX (demande Laurent, modèle Fipac) ═══
@@ -16644,7 +16798,7 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
     document.querySelectorAll('#pg-links .pg-link-row').forEach(function(row){
       var src=(row.querySelector('.pg-link-src')||{}).value||'manuel';
       var url=((row.querySelector('.pg-link-url')||{}).value||'').trim();
-      if(url || src!=='manuel') out.push({src:src, url:url});
+      if(url || src==='confrere') out.push({src:src, url:url});   /* v11.56 : une ligne SANS lien ne compte pas (la fiche manuelle naissait « SeLoger ») */
     });
     return out;
   }
@@ -16812,7 +16966,7 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
       proSave(pl); memo=true;
     }
     pigeRender();
-    if(window.toast) toast('\U0001f3e2 Fiche classee dans les Pros'+(memo?' \u2014 numero memorise':''));
+    if(window.toast) toast('\ud83c\udfe2 Fiche classée dans les Pros'+(memo?' \u2014 numéro mémorisé':''));   /* v11.56 : lisible */
     try{ if(window.achLog) achLog('modification','Pige','classee dans les Pros : '+lbl); }catch(e){window.achErr&&achErr(e)}
   };
   var _pgMultiClosed={};
@@ -17228,7 +17382,9 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
     if(u.indexOf('bellesdemeures')>=0) return 'bd';
     if(u.indexOf('pap.fr')>=0||u.indexOf('/pap')>=0) return 'pap';
     if(u.indexOf('fipac')>=0) return 'fipac';   /* repli : sera à re-router vers la vraie source + lien Fipac */
-    return 'manuel'; }
+    if(u.indexOf('bienici')>=0) return 'bienici';                       /* v11.56 */
+    if(u.indexOf('lefigaro')>=0 || u.indexOf('figaro')>=0) return 'figaro';   /* v11.56 */
+    return /^https?:\/\//.test(u) ? 'autre' : 'manuel'; }   /* v11.56 : un vrai lien d'un site inconnu = « Autre site », pas « Manuelle » */
   function roleName(k){ var R=window.ROLES||{}; return (R[k]&&R[k].name)||''; }
   function fmtN(n){ return new Intl.NumberFormat('fr-FR').format(Math.round(n)); }
   function fmtP(n){ return n? fmtN(n)+' €' : 'Prix à définir'; }
@@ -17319,7 +17475,7 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
     return line+' <span style="color:var(--gris-2);white-space:nowrap;">· créée le '+dstr(r.created)+'</span>';
   }
   function pgSrcLogo(k,c){   /* v9.46 : monogramme SVG aux couleurs de la marque (pas de fichier externe) */
-    var L={seloger:'S',pap:'P',lbc:'b',bd:'B',fipac:'F',manuel:'M',confrere:'C'}[k]||'↗';
+    var L={seloger:'S',pap:'P',lbc:'b',bd:'B',bienici:'i',figaro:'f',fipac:'F',manuel:'M',confrere:'C'}[k]||'↗';   /* v11.56 */
     return '<svg width="15" height="15" viewBox="0 0 16 16" style="flex:none;display:block;" aria-hidden="true"><rect width="16" height="16" rx="4.5" fill="'+c+'"/><text x="8" y="11.8" text-anchor="middle" font-family="Jost,Arial,sans-serif" font-size="11" font-weight="700" fill="#fff">'+L+'</text></svg>';
   }
   function srcLinkBtns(r){
@@ -25208,39 +25364,47 @@ body.pi-grabbing *{user-select:none!important;}
     try{ localStorage.setItem(SEEN_K, JSON.stringify(a)); }catch(e){}
   }
   window.achAlerteClose=function(){ var e=document.getElementById('ach-alerte'); if(e) e.remove(); };
-  function montrer(e){
-    var T=TYPES[e.type]||TYPES.autre;
+  /* v11.56 : l'alerte montre TOUS les rendez-vous qui tombent dans l'heure (avant : un seul,
+     les autres étaient marqués vus sans jamais apparaître) et dit le vrai délai (« dans 5 min »). */
+  function delaiTxt(min){ min=Math.ceil(min); return min>=55 ? 'Dans une heure' : (min<=1 ? 'Dans une minute' : 'Dans '+min+' min'); }
+  function montrer(list){
     var old=document.getElementById('ach-alerte'); if(old) old.remove();
     var w=document.createElement('div'); w.id='ach-alerte';
+    var top=list.length>1 ? '⏰ '+list.length+' rendez-vous dans l\u2019heure' : '⏰ '+delaiTxt(list[0].min);
+    var body=list.map(function(x){ var e=x.e, T=TYPES[e.type]||TYPES.autre;
+      return '<div class="alrt-ev">'
+        +'<div class="alrt-tt">'+T[0]+' '+esc(e.title||T[1])+'</div>'
+        +'<div class="alrt-h">'+esc((e.timeStart||'')+(e.timeEnd?' – '+e.timeEnd:''))+(list.length>1?' <span class="alrt-in">'+delaiTxt(x.min).toLowerCase()+'</span>':'')+'</div>'
+        +(e.adresse?'<div class="alrt-sub">📍 '+esc(e.adresse)+'</div>':'')
+        +(e.visiteur?'<div class="alrt-sub">👤 '+esc(e.visiteur)+'</div>':'')
+        +(e.notes?'<div class="alrt-note">'+esc(e.notes)+'</div>':'')
+        +'</div>'; }).join('');
     w.innerHTML='<div class="alrt-card">'
-      +'<div class="alrt-top">⏰ Dans une heure</div>'
-      +'<div class="alrt-tt">'+T[0]+' '+esc(e.title||T[1])+'</div>'
-      +'<div class="alrt-h">'+esc((e.timeStart||'')+(e.timeEnd?' – '+e.timeEnd:''))+'</div>'
-      +(e.adresse?'<div class="alrt-sub">📍 '+esc(e.adresse)+'</div>':'')
-      +(e.visiteur?'<div class="alrt-sub">👤 '+esc(e.visiteur)+'</div>':'')
-      +(e.notes?'<div class="alrt-note">'+esc(e.notes)+'</div>':'')
+      +'<div class="alrt-top">'+top+'</div>'+body
       +'<div class="alrt-bar"><button class="alrt-b2" onclick="achAlerteClose()">Vu</button>'
       +'<button class="alrt-b1" onclick="achAlerteClose();navTo(\'planning\')">Ouvrir le planning</button></div>'
       +'</div>';
     w.addEventListener('click', function(ev){ if(ev.target===w) window.achAlerteClose(); });
     document.body.appendChild(w);
-    try{ if(window.toast) toast('⏰ Rendez-vous dans une heure'); }catch(x){}
+    try{ if(window.toast) toast(list.length>1 ? '⏰ '+list.length+' rendez-vous dans l\u2019heure' : '⏰ Rendez-vous '+delaiTxt(list[0].min).toLowerCase()); }catch(x){}
   }
   function check(){
     try{
       if(document.body.classList.contains('ach-agence')) return;        /* écran d'agence : jamais d'alerte */
       if(document.getElementById('ach-alerte')) return;                 /* une seule à la fois */
-      var now=new Date(), t=dISO(now), vus=seen();
+      var now=new Date(), t=dISO(now), vus=seen(), dus=[];
       evOfDay(t).forEach(function(e){
         if(e.allDay || !e.timeStart) return;
         if(vus.indexOf(e.id)>=0) return;
         var p=(''+e.timeStart).split(':');
         var d=new Date(now); d.setHours(parseInt(p[0],10)||0, parseInt(p[1],10)||0, 0, 0);
         var min=(d-now)/60000;
-        if(min<=60 && min>0){ markSeen(e.id); montrer(e); }
+        if(min<=60 && min>0) dus.push({e:e, min:min});
       });
+      if(dus.length){ dus.sort(function(a,b){ return a.min-b.min; }); dus.forEach(function(x){ markSeen(x.e.id); }); montrer(dus); }
     }catch(x){window.achErr&&achErr(x)}
   }
+  window._achAlerteCheck=check;
   function boot(){
     try{ window.dashAgendaRender(); }catch(e){}
     setTimeout(check, 4000);        /* après la connexion et la première synchro */
@@ -25313,6 +25477,8 @@ body.pi-grabbing *{user-select:none!important;}
 .alrt-h{font-size:14px;color:var(--noir);font-variant-numeric:tabular-nums;}
 .alrt-sub{font-size:13px;color:var(--gris);margin-top:4px;}
 .alrt-note{font-size:12.5px;color:var(--gris);background:#faf7f2;border-radius:8px;padding:8px 11px;margin-top:9px;white-space:pre-wrap;}
+.alrt-ev+.alrt-ev{border-top:1px solid #f0ebe3;margin-top:10px;padding-top:8px;}   /* v11.56 : plusieurs rendez-vous dans la même alerte */
+.alrt-in{font-size:12px;color:var(--terra);margin-left:6px;}
 .alrt-bar{display:flex;gap:9px;margin-top:16px;}
 .alrt-bar button{flex:1;border:none;border-radius:9px;padding:10px 14px;font-size:13.5px;cursor:pointer;font-family:'Jost',sans-serif;}
 .alrt-b1{background:var(--terra);color:#fff;}
@@ -25532,7 +25698,21 @@ body.pi-grabbing *{user-select:none!important;}
       : '<div style="font-size:12px;color:var(--gris-2);">Aucun avenant.</div>'; }
   window.mdAvAdd=function(){ var d=document.getElementById('md-av-d').value, t=(document.getElementById('md-av-t').value||'').trim(), p=NUMV(document.getElementById('md-av-p').value)||'';
     if(!t){ if(window.toast) toast('Indiquez l’objet de l’avenant'); return; }
-    AV.push({d:d||new Date().toISOString().slice(0,10), txt:t, prix:p}); document.getElementById('md-av-t').value=''; document.getElementById('md-av-p').value=''; avPaint(); };
+    AV.push({d:d||new Date().toISOString().slice(0,10), txt:t, prix:p}); document.getElementById('md-av-t').value=''; document.getElementById('md-av-p').value=''; avPaint();
+    /* v11.56 : « Prolongation 3 mois » / « renouvellement 6 mois » / « prolongé jusqu'au 15/03/2027 »
+       → l'échéance du mandat suit (elle restait à l'ancienne date, le mandat passait « expiré »). */
+    try{
+      if(/prolong|renouvel|reconduct|prorog/i.test(t)){
+        var fn=document.getElementById('md-fin'), nv='';
+        var mJ=t.match(/jusqu.?au?\s+(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{2,4})/i);
+        var mM=t.match(/(\d+)\s*mois/i);
+        if(mJ){ var y=+mJ[3]; if(y<100) y+=2000; nv=y+'-'+('0'+(+mJ[2])).slice(-2)+'-'+('0'+(+mJ[1])).slice(-2); }
+        else if(mM && fn){ var base=fn.value? new Date(fn.value+'T12:00:00') : new Date((d||new Date().toISOString().slice(0,10))+'T12:00:00'); base.setMonth(base.getMonth()+(+mM[1])); nv=base.toISOString().slice(0,10); }
+        if(nv && fn && nv!==fn.value){ fn.value=nv; if(window.toast) toast('\ud83d\udcc5 \u00c9ch\u00e9ance du mandat avanc\u00e9e au '+dstr(nv)+' \u2014 enregistrez pour confirmer'); }
+        else if(!nv && window.toast) toast('Pensez \u00e0 mettre \u00e0 jour l\u2019\u00e9ch\u00e9ance du mandat (ex. \u00ab prolongation 3 mois \u00bb la calcule toute seule)');
+      }
+    }catch(e){window.achErr&&achErr(e)}
+  };
   window.mdAvDel=function(i){ AV.splice(i,1); avPaint(); };
   function pjPaint(){ var b=document.getElementById('md-pjlist'); if(!b) return;
     b.innerHTML=PJ.length? PJ.map(function(p,i){ return '<div class="md-pjrow">\u{1F4CE} <a onclick="mdPjOpen('+i+')">'+esc(p.name)+'</a><span style="flex:1;"></span><button class="md-x" onclick="mdPjDel('+i+')">✕</button></div>'; }).join('')
@@ -25689,7 +25869,30 @@ body.pi-grabbing *{user-select:none!important;}
 <style id="mob-css">
 .mob-burger{display:none;align-items:center;justify-content:center;width:38px;height:38px;border:1px solid var(--border);border-radius:9px;background:var(--blanc);color:var(--noir);font-size:17px;cursor:pointer;flex-shrink:0;}
 #mob-bk{display:none;}
+/* v11.55 : vue Jour du planning + accompagnateurs en ligne + bandeau du matin */
+.week-grid.day-mode{min-width:0;}
+.week-grid.day-mode .week-header,.week-grid.day-mode .week-allday-row,.week-grid.day-mode .week-time-grid{grid-template-columns:52px 1fr;}
+.vt-acc-inline{display:flex;flex-wrap:wrap;gap:6px 10px;}
+.vt-acc-opt{display:inline-flex;align-items:center;gap:6px;font-size:13px;border:1px solid var(--border);border-radius:8px;padding:4px 9px;background:#fff;cursor:pointer;font-family:'Jost',sans-serif;}
+.vt-acc-opt.on{border-color:var(--kaki);background:#f3f1ea;}
+.vt-acc-opt input{margin:0;}
+.dash-matin{display:flex;align-items:center;gap:8px 14px;flex-wrap:wrap;background:#fff;border:1px solid var(--border);border-left:4px solid var(--terra);border-radius:10px;padding:9px 14px;margin:0 0 14px;font-size:13px;color:var(--gris);}
+.dm-t{font-family:'Cormorant Garamond',serif;font-size:17px;color:var(--noir);margin-right:4px;}
+.dm-it{cursor:pointer;white-space:nowrap;}
+.dm-it b{color:var(--noir);font-size:14px;}
+.dm-it.warn b,.dm-it.warn i{color:var(--rouge);}
+.dm-it.zero{opacity:.55;}
+.dm-it:hover b{text-decoration:underline;}
+.dm-go{margin-left:auto;color:var(--terra);cursor:pointer;white-space:nowrap;font-size:12px;}
 @media (max-width:880px){
+  /* v11.55 : fiche de pige — la rangée de boutons passe à la ligne (Supprimer / Fusionner étaient hors écran) */
+  #modal-pige .modal-actions{flex-wrap:wrap;gap:6px;}
+  #modal-pige .modal-actions .btn{flex:1 1 auto;min-width:0;white-space:nowrap;margin-right:0!important;}
+  #modal-pige .modal-actions .btn-terra{flex:1 1 100%;order:9;}
+  .plan-todo.todo-vide .plan-todo-hd ~ *{display:none;}
+  .plan-todo.todo-vide{max-height:52px;overflow:hidden;}
+  .dash-matin{gap:6px 10px;padding:8px 10px;}
+  .dm-go{flex:1 0 100%;margin-left:0;}
   /* ── navigation : menu latéral escamotable ── */
   .mob-burger{display:flex;}
   .sidebar{position:fixed;left:0;top:0;bottom:0;z-index:9400;width:258px!important;transform:translateX(-103%);transition:transform .25s ease;box-shadow:8px 0 30px rgba(0,0,0,.3);height:100dvh;}
@@ -25732,6 +25935,7 @@ body.pi-grabbing *{user-select:none!important;}
   .plan-body{flex-direction:column;overflow-y:auto;}
   .plan-cal{min-height:380px;}
   .plan-cal > *{min-width:760px;}
+  .plan-cal.day-mode > *{min-width:0!important;}   /* v11.55 : vue Jour sans défilement horizontal */
   .plan-todo{width:100%!important;max-width:none!important;}
   /* ── Post-its : colonnes empilées ── */
   .pi-cols{flex-direction:column;overflow-y:auto;}
@@ -25781,7 +25985,8 @@ body.pi-grabbing *{user-select:none!important;}
   function save(a){ try{ localStorage.setItem(TK, JSON.stringify(a)); }catch(e){ window.achErr&&achErr(e); } }
   var MODLBL={ach_pige_v1:['🔎','Fiche de pige'], ach_encours_v1:['🏛','Vente'],
     ach_locations_v1:['🔑','Location'], ach_mandats_v1:['📜','Mandat'],
-    ach_affaires_v1:['⟶','Affaire'], ach_pi_v4:['📌','Post-it']};
+    ach_affaires_v1:['⟶','Affaire'], ach_pi_v4:['📌','Post-it'],
+    ach_plan_events:['📅','Événement du planning'], ach_vsb_v1:['🏠','Visite sans bon'], ach_bv_extra:['🏠','Bon de visite']};   /* v11.56 */
   /* ── journal des mouvements ── */
   function logLoad(){ try{ var a=JSON.parse(localStorage.getItem(TLOG)||'[]'); return Array.isArray(a)?a:[]; }catch(e){ return []; } }
   function logAdd(ev, e, actor){
@@ -25838,6 +26043,7 @@ body.pi-grabbing *{user-select:none!important;}
       }
       save(load().filter(function(x){return x.id!==trId;}));
       try{ if(e.mod==='ach_pi_v4' && window._piResync) _piResync(); }catch(e3){window.achErr&&achErr(e3)}
+      try{ if(e.mod==='ach_bv_extra' && window.bvReloadExtra) bvReloadExtra(); }catch(e4){window.achErr&&achErr(e4)}   /* v11.56 */
       achTrashRender();
     }catch(err){ window.achErr&&achErr(err); if(window.toast) toast('Restauration impossible — voir journal'); }
   };
@@ -26020,8 +26226,9 @@ body.pi-grabbing *{user-select:none!important;}
       out.push({ id:'bv'+x.n, kind:'bv', n:x.n, d:x.d||x.date||'', v:x.v||x.visiteur||'', a:x.a||x.adresse||'',
                  addrs:Array.isArray(x.addrs)?x.addrs.join(' '):'', obs:x.obs||'', attente:!!attente, cr:CR['cr:bv'+x.n]||'' });
     }
-    (window.BV_DATA||[]).forEach(function(b){ bon(b,false); });
-    extra.forEach(function(b){ bon(b,false); });
+    var dels={}; extra.forEach(function(b){ if(b && b.del) dels[b.n]=1; });   /* v11.56 */
+    (window.BV_DATA||[]).forEach(function(b){ if(!(b&&dels[b.n])) bon(b,false); });
+    extra.forEach(function(b){ if(!(b&&(b.del||dels[b.n]))) bon(b,false); });
     readArr('ach_bv_pending').forEach(function(b){ bon(b,true); });
     readArr('ach_vsb_v1').forEach(function(o){
       if(!o || !o.id) return;
@@ -26070,6 +26277,13 @@ body.pi-grabbing *{user-select:none!important;}
     _res=[]; _sel=0;
     if(q.length<2){ box.innerHTML='<div class="gs-empty">Tapez au moins 2 caractères…</div>'; return; }
     var toks=q.split(/\s+/).filter(Boolean);
+    /* v11.56 : un NUMÉRO DE TÉLÉPHONE se cherche avec ou sans espaces, points, +33 —
+       « 0612345678 », « 06 12 34 56 78 » et « +33 6 12 34 56 78 » trouvent la même fiche.
+       Avant, les chiffres collés ne trouvaient rien et les chiffres espacés remontaient
+       de faux résultats (chaque paire de chiffres cherchée séparément). */
+    var qTel=q.replace(/[\s.\-()]/g,'').replace(/^\+33/,'0').replace(/^0033/,'0');
+    var isTel=/^\d{6,}$/.test(qTel);
+    function telNorm(h){ return h.replace(/\+33\s?/g,'0').replace(/[\s.\-()]/g,''); }
     var html='';
     MODS.forEach(function(m){
       if(!can(m.perm)) return;
@@ -26079,21 +26293,25 @@ body.pi-grabbing *{user-select:none!important;}
         var r=items[i]; if(!r || r.id===undefined) continue;
         var h=norm(hay(r,0));
         var okAll=true, best=1e9;
-        for(var t=0;t<toks.length;t++){ var p=h.indexOf(toks[t]); if(p<0){ okAll=false; break; } if(p<best) best=p; }
+        if(isTel){ var pt=telNorm(h).indexOf(qTel); if(pt<0) okAll=false; else best=pt; }
+        else for(var t=0;t<toks.length;t++){ var p=h.indexOf(toks[t]); if(p<0){ okAll=false; break; } if(p<best) best=p; }
         if(okAll) hits.push({r:r, s:best});
         if(hits.length>=40) break;
       }
       if(!hits.length) return;
       hits.sort(function(a,b){ return a.s-b.s; });
-      html+='<div class="gs-grp">'+m.ico+' '+m.name+'</div>';
-      hits.slice(0,6).forEach(function(hh){
+      var gid='gsg'+_res.length;
+      html+='<div class="gs-grp">'+m.ico+' '+m.name+(hits.length>6?' <span class="gs-grp-n">'+hits.length+'</span>':'')+'</div>';
+      hits.forEach(function(hh,k){
         var idx=_res.length;
         _res.push({m:m, r:hh.r});
-        html+='<div class="gs-item'+(idx===0?' on':'')+'" data-i="'+idx+'" onclick="gsGo('+idx+')" onmousemove="gsHover('+idx+')">'
+        html+='<div class="gs-item'+(idx===0?' on':'')+(k>=6?' gs-more '+gid:'')+'" data-i="'+idx+'" onclick="gsGo('+idx+')" onmousemove="gsHover('+idx+')">'
           +'<span class="gs-item-ico">'+m.ico+'</span>'
           +'<div style="flex:1;min-width:0;"><div class="gs-item-lab">'+esc(m.lab(hh.r))+'</div>'
           +(m.sub(hh.r)?'<div class="gs-item-sub">'+esc(m.sub(hh.r))+'</div>':'')+'</div></div>';
       });
+      /* v11.56 : « voir les N autres » — avant, 6 résultats par module sans suite */
+      if(hits.length>6) html+='<div class="gs-plus" onclick="gsPlus(\''+gid+'\',this)">Voir les '+(hits.length-6)+' autres \u25be</div>';
     });
     box.innerHTML=html||'<div class="gs-empty">Aucun résultat — essayez un autre terme (adresse, nom, téléphone…)</div>';
   };
@@ -26104,6 +26322,7 @@ body.pi-grabbing *{user-select:none!important;}
     var on=document.querySelector('.gs-item.on'); if(on && on.scrollIntoView) on.scrollIntoView({block:'nearest'});
   }
   window.gsHover=function(i){ if(_sel!==i){ _sel=i; paint(); } };
+  window.gsPlus=function(gid,btn){ [].slice.call(document.querySelectorAll('.gs-more.'+gid)).forEach(function(el){ el.classList.remove('gs-more'); }); if(btn) btn.remove(); };   /* v11.56 */
   window.gsKeys=function(e){
     if(e.key==='Escape'){ gsHide(); return; }
     if(!_res.length) return;
