@@ -1805,7 +1805,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     </div>
   </div>
   </div>
-  <div class="logo-ver app-ver">Achille App — v11.59</div>
+  <div class="logo-ver app-ver">Achille App — v11.61</div>
 </aside>
 <div id="mob-bk" onclick="mobNav(false)"></div>
 <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Réduire la barre latérale">‹</button>
@@ -14764,7 +14764,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     startRealtime();
     var ov=document.getElementById('ach-login-overlay'); if(ov) ov.classList.add('ach-hidden');
     var ub=document.getElementById('ach-userbar'); if(ub) ub.style.display='none';
-    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v11.59';
+    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v11.61';
     flag('Synchronis\u00e9');
     // fin de l'init : on autorise la journalisation des actions
     setTimeout(function(){ installInterceptor._init=false; }, 1500);
@@ -18642,6 +18642,92 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
       document.head.appendChild(sc);
     });
   }
+  /* v11.60 : texte complet d'un PDF, page par page (même jointure géométrique que la Pige express) —
+     utilisé par le pré-remplissage des Mandats. Rend '' si pdf.js est indisponible (hors ligne). */
+  function pgPdfPageText(tc){
+    var _tl='', _lx=null, _ly=null, _fs=10;
+    tc.items.forEach(function(it){
+      var tr=it.transform||[10,0,0,10,0,0], x=tr[4], y=tr[5];
+      var f=Math.max(Math.abs(tr[3]||0),Math.abs(tr[0]||0)); if(f>1) _fs=f;
+      if(it.str){
+        if(_ly!==null && Math.abs(y-_ly)>_fs*0.6) _tl+='\n';
+        else if(_lx!==null && (x-_lx)>_fs*0.12) _tl+=' ';
+        _tl+=it.str;
+        _lx=x+(it.width||0); _ly=y;
+      }
+      if(it.hasEOL){ _tl+='\n'; _lx=null; }
+    });
+    return _tl.replace(/[ \t]{2,}/g,' ');
+  }
+  /* v11.60 : reconstruction de la MISE EN PAGE — les fragments sont regroupés par ligne (même hauteur)
+     et ordonnés de gauche à droite, quel que soit l'ordre d'écriture dans le fichier (un formulaire PDF
+     écrit souvent toutes les valeurs saisies APRÈS les libellés). Les colonnes sont séparées par 3 espaces. */
+  function pgPdfLayout(tc){
+    var items=[];
+    tc.items.forEach(function(it){ if(!it.str || !it.str.trim()) return; var tr=it.transform||[10,0,0,10,0,0]; var fs=Math.max(Math.abs(tr[3]||0),Math.abs(tr[0]||0))||10; items.push({s:it.str, x:tr[4], y:tr[5], w:it.width||0, f:fs}); });
+    items.sort(function(a,b){ return (b.y-a.y) || (a.x-b.x); });
+    var lines=[], cur=null;
+    items.forEach(function(it){
+      if(cur && Math.abs(it.y-cur.y)<=Math.max(2, cur.f*0.45)){ cur.items.push(it); }
+      else { cur={y:it.y, f:it.f, items:[it]}; lines.push(cur); }
+    });
+    return lines.map(function(l){
+      l.items.sort(function(a,b){ return a.x-b.x; });
+      var out='', lastX=null;
+      l.items.forEach(function(it){
+        if(lastX!==null){ var gap=it.x-lastX; out+= gap>it.f*1.5 ? '   ' : (gap>it.f*0.12 ? ' ' : ''); }
+        out+=it.s; lastX=it.x+it.w;
+      });
+      return out.replace(/[ \t]{4,}/g,'   ');
+    }).join('\n');
+  }
+  window.achPdfTextAll=function(buf, maxPages){
+    return pgPdfLib().then(function(pdfjs){ return pdfjs.getDocument({data:buf.slice(0)}).promise; })
+      .then(function(doc){
+        var maxP=Math.min(doc.numPages, maxPages||20), texts=[];
+        function page(p){ if(p>maxP) return Promise.resolve(); return doc.getPage(p).then(function(pg){ return pg.getTextContent().then(function(tc){ texts.push(pgPdfLayout(tc)); }); }).then(function(){ return page(p+1); }); }
+        return page(1).then(function(){ return texts.join('\n\f\n'); });
+      }).catch(function(){ return ''; });
+  };
+  /* v11.61 : OCR d'un PDF SCANNÉ (aucun texte dans le fichier) — les pages sont rendues par pdf.js puis
+     lues par tesseract.js (français), tout dans le navigateur : rien ne quitte le poste. Chargé au premier
+     usage depuis le CDN ; le modèle français (~2 Mo) est gardé en cache par le navigateur. */
+  var ACH_OCR=window.ACH_OCR||{js:'https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js', workerPath:'', corePath:'', langPath:''};
+  function pgOcrLib(){
+    return new Promise(function(res,rej){
+      if(window.Tesseract){ res(window.Tesseract); return; }
+      var sc=document.createElement('script'); sc.src=ACH_OCR.js;
+      sc.onload=function(){ window.Tesseract? res(window.Tesseract) : rej(new Error('OCR indisponible')); };
+      sc.onerror=function(){ rej(new Error('OCR indisponible (hors ligne ?)')); };
+      document.head.appendChild(sc);
+    });
+  }
+  window.achPdfOcrAll=function(buf, onProgress, maxPages){
+    var doc=null, worker=null;
+    return pgPdfLib().then(function(pdfjs){ return pdfjs.getDocument({data:buf.slice(0)}).promise; })
+      .then(function(d){ doc=d; return pgOcrLib(); })
+      .then(function(Tess){
+        var opt={}; if(ACH_OCR.workerPath) opt.workerPath=ACH_OCR.workerPath; if(ACH_OCR.corePath) opt.corePath=ACH_OCR.corePath; if(ACH_OCR.langPath) opt.langPath=ACH_OCR.langPath;
+        opt.logger=function(m){ try{ if(onProgress && m && m.status==='recognizing text') onProgress(null, m.progress||0); }catch(e){} };
+        return Tess.createWorker('fra', 1, opt);
+      })
+      .then(function(w){
+        worker=w;
+        var maxP=Math.min(doc.numPages, maxPages||8), texts=[];
+        function page(p){
+          if(p>maxP) return Promise.resolve();
+          if(onProgress) onProgress(p, 0, maxP);
+          return doc.getPage(p).then(function(pg){
+            var vp=pg.getViewport({scale:1}); var k=Math.min(2.8, 1800/Math.max(vp.width,vp.height)); var vp2=pg.getViewport({scale:k});
+            var cv=document.createElement('canvas'); cv.width=Math.round(vp2.width); cv.height=Math.round(vp2.height);
+            return pg.render({canvasContext:cv.getContext('2d'),viewport:vp2}).promise.then(function(){ return worker.recognize(cv); })
+              .then(function(r){ texts.push((r&&r.data&&r.data.text)||''); });
+          }).then(function(){ return page(p+1); });
+        }
+        return page(1).then(function(){ try{ worker.terminate(); }catch(e){} return texts.join('\n\f\n'); });
+      })
+      .catch(function(e){ try{ if(worker) worker.terminate(); }catch(x){} throw e; });
+  };
   function pgPdfUpload(blob){
     return new Promise(function(res){
       try{
@@ -26194,34 +26280,179 @@ body.pi-grabbing *{user-select:none!important;}
     while((m=re.exec(t))){ var x=m[0].slice(1,-1).replace(/\\([()\\])/g,'$1').replace(/\\(\d{3})/g,function(_,o){return String.fromCharCode(parseInt(o,8));}); if(/[A-Za-z0-9]/.test(x)) out.push(x); }
     return out.join(' ');
   }
+  /* v11.60 : PRÉ-REMPLISSAGE DEPUIS LE PDF DU MANDAT — calibré sur le modèle clap.legal (réf. 231AI,
+     « Mandat exclusif de vente », celui de l'agence) avec des replis génériques pour d'autres modèles.
+     Le texte est lu avec pdf.js (toutes les pages) ; sans pdf.js (hors ligne) on retombe sur l'ancienne
+     lecture brute. Seuls les champs VIDES sont remplis — rien n'est écrasé. */
+  function mdPdfParse(txt, fname){
+    var out={}, got=[]; fname=''+(fname||'');
+    var T=txt.replace(/\u00a0/g,' ').replace(/\r/g,'');
+    var L=T.split('\n').map(function(l){ return l.replace(/\s+/g,' ').trim(); });
+    var flat=L.join('\n');
+    function norm(x){ return (''+x).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,''); }
+    var fl=norm(flat);
+    function after(label, n, re){   /* valeur sur la ou les lignes qui suivent un libellé */
+      var i=-1; for(var k=0;k<L.length;k++){ if(label.test(L[k])){ i=k; break; } }
+      if(i<0) return '';
+      for(var j=i+1;j<=i+(n||2)&&j<L.length;j++){ var v=L[j]; if(!v) continue; if(re && !re.test(v)) continue; return v; }
+      return '';
+    }
+    function values(label, n, max){   /* les lignes de VALEUR (pas les libellés « … : ») qui suivent un libellé */
+      var i=-1; for(var k=0;k<L.length;k++){ if(label.test(L[k])){ i=k; break; } }
+      var out=[]; if(i<0) return out;
+      for(var j=i+1;j<L.length && j<=i+(n||6) && out.length<(max||2);j++){ var v=L[j]; if(!v) continue; if(/:\s*$/.test(v)) continue; if(/^(Monsieur|Madame)\s+Nom/i.test(v)) break; out.push(v); }
+      return out;
+    }
+    function set(k,v,lbl){ if(v==null||v==='') return; out[k]=v; got.push(lbl||k); }
+    /* n° de mandat */
+    var m=flat.match(/MANDAT\s*N[°o0]?\s*[:.]?\s*(\d{1,6})\b/i) || flat.match(/mandat[^\dA-Za-z\n]{0,4}(?:de\s+(?:vente|location)\s+)?(?:exclusif\s+|simple\s+)?n?\s*[°o]?\s*[:.]?\s*(\d{1,6})\b/i);
+    if(!m){ m=fname.match(/mandat[\s_-]*n?[°o]?[\s_-]*(\d{1,6})\b/i); }   /* v11.61 : repli sur le nom du fichier */
+    if(m) set('num', m[1], 'n°');
+    /* vente / location, type */
+    var head=norm(flat.slice(0,2500));
+    if(/mandat[^\n]{0,30}(location|de gestion|a louer)/.test(head) || /\blouer\b/.test(head)) set('kind','location','location'); else set('kind','vente','vente');
+    if(/semi[- ]exclusi/.test(head)) set('typ','semi','semi-exclusif'); else if(/exclusi/.test(head)) set('typ','exclusif','exclusif'); else if(/mandat\s+simple|sans exclusivit/.test(head)) set('typ','simple','simple');
+    /* réf. produit (Apimo) */
+    m=flat.match(/Produit\s+([A-Z]{2,4}\d{2,6})\b/) || flat.match(/\b(MAT|LSE|LPI|LOC)(\d{2,6})\b/) || fname.match(/(?:^|[^A-Za-z])(MAT|LSE|LPI|LOC)(\d{2,6})(?!\d)/i);
+    if(m) set('ref', (m[2]? (m[1]+m[2]) : m[1]).toUpperCase(), 'réf. produit');
+    /* date de signature : « Fait le 22/10/2026 », sinon la date de signature électronique la plus récente, sinon date d'édition */
+    function isoOf(d,mo,y){ y=+y; if(y<100) y+=2000; return y+'-'+('0'+(+mo)).slice(-2)+'-'+('0'+(+d)).slice(-2); }
+    m=flat.match(/Fait\s*le\s*:?\s*(\d{1,2})[\/.-](\d{1,2})[\/.-](\d{2,4})/i);   /* v11.61 : « Faitle » (scan) accepté */
+    if(m) set('sign', isoOf(m[1],m[2],m[3]), 'signature');
+    else { var sig=[]; var re=/\bLe\s+(\d{1,2})-(\d{1,2})-(\d{4})\b/g, mm; while((mm=re.exec(flat))) sig.push(isoOf(mm[1],mm[2],mm[3])); sig.sort();
+      if(sig.length) set('sign', sig[0], 'signature'); else { m=flat.match(/Date\s+d['’]?[ée]dition\s*:?\s*(\d{1,2})\/(\d{1,2})\/(\d{4})/i); if(m) set('sign', isoOf(m[1],m[2],m[3]), 'date d’édition'); } }
+    /* durée → échéance */
+    var dur=12; m=flat.match(/DUR[ÉE]E\s+DE\s+(\d{1,2})\s*(?:\([^)]*\))?\s*MOIS/i); if(m) dur=+m[1];
+    m=flat.match(/AUTRE\s*DUR[ÉE]E\s*:?\s*(\d{1,2})\s*mois/i); if(m) dur=+m[1];
+    out.duree=dur;
+    /* mandant : personne morale ou physique */
+    var mandant='';
+    var denomV=values(/^D[ée]nomination sociale/i, 4, 1), denom=denomV[0]||'';
+    /* personne morale : la case cochée (✓ dans un PDF texte ; @ ® © M ■ x dans un scan) ou, à défaut, une dénomination sociale présente */
+    var CK='[✓☑@®©■◼▪MXx]';
+    var moraleCk=new RegExp(CK+'\\s*Personne morale','i').test(flat), physCk=new RegExp(CK+'\\s*Personne physique','i').test(flat);
+    if(denom && (moraleCk || !physCk)){
+      /* « JAYNIMMO SCI, société civile immobilière » (colonnes jointes) ou « JAYNIMMO » puis « SCI, … » (lignes séparées) */
+      var socV=values(/^Type de soci[ée]t[ée]/i, 4, 2).join(' ');
+      var typeSoc=(/(^|\s)(SCI|SAS|SARL|SASU|EURL|SA|SNC|SC)\b/i.exec(denom+' '+socV)||['',''])[2]||'';
+      var dn=denom.replace(/\s+(SCI|SAS|SARL|SASU|EURL|SA|SNC|SC)\b.*$/i,'').replace(/,.*$/,'').trim();
+      if(/^(SCI|SAS|SARL|SASU|EURL|SA|SNC|SC)\b/i.test(dn)) dn=dn.replace(/^(SCI|SAS|SARL|SASU|EURL|SA|SNC|SC)\b[ ,]*/i,'').trim();
+      if(dn) mandant=(typeSoc? typeSoc.toUpperCase()+' ' : '')+dn; }
+    var civ='', nom='', pre='';
+    for(var k=0;k<L.length;k++){
+      var mn=L[k].match(/^(Monsieur|Madame|Mme|M\.)?\s*Nom\s*:\s*(.*)$/i);
+      if(mn){ civ=mn[1]||''; var rest=(mn[2]||'').replace(/Pr[ée]nom\s*:\s*/i,'').trim();
+        var val=rest;
+        if(!val){ var acc=[]; for(var j=k+1;j<L.length && j<=k+6;j++){ var v=L[j]; if(!v) continue; if(/^Pr[ée]nom\s*:\s*$/i.test(v)) continue; if(/:\s*$/.test(v)) break; if(/^\d/.test(v)) break; acc.push(v); if(acc.join(' ').split(' ').length>=2) break; } val=acc.join(' '); }
+        val=val.replace(/Pr[ée]nom\s*:\s*/i,' ').trim();
+        if(val){ var toks=val.split(' ').filter(Boolean); var up=toks.filter(function(t){ return t===t.toUpperCase() && /[A-ZÀ-Ý]/.test(t); }); var lo=toks.filter(function(t){ return up.indexOf(t)<0; });
+          if(up.length){ nom=up.join(' '); pre=lo.join(' '); } else { nom=toks[0]||''; pre=toks.slice(1).join(' '); }   /* v11.61 : scan sans majuscules → Nom Prénom */ }
+        break; }
+    }
+    if(nom){ var civs=civ? (/^Mme|Madame/i.test(civ)?'Mme':'M.') : ''; var pers=(civs?civs+' ':'')+(pre?pre+' ':'')+nom; mandant=mandant? (mandant+' — '+pers) : pers; }
+    if(!mandant){ m=flat.match(/(?:le\s+)?mandant[^A-Za-zÀ-ÿ]{0,20}((?:M\.|Mme|Mlle|Monsieur|Madame|M et Mme|M\. et Mme)[^,;(\n]{2,60})/i); if(m) mandant=m[1].trim(); }
+    if(mandant) set('mdt', mandant, 'mandant');
+    /* coordonnées du mandant : après « LE MANDANT », en ignorant celles de l'agence */
+    var iM=fl.indexOf('le mandant'); var zone=iM>=0? flat.slice(iM) : flat;
+    var mails=[]; re=/[\w.+-]+@[\w.-]+\.[a-z]{2,}/gi; while((mm=re.exec(zone))){ var e=mm[0]; if(/achille-immobilier|clap\.legal/i.test(e)) continue; if(mails.indexOf(e)<0) mails.push(e); if(mails.length>=2) break; }
+    if(mails.length) set('mails', mails.join(', '), 'mail');
+    var tels=[]; re=/(?:\+33\s?[1-9](?:[\s.-]?\d{2}){4}|\b0[1-9](?:[\s.-]?\d{2}){4}\b)/g; while((mm=re.exec(zone))){ var t=mm[0].replace(/\s+/g,' ').trim(); if(/27011098|achille/.test(t.replace(/\s/g,''))) continue; if(tels.indexOf(t)<0) tels.push(t); if(tels.length>=2) break; }
+    if(!tels.length && mails.length){ /* v11.61 : numéro étranger ou libellé mal lu (scan) — sur la ligne du mail du mandant ou les deux suivantes */
+      for(var q2=0;q2<L.length;q2++){ if(L[q2].indexOf(mails[0])<0) continue; for(var q3=q2;q3<=q2+2&&q3<L.length;q3++){ var mt=L[q3].replace(mails[0],'').match(/(\+?\d[\d .-]{8,}\d)/); if(mt && !/27011098/.test(mt[1].replace(/\D/g,'')) && !/\d{1,2}\/\d{1,2}\/\d{2,4}/.test(mt[1])){ tels.push(mt[1].trim()); break; } } break; } }
+    if(tels.length) set('tels', tels.map(function(t){ return /^(\+33|0[1-9])/.test(t.replace(/\s/g,''))? t.replace(/^\+33\s?/,'0').replace(/[\s.-]/g,'').replace(/(\d{2})(?=\d)/g,'$1 ') : t; }).join(', '), 'téléphone');
+    /* bien : « Immeuble sis à » puis la ligne d'adresse « 1 Rue de l'Hôtel de Ville - 92200 Neuilly-sur-Seine - France » */
+    var adrLine=after(/^Immeuble\s+sis/i, 3, /\d/) || after(/^Adresse\s+du\s+bien/i, 3, /\d/) || '';
+    if(!adrLine){ m=flat.match(/(?:situ[ée]e?\s+(?:au|à|a)|sis(?:e)?\s+(?:au|à)?)\s*[:.]?\s*(\d{1,4}[^\n]{5,90})/i); if(m) adrLine=m[1]; }
+    if(adrLine){
+      /* v11.61 : « 10 rue des Dames Augustines 92200 Neuilly sur Seine » (sans tirets) */
+      var mcp=adrLine.match(/^(.*?\S)\s*[-,]?\s+(\d{5})\s+(.+?)(?:\s*-\s*France)?\s*$/);
+      if(mcp && !/\s-\s/.test(mcp[1])){ set('adresse', mcp[1].replace(/[-,]\s*$/,'').trim(), 'adresse'); set('ville', mcp[3].replace(/[\s.,;:]+$/,'').trim(), 'ville'); adrLine=''; }
+    }
+    if(adrLine){
+      var parts=adrLine.split(/\s+-\s+|,\s*/).map(function(x){ return x.trim(); }).filter(Boolean);
+      var adr=parts[0]||'', ville='';
+      for(var q=1;q<parts.length;q++){ var mv=parts[q].match(/^(\d{5})\s+(.+)$/); if(mv){ ville=mv[2]; break; } if(/^[A-Za-zÀ-ÿ' -]{3,}$/.test(parts[q]) && !/france/i.test(parts[q])) ville=parts[q]; }
+      if(!ville){ var mv2=adrLine.match(/\b(\d{5})\s+([A-Za-zÀ-ÿ' -]{3,}?)(?:\s+-\s+France)?$/); if(mv2) ville=mv2[2].trim(); }
+      set('adresse', adr, 'adresse'); if(ville) set('ville', ville, 'ville');
+    }
+    /* prix */
+    var prix=after(/au prix de\s*:?\s*$/i, 2, /^\d[\d\s.,]*(?:€|euros?)?$/i);
+    if(!prix){ m=flat.match(/au prix de\s*:?\s*(\d[\d\s.,]{3,14})/i); if(m) prix=m[1]; }
+    if(!prix){ m=flat.match(/prix[^0-9\n]{0,30}(\d[\d\s.,]{3,14})\s*(?:€|euros)/i); if(m) prix=m[1]; }
+    if(prix){ var pv=parseFloat(prix.replace(/[^\d,.]/g,'').replace(/\.(?=\d{3}\b)/g,'').replace(',','.')); if(pv>1000) set('prix', Math.round(pv), 'prix'); }
+    /* honoraires : montant TTC en euros ou pourcentage */
+    var ho=after(/honoraires\s+seront\s+de\s*\(?en\s+Euros\s+TTC\)?\s*:?\s*$/i, 2, /^\d/) || after(/^HONORAIRES$/i, 3, /^\d/);
+    if(ho){ var hv=ho.replace(/\s/g,''); if(/%/.test(hv)){ set('hono', hv.replace('%','').replace(',','.'), 'honoraires'); set('honou','pct'); } else { var hn=parseFloat(hv.replace(/[^\d,.]/g,'').replace(',','.')); if(hn>0){ set('hono', Math.round(hn), 'honoraires'); set('honou','eur'); } } }
+    else { m=flat.match(/honoraires[^\n]{0,80}?(\d{1,2}(?:[.,]\d{1,2})?)\s*%/i); if(m){ set('hono', m[1].replace(',','.'), 'honoraires'); set('honou','pct'); } }
+    /* à la charge de : la coche ✓ après « charge acquéreur » / « partagés » */
+    /* la coche se trouve entre « charge acquéreur”, cochez » et « partagés”, cochez » (acquéreur), ou après ce dernier (partagés) */
+    var iA=fl.indexOf('charge acquereur\u201d, cochez'); if(iA<0) iA=fl.search(/charge acquereur[^\n]{0,10}cochez/);
+    var iP=fl.indexOf('partages\u201d, cochez'); if(iP<0) iP=fl.search(/partages[^\n]{0,10}cochez/);
+    var iE=fl.indexOf('exigibles');
+    var zA=(iA>=0)? flat.slice(iA, iP>iA? iP : iA+300) : '', zP=(iP>=0)? flat.slice(iP, iE>iP? iE : iP+300) : '';
+    if(/[✓☑]/.test(zA)) set('honoc', (out.kind==='location'?'locataire':'acquereur'), 'charge acquéreur');
+    else if(/[✓☑]/.test(zP)) set('honoc', 'vendeur', 'honoraires partagés');
+    else set('honoc', (out.kind==='location'?'bailleur':'vendeur'));
+    /* diffusion */
+    if(/tous modes de diffusion/i.test(flat)) set('diffAll', true, 'diffusion');
+    else { /* v11.61 : « Grilles publicitaires (Seloger), Vitrine et site agence, réseaux sociaux » → cases de diffusion */
+      var dl=values(/^MOYENS DE DIFFUSION/i, 3, 2).join(' ').replace(/\s*Date d['’]?[ée]dition.*$/i,'').trim(); if(dl){ var d={vit:/vitrine/i.test(dl)?1:0, rs:/r[ée]seaux/i.test(dl)?1:0, sit:/site/i.test(dl)?1:0, por:/seloger|portail|sites d.annonces|leboncoin|grilles/i.test(dl)?1:0}; if(d.vit||d.rs||d.sit||d.por){ set('diff', d, 'diffusion'); out._diffTxt=dl; } } }
+    /* notes : Carrez, cadastre, notaire, capital */
+    var notes=[];
+    var desig=(values(/^D[ée]signation\s*$/i, 2, 1)[0]||'').replace(/(\d)\s?m\?/g,'$1 m²'); if(desig && !/^Le bien est vendu/i.test(desig) && desig.length<160) notes.push(desig);   /* v11.61 */
+    m=flat.match(/CARREZ[^\n]*?(\d{1,4}(?:[.,]\d{1,2})?)\s*$/im); if(m) notes.push('Carrez '+m[1].replace(',','.')+' m²');
+    if(out._diffTxt) notes.push('diffusion : '+out._diffTxt);
+    var cad=after(/^R[ée]f[ée]rences?\s+cadastrales?/i, 2, /\w{6,}/); if(cad) notes.push('cadastre '+cad);
+    var not=after(/propri[ée]taires?\s+par\s+acte\s+chez\s+Ma[îi]tre/i, 1, /^(Ma[îi]tre\s+)?[A-ZÀ-Ý][A-Za-zÀ-ÿ' -]{2,40}$/); if(not) notes.push('notaire '+not);
+    if(/[✓☑]\s*libre de toute occupation/i.test(flat)) notes.push('libre de toute occupation');
+    else if(/[✓☑]\s*lou[ée]\s+selon/i.test(flat)) notes.push('vendu loué');
+    if(/[✓☑]/.test(zP)) notes.push('honoraires partagés');
+    if(notes.length) set('notes', notes.join(' · '), 'notes');
+    out._got=got;
+    return out;
+  }
+  window.mdPdfParse=mdPdfParse;
   window.mdPdfFill=function(){
     var inp=document.getElementById('md-pj-file'), f=inp.files&&inp.files[0], st=document.getElementById('md-pj-st');
     if(!f){ if(window.toast) toast('Sélectionnez le PDF du mandat dans le champ fichier'); return; }
     st.textContent='Lecture du PDF…';
     var r=new FileReader();
-    r.onload=function(){ pdfText(r.result).then(function(t){
-      var txt=pdfStrings(t)+' '+t;
-      var got=[];
-      function fill(id,val,lbl){ var el=document.getElementById(id); if(el&&val&&!el.value){ el.value=val; got.push(lbl); } }
-      var m=txt.match(/mandat[^\dA-Za-z]{0,4}(?:de\s+(?:vente|location)\s+)?(?:exclusif\s+)?n?\s*[°o]?\s*[:.]?\s*(\d{1,6})/i);
-      if(m) fill('md-num', m[1], 'n°');
-      if(/mandat[^.]{0,40}location|louer/i.test(txt)){ var k=document.getElementById('md-kind'); if(k){ k.value='location'; got.push('location'); } }
-      var dts=[...txt.matchAll(/(\d{2})\/(\d{2})\/(\d{4})/g)].map(function(d){ return d[3]+'-'+d[2]+'-'+d[1]; });
-      if(dts.length) fill('md-sign', dts[0], 'signature');
-      m=txt.match(/(?:le\s+)?mandant[^A-Za-zÀ-ÿ]{0,20}((?:M\.|Mme|Mlle|Monsieur|Madame|M et Mme|M\. et Mme)[^,;(\n]{2,60})/i);
-      if(m) fill('md-mdt', m[1].trim(), 'mandant');
-      m=txt.match(/(?:0|\+33[\s.]?)[1-9](?:[\s.·-]?\d{2}){4}/);
-      if(m) fill('md-tels', m[0].trim(), 'téléphone');
-      m=txt.match(/[\w.\-]+@[\w.\-]+\.[a-z]{2,}/i);
-      if(m) fill('md-mails', m[0], 'mail');
-      m=txt.match(/(?:situé(?:e)?\s+(?:au|à|a)|sis(?:e)?\s+(?:au|à)?)\s*[:.]?\s*(\d{1,4}[^,;\n]{5,70})/i);
-      if(m) fill('md-adr', m[1].trim(), 'adresse');
-      m=txt.match(/prix[^0-9]{0,30}([\d\s .,]{4,15})\s*(?:€|euros)/i);
-      if(m) fill('md-prix', numFmtStr(m[1].replace(/[\s ]/g,'')), 'prix');
-      mdSignAuto();
-      st.textContent=got.length? ('✓ pré-rempli : '+got.join(', ')+' — vérifiez chaque champ.') : 'Aucune donnée lisible (scan ? modèle différent ?) — saisie manuelle, ou envoyez-moi le PDF pour calibrer l’extraction.';
-    }); };
+    r.onload=function(){
+      var buf=r.result;
+      var lecture=(window.achPdfTextAll? achPdfTextAll(buf, 20) : Promise.resolve(''));
+      var scan=false;
+      lecture.then(function(t){
+        if(t && t.replace(/\s/g,'').length>200) return t;
+        /* v11.61 : pas de texte → c'est un scan → reconnaissance optique (quelques dizaines de secondes) */
+        if(!window.achPdfOcrAll) return pdfText(buf).then(function(raw){ return pdfStrings(raw)+'\n'+raw; });
+        scan=true; st.textContent='Scan détecté — lecture optique du texte (environ 1 minute)…';
+        return achPdfOcrAll(buf, function(p, prog, n){ if(p) st.textContent='Scan détecté — lecture optique… page '+p+'/'+n; else if(prog) st.textContent=(st.textContent||'').replace(/\s\(\d+ %\)$/,'')+' ('+Math.round(prog*100)+' %)'; }, 8);
+      })
+      .then(function(txt){ var o=mdPdfParse(txt, f.name); o._scan=scan; window.mdPdfApply(o, st); })
+      .catch(function(e){ window.achErr&&achErr(e); st.textContent='Lecture impossible ('+((e&&e.message)||'')+') — saisie manuelle.'; });
+    };
     r.readAsArrayBuffer(f);
+  };
+  window.mdPdfApply=function(o, st){
+    var got=[];
+    function fill(id,val,lbl){ var el=document.getElementById(id); if(el&&val!=null&&val!==''&&!(''+el.value).trim()){ el.value=val; got.push(lbl); } }
+    function sel(id,val,lbl){ var el=document.getElementById(id); if(el&&val){ el.value=val; if(lbl) got.push(lbl); } }
+    fill('md-num', o.num, 'n°'); sel('md-kind', o.kind); sel('md-typ', o.typ, o.typ);
+    fill('md-ref', o.ref, 'réf. produit');
+    /* la date de signature : le formulaire propose « aujourd'hui » par défaut — la date du PDF prime (sauf saisie différente) */
+    var se=document.getElementById('md-sign'); if(se && o.sign && (!se.value || !document.getElementById('md-id').value || se.value===new Date().toISOString().slice(0,10))){ if(se.value!==o.sign){ se.value=o.sign; got.push('signature'); } }
+    if(o.sign && !document.getElementById('md-fin').value){ var d=new Date(o.sign+'T12:00:00'); d.setMonth(d.getMonth()+(o.duree||12)); document.getElementById('md-fin').value=d.toISOString().slice(0,10); got.push('échéance '+(o.duree||12)+' mois'); }
+    fill('md-mdt', o.mdt, 'mandant'); fill('md-tels', o.tels, 'téléphone'); fill('md-mails', o.mails, 'mail');
+    fill('md-adr', o.adresse, 'adresse'); fill('md-ville', o.ville, 'ville');
+    if(o.prix) fill('md-prix', numFmtStr(''+o.prix), 'prix');
+    if(o.hono){ var he=document.getElementById('md-hono'); if(he && !he.value){ he.value=''+o.hono; got.push('honoraires'); sel('md-honou', o.honou); } }
+    if(o.honoc) sel('md-honoc', o.honoc, (o.honoc==='acquereur'||o.honoc==='locataire')? 'charge '+o.honoc : '');
+    if(o.diffAll){ try{ DIFF={vit:1,rs:1,sit:1,por:1}; NONE=0; diffPaint(); got.push('diffusion'); }catch(e){} }
+    else if(o.diff){ try{ DIFF=o.diff; NONE=0; diffPaint(); got.push('diffusion'); }catch(e){} }
+    if(o.notes){ var ne=document.getElementById('md-notes'); if(ne){ if(!ne.value) ne.value=o.notes; else if(ne.value.indexOf(o.notes)<0) ne.value=ne.value+' · '+o.notes; got.push('notes'); } }
+    try{ mdSignAuto(); }catch(e){}
+    if(st) st.textContent=got.length? ((o._scan?'✓ scan lu — pré-rempli : ':'✓ pré-rempli : ')+got.join(', ')+(o._scan?' — lecture optique : vérifiez bien chaque champ (cases à cocher non lues).':' — vérifiez chaque champ.')) : 'Aucune donnée lisible (modèle différent ?) — saisie manuelle, ou envoyez-moi le PDF pour calibrer l’extraction.';
+    return got;
   };
 
   /* ---------- modale ---------- */
