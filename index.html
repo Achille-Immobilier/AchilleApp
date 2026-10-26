@@ -545,6 +545,44 @@ body.sb-collapsed .sidebar::-webkit-scrollbar{width:3px;}
 .comm-body{flex:1;overflow:auto;padding:14px 3px;}   /* v7.30 : marges latérales au MINIMUM */
 .comm-panel{display:none;}
 .comm-panel.active{display:block;}
+/* v11.62 : Publiés (Meta) */
+.rs-top{display:flex;flex-direction:column;gap:10px;margin-bottom:12px;}
+.rs-kpis{display:flex;gap:10px;flex-wrap:wrap;}
+.rs-kpi{background:#fff;border:1px solid var(--border);border-radius:10px;padding:8px 14px;min-width:130px;box-shadow:var(--shadow);}
+.rs-kpi .l{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--gris-2);}
+.rs-kpi .v{font-family:'Cormorant Garamond',serif;font-size:22px;color:var(--noir);line-height:1.1;}
+.rs-kpi .s{font-size:11.5px;color:var(--gris);}
+.rs-kpi.ig .v{color:#c13584;} .rs-kpi.fb .v{color:#1877f2;}
+.rs-ctrl{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
+.rs-chips{display:flex;gap:6px;}
+.rs-chip{border:1px solid var(--border);background:#fff;border-radius:999px;padding:5px 12px;font-size:12.5px;cursor:pointer;font-family:'Jost',sans-serif;color:var(--gris);}
+.rs-chip.on{background:var(--kaki);border-color:var(--kaki);color:#fff;}
+.rs-st{font-size:12px;color:var(--gris-2);}
+.rs-cfg{background:#fff;border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:12px;}
+.rs-cfg-t{font-family:'Cormorant Garamond',serif;font-size:19px;color:var(--noir);margin-bottom:4px;}
+.rs-cfg-p{font-size:12.5px;color:var(--gris);margin:0 0 10px;line-height:1.5;}
+.rs-cfg-p code{background:var(--beige);padding:1px 5px;border-radius:4px;font-size:11.5px;}
+.rs-cfg-st{font-size:12.5px;color:var(--gris);margin-top:8px;}
+.rs-page{display:flex;align-items:center;gap:10px;padding:8px 10px;border:1px solid var(--border);border-radius:8px;margin-top:6px;background:var(--beige);cursor:pointer;font-size:13px;}
+.rs-page.on{border-color:var(--kaki);background:#f3f1ea;}
+.rs-page b{color:var(--noir);} .rs-page .ig{color:#c13584;font-size:12px;}
+.rs-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;}
+.rs-card{background:#fff;border:1px solid var(--border);border-radius:12px;overflow:hidden;box-shadow:var(--shadow);display:flex;flex-direction:column;}
+.rs-img{height:150px;background:var(--beige) center/cover no-repeat;position:relative;}
+.rs-img .net{position:absolute;top:8px;left:8px;font-size:11px;border-radius:999px;padding:2px 8px;color:#fff;font-weight:600;}
+.rs-img .net.ig{background:#c13584;} .rs-img .net.fb{background:#1877f2;}
+.rs-img .typ{position:absolute;top:8px;right:8px;font-size:11px;background:rgba(0,0,0,.55);color:#fff;border-radius:999px;padding:2px 8px;}
+.rs-body{padding:10px 12px 12px;display:flex;flex-direction:column;gap:6px;flex:1;}
+.rs-date{font-size:11.5px;color:var(--gris-2);}
+.rs-txt{font-size:13px;line-height:1.45;color:var(--noir);white-space:pre-wrap;max-height:5.8em;overflow:hidden;cursor:pointer;}
+.rs-txt.open{max-height:none;}
+.rs-stats{display:flex;gap:10px;flex-wrap:wrap;font-size:12px;color:var(--gris);margin-top:auto;}
+.rs-stats b{color:var(--noir);font-weight:600;}
+.rs-acts{display:flex;gap:6px;margin-top:4px;}
+.rs-acts button,.rs-acts a{font-size:11.5px;border:1px solid var(--border);border-radius:6px;padding:4px 9px;background:#fff;color:var(--kaki);cursor:pointer;font-family:'Jost',sans-serif;text-decoration:none;}
+.rs-acts a:hover,.rs-acts button:hover{border-color:var(--terra);}
+.rs-empty{grid-column:1/-1;background:#fff;border:1px dashed var(--border);border-radius:12px;padding:28px;text-align:center;color:var(--gris);font-size:13.5px;line-height:1.6;}
+body:not(.rs-is-gerant) .rs-gerant{display:none;}
 .comm-hint{font-size:12px;color:var(--gris-2);font-family:'Jost',sans-serif;margin-bottom:10px;line-height:1.5;}
 .comm-hint b{color:var(--kaki);font-weight:600;}
 .comm-tablewrap{overflow-x:auto;border:1px solid var(--border);border-radius:10px;background:#fff;box-shadow:var(--shadow);}
@@ -1805,7 +1843,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     </div>
   </div>
   </div>
-  <div class="logo-ver app-ver">Achille App — v11.61</div>
+  <div class="logo-ver app-ver">Achille App — v11.62</div>
 </aside>
 <div id="mob-bk" onclick="mobNav(false)"></div>
 <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Réduire la barre latérale">‹</button>
@@ -3215,6 +3253,7 @@ table.es-t td.del button{border:none;background:none;color:var(--gris-2);cursor:
         <button class="comm-tab" id="comm-tab-mix" onclick="commSwitch('mix')">💡 Idées &amp; Posts à venir</button>
         <button class="comm-tab" id="comm-tab-posts" onclick="commSwitch('posts')">📱 Posts réseaux</button>
         <button class="comm-tab" id="comm-tab-cour" onclick="commSwitch('courriers')">✉️ Courriers distribués</button>
+        <button class="comm-tab" id="comm-tab-meta" onclick="commSwitch('meta')">📊 Publiés (Meta)</button><!-- v11.62 -->
       </div>
       <input id="comm-search" class="comm-search" type="text" placeholder="🔎 Rechercher (réf, adresse, ville…)" oninput="commSearch(this.value)" autocomplete="off">
       <div style="flex:1;"></div>
@@ -3242,6 +3281,32 @@ table.es-t td.del button{border:none;background:none;color:var(--gris-2);cursor:
             <tbody id="comm-cour-body"></tbody>
           </table>
         </div>
+      </div>
+      <!-- v11.62 : publications Instagram + Facebook importées depuis l'API Meta (jeton local, jamais synchronisé) -->
+      <div class="comm-panel" id="comm-panel-meta">
+        <div class="rs-top">
+          <div class="rs-kpis" id="rs-kpis"></div>
+          <div class="rs-ctrl">
+            <span class="rs-chips" id="rs-chips"></span>
+            <select class="cav-sel" id="rs-tri" onchange="rsRender()"><option value="date">Plus récents</option><option value="likes">Plus de likes</option><option value="reach">Plus de portée</option><option value="com">Plus de commentaires</option><option value="saved">Plus enregistrés</option></select>
+            <span style="flex:1;"></span>
+            <span class="rs-st" id="rs-st"></span>
+            <button class="pg-mini rs-gerant" onclick="rsImport()" id="rs-import-btn" title="Lire les publications Instagram et Facebook via l'API Meta">⟳ Importer les publications</button>
+            <button class="pg-mini rs-gerant" onclick="rsCfgToggle()" id="rs-cfg-btn">⚙ Connexion Meta</button>
+          </div>
+        </div>
+        <div class="rs-cfg" id="rs-cfg" style="display:none;">
+          <div class="rs-cfg-t">Connexion à l'API Meta</div>
+          <p class="rs-cfg-p">Le jeton est gardé <b>sur ce poste uniquement</b> (jamais synchronisé, jamais transmis à Claude). Il faut un jeton d'utilisateur système du Business Manager, avec les permissions <code>pages_read_engagement</code>, <code>pages_read_user_content</code>, <code>read_insights</code>, <code>instagram_basic</code> et <code>instagram_manage_insights</code>.</p>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+            <input class="form-input" type="password" id="rs-token" placeholder="Jeton d'accès Meta (EAA…)" style="flex:1;min-width:260px;" autocomplete="off">
+            <button class="pg-mini" onclick="rsVerify()">Vérifier et choisir la page</button>
+            <button class="pg-mini" onclick="rsCfgClear()" title="Effacer le jeton de ce poste">Effacer</button>
+          </div>
+          <div id="rs-pages" style="margin-top:8px;"></div>
+          <div id="rs-cfg-st" class="rs-cfg-st"></div>
+        </div>
+        <div class="rs-grid" id="rs-list"></div>
       </div>
       <!-- v11.23 : « Idées & Posts à venir » en UNE colonne (demande Laurent, 14/10) :
            ① Suggestions du jour (en haut, « tout est trié » le reste de la journée)
@@ -14764,7 +14829,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     startRealtime();
     var ov=document.getElementById('ach-login-overlay'); if(ov) ov.classList.add('ach-hidden');
     var ub=document.getElementById('ach-userbar'); if(ub) ub.style.display='none';
-    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v11.61';
+    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v11.62';
     flag('Synchronis\u00e9');
     // fin de l'init : on autorise la journalisation des actions
     setTimeout(function(){ installInterceptor._init=false; }, 1500);
@@ -15492,6 +15557,160 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
   function initPerms(){ try{ loadPerms(); window.achApplyPerms(); }catch(e){window.achErr&&achErr(e)} }
   if(document.readyState!=='loading') initPerms(); else document.addEventListener('DOMContentLoaded', initPerms);
   setTimeout(function(){ try{ loadPerms(); window.achApplyPerms(); }catch(e){window.achErr&&achErr(e)} }, 2500);
+})();
+</script>
+<script>
+/* ===== v11.62 : PUBLIÉS (META) — lecture des publications Instagram + Facebook via l'API Graph =====
+   Demande Laurent (26/10) : « te connecter à mes réseaux sociaux pour que tu t'inspires de mes anciens
+   posts ». Architecture : le JETON reste sur le poste (clé locale achille_meta_cfg, jamais synchronisée,
+   jamais transmise) ; l'appli importe les publications et leurs chiffres dans ach_rs_posts_v1 (partagé
+   avec toute l'équipe) et dépose un EXTRAIT TEXTE (rs_posts_extrait, cloud interne app_data) que Claude
+   lit pour apprendre le style et préparer les posts. Aucune image n'est copiée : seules les adresses
+   Meta des vignettes sont gardées (elles expirent, le lien « Ouvrir » reste valable). */
+(function(){
+  'use strict';
+  var CFG_K='achille_meta_cfg', POSTS_K='ach_rs_posts_v1', META_K='ach_rs_meta_v1', EXTRAIT_K='rs_posts_extrait';
+  var G='https://graph.facebook.com/v21.0/';
+  function esc(x){ return (''+(x==null?'':x)).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+  function lsArr(k){ try{ var a=JSON.parse(localStorage.getItem(k)||'[]'); return Array.isArray(a)?a:[]; }catch(e){ return []; } }
+  function cfg(){ try{ return JSON.parse(localStorage.getItem(CFG_K)||'{}')||{}; }catch(e){ return {}; } }
+  function cfgSave(o){ try{ localStorage.setItem(CFG_K, JSON.stringify(o||{})); }catch(e){} }
+  function meta(){ try{ return JSON.parse(localStorage.getItem(META_K)||'{}')||{}; }catch(e){ return {}; } }
+  function gerant(){ var k=(window.ACH_USER&&ACH_USER.key)||''; return k==='admin'||k==='gerant'; }
+  function st(t){ var e=document.getElementById('rs-st'); if(e) e.textContent=t||''; }
+  function cst(t){ var e=document.getElementById('rs-cfg-st'); if(e) e.innerHTML=t||''; }
+  function n(v){ v=+v||0; return v.toLocaleString('fr-FR'); }
+  function frD(iso){ try{ return new Date(iso).toLocaleDateString('fr-FR',{day:'numeric',month:'short',year:'numeric'}); }catch(e){ return ''; } }
+  /* ── API Graph ── */
+  function gq(path, params, token){
+    var qs=Object.keys(params||{}).map(function(k){ return encodeURIComponent(k)+'='+encodeURIComponent(params[k]); });
+    qs.push('access_token='+encodeURIComponent(token));
+    return fetch(G+path+'?'+qs.join('&')).then(function(r){ return r.json(); }).then(function(j){ if(j && j.error) throw new Error(j.error.message||'Erreur Meta'); return j; });
+  }
+  function pages(path, params, token, max){
+    var out=[]; max=max||4;
+    function one(url, k){
+      var p=url? fetch(url).then(function(r){ return r.json(); }).then(function(j){ if(j&&j.error) throw new Error(j.error.message); return j; }) : gq(path, params, token);
+      return p.then(function(j){ out=out.concat(j.data||[]); var nx=j.paging&&j.paging.next; if(nx && k<max) return one(nx, k+1); return out; });
+    }
+    return one(null, 1);
+  }
+  /* ── réglage ── */
+  window.rsCfgToggle=function(){ var b=document.getElementById('rs-cfg'); if(!b) return; var open=b.style.display==='none'; b.style.display=open?'':'none'; if(open){ var c=cfg(); document.getElementById('rs-token').value=c.token||''; rsPagesPaint(c.pagesList||[], c.pageId||''); cst(c.pageId? ('Page reli\u00e9e : <b>'+esc(c.pageName||c.pageId)+'</b>'+(c.igUser?' \u00b7 Instagram <b>@'+esc(c.igUser)+'</b>':' \u00b7 aucun compte Instagram rattach\u00e9')) : 'Aucune page reli\u00e9e pour l\u2019instant.'); } };
+  window.rsCfgClear=function(){ if(!confirm('Effacer le jeton Meta de ce poste ? (les publications d\u00e9j\u00e0 import\u00e9es restent)')) return; cfgSave({}); document.getElementById('rs-token').value=''; rsPagesPaint([], ''); cst('Jeton effac\u00e9.'); rsRender(); };
+  function rsPagesPaint(list, cur){
+    var b=document.getElementById('rs-pages'); if(!b) return;
+    b.innerHTML=(list||[]).map(function(p){ return '<div class="rs-page'+(p.id===cur?' on':'')+'" onclick="rsPickPage(\''+esc(p.id)+'\')"><span>\ud83d\udcd8</span><b>'+esc(p.name)+'</b>'+(p.ig?'<span class="ig">\u25cf Instagram @'+esc(p.ig.username||p.ig.id)+'</span>':'<span style="color:var(--gris-2);font-size:12px;">(pas de compte Instagram rattach\u00e9)</span>')+(p.id===cur?'<span style="margin-left:auto;color:var(--vert);">\u2713 reli\u00e9e</span>':'')+'</div>'; }).join('');
+  }
+  window.rsVerify=function(){
+    var tok=(document.getElementById('rs-token').value||'').trim(); if(!tok){ cst('Collez d\u2019abord le jeton.'); return; }
+    cst('V\u00e9rification\u2026');
+    gq('me',{fields:'id,name'},tok).then(function(me){
+      return gq('me/accounts',{fields:'id,name,access_token,instagram_business_account{id,username}',limit:50},tok).then(function(j){
+        var list=(j.data||[]).map(function(p){ return {id:p.id, name:p.name, token:p.access_token||'', ig:p.instagram_business_account||null}; });
+        var c=cfg(); c.token=tok; c.user=me.name||''; c.pagesList=list.map(function(p){ return {id:p.id,name:p.name,ig:p.ig}; }); c.pagesTok={}; list.forEach(function(p){ c.pagesTok[p.id]=p.token; });
+        if(!c.pageId && list.length===1) { c.pageId=list[0].id; c.pageName=list[0].name; c.pageToken=list[0].token; c.igId=list[0].ig?list[0].ig.id:''; c.igUser=list[0].ig?list[0].ig.username:''; }
+        cfgSave(c); rsPagesPaint(c.pagesList, c.pageId||'');
+        cst('\u2713 Jeton valide ('+esc(me.name||'')+') \u2014 '+list.length+' page'+(list.length>1?'s':'')+' accessible'+(list.length>1?'s':'')+(c.pageId?'. Page reli\u00e9e : <b>'+esc(c.pageName)+'</b>':'. Cliquez sur la page de l\u2019agence.'));
+      });
+    }).catch(function(e){ cst('\u274c '+esc(e.message||e)); });
+  };
+  window.rsPickPage=function(id){ var c=cfg(); var p=(c.pagesList||[]).filter(function(x){ return x.id===id; })[0]; if(!p) return; c.pageId=p.id; c.pageName=p.name; c.pageToken=(c.pagesTok||{})[p.id]||''; c.igId=p.ig?p.ig.id:''; c.igUser=p.ig?p.ig.username:''; cfgSave(c); rsPagesPaint(c.pagesList, c.pageId); cst('Page reli\u00e9e : <b>'+esc(p.name)+'</b>'+(p.ig?' \u00b7 Instagram <b>@'+esc(p.ig.username)+'</b>':'')+'. Vous pouvez importer.'); };
+  /* ── import ── */
+  var _busy=false;
+  function igType(m){ var t=(m.media_product_type||'').toUpperCase(), k=(m.media_type||'').toUpperCase(); if(t==='REELS') return 'reel'; if(t==='STORY') return 'story'; if(k==='VIDEO') return 'vidéo'; if(k==='CAROUSEL_ALBUM') return 'carrousel'; return 'image'; }
+  function insVal(ins, name){ try{ var it=(ins&&ins.data||[]).filter(function(x){ return x.name===name; })[0]; if(!it) return null; var v=it.values&&it.values[0]&&it.values[0].value; if(typeof v==='object'&&v) v=Object.keys(v).reduce(function(a,k){ return a+(+v[k]||0); },0); return +v||0; }catch(e){ return null; } }
+  window.rsImport=function(){
+    if(_busy) return; var c=cfg();
+    if(!c.token||!c.pageId){ if(window.toast) toast('Reliez d\u2019abord la page Meta (\u2699 Connexion Meta)'); rsCfgToggle(); return; }
+    _busy=true; st('Import\u2026'); var out=[], errs=[];
+    var p=Promise.resolve();
+    if(c.igId){
+      p=p.then(function(){ st('Instagram\u2026'); return pages(c.igId+'/media',{fields:'id,caption,media_type,media_product_type,permalink,timestamp,like_count,comments_count,thumbnail_url,media_url',limit:50},c.token,4); })
+       .then(function(list){
+         list.forEach(function(m){ out.push({id:'ig:'+m.id, net:'ig', d:m.timestamp||'', txt:(m.caption||''), type:igType(m), url:m.permalink||'', img:m.thumbnail_url||m.media_url||'', likes:+m.like_count||0, com:+m.comments_count||0, maj:new Date().toISOString()}); });
+         /* statistiques des 60 plus récentes (une requête par publication : on reste loin de la limite horaire) */
+         var rec=out.filter(function(x){ return x.net==='ig'; }).slice(0,60), k=0;
+         function next(){ if(k>=rec.length) return; var r=rec[k++]; st('Instagram \u2014 statistiques '+k+'/'+rec.length);
+           var met=(r.type==='reel'||r.type==='vidéo')? 'reach,saved,shares,views' : (r.type==='story'? 'reach' : 'reach,saved,shares');
+           return gq(r.id.slice(3)+'/insights',{metric:met},c.token).then(function(ins){ var v; v=insVal(ins,'reach'); if(v!=null) r.reach=v; v=insVal(ins,'saved'); if(v!=null) r.saved=v; v=insVal(ins,'shares'); if(v!=null) r.shares=v; v=insVal(ins,'views'); if(v!=null) r.views=v; }).catch(function(){}).then(next); }
+         return next();
+       }).catch(function(e){ errs.push('Instagram : '+(e.message||e)); });
+    }
+    p=p.then(function(){ st('Facebook\u2026'); var tk=c.pageToken||c.token;
+        return pages(c.pageId+'/posts',{fields:'id,message,created_time,permalink_url,full_picture,shares,reactions.summary(total_count).limit(0),comments.summary(total_count).limit(0),insights.metric(post_impressions_unique)',limit:50},tk,4)
+          .then(function(list){ list.forEach(function(m){ out.push({id:'fb:'+m.id, net:'fb', d:m.created_time||'', txt:(m.message||''), type:'post', url:m.permalink_url||'', img:m.full_picture||'', likes:+(m.reactions&&m.reactions.summary&&m.reactions.summary.total_count)||0, com:+(m.comments&&m.comments.summary&&m.comments.summary.total_count)||0, shares:+(m.shares&&m.shares.count)||0, reach:insVal(m.insights,'post_impressions_unique'), maj:new Date().toISOString()}); }); })
+          .catch(function(e){ errs.push('Facebook : '+(e.message||e)); }); })
+     .then(function(){
+        if(out.length){
+          var old=lsArr(POSTS_K), by={}; old.forEach(function(x){ if(x&&x.id) by[x.id]=x; });
+          out.forEach(function(x){ by[x.id]=Object.assign(by[x.id]||{}, x); });
+          var all=Object.keys(by).map(function(k){ return by[k]; }).sort(function(a,b){ return (''+b.d).localeCompare(''+a.d); }).slice(0,400);
+          localStorage.setItem(POSTS_K, JSON.stringify(all));
+          var m=meta(); m.last=new Date().toISOString(); m.by=(window.ACH_USER&&ACH_USER.initials)||''; m.ig=c.igUser||''; m.page=c.pageName||''; m.n=all.length; m.updated=m.last; localStorage.setItem(META_K, JSON.stringify(m));
+          rsExtrait(all);
+          try{ if(window.achLog) achLog('modification','Communication','import Meta : '+out.length+' publications'); }catch(e){}
+        }
+        _busy=false; rsRender();
+        st((out.length? out.length+' publication'+(out.length>1?'s':'')+' import\u00e9e'+(out.length>1?'s':'') : 'rien import\u00e9')+(errs.length? ' \u2014 '+errs.join(' / ') : ''));
+        if(window.toast) toast(out.length? '\ud83d\udcca '+out.length+' publications import\u00e9es' : ('\u274c '+(errs[0]||'Rien import\u00e9')));
+     });
+  };
+  /* l'extrait texte pour Claude (cloud interne) : textes, dates, chiffres — aucune image, aucun jeton */
+  function rsExtrait(all){
+    try{
+      if(!window.achKVSet) return;
+      var ex={maj:new Date().toISOString(), compte:{ig:cfg().igUser||'', page:cfg().pageName||''}, posts:(all||lsArr(POSTS_K)).slice(0,150).map(function(p){ return {net:p.net, d:(p.d||'').slice(0,10), type:p.type, txt:(p.txt||'').slice(0,600), likes:p.likes||0, com:p.com||0, reach:p.reach||null, saved:p.saved||null, shares:p.shares||null, views:p.views||null, url:p.url||''}; })};
+      achKVSet(EXTRAIT_K, ex).then(function(ok){ var m=meta(); m.extrait=ok? new Date().toISOString() : ''; localStorage.setItem(META_K, JSON.stringify(m)); if(ok) st((document.getElementById('rs-st')||{}).textContent+' \u00b7 extrait d\u00e9pos\u00e9 pour Claude'); });
+    }catch(e){window.achErr&&achErr(e)}
+  }
+  window.rsExtrait=rsExtrait;
+  /* ── rendu ── */
+  var _net='all', _q='';
+  window.rsNet=function(k){ _net=k; rsRender(); };
+  window.rsSetQuery=function(v){ _q=(v||'').toLowerCase(); };
+  window.rsIdee=function(id){
+    var p=lsArr(POSTS_K).filter(function(x){ return x.id===id; })[0]; if(!p) return;
+    var t=(p.txt||'').split('\n')[0].slice(0,90)||('Publication '+(p.net==='ig'?'Instagram':'Facebook')+' du '+frD(p.d));
+    try{ var a=lsArr('ach_comm_avenir_v1'); a.push({id:'cav-'+Date.now().toString(36)+Math.floor(Math.random()*1000), st:'idee', th:'astuce', titre:'\u21bb '+t, res:(p.net==='ig'?'Instagram':'Facebook'), texte:(p.txt||'').slice(0,1500), by:(window.ACH_USER&&ACH_USER.initials)||'', origin:'meta', src:p.url||'', created:new Date().toISOString(), updated:new Date().toISOString()}); localStorage.setItem('ach_comm_avenir_v1', JSON.stringify(a)); if(window.toast) toast('\ud83d\udca1 Repris dans \u00ab Id\u00e9es \u00bb \u2014 \u00e0 retravailler'); try{ if(window.cavRender) cavRender(); if(window.cavCount) cavCount(); }catch(e){} }catch(e){window.achErr&&achErr(e)}
+  };
+  window.rsTxt=function(el){ el.classList.toggle('open'); };
+  window.rsRender=function(){
+    var list=document.getElementById('rs-list'); if(!list) return;
+    try{ document.body.classList.toggle('rs-is-gerant', gerant()); }catch(e){}
+    var all=lsArr(POSTS_K), m=meta(), c=cfg();
+    var chips=document.getElementById('rs-chips'); if(chips) chips.innerHTML=[['all','Tous'],['ig','Instagram'],['fb','Facebook']].map(function(x){ var nn=x[0]==='all'?all.length:all.filter(function(p){ return p.net===x[0]; }).length; return '<button class="rs-chip'+(_net===x[0]?' on':'')+'" onclick="rsNet(\''+x[0]+'\')">'+x[1]+' <span style="opacity:.7">'+nn+'</span></button>'; }).join('');
+    /* KPI */
+    var kp=document.getElementById('rs-kpis');
+    if(kp){ function kpi(cls,l,v,s){ return '<div class="rs-kpi '+cls+'"><div class="l">'+l+'</div><div class="v">'+v+'</div><div class="s">'+s+'</div></div>'; }
+      var h='';
+      [['ig','Instagram'],['fb','Facebook']].forEach(function(x){ var L=all.filter(function(p){ return p.net===x[0]; }); if(!L.length) return;
+        var likes=L.reduce(function(a,p){ return a+(p.likes||0); },0), rl=L.filter(function(p){ return p.reach!=null; }), reach=rl.reduce(function(a,p){ return a+(p.reach||0); },0);
+        var best=L.slice().sort(function(a,b){ return ((b.reach||0)||(b.likes||0))-((a.reach||0)||(a.likes||0)); })[0];
+        h+=kpi(x[0], x[1]+(x[0]==='ig'&&m.ig?' @'+esc(m.ig):''), L.length+' <span style="font-size:13px;color:var(--gris)">publications</span>', 'moy. '+n(Math.round(likes/L.length))+' likes'+(rl.length?' \u00b7 port\u00e9e moy. '+n(Math.round(reach/rl.length)):'')); });
+      if(all.length){ var hr=all.filter(function(p){ return p.net==='ig'; }).reduce(function(acc,p){ var d=new Date(p.d); if(!isNaN(d)){ var k=d.getDay(); acc[k]=acc[k]||{n:0,s:0}; acc[k].n++; acc[k].s+=(p.reach||p.likes||0); } return acc; },{});
+        var bestDay=Object.keys(hr).map(function(k){ return {k:+k, m:hr[k].s/hr[k].n, n:hr[k].n}; }).filter(function(x){ return x.n>=2; }).sort(function(a,b){ return b.m-a.m; })[0];
+        if(bestDay) h+=kpi('', 'Meilleur jour (Instagram)', ['dimanche','lundi','mardi','mercredi','jeudi','vendredi','samedi'][bestDay.k], 'port\u00e9e moyenne '+n(Math.round(bestDay.m))); }
+      h+=kpi('', 'Dernier import', m.last? frD(m.last) : '\u2014', m.last? ('par '+esc(m.by||'')+(m.extrait?' \u00b7 extrait pour Claude \u2713':'')) : (c.pageId? 'page reli\u00e9e, pas encore import\u00e9' : 'aucune page reli\u00e9e'));
+      kp.innerHTML=h; }
+    /* liste */
+    var tri=(document.getElementById('rs-tri')||{}).value||'date';
+    var L=all.filter(function(p){ return (_net==='all'||p.net===_net) && (!_q || (p.txt||'').toLowerCase().indexOf(_q)>=0); });
+    L.sort(function(a,b){ if(tri==='date') return (''+b.d).localeCompare(''+a.d); return ((b[tri]||0)-(a[tri]||0)) || (''+b.d).localeCompare(''+a.d); });
+    if(!L.length){ list.innerHTML='<div class="rs-empty">'+(all.length? 'Aucune publication ne correspond.' : (gerant()? 'Aucune publication import\u00e9e pour l\u2019instant.<br>\u2699 Connexion Meta : collez le jeton, choisissez la page de l\u2019agence, puis \u27f3 Importer les publications.' : 'Aucune publication import\u00e9e pour l\u2019instant \u2014 l\u2019import se fait depuis un compte g\u00e9rant.'))+'</div>'; return; }
+    list.innerHTML=L.slice(0,120).map(function(p){
+      var stats=[]; stats.push('\u2764\ufe0f <b>'+n(p.likes)+'</b>'); stats.push('\ud83d\udcac <b>'+n(p.com)+'</b>'); if(p.reach!=null) stats.push('\ud83d\udc41 <b>'+n(p.reach)+'</b>'); if(p.saved!=null) stats.push('\ud83d\udd16 <b>'+n(p.saved)+'</b>'); if(p.shares!=null&&p.shares) stats.push('\u2197 <b>'+n(p.shares)+'</b>'); if(p.views!=null&&p.views) stats.push('\u25b6 <b>'+n(p.views)+'</b>');
+      return '<div class="rs-card"><div class="rs-img"'+(p.img?' style="background-image:url(\''+esc(p.img)+'\')"':'')+'><span class="net '+p.net+'">'+(p.net==='ig'?'Instagram':'Facebook')+'</span><span class="typ">'+esc(p.type||'')+'</span></div>'
+        +'<div class="rs-body"><div class="rs-date">'+frD(p.d)+'</div><div class="rs-txt" onclick="rsTxt(this)" title="Cliquer pour d\u00e9plier">'+esc(p.txt||'(sans texte)')+'</div>'
+        +'<div class="rs-stats">'+stats.join('')+'</div>'
+        +'<div class="rs-acts">'+(p.url?'<a href="'+esc(p.url)+'" target="_blank" rel="noopener">Ouvrir \u2197</a>':'')+'<button type="button" onclick="rsIdee(\''+esc(p.id)+'\')">\ud83d\udca1 Reprendre comme id\u00e9e</button></div></div></div>';
+    }).join('')+(L.length>120?'<div class="rs-empty">+ '+(L.length-120)+' autres \u2014 affinez la recherche</div>':'');
+  };
+  /* « ＋ Ajouter une ligne » n'a pas de sens ici */
+  if(window.commAdd){ var _ra=window.commAdd; window.commAdd=function(){ if(window._commTabCur==='meta'){ if(window.toast) toast('Les publications viennent de Meta — ⟳ Importer les publications'); return; } return _ra.apply(this, arguments); }; }
+  /* recherche de l'en-tête Communication */
+  if(window.commSearch){ var _rq=window.commSearch; window.commSearch=function(v){ _rq(v); try{ rsSetQuery(v); if(window._commTabCur==='meta') rsRender(); }catch(e){} }; }
+  window.addEventListener('storage', function(e){ if(e && (e.key===POSTS_K||e.key===META_K)){ try{ if(window._commTabCur==='meta') rsRender(); }catch(x){} } });
 })();
 </script>
 <script>
@@ -25563,6 +25782,18 @@ body.pi-grabbing *{user-select:none!important;}
     try{ if(window.cavSetQuery) cavSetQuery(v); if(window.idjSetQuery) idjSetQuery(v); }catch(e){window.achErr&&achErr(e)}
     if(window._commTabCur==='mix'){ try{ cavRender(); idjRender(); }catch(e){window.achErr&&achErr(e)} } }; }
   if(window.commAdd){ var _ca=window.commAdd; window.commAdd=function(){ if(window._commTabCur==='mix'){ var e=document.getElementById('cav-titre'); if(e){ e.focus(); if(window.toast) toast('Écrivez le titre puis ＋ Ajouter — ou retenez une idée du matin ✅'); } return; } _ca(); }; }
+  /* v11.62 : onglet « Publiés (Meta) » */
+  if(window.commSwitch){ var _cm=window.commSwitch; window.commSwitch=function(tab){
+    _cm(tab==='meta'?'posts':tab);
+    var tmeta=document.getElementById('comm-tab-meta'), pmeta=document.getElementById('comm-panel-meta');
+    if(tab==='meta'){
+      window._commTabCur='meta';
+      ['comm-tab-posts','comm-tab-cour','comm-tab-mix'].forEach(function(i){ var e=document.getElementById(i); if(e) e.classList.remove('active'); });
+      ['comm-panel-posts','comm-panel-courriers','comm-panel-mix'].forEach(function(i){ var e=document.getElementById(i); if(e) e.classList.remove('active'); });
+      if(tmeta) tmeta.classList.add('active'); if(pmeta) pmeta.classList.add('active');
+      try{ if(window.rsRender) rsRender(); }catch(e){window.achErr&&achErr(e)}
+    } else { if(tmeta) tmeta.classList.remove('active'); if(pmeta) pmeta.classList.remove('active'); }
+  }; }
   /* v11.19 : à chaque ouverture de la page Communication, on arrive sur l'onglet courant
      (« Idées & Posts à venir » par défaut) — l'init v7.31 ne connaissant que posts/courriers,
      il écrasait notre onglet. */
