@@ -1843,7 +1843,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     </div>
   </div>
   </div>
-  <div class="logo-ver app-ver">Achille App — v11.62</div>
+  <div class="logo-ver app-ver">Achille App — v11.63</div>
 </aside>
 <div id="mob-bk" onclick="mobNav(false)"></div>
 <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Réduire la barre latérale">‹</button>
@@ -14829,7 +14829,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     startRealtime();
     var ov=document.getElementById('ach-login-overlay'); if(ov) ov.classList.add('ach-hidden');
     var ub=document.getElementById('ach-userbar'); if(ub) ub.style.display='none';
-    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v11.62';
+    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v11.63';
     flag('Synchronis\u00e9');
     // fin de l'init : on autorise la journalisation des actions
     setTimeout(function(){ installInterceptor._init=false; }, 1500);
@@ -16366,7 +16366,7 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
         return '<option value="'+o[0]+'"'+(window.dashPeriod===o[0]?' selected':'')+'>'+o[1]+'</option>'; }).join('')
       +'</select>';
     var activity='<div class="dash-activity"><div class="dash-activity-hd"><div class="dash-activity-t">'+(priv?'Activit\u00e9 de l\u2019agence':'Mon activit\u00e9')+'</div>'+selHtml+'</div><div class="dash-act-grid">'+lines+'</div></div>';
-    var topRow='<div class="dash-top'+(priv?'':' dash-top-collab')+'">'+kpis+activity+'</div>';
+    var topRow='<div class="dash-top'+(priv?'':' dash-top-collab')+'" style="--kn:'+Math.max(1,(kpis.match(/class="dash-kpi/g)||[]).length)+'">'+kpis+activity+'</div>';   /* v11.63 : la ligne s'adapte au nombre d'encadrés (pleine largeur) */
 
     /* v11.39 : le détail des honoraires attendus — une ligne par vente, date d'acte, HT et TTC */
     /* v11.41 : avec UNE seule vente en cours, le pavé répétait mot pour mot l'encadré du dessus
@@ -20515,8 +20515,8 @@ input:focus,textarea:focus,select:focus{border-color:var(--terra-l);}
 /* Cases à compléter : claires et bien délimitées sur les cartes blanches */
 .v2-input{background:var(--blanc);border-color:var(--beige-3);}
 /* v4.04 — Tableau de bord : encarts réduits, périodes, grille d'affaires */
-.dash-top{grid-template-columns:repeat(4,minmax(0,1fr)) 2fr;gap:10px;margin-bottom:16px;}
-.dash-top-collab{grid-template-columns:repeat(2,minmax(0,1fr)) 2fr;}
+.dash-top{grid-template-columns:repeat(var(--kn,4),minmax(0,1fr)) 2fr;gap:10px;margin-bottom:16px;}   /* v11.63 : nombre d'encadrés variable */
+.dash-top-collab{grid-template-columns:repeat(var(--kn,2),minmax(0,1fr)) 2fr;}
 .dash-kpi{padding:8px 12px;border-radius:8px;}
 .dash-kpi .card-sub{margin-bottom:3px;font-size:8.5px;}
 .dash-kpi .kpi-val{font-size:22px;}
