@@ -27400,6 +27400,7 @@ body:not(.rs-is-gerant) #comm-tab-pret{display:none;}
 .pp-maj{font-size:11px;color:var(--gris-2);white-space:nowrap;}
 .pp-btn{border:1px solid var(--border);background:#fff;color:var(--gris);border-radius:8px;font-size:11.5px;padding:5px 12px;cursor:pointer;font-family:'Jost',sans-serif;white-space:nowrap;}
 .pp-btn:hover{border-color:var(--terra);color:var(--terra);}
+a.pp-btn{text-decoration:none;display:inline-block;}
 .pp-empty{padding:26px 16px;text-align:center;color:var(--gris-2);font-size:13px;font-style:italic;background:#fff;border:1px dashed var(--border);border-radius:12px;}
 .pp-day{font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;color:#8f8878;font-weight:600;margin:16px 2px 8px;}
 .pp-card{background:#fff;border:1px solid var(--border);border-radius:14px;padding:14px 16px 12px;margin-bottom:12px;box-shadow:0 2px 10px rgba(0,0,0,.03);}
@@ -27510,7 +27511,9 @@ body:not(.rs-is-gerant) #comm-tab-pret{display:none;}
         var thumbs='';
         if(vis.length){
           thumbs='<div class="pp-thumbs">'+vis.map(function(v,i){ return '<div class="pp-thumb'+(vis.length===1?' one':'')+'" onclick="ppZoom(\''+esc(v.url)+'\')"><img src="'+esc(v.url)+'" alt="" loading="lazy">'+(vis.length>1?'<span class="n">'+(i+1)+'</span>':'')+'</div>'; }).join('')+'</div>'
-            +'<div class="pp-vis-acts"><button class="pp-btn" onclick="ppDl(\''+eid+'\',this)">⬇ Télécharger '+(vis.length>1?'les '+vis.length+' images':'le visuel')+'</button></div>';
+            +'<div class="pp-vis-acts"><button class="pp-btn" onclick="ppDl(\''+eid+'\',this)">⬇ Télécharger '+(vis.length>1?'les '+vis.length+' images':'le visuel')+'</button>'
+            +(p.source_url?'<a class="pp-btn" href="'+esc(p.source_url)+'" download title="Fichier PowerPoint modifiable : textes, images, couleurs — s\u2019ouvre dans PowerPoint, Keynote, Google Slides ou s\u2019importe dans Canva">✏️ Modifier (PowerPoint / Canva)</a>':'')
+            +'</div>';
         } else if(p.format==='video'){ thumbs='<div class="pp-novis">🎬 Vidéo à tourner : le script est dans le texte ci-contre.</div>'; }
         else { thumbs='<div class="pp-novis">Post texte, sans visuel.</div>'; }
         h+='<div class="pp-card" id="pp-'+esc(id)+'">'
