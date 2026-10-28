@@ -27534,7 +27534,13 @@ body:not(.rs-is-gerant) #comm-tab-pret{display:none;}
   if(window.commSearch){ var _pq=window.commSearch; window.commSearch=function(v){ _pq(v); try{ ppSetQuery(v); if(window._commTabCur==='pret') ppRender(); }catch(e){} }; }
   if(window.commAdd){ var _pa=window.commAdd; window.commAdd=function(){ if(window._commTabCur==='pret'){ if(window.toast) toast('Les posts prêts arrivent chaque matin avec la veille de Claude'); return; } return _pa.apply(this, arguments); }; }
   window.addEventListener('storage', function(e){ if(e && (e.key===PRET_K||e.key===CAV_K||e.key===ECART_K)){ try{ if(window._commTabCur==='pret') ppRender(); }catch(x){} } });
-  try{ document.body.classList.toggle('rs-is-gerant', gerant()); }catch(e){}
+  /* l'onglet n'est visible que pour les gérants : la classe est (re)posée à chaque changement de compte
+     (setRole), à chaque ouverture de la page Communication (commInit) et au chargement — sinon, après un
+     rechargement du navigateur, l'onglet restait masqué tant qu'on ne cliquait pas un autre onglet. */
+  function majClasse(){ try{ document.body.classList.toggle('rs-is-gerant', gerant()); }catch(e){} }
+  if(window.setRole){ var _psr=window.setRole; window.setRole=function(r,btn){ var x=_psr.apply(this,arguments); majClasse(); try{ if(window._commTabCur==='pret') ppRender(); }catch(e){} return x; }; }
+  if(window.commInit){ var _pci=window.commInit; window.commInit=function(){ majClasse(); var x=_pci.apply(this,arguments); majClasse(); return x; }; }
+  majClasse(); setTimeout(majClasse,1500); setTimeout(majClasse,4000);
 })();
 </script>
 </body>
