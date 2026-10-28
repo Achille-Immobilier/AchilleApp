@@ -1843,7 +1843,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     </div>
   </div>
   </div>
-  <div class="logo-ver app-ver">Achille App — v11.64</div>
+  <div class="logo-ver app-ver">Achille App — v11.65</div>
 </aside>
 <div id="mob-bk" onclick="mobNav(false)"></div>
 <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Réduire la barre latérale">‹</button>
@@ -3254,6 +3254,7 @@ table.es-t td.del button{border:none;background:none;color:var(--gris-2);cursor:
         <button class="comm-tab" id="comm-tab-posts" onclick="commSwitch('posts')">📱 Posts réseaux</button>
         <button class="comm-tab" id="comm-tab-cour" onclick="commSwitch('courriers')">✉️ Courriers distribués</button>
         <button class="comm-tab" id="comm-tab-meta" onclick="commSwitch('meta')">📊 Publiés (Meta)</button><!-- v11.62 -->
+        <button class="comm-tab" id="comm-tab-pret" onclick="commSwitch('pret')">🚀 Posts prêts</button><!-- v11.65 (bêta, gérants) -->
       </div>
       <input id="comm-search" class="comm-search" type="text" placeholder="🔎 Rechercher (réf, adresse, ville…)" oninput="commSearch(this.value)" autocomplete="off">
       <div style="flex:1;"></div>
@@ -3311,6 +3312,14 @@ table.es-t td.del button{border:none;background:none;color:var(--gris-2);cursor:
       <!-- v11.23 : « Idées & Posts à venir » en UNE colonne (demande Laurent, 14/10) :
            ① Suggestions du jour (en haut, « tout est trié » le reste de la journée)
            ② Validés — à mettre en place  ③ Idées en attente  ④ Archives (écartées) -->
+      <!-- v11.65 : posts finis déposés par la veille (texte définitif + visuels + horaire) — gérants -->
+      <div class="comm-panel" id="comm-panel-pret">
+        <div class="pp-head">
+          <span class="pp-hint">Chaque matin, Claude dépose ici des posts prêts à publier : texte définitif, visuel(s), horaire conseillé. Retouchez le texte si besoin, copiez, téléchargez le visuel, publiez sur le réseau — puis cliquez ✅ Publié.</span>
+          <span style="display:flex;gap:8px;align-items:center;"><span class="pp-maj" id="pp-maj"></span><button class="pp-btn" onclick="ppLoad()" title="Relire les posts déposés dans le cloud">⟳ Actualiser</button></span>
+        </div>
+        <div id="pp-list"></div>
+      </div>
       <div class="comm-panel" id="comm-panel-mix">
         <div class="mix-stack">
           <div class="mix-sec">
@@ -14829,7 +14838,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     startRealtime();
     var ov=document.getElementById('ach-login-overlay'); if(ov) ov.classList.add('ach-hidden');
     var ub=document.getElementById('ach-userbar'); if(ub) ub.style.display='none';
-    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v11.64';
+    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v11.65';
     flag('Synchronis\u00e9');
     // fin de l'init : on autorise la journalisation des actions
     setTimeout(function(){ installInterceptor._init=false; }, 1500);
@@ -27350,6 +27359,182 @@ body.pi-grabbing *{user-select:none!important;}
     if((e.ctrlKey||e.metaKey) && (e.key==='k'||e.key==='K')){ e.preventDefault(); gsShow(); }
     else if(e.key==='Escape' && document.getElementById('gs-ov').classList.contains('open')) gsHide();
   });
+})();
+</script>
+<!-- ══════════ v11.65 : COMMUNICATION — onglet « 🚀 Posts prêts » (bêta, gérants uniquement) ══════════
+     Posts FINIS déposés chaque matin par la veille Claude dans idees_posts_store (champ pret:true) :
+     texte définitif pour UN réseau, visuels hébergés (Supabase Storage, bucket posts-visuels), horaire conseillé.
+     Isolé : son propre panneau + ce bloc. Les décisions passent par idjAct (circuit existant → tri relu le matin).
+     Les retouches de texte et la date prévue vivent dans ach_pret_v1 (clé synchronisée, partagée Marine/Laurent). -->
+<style>
+body:not(.rs-is-gerant) #comm-tab-pret{display:none;}
+#comm-panel-pret{padding:4px 2px 30px;}
+.pp-head{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin:2px 0 12px;}
+.pp-hint{font-size:11.5px;color:var(--gris-2);font-style:italic;}
+.pp-maj{font-size:11px;color:var(--gris-2);white-space:nowrap;}
+.pp-btn{border:1px solid var(--border);background:#fff;color:var(--gris);border-radius:8px;font-size:11.5px;padding:5px 12px;cursor:pointer;font-family:'Jost',sans-serif;white-space:nowrap;}
+.pp-btn:hover{border-color:var(--terra);color:var(--terra);}
+.pp-empty{padding:26px 16px;text-align:center;color:var(--gris-2);font-size:13px;font-style:italic;background:#fff;border:1px dashed var(--border);border-radius:12px;}
+.pp-day{font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;color:#8f8878;font-weight:600;margin:16px 2px 8px;}
+.pp-card{background:#fff;border:1px solid var(--border);border-radius:14px;padding:14px 16px 12px;margin-bottom:12px;box-shadow:0 2px 10px rgba(0,0,0,.03);}
+.pp-top{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px;}
+.pp-net{font-size:10px;font-weight:700;letter-spacing:.06em;padding:3px 9px;border-radius:12px;color:#fff;white-space:nowrap;}
+.pp-fmt{font-size:10px;font-weight:600;padding:2px 8px;border-radius:12px;border:1px solid var(--beige-3);color:var(--gris);background:#fff;white-space:nowrap;}
+.pp-tt{font-family:'Cormorant Garamond',serif;font-size:19px;color:var(--noir);flex:1;min-width:200px;line-height:1.2;}
+.pp-when{font-size:11px;color:#8a5a1e;background:rgba(176,136,59,.12);border:1px solid rgba(176,136,59,.35);padding:3px 9px;border-radius:12px;white-space:nowrap;}
+.pp-body{display:grid;grid-template-columns:minmax(0,300px) minmax(0,1fr);gap:16px;}
+.pp-vis{display:flex;flex-direction:column;gap:8px;}
+.pp-thumbs{display:grid;grid-template-columns:repeat(auto-fill,minmax(88px,1fr));gap:6px;}
+.pp-thumb{position:relative;border:1px solid var(--border);border-radius:8px;overflow:hidden;background:#f6f1e9;aspect-ratio:4/5;cursor:zoom-in;}
+.pp-thumb img{width:100%;height:100%;object-fit:cover;display:block;}
+.pp-thumb .n{position:absolute;left:5px;top:4px;font-size:10px;font-weight:700;background:rgba(26,26,24,.65);color:#fff;border-radius:9px;padding:1px 6px;}
+.pp-thumb.one{aspect-ratio:auto;max-width:300px;}
+.pp-vis-acts{display:flex;gap:6px;flex-wrap:wrap;}
+.pp-novis{font-size:11.5px;color:var(--gris-2);font-style:italic;padding:10px;border:1px dashed var(--border);border-radius:8px;}
+.pp-txt{width:100%;min-height:150px;border:1px solid var(--border);border-radius:9px;padding:10px 12px;font-family:'Jost',sans-serif;font-size:13px;line-height:1.55;color:var(--noir);resize:vertical;background:#fffdf9;}
+.pp-txt:focus{outline:none;border-color:var(--terra);}
+.pp-txt-acts{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-top:7px;}
+.pp-mod{font-size:10.5px;color:#8a5a1e;font-style:italic;}
+.pp-foot{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:12px;padding-top:10px;border-top:1px solid #f3eee6;}
+.pp-prog{display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--gris);}
+.pp-prog input{border:1px solid var(--border);border-radius:7px;padding:4px 7px;font-family:'Jost',sans-serif;font-size:12px;color:var(--noir);}
+.pp-act{border:1px solid var(--border);background:#fff;border-radius:8px;font-size:12px;padding:6px 11px;cursor:pointer;font-family:'Jost',sans-serif;white-space:nowrap;}
+.pp-act.ok{border-color:rgba(46,110,80,.45);color:var(--vert);font-weight:600;}
+.pp-act.ok:hover{background:rgba(46,110,80,.08);}
+.pp-act.lat:hover{border-color:#b0883b;color:#8a5a1e;}
+.pp-act.off:hover{border-color:var(--rouge);color:var(--rouge);}
+.pp-act.soon{opacity:.45;cursor:not-allowed;}
+.pp-open{font-size:12px;color:var(--terra);text-decoration:none;border:1px solid rgba(180,115,96,.4);border-radius:8px;padding:6px 11px;white-space:nowrap;}
+.pp-open:hover{background:rgba(180,115,96,.08);}
+.pp-src{font-size:11px;color:var(--gris-2);margin-top:8px;}
+.pp-src a{color:var(--terra);text-decoration:none;}
+#pp-zoom{position:fixed;inset:0;z-index:99999;background:rgba(26,26,24,.82);display:flex;align-items:center;justify-content:center;padding:18px;cursor:zoom-out;}
+#pp-zoom img{max-width:min(92vw,620px);max-height:90vh;border-radius:8px;box-shadow:0 20px 60px rgba(0,0,0,.5);}
+@media (max-width:880px){ .pp-body{grid-template-columns:1fr;} .pp-thumbs{grid-template-columns:repeat(4,1fr);} .pp-thumb.one{max-width:100%;} }
+</style>
+<script>
+(function(){
+  'use strict';
+  var STORE_KEY='idees_posts_store', PRET_K='ach_pret_v1', CAV_K='ach_comm_avenir_v1', ECART_K='ach_idj_ecart_v1';
+  var NETS={ linkedin:['LinkedIn','#0a66c2','https://www.linkedin.com/feed/'], instagram:['Instagram','#b5307a','https://www.instagram.com/'],
+             facebook:['Facebook','#1877f2','https://www.facebook.com/'], tiktok:['TikTok','#1a1a18','https://www.tiktok.com/upload'] };
+  var FORMATS={classique:'📝 Post',carrousel:'🎞 Carrousel',video:'🎬 Vidéo',meme:'😄 Meme',stories:'📱 Stories'};
+  var _data=null, _q='', _seq=0, _saveT=null;
+  function esc(t){ return (''+(t==null?'':t)).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+  function gerant(){ var k=(window.ACH_USER&&ACH_USER.key)||''; return k==='admin'||k==='gerant'; }
+  function lsArr(k){ try{ var a=JSON.parse(localStorage.getItem(k)||'[]'); return Array.isArray(a)?a:[]; }catch(e){ return []; } }
+  function lsObj(k){ try{ var o=JSON.parse(localStorage.getItem(k)||'{}'); return (o&&typeof o==='object'&&!Array.isArray(o))?o:{}; }catch(e){ return {}; } }
+  function props(){ return (_data&&Array.isArray(_data.propositions))?_data.propositions:[]; }
+  function byId(id){ return props().filter(function(p){ return (''+p.id)===id; })[0]; }
+  function cavFor(id){ return lsArr(CAV_K).filter(function(o){ return o&&o.src===id; })[0]||null; }
+  function ecartFor(id){ return lsArr(ECART_K).filter(function(o){ return o&&(''+o.id)===id; })[0]||null; }
+  function st(id){ return lsObj(PRET_K)[id]||{}; }
+  function setSt(id,patch){ var o=lsObj(PRET_K); o[id]=Object.assign({},o[id]||{},patch,{maj:new Date().toISOString(),par:(window.ACH_USER&&ACH_USER.initials)||''}); try{ localStorage.setItem(PRET_K, JSON.stringify(o)); }catch(e){window.achErr&&achErr(e)} }
+  function net(p){ var r=p.reseau||(Array.isArray(p.reseaux_conseilles)?p.reseaux_conseilles[0]:'')||'linkedin'; return NETS[r]?r:'linkedin'; }
+  function texteOrig(p){ return ''+(p.texte||p[net(p)]||''); }
+  function visuels(p){ return Array.isArray(p.visuels)?p.visuels.filter(function(v){ return v&&v.url; }):[]; }
+  function fdt(iso){ if(!iso) return ''; var d=new Date(iso); if(isNaN(d)) return ''+iso;
+    var t=d.toLocaleDateString('fr-FR',{weekday:'short',day:'numeric',month:'short'}); return t+' · '+('0'+d.getHours()).slice(-2)+'h'+('0'+d.getMinutes()).slice(-2); }
+  function majTxt(){ if(!_data||!_data.maj) return ''; var d=new Date(_data.maj); if(isNaN(d)) return '';
+    return 'Déposés le '+('0'+d.getDate()).slice(-2)+'/'+('0'+(d.getMonth()+1)).slice(-2)+' à '+('0'+d.getHours()).slice(-2)+'h'+('0'+d.getMinutes()).slice(-2); }
+  function liste(){
+    return props().filter(function(p){
+      if(!p||!p.pret||p.statut!=='propose') return false;
+      var id=''+p.id; if(cavFor(id)||ecartFor(id)) return false;
+      if(!_q) return true;
+      return [p.titre,p.actu,texteOrig(p),NETS[net(p)][0]].join(' ').toLowerCase().indexOf(_q)>=0;
+    });
+  }
+  function count(){ if(window._commTabCur!=='pret') return; var el=document.getElementById('comm-count'); if(!el) return; var n=liste().length; el.textContent=n+' post'+(n>1?'s':'')+' prêt'+(n>1?'s':''); }
+  window.ppRender=function(){
+    var box=document.getElementById('pp-list'); if(!box) return;
+    try{ document.body.classList.toggle('rs-is-gerant', gerant()); }catch(e){}
+    var m=document.getElementById('pp-maj'); if(m) m.textContent=majTxt();
+    var list=liste();
+    if(!list.length){ box.innerHTML='<div class="pp-empty">'+(_q?'Aucun post ne correspond à la recherche.':'Aucun post prêt pour le moment — la veille du matin les dépose ici, visuels compris. Les décisions passent dans « Idées & Posts à venir ».')+'</div>'; count(); return; }
+    var jours={}; list.forEach(function(p){ var d=''+(p.date||''); (jours[d]=jours[d]||[]).push(p); });
+    var h='';
+    Object.keys(jours).sort().reverse().forEach(function(d){
+      var dd=d?new Date(d+'T12:00:00'):null, jt=dd&&!isNaN(dd)?dd.toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'}):d;
+      h+='<div class="pp-day">Proposés le '+esc(jt)+'</div>';
+      jours[d].forEach(function(p){
+        var id=''+p.id, eid=encodeURIComponent(id), N=NETS[net(p)], s=st(id), vis=visuels(p);
+        var txt=(typeof s.texte==='string')?s.texte:texteOrig(p);
+        var when=s.prog?('📅 Prévu '+fdt(s.prog)):(p.horaire?('⏰ Conseillé : '+fdt(p.horaire)):'');
+        var thumbs='';
+        if(vis.length){
+          thumbs='<div class="pp-thumbs">'+vis.map(function(v,i){ return '<div class="pp-thumb'+(vis.length===1?' one':'')+'" onclick="ppZoom(\''+esc(v.url)+'\')"><img src="'+esc(v.url)+'" alt="" loading="lazy">'+(vis.length>1?'<span class="n">'+(i+1)+'</span>':'')+'</div>'; }).join('')+'</div>'
+            +'<div class="pp-vis-acts"><button class="pp-btn" onclick="ppDl(\''+eid+'\',this)">⬇ Télécharger '+(vis.length>1?'les '+vis.length+' images':'le visuel')+'</button></div>';
+        } else if(p.format==='video'){ thumbs='<div class="pp-novis">🎬 Vidéo à tourner : le script est dans le texte ci-contre.</div>'; }
+        else { thumbs='<div class="pp-novis">Post texte, sans visuel.</div>'; }
+        h+='<div class="pp-card" id="pp-'+esc(id)+'">'
+          +'<div class="pp-top"><span class="pp-net" style="background:'+N[1]+'">'+esc(N[0])+'</span><span class="pp-fmt">'+(FORMATS[p.format]||'📌 '+esc(p.format||''))+'</span><span class="pp-tt">'+esc(p.titre)+'</span>'+(when?'<span class="pp-when">'+esc(when)+'</span>':'')+'</div>'
+          +'<div class="pp-body"><div class="pp-vis">'+thumbs+'</div>'
+          +'<div><textarea class="pp-txt" id="pp-tx-'+esc(id)+'" oninput="ppEdit(\''+eid+'\',this)">'+esc(txt)+'</textarea>'
+          +'<div class="pp-txt-acts"><button class="pp-btn" onclick="achCopyText(document.getElementById(\'pp-tx-'+esc(id)+'\').value,this)">📋 Copier le texte</button>'
+          +'<a class="pp-open" href="'+N[2]+'" target="_blank" rel="noopener">↗ Ouvrir '+esc(N[0])+'</a>'
+          +(typeof s.texte==='string'&&s.texte!==texteOrig(p)?'<button class="pp-btn" onclick="ppReset(\''+eid+'\')">↺ Texte d’origine</button><span class="pp-mod">modifié'+(s.par?' par '+esc(s.par):'')+'</span>':'')
+          +'</div>'
+          +(p.source&&p.source.url?'<div class="pp-src">📰 <a href="'+esc(p.source.url)+'" target="_blank" rel="noopener">'+esc(p.source.nom||'Source')+'</a></div>':'')
+          +'</div></div>'
+          +'<div class="pp-foot">'
+          +'<label class="pp-prog">Prévu le <input type="datetime-local" value="'+esc(s.prog||(p.horaire||'').slice(0,16))+'" onchange="ppProg(\''+eid+'\',this.value)"></label>'
+          +'<span style="flex:1"></span>'
+          +'<button class="pp-act soon" title="Bientôt : publication directe depuis l’appli" disabled>🚀 Publier (bientôt)</button>'
+          +'<button class="pp-act ok" onclick="ppAct(\''+eid+'\',\'val\')" title="Publié à la main → la carte part dans « Validés » et le tri est transmis à Claude">✅ Publié</button>'
+          +'<button class="pp-act lat" onclick="ppAct(\''+eid+'\',\'later\')">🕐 Plus tard</button>'
+          +'<button class="pp-act off" onclick="ppAct(\''+eid+'\',\'off\')">❌ Écarter</button>'
+          +'</div></div>';
+      });
+    });
+    box.innerHTML=h; count();
+    try{ document.querySelectorAll('#pp-list .pp-txt').forEach(function(t){ t.style.height='auto'; t.style.height=Math.max(150,t.scrollHeight+4)+'px'; }); }catch(e){}
+  };
+  window.ppEdit=function(eid,ta){ var id=decodeURIComponent(eid); clearTimeout(_saveT); var v=ta.value; _saveT=setTimeout(function(){ var p=byId(id); if(!p) return; if(v===texteOrig(p)){ var o=lsObj(PRET_K); if(o[id]){ delete o[id].texte; try{ localStorage.setItem(PRET_K,JSON.stringify(o)); }catch(e){} } } else setSt(id,{texte:v}); },600); };
+  window.ppReset=function(eid){ var id=decodeURIComponent(eid); var o=lsObj(PRET_K); if(o[id]){ delete o[id].texte; try{ localStorage.setItem(PRET_K,JSON.stringify(o)); }catch(e){} } ppRender(); };
+  window.ppProg=function(eid,v){ var id=decodeURIComponent(eid); setSt(id,{prog:v||''}); ppRender(); if(v&&window.toast) toast('📅 Prévu le '+fdt(v)+' — pensez-y, la publication reste manuelle pour l’instant'); };
+  window.ppZoom=function(u){ var w=document.createElement('div'); w.id='pp-zoom'; w.innerHTML='<img src="'+esc(u)+'" alt="">'; w.onclick=function(){ w.remove(); }; document.body.appendChild(w); };
+  window.ppDl=function(eid,btn){
+    var p=byId(decodeURIComponent(eid)); if(!p) return; var vis=visuels(p), i=0, t=btn.textContent;
+    function one(){ if(i>=vis.length){ btn.textContent=t; return; } var v=vis[i++]; btn.textContent='⬇ '+i+'/'+vis.length+'…';
+      fetch(v.url).then(function(r){ return r.blob(); }).then(function(b){ var a=document.createElement('a'); a.href=URL.createObjectURL(b); a.download=v.nom||('visuel-'+i+'.png'); document.body.appendChild(a); a.click(); setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove(); },1500); setTimeout(one,450); })
+        .catch(function(){ window.open(v.url,'_blank'); setTimeout(one,450); }); }
+    one();
+  };
+  window.ppAct=function(eid,act){
+    var id=decodeURIComponent(eid), p=byId(id); if(!p) return;
+    if(typeof window.idjAct!=='function'){ if(window.toast) toast('✗ Module Idées indisponible'); return; }
+    var s=st(id);
+    try{ idjAct(eid, act); }catch(e){window.achErr&&achErr(e)}
+    /* la carte validée / mise de côté emporte le texte retouché ici */
+    if(act!=='off'&&typeof s.texte==='string'&&s.texte!==texteOrig(p)){ try{ var a=lsArr(CAV_K), ch=false; a.forEach(function(o){ if(o&&o.src===id){ o.texte=s.texte; o.updated=new Date().toISOString(); ch=true; } }); if(ch) localStorage.setItem(CAV_K, JSON.stringify(a)); }catch(e){window.achErr&&achErr(e)} }
+    ppRender();
+  };
+  window.ppLoad=function(){
+    var seq=++_seq;
+    if(typeof window.achDocsFetchOne==='function'){
+      window.achDocsFetchOne(STORE_KEY).then(function(v){ if(seq!==_seq) return; if(v&&Array.isArray(v.propositions)) _data=v; ppRender(); }, function(){ ppRender(); });
+    } else ppRender();
+    ppRender();
+  };
+  window.ppSetQuery=function(v){ _q=(v||'').toLowerCase(); };
+  /* ── intégration Communication (même mécanique que l'onglet Meta v11.62) ── */
+  if(window.commSwitch){ var _cp=window.commSwitch; window.commSwitch=function(tab){
+    _cp(tab==='pret'?'posts':tab);
+    try{ document.body.classList.toggle('rs-is-gerant', gerant()); }catch(e){}
+    var tp=document.getElementById('comm-tab-pret'), pp=document.getElementById('comm-panel-pret');
+    if(tab==='pret'){
+      window._commTabCur='pret';
+      ['comm-tab-posts','comm-tab-cour','comm-tab-mix','comm-tab-meta'].forEach(function(i){ var e=document.getElementById(i); if(e) e.classList.remove('active'); });
+      ['comm-panel-posts','comm-panel-courriers','comm-panel-mix','comm-panel-meta'].forEach(function(i){ var e=document.getElementById(i); if(e) e.classList.remove('active'); });
+      if(tp) tp.classList.add('active'); if(pp) pp.classList.add('active');
+      try{ ppLoad(); }catch(e){window.achErr&&achErr(e)}
+    } else { if(tp) tp.classList.remove('active'); if(pp) pp.classList.remove('active'); }
+  }; }
+  if(window.commSearch){ var _pq=window.commSearch; window.commSearch=function(v){ _pq(v); try{ ppSetQuery(v); if(window._commTabCur==='pret') ppRender(); }catch(e){} }; }
+  if(window.commAdd){ var _pa=window.commAdd; window.commAdd=function(){ if(window._commTabCur==='pret'){ if(window.toast) toast('Les posts prêts arrivent chaque matin avec la veille de Claude'); return; } return _pa.apply(this, arguments); }; }
+  window.addEventListener('storage', function(e){ if(e && (e.key===PRET_K||e.key===CAV_K||e.key===ECART_K)){ try{ if(window._commTabCur==='pret') ppRender(); }catch(x){} } });
+  try{ document.body.classList.toggle('rs-is-gerant', gerant()); }catch(e){}
 })();
 </script>
 </body>
