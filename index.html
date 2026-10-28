@@ -1843,7 +1843,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     </div>
   </div>
   </div>
-  <div class="logo-ver app-ver">Achille App — v11.65</div>
+  <div class="logo-ver app-ver">Achille App — v11.66</div>
 </aside>
 <div id="mob-bk" onclick="mobNav(false)"></div>
 <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Réduire la barre latérale">‹</button>
@@ -3317,6 +3317,32 @@ table.es-t td.del button{border:none;background:none;color:var(--gris-2);cursor:
         <div class="pp-head">
           <span class="pp-hint">Chaque matin, Claude dépose ici des posts prêts à publier : texte définitif, visuel(s), horaire conseillé. Retouchez le texte si besoin, copiez, téléchargez le visuel, publiez sur le réseau — puis cliquez ✅ Publié.</span>
           <span style="display:flex;gap:8px;align-items:center;"><span class="pp-maj" id="pp-maj"></span><button class="pp-btn" onclick="ppLoad()" title="Relire les posts déposés dans le cloud">⟳ Actualiser</button></span>
+        </div>
+        <!-- v11.66 : demander un post à Claude (idée libre, article/post partagé, ou carte existante) -->
+        <div class="pp-ask" id="pp-ask">
+          <button class="pp-ask-tt" onclick="ppAskToggle()"><span>✨ Demander un post à Claude</span><span class="pp-ask-sub">depuis une idée, un article ou un post concurrent, ou une carte déjà validée</span><span class="pp-ask-chev" id="pp-ask-chev">▾</span></button>
+          <div class="pp-ask-body" id="pp-ask-body" style="display:none;">
+            <div class="pp-ask-row">
+              <label>À partir de</label>
+              <div class="pp-ask-src">
+                <button class="pp-src-btn on" data-src="idee" onclick="ppAskSrc('idee',this)">💡 Une idée</button>
+                <button class="pp-src-btn" data-src="lien" onclick="ppAskSrc('lien',this)">🔗 Un article / un post</button>
+                <button class="pp-src-btn" data-src="carte" onclick="ppAskSrc('carte',this)">🗂 Une carte existante</button>
+              </div>
+            </div>
+            <div class="pp-ask-row" id="pp-ask-lien-row" style="display:none;"><label>Lien</label><input type="url" id="pp-ask-lien" placeholder="https://… (article, post LinkedIn / Instagram d'un confrère…)"></div>
+            <div class="pp-ask-row" id="pp-ask-carte-row" style="display:none;"><label>Carte</label><select id="pp-ask-carte"></select></div>
+            <div class="pp-ask-row"><label id="pp-ask-txt-lbl">Votre idée</label><textarea id="pp-ask-txt" rows="3" placeholder="En une phrase ou en dix : le sujet, l'angle, ce qui vous plaît… (ou collez le texte d'un post qui vous a inspiré)"></textarea></div>
+            <div class="pp-ask-row pp-ask-opts">
+              <label>Réseau</label><select id="pp-ask-res"><option value="">Claude choisit</option><option value="linkedin">LinkedIn</option><option value="instagram">Instagram</option><option value="facebook">Facebook</option><option value="tiktok">TikTok</option></select>
+              <label>Ton</label><select id="pp-ask-ton"><option value="">Claude choisit</option><option value="serieux">Sérieux</option><option value="humour">Avec humour</option></select>
+              <label>Format</label><select id="pp-ask-fmt"><option value="">Claude choisit</option><option value="classique">Post + visuel</option><option value="carrousel">Carrousel</option><option value="video">Vidéo</option><option value="meme">Meme</option></select>
+              <span style="flex:1"></span>
+              <button class="pp-act ok" onclick="ppAskSend()">✨ Envoyer à Claude</button>
+            </div>
+            <div class="pp-ask-hint">Claude prépare le post fini (texte + visuels + horaire) et le dépose ici au prochain passage du matin. Pour l'avoir tout de suite, collez la même demande dans la conversation du matin.</div>
+            <div id="pp-ask-list"></div>
+          </div>
         </div>
         <div id="pp-list"></div>
       </div>
@@ -14838,7 +14864,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     startRealtime();
     var ov=document.getElementById('ach-login-overlay'); if(ov) ov.classList.add('ach-hidden');
     var ub=document.getElementById('ach-userbar'); if(ub) ub.style.display='none';
-    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v11.65';
+    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v11.66';
     flag('Synchronis\u00e9');
     // fin de l'init : on autorise la journalisation des actions
     setTimeout(function(){ installInterceptor._init=false; }, 1500);
@@ -27361,7 +27387,7 @@ body.pi-grabbing *{user-select:none!important;}
   });
 })();
 </script>
-<!-- ══════════ v11.65 : COMMUNICATION — onglet « 🚀 Posts prêts » (bêta, gérants uniquement) ══════════
+<!-- ══════════ v11.65/v11.66 : COMMUNICATION — onglet « 🚀 Posts prêts » (bêta, gérants uniquement) + demandes de posts ══════════
      Posts FINIS déposés chaque matin par la veille Claude dans idees_posts_store (champ pret:true) :
      texte définitif pour UN réseau, visuels hébergés (Supabase Storage, bucket posts-visuels), horaire conseillé.
      Isolé : son propre panneau + ce bloc. Les décisions passent par idjAct (circuit existant → tri relu le matin).
@@ -27408,6 +27434,26 @@ body:not(.rs-is-gerant) #comm-tab-pret{display:none;}
 .pp-open:hover{background:rgba(180,115,96,.08);}
 .pp-src{font-size:11px;color:var(--gris-2);margin-top:8px;}
 .pp-src a{color:var(--terra);text-decoration:none;}
+.pp-ask{background:#fff;border:1px solid var(--border);border-radius:14px;margin-bottom:14px;overflow:hidden;}
+.pp-ask-tt{width:100%;display:flex;align-items:center;gap:12px;background:#f6f1e9;border:none;padding:12px 16px;cursor:pointer;font-family:'Jost',sans-serif;font-size:14px;color:var(--noir);text-align:left;}
+.pp-ask-sub{font-size:11.5px;color:var(--gris-2);font-style:italic;flex:1;}
+.pp-ask-chev{color:var(--terra);}
+.pp-ask-body{padding:12px 16px 14px;}
+.pp-ask-row{display:flex;align-items:flex-start;gap:10px;margin:8px 0;flex-wrap:wrap;}
+.pp-ask-row>label{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#8f8878;font-weight:600;min-width:84px;padding-top:9px;}
+.pp-ask-row input,.pp-ask-row textarea,.pp-ask-row select{flex:1;min-width:160px;border:1px solid var(--border);border-radius:9px;padding:8px 11px;font-family:'Jost',sans-serif;font-size:13px;color:var(--noir);background:#fffdf9;}
+.pp-ask-row textarea{resize:vertical;min-height:70px;}
+.pp-ask-opts select{flex:0 1 150px;}
+.pp-ask-opts>label{min-width:auto;}
+.pp-ask-src{display:flex;gap:6px;flex-wrap:wrap;}
+.pp-src-btn{border:1px solid var(--border);background:#fff;border-radius:20px;padding:7px 13px;font-family:'Jost',sans-serif;font-size:12.5px;cursor:pointer;color:var(--gris);}
+.pp-src-btn.on{border-color:var(--terra);color:var(--terra);background:rgba(180,115,96,.08);font-weight:600;}
+.pp-ask-hint{font-size:11px;color:var(--gris-2);font-style:italic;margin-top:4px;}
+.pp-dem{display:flex;align-items:center;gap:8px;padding:7px 10px;border-top:1px solid #f3eee6;font-size:12.5px;}
+.pp-dem-tt{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.pp-dem-st{font-size:10.5px;color:#8a5a1e;white-space:nowrap;}
+.pp-dem-x{border:1px solid var(--border);background:#fff;border-radius:7px;font-size:11px;padding:3px 8px;cursor:pointer;}
+.pp-badge-dem{font-size:10px;font-weight:700;padding:2px 9px;border-radius:12px;white-space:nowrap;background:rgba(90,74,117,.10);color:#5a4a75;border:1px solid rgba(90,74,117,.35);}
 #pp-zoom{position:fixed;inset:0;z-index:99999;background:rgba(26,26,24,.82);display:flex;align-items:center;justify-content:center;padding:18px;cursor:zoom-out;}
 #pp-zoom img{max-width:min(92vw,620px);max-height:90vh;border-radius:8px;box-shadow:0 20px 60px rgba(0,0,0,.5);}
 @media (max-width:880px){ .pp-body{grid-template-columns:1fr;} .pp-thumbs{grid-template-columns:repeat(4,1fr);} .pp-thumb.one{max-width:100%;} }
@@ -27468,7 +27514,7 @@ body:not(.rs-is-gerant) #comm-tab-pret{display:none;}
         } else if(p.format==='video'){ thumbs='<div class="pp-novis">🎬 Vidéo à tourner : le script est dans le texte ci-contre.</div>'; }
         else { thumbs='<div class="pp-novis">Post texte, sans visuel.</div>'; }
         h+='<div class="pp-card" id="pp-'+esc(id)+'">'
-          +'<div class="pp-top"><span class="pp-net" style="background:'+N[1]+'">'+esc(N[0])+'</span><span class="pp-fmt">'+(FORMATS[p.format]||'📌 '+esc(p.format||''))+'</span><span class="pp-tt">'+esc(p.titre)+'</span>'+(when?'<span class="pp-when">'+esc(when)+'</span>':'')+'</div>'
+          +'<div class="pp-top"><span class="pp-net" style="background:'+N[1]+'">'+esc(N[0])+'</span><span class="pp-fmt">'+(FORMATS[p.format]||'📌 '+esc(p.format||''))+'</span>'+(p.demande_id?'<span class="pp-badge-dem" title="Post préparé à votre demande">✨ à votre demande</span>':'')+'<span class="pp-tt">'+esc(p.titre)+'</span>'+(when?'<span class="pp-when">'+esc(when)+'</span>':'')+'</div>'
           +'<div class="pp-body"><div class="pp-vis">'+thumbs+'</div>'
           +'<div><textarea class="pp-txt" id="pp-tx-'+esc(id)+'" oninput="ppEdit(\''+eid+'\',this)">'+esc(txt)+'</textarea>'
           +'<div class="pp-txt-acts"><button class="pp-btn" onclick="achCopyText(document.getElementById(\'pp-tx-'+esc(id)+'\').value,this)">📋 Copier le texte</button>'
@@ -27510,10 +27556,46 @@ body:not(.rs-is-gerant) #comm-tab-pret{display:none;}
     if(act!=='off'&&typeof s.texte==='string'&&s.texte!==texteOrig(p)){ try{ var a=lsArr(CAV_K), ch=false; a.forEach(function(o){ if(o&&o.src===id){ o.texte=s.texte; o.updated=new Date().toISOString(); ch=true; } }); if(ch) localStorage.setItem(CAV_K, JSON.stringify(a)); }catch(e){window.achErr&&achErr(e)} }
     ppRender();
   };
+  /* ── v11.66 : demandes de posts (idée libre / lien / carte) → clé synchronisée + cloud interne pour Claude ── */
+  var DEM_K='ach_pret_demandes_v1', DEM_CLOUD='idees_posts_demandes', _askSrc='idee';
+  function demList(){ return lsArr(DEM_K); }
+  function demSave(a){ try{ localStorage.setItem(DEM_K, JSON.stringify(a)); }catch(e){window.achErr&&achErr(e)} demPush(a); }
+  function demPush(a){ if(typeof window.achKVSet!=='function') return; var open=(a||demList()).filter(function(d){ return d&&!d.done&&!d.del; }); try{ window.achKVSet(DEM_CLOUD, {maj:new Date().toISOString(), n:open.length, demandes:open}); }catch(e){window.achErr&&achErr(e)} }
+  window.ppAskToggle=function(){ var b=document.getElementById('pp-ask-body'), c=document.getElementById('pp-ask-chev'); if(!b) return; var o=b.style.display==='none'; b.style.display=o?'':'none'; if(c) c.textContent=o?'▴':'▾'; if(o){ ppAskCartes(); demRender(); } };
+  window.ppAskSrc=function(s,btn){ _askSrc=s; document.querySelectorAll('.pp-src-btn').forEach(function(b){ b.classList.toggle('on', b.getAttribute('data-src')===s); });
+    var l=document.getElementById('pp-ask-lien-row'), c=document.getElementById('pp-ask-carte-row'), lb=document.getElementById('pp-ask-txt-lbl'), ta=document.getElementById('pp-ask-txt');
+    if(l) l.style.display=(s==='lien')?'':'none'; if(c) c.style.display=(s==='carte')?'':'none';
+    if(lb) lb.textContent=(s==='idee')?'Votre idée':(s==='lien'?'Ce qui vous plaît':'Ce qu’il faut en faire');
+    if(ta) ta.placeholder=(s==='idee')?'En une phrase ou en dix : le sujet, l’angle, ce qui vous plaît…':(s==='lien'?'Pourquoi ce contenu vous plaît, ce qu’on garde, ce qu’on change… (vous pouvez aussi coller le texte)':'Nouvel angle, autre réseau, version vidéo, mise à jour des chiffres…'); };
+  function ppAskCartes(){ var sel=document.getElementById('pp-ask-carte'); if(!sel) return; var a=lsArr(CAV_K).filter(function(o){ return o&&!o.del&&(o.st==='valide'||o.st==='idee'||o.st==='publie'); });
+    a.sort(function(x,y){ return (''+(y.updated||y.created||'')).localeCompare(''+(x.updated||x.created||'')); });
+    sel.innerHTML='<option value="">— choisir une carte —</option>'+a.map(function(o){ var st=o.st==='valide'?'✅':(o.st==='publie'?'📣':'🕐'); return '<option value="'+esc(o.id)+'">'+st+' '+esc((o.titre||'').slice(0,90))+(o.res?' · '+esc(o.res):'')+'</option>'; }).join(''); }
+  window.ppAskSend=function(){
+    var txt=(document.getElementById('pp-ask-txt')||{}).value||'', lien=(document.getElementById('pp-ask-lien')||{}).value||'', cid=(document.getElementById('pp-ask-carte')||{}).value||'';
+    txt=txt.trim(); lien=lien.trim();
+    if(_askSrc==='lien'&&!/^https?:\/\//i.test(lien)){ if(window.toast) toast('Collez un lien commençant par http'); return; }
+    if(_askSrc==='carte'&&!cid){ if(window.toast) toast('Choisissez une carte'); return; }
+    if(_askSrc==='idee'&&txt.length<4){ if(window.toast) toast('Écrivez votre idée en quelques mots'); return; }
+    var d={ id:'dem-'+Date.now().toString(36)+Math.floor(Math.random()*1000), le:new Date().toISOString(), par:(window.ACH_USER&&ACH_USER.initials)||'', src:_askSrc, texte:txt.slice(0,3000), lien:lien.slice(0,500),
+      reseau:(document.getElementById('pp-ask-res')||{}).value||'', ton:(document.getElementById('pp-ask-ton')||{}).value||'', format:(document.getElementById('pp-ask-fmt')||{}).value||'' };
+    if(_askSrc==='carte'){ var c=lsArr(CAV_K).filter(function(o){ return o&&o.id===cid; })[0]; if(c){ d.carte={ id:c.id, src:c.src||'', titre:c.titre||'', texte:(c.texte||'').slice(0,3000), res:c.res||'', st:c.st||'', sugg:c.sugg||null }; } }
+    var a=demList(); a.push(d); demSave(a);
+    try{ document.getElementById('pp-ask-txt').value=''; document.getElementById('pp-ask-lien').value=''; }catch(e){}
+    if(window.toast) toast('✨ Demande envoyée — le post arrive au prochain passage de Claude');
+    try{ if(window.achLog) achLog('ajout','Posts prêts','demande de post : '+(txt||lien||(d.carte&&d.carte.titre)||'').slice(0,80)); }catch(e){}
+    demRender();
+  };
+  window.ppDemDel=function(id){ var a=demList(); a.forEach(function(d){ if(d&&d.id===id) d.del=1; }); demSave(a); demRender(); };
+  function demMarkDone(){ /* la veille signale les demandes traitées dans l'export (demandes_traitees) */
+    var done=(_data&&Array.isArray(_data.demandes_traitees))?_data.demandes_traitees:[]; if(!done.length) return;
+    var a=demList(), ch=false; a.forEach(function(d){ if(d&&!d.done&&done.indexOf(d.id)>=0){ d.done=1; ch=true; } }); if(ch) demSave(a); }
+  function demRender(){ var box=document.getElementById('pp-ask-list'); if(!box) return; var a=demList().filter(function(d){ return d&&!d.del&&!d.done; });
+    box.innerHTML=a.length? a.map(function(d){ var lab=d.src==='lien'?('🔗 '+(d.lien||'')):(d.src==='carte'?('🗂 '+((d.carte&&d.carte.titre)||'')):('💡 '+(d.texte||''))); var opts=[d.reseau,d.ton,d.format].filter(Boolean).join(' · ');
+      return '<div class="pp-dem"><span class="pp-dem-tt" title="'+esc(d.texte||'')+'">'+esc(lab)+(opts?' <span style="color:var(--gris-2)">('+esc(opts)+')</span>':'')+'</span><span class="pp-dem-st">⏳ '+esc((d.par||'')+' · '+fdt(d.le))+'</span><button class="pp-dem-x" onclick="ppDemDel(\''+esc(d.id)+'\')" title="Annuler la demande">✕</button></div>'; }).join('') : ''; }
   window.ppLoad=function(){
     var seq=++_seq;
     if(typeof window.achDocsFetchOne==='function'){
-      window.achDocsFetchOne(STORE_KEY).then(function(v){ if(seq!==_seq) return; if(v&&Array.isArray(v.propositions)) _data=v; ppRender(); }, function(){ ppRender(); });
+      window.achDocsFetchOne(STORE_KEY).then(function(v){ if(seq!==_seq) return; if(v&&Array.isArray(v.propositions)) _data=v; try{ demMarkDone(); demRender(); }catch(e){window.achErr&&achErr(e)} ppRender(); }, function(){ ppRender(); });
     } else ppRender();
     ppRender();
   };
