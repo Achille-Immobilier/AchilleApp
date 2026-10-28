@@ -1843,7 +1843,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     </div>
   </div>
   </div>
-  <div class="logo-ver app-ver">Achille App — v11.63</div>
+  <div class="logo-ver app-ver">Achille App — v11.64</div>
 </aside>
 <div id="mob-bk" onclick="mobNav(false)"></div>
 <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Réduire la barre latérale">‹</button>
@@ -14829,7 +14829,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     startRealtime();
     var ov=document.getElementById('ach-login-overlay'); if(ov) ov.classList.add('ach-hidden');
     var ub=document.getElementById('ach-userbar'); if(ub) ub.style.display='none';
-    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v11.63';
+    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v11.64';
     flag('Synchronis\u00e9');
     // fin de l'init : on autorise la journalisation des actions
     setTimeout(function(){ installInterceptor._init=false; }, 1500);
@@ -16576,7 +16576,9 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
         </div>
         <div class="form-row">
           <div class="form-group fg-chambres"><label class="form-label">Chambres</label><input class="form-input" inputmode="numeric" id="pg-chambres" placeholder="2"></div>
-          <div class="form-group fg-etage"><label class="form-label">Étage</label><input class="form-input" id="pg-etage" placeholder="3e / RDC"></div>
+          <div class="form-group fg-etage"><label class="form-label">Étage</label><input class="form-input" id="pg-etage" placeholder="3 / RDC"></div>
+          <div class="form-group fg-etimm"><label class="form-label" title="Nombre d’étages de l’immeuble" style="white-space:nowrap;">Ét. immeuble</label><input class="form-input" inputmode="numeric" id="pg-etimm" placeholder="5"></div>
+          <div class="form-group fg-asc"><label class="form-label">Ascenseur</label><select class="form-select" id="pg-asc"><option value="">—</option><option value="oui">Oui</option><option value="non">Non</option></select></div>
           <div class="form-group fg-dpe"><label class="form-label">DPE</label><select class="form-select" id="pg-dpe"><option value="">—</option><option>A</option><option>B</option><option>C</option><option>D</option><option>E</option><option>F</option><option>G</option></select></div>
           <div class="form-group fg-annee"><label class="form-label" title="Année de construction" style="white-space:nowrap;">Année de constr.</label><input class="form-input" inputmode="numeric" id="pg-annee" placeholder="1930"></div>
         </div>
@@ -17627,7 +17629,7 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
     var pick=function(name){ var el=document.querySelector('input[name="'+name+'"]:checked'); return el?el.value:null; };
     var adrChoice=pick('pgm-adr'), vilChoice=pick('pgm-vil');
     /* champs : la conservée garde ses valeurs, les vides sont complétés */
-    ['adresse','titre','ville','prix','surface','pieces','chambres','etage','annee','dpe','descriptif','vendeur','tel','user','dossier','tempRef','photo','plan'].forEach(function(f){
+    ['adresse','titre','ville','prix','surface','pieces','chambres','etage','etimm','asc','annee','dpe','descriptif','vendeur','tel','user','dossier','tempRef','photo','plan'].forEach(function(f){
       if((older[f]==null||older[f]==='')&&other[f]!=null&&other[f]!=='') older[f]=other[f];
     });
     /* v7.36 : le CHOIX EXPLICITE d'adresse / ville prime sur la règle par défaut */
@@ -17803,10 +17805,10 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
     function gv(i){ var e=document.getElementById(i); return e?(''+(e.value||'')).trim():''; }
     var vals={ adresse:gv('pg-adresse'), ville:villeCanon(gv('pg-ville')), prix:num(gv('pg-prix'))||'',
       surface:num(gv('pg-surface'))||'', pieces:gv('pg-pieces'), chambres:gv('pg-chambres'),
-      etage:gv('pg-etage'), annee:gv('pg-annee'), dpe:gv('pg-dpe'),
+      etage:gv('pg-etage'), etimm:gv('pg-etimm'), asc:gv('pg-asc'), annee:gv('pg-annee'), dpe:gv('pg-dpe'),
       descriptif:gv('pg-descriptif'), vendeur:gv('pg-vendeur'), tel:pgTelPretty(gv('pg-tel')),
       fipac:gv('pg-fipac'), photo:_photo||'', plan:_plan||'' };
-    ['adresse','ville','surface','pieces','chambres','etage','annee','dpe','descriptif','vendeur','tel','fipac','photo','plan'].forEach(function(f){
+    ['adresse','ville','surface','pieces','chambres','etage','etimm','asc','annee','dpe','descriptif','vendeur','tel','fipac','photo','plan'].forEach(function(f){
       if((r[f]==null||r[f]==='')&&vals[f]!=null&&vals[f]!=='') r[f]=vals[f];
     });
     ['cave','parking','balcon','terrasse','jardin'].forEach(function(f){
@@ -17898,6 +17900,8 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
         var _a=j.a||{};
         if(!out.dpe && /^[a-g]$/i.test(''+(_a.energy_rate||''))) out.dpe=(''+_a.energy_rate).toUpperCase();
         if(!out.etage && _a.floor_number!=null && (''+_a.floor_number)!==''){ var _fn=''+_a.floor_number; out.etage=(_fn==='0'?'RDC':(_fn==='1'?'1er':_fn+'e')); }
+        if(!out.etimm && _a.nb_floors_building && /^\d{1,2}$/.test(''+_a.nb_floors_building)) out.etimm=''+_a.nb_floors_building;
+        if(!out.asc && _a.elevator!=null){ var _el=(''+_a.elevator).toLowerCase(); if(_el==='1'||_el==='oui'||_el==='true') out.asc='oui'; else if(_el==='2'||_el==='non'||_el==='false') out.asc='non'; }
         if(!out.surface && _a.square){ var _sq=pgAdNum(_a.square); if(_sq>=8&&_sq<=1500) out.surface=_sq; }
         if(!out.pieces && _a.rooms && /^\d{1,2}$/.test(''+_a.rooms)) out.pieces=''+_a.rooms;
         if(!out.chambres && _a.nb_bedrooms && /^\d{1,2}$/.test(''+_a.nb_bedrooms)) out.chambres=''+_a.nb_bedrooms;
@@ -18009,12 +18013,44 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
     if(r.carac) out.push(r.carac);  /* ancien champ libre conservé */
     return out;
   }
+  /* v11.64 : étage / étages de l'immeuble / ascenseur */
+  function pgEtageTxt(r){
+    var et=(''+(r.etage||'')).trim(), m=et.match(/^(\d{1,2})\s*(?:er|e|è|ème|eme)?$/i), s='';
+    if(m) s=(m[1]==='0'?'RDC':m[1]+(m[1]==='1'?'er':'e')+' ét.'); else if(et) s=et;
+    if(r.etimm){ s=s?s+' sur '+r.etimm:'imm. de '+r.etimm+' ét.'; }
+    if(r.asc==='non') s=(s?s+' · ':'')+'sans asc.'; else if(r.asc==='oui') s=(s?s+' · ':'')+'avec asc.';
+    return s;
+  }
+  window.pgEtageTxt=pgEtageTxt;
+  /* « 3e étage sur 5 », « au 4ème d'un immeuble de 6 étages », « sans ascenseur » lus dans un texte */
+  function pgEtageInfos(t){
+    t=''+(t||''); var o={etimm:'',asc:''}, m;
+    m=t.match(/(?:étage|ét\.|\d{1,2}\s*(?:er|e|è|ème|eme))\s*(?:sur|\/)\s*(\d{1,2})(?![\d\/])/i); if(m) o.etimm=m[1];
+    if(!o.etimm){ m=t.match(/immeuble\s+(?:de|sur|à)\s+(\d{1,2})\s*(?:étages|niveaux)/i); if(m) o.etimm=m[1]; }
+    if(/sans\s+ascenseur/i.test(t)) o.asc='non'; else if(/\bascenseur\b/i.test(t)) o.asc='oui';
+    return o;
+  }
+  window.pgEtageInfos=pgEtageInfos;
+  /* passage unique sur les fiches existantes : « 3/5 » → étage 3 + immeuble 5 ; ascenseur lu dans le descriptif */
+  function pgEtageMigrate(){
+    try{
+      var a=load(), ch=false;
+      a.forEach(function(r){
+        if(!r) return;
+        var et=(''+(r.etage||'')).trim(), m=et.match(/^(RDC|rez[^\/]*|\d{1,2}\s*(?:er|e|è|ème|eme)?)\s*(?:\/|sur)\s*(\d{1,2})\s*(?:ét\.?|étages?)?\s*$/i);
+        if(m){ var n=m[1].match(/^(\d{1,2})/); r.etage=n?n[1]:'RDC'; if(!r.etimm) r.etimm=m[2]; ch=true; }
+        if(!r.etimm || !r.asc){ var inf=pgEtageInfos(r.descriptif||''); if(!r.etimm && inf.etimm && (!r.etage || parseInt(inf.etimm,10)>=(parseInt(r.etage,10)||0))){ r.etimm=inf.etimm; ch=true; } if(!r.asc && inf.asc){ r.asc=inf.asc; ch=true; } }
+      });
+      if(ch){ save(a); if(window.schedulePush) try{ schedulePush(K); }catch(e){} }
+    }catch(e){window.achErr&&achErr(e)}
+  }
+  window.pgEtageMigrate=pgEtageMigrate;
   function m2line(r){
     var bits=[];
     if(r.pieces) bits.push(r.pieces+' p.');
     if(r.chambres) bits.push(r.chambres+' ch.');
     if(r.surface) bits.push((''+r.surface).replace('.',',')+' m²');
-    if(r.etage) bits.push((''+r.etage).match(/^\d+$/)? r.etage+'e ét.' : r.etage);
+    var _et=pgEtageTxt(r); if(_et) bits.push(_et);   /* v11.64 : « 3e ét. sur 5 · sans asc. » */
     if(r.annee) bits.push('constr. '+r.annee);
     if(r.dpe) bits.push('DPE '+r.dpe);
     return bits.join(' · ');
@@ -18336,6 +18372,7 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
     var box=document.getElementById('pige-list'); if(!box) return;
     pigeStatutMigrate();
     pgCalledMigrate();   /* v11.57 */
+    pgEtageMigrate();    /* v11.64 */
     pigeTermineMigrate();   /* v7.24 : anciennes fiches Terminé → archives */
     renderFilterChips();
     try{
@@ -18587,12 +18624,13 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
     try{ window.pigeSuiviAutoRefresh(); }catch(e){window.achErr&&achErr(e)}   /* v7.22 : bandeau automatique (archivage / rappel) */
   };
 
-  var TXT=['pg-adresse','pg-prix','pg-surface','pg-pieces','pg-chambres','pg-etage','pg-annee','pg-descriptif','pg-vendeur','pg-tel','pg-com-input','pg-prixm2','pg-suivi-date','pg-prix-net','pg-hono-tot','pg-hono-ach','pg-agence'];
+  var TXT=['pg-adresse','pg-prix','pg-surface','pg-pieces','pg-chambres','pg-etage','pg-etimm','pg-annee','pg-descriptif','pg-vendeur','pg-tel','pg-com-input','pg-prixm2','pg-suivi-date','pg-prix-net','pg-hono-tot','pg-hono-ach','pg-agence'];
   var CBX=['pg-cave','pg-parking','pg-balcon','pg-terrasse','pg-jardin'];
   function openBlank(url,src){
     TXT.forEach(function(id){ var e=document.getElementById(id); if(e) e.value=''; });
     CBX.forEach(function(id){ var e=document.getElementById(id); if(e) e.value='0'; });
     document.getElementById('pg-dpe').value='';
+    document.getElementById('pg-asc').value='';
     document.getElementById('pg-suivi').value='';
     _pgSuiviAvant='';   /* v11.44 */
     try{ var _sa=document.getElementById('pg-suivi-auto'); if(_sa) _sa.innerHTML=''; }catch(e){window.achErr&&achErr(e)}
@@ -18679,6 +18717,7 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
       if(m) out.chambres={une:'1',deux:'2',trois:'3',quatre:'4',cinq:'5'}[m[1].toLowerCase()]; }
     m=t.match(/(\d{1,2})\s*(?:er|e|è|ème|eme)?\s*étage/i); if(m) out.etage=(m[1]==='1'?'1er':m[1]+'e');
     else if(/rez[- ]de[- ]chauss|\bRDC\b/i.test(t)) out.etage='RDC';
+    var _ei=pgEtageInfos(t); if(_ei.etimm) out.etimm=_ei.etimm; if(_ei.asc) out.asc=_ei.asc;   /* v11.64 */
     m=t.match(/(?:DPE|classe\s+énerg\w*|GES)\s*[:\-]?\s*([A-G])\b/i); if(m) out.dpe=m[1].toUpperCase();
     m=t.match(/(?:année?\s+de\s+construction|construit|b[âa]ti|datant\s+de(?:s\s+années)?)\D{0,12}((?:18|19|20)\d{2})/i); if(m) out.annee=m[1];
     /* téléphone : mobile d'abord (la pige vise des particuliers) ; un fixe n'est retenu
@@ -18806,6 +18845,8 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
     if(out.pieces) FL('pg-pieces', out.pieces, out.pieces+' pièces');
     if(out.chambres) FL('pg-chambres', out.chambres, out.chambres+' ch.');
     if(out.etage) FL('pg-etage', out.etage, 'étage '+out.etage);
+    if(out.etimm) FL('pg-etimm', out.etimm, 'immeuble de '+out.etimm+' ét.');
+    if(out.asc){ var _as=document.getElementById('pg-asc'); if(_as && !_as.value){ _as.value=out.asc; got.push(out.asc==='non'?'sans ascenseur':'avec ascenseur'); } }
     if(out.annee) FL('pg-annee', out.annee, 'constr. '+out.annee);
     if(out.tel){ var telV=(window.pgTelPretty?pgTelPretty(out.tel):out.tel); FL('pg-tel', telV, telV); }
     if(out.adresse) FL('pg-adresse', out.adresse, out.adresse);
@@ -19150,8 +19191,9 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
     S('pg-prix', r.prix? fmtN(r.prix):'');
     S('pg-surface', r.surface||'');
     S('pg-pieces', r.pieces||''); S('pg-chambres', r.chambres||'');
-    S('pg-etage', r.etage||''); S('pg-annee', r.annee||'');
+    S('pg-etage', r.etage||''); S('pg-etimm', r.etimm||''); S('pg-annee', r.annee||'');
     document.getElementById('pg-dpe').value=r.dpe||'';
+    document.getElementById('pg-asc').value=(r.asc==='oui'||r.asc==='non')?r.asc:'';   /* v11.64 */
     function CV(fid,v){ var e=document.getElementById(fid); if(e) e.value=String(caracN(v)); }
     CV('pg-cave',r.cave); CV('pg-parking',r.parking); CV('pg-balcon',r.balcon); CV('pg-terrasse',r.terrasse); CV('pg-jardin',r.jardin);
     S('pg-descriptif', r.descriptif||'');
@@ -19328,6 +19370,8 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
       pieces:(document.getElementById('pg-pieces').value||'').trim(),
       chambres:(document.getElementById('pg-chambres').value||'').trim(),
       etage:(document.getElementById('pg-etage').value||'').trim(),
+      etimm:(document.getElementById('pg-etimm').value||'').trim(),   /* v11.64 : étages de l'immeuble */
+      asc:document.getElementById('pg-asc').value||'',                /* v11.64 : ascenseur oui / non / inconnu */
       annee:(document.getElementById('pg-annee').value||'').trim(),
       tempRef:(document.getElementById('pg-tempref')||{value:''}).value||'',
       dpe:document.getElementById('pg-dpe').value||'',
@@ -19729,7 +19773,7 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
         cur.push({ id:'pg-seed-'+Date.now()+'-'+Math.floor(Math.random()*100000),
           url:o.url||'', src:o.src||srcOf(o.url||''),
           adresse:o.adresse||'', ville:o.ville||'',
-          prix:0, surface:'', pieces:'', chambres:'', etage:'', annee:'', dpe:'',
+          prix:0, surface:'', pieces:'', chambres:'', etage:'', etimm:'', asc:'', annee:'', dpe:'',
           cave:false,parking:false,balcon:false,terrasse:false,
           descriptif:'', vendeur:'', tel:'', user:'', suivi:'', suiviDate:'',
           photo:'', plan:'', notes:[], created:new Date().toISOString() });
@@ -20733,8 +20777,11 @@ select.pg-chip{padding:6px 10px;}
 .pige-modal .form-row .form-group{flex:1 1 0;min-width:0;}
 /* largeurs sur mesure : ces champs ont besoin de plus / moins de place */
 .pige-modal .fg-prix{flex:1.5;} .pige-modal .fg-surface{flex:1;} .pige-modal .fg-pm2{flex:1.2;}
-.pige-modal .fg-pieces{flex:.7;} .pige-modal .fg-chambres{flex:.7;} .pige-modal .fg-etage{flex:1;}
-.pige-modal .fg-dpe{flex:.8;} .pige-modal .fg-annee{flex:1.2;}
+.pige-modal .fg-pieces{flex:.7;} .pige-modal .fg-chambres{flex:.8;} .pige-modal .fg-etage{flex:.7;}
+.pige-modal .fg-etimm{flex:.9;} .pige-modal .fg-asc{flex:.9;}   /* v11.64 : étage de l'immeuble + ascenseur sur la même ligne */
+.pige-modal .fg-dpe{flex:.7;} .pige-modal .fg-annee{flex:1.1;}
+.pige-modal .fg-chambres ~ .form-group .form-input,.pige-modal .fg-chambres .form-input{padding-left:8px;padding-right:6px;}
+.pige-modal .fg-asc .form-select,.pige-modal .fg-dpe .form-select{padding-left:6px;padding-right:18px;}
 .pige-modal .fg-tel{flex:1.3;} .pige-modal .fg-vendeur{flex:1.5;}
 .pige-modal .form-input,.pige-modal .form-select{width:100%;box-sizing:border-box;}
 .pg-carac-boxes{display:grid;grid-template-columns:repeat(5,1fr);gap:9px;padding:6px 2px 2px;}
@@ -25893,7 +25940,7 @@ body.pi-grabbing *{user-select:none!important;}
     function R(l,v){ if(v!==''&&v!=null&&v!==0) rows.push('<div class="row"><b>'+l+'</b><span>'+esc(v)+'</span></div>'); }
     R('Ville', r.ville); R('Prix', r.prix?fmtN(r.prix)+' €':'');
     R('Prix au m²', pm2?fmtN(pm2)+' €':''); R('Surface', r.surface?fmtN(r.surface)+' m²':'');
-    R('Pièces', r.pieces); R('Chambres', r.chambres); R('Étage', r.etage); R('Année', r.annee);
+    R('Pièces', r.pieces); R('Chambres', r.chambres); R('Étage', r.etage?(r.etage+(r.etimm?' sur '+r.etimm:'')):(r.etimm?'immeuble de '+r.etimm:'')); R('Ascenseur', r.asc==='oui'?'Oui':(r.asc==='non'?'Non':'')); R('Année', r.annee);
     var ext=[]; if(r.balcon) ext.push(r.balcon>1?r.balcon+' balcons':'Balcon'); if(r.terrasse) ext.push(r.terrasse>1?r.terrasse+' terrasses':'Terrasse'); if(r.jardin) ext.push('Jardin');
     R('Extérieur', ext.join(' · ')); if(r.cave) R('Cave', r.cave>1?r.cave:'Oui'); if(r.parking) R('Parking', r.parking>1?r.parking:'Oui');
     /* étiquette énergie dessinée */
