@@ -1843,7 +1843,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     </div>
   </div>
   </div>
-  <div class="logo-ver app-ver">Achille App — v12.02</div>
+  <div class="logo-ver app-ver">Achille App — v12.03</div>
 </aside>
 <div id="mob-bk" onclick="mobNav(false)"></div>
 <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Réduire la barre latérale">‹</button>
@@ -14868,7 +14868,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     startRealtime();
     var ov=document.getElementById('ach-login-overlay'); if(ov) ov.classList.add('ach-hidden');
     var ub=document.getElementById('ach-userbar'); if(ub) ub.style.display='none';
-    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v12.02';
+    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v12.03';
     flag('Synchronis\u00e9');
     // fin de l'init : on autorise la journalisation des actions
     setTimeout(function(){ installInterceptor._init=false; }, 1500);
@@ -28513,6 +28513,16 @@ details.cx-more{margin-top:8px;} details.cx-more>summary{font-size:11.5px;color:
     }
   }
   setup();
+  /* v12.03 : la page Communication peut s'ouvrir AVANT la connexion au cloud (rechargement du navigateur : l'appli rouvre
+     la dernière page). Les idées du matin étaient alors lues dans le vieux fichier du dépôt (13/10) et la liste paraissait vide.
+     → dès que le cloud est prêt, on relit automatiquement les idées et les posts prêts ; + bouton ⟳ Actualiser. */
+  var _cloudReload=false;
+  function cxReloadCloud(){ try{ if(window.idjLoad) idjLoad(); }catch(e){} try{ if(window.ppLoad) ppLoad(); }catch(e){} }
+  window.cxReloadCloud=cxReloadCloud;
+  (function watch(n){ if(_cloudReload) return;
+    if(window.ACH_PULLED){ _cloudReload=true; if(window._commTabCur==='mix'||window._commTabCur==='pub'){ cxReloadCloud(); setTimeout(cxReloadCloud,2500); } return; }
+    if(n<120) setTimeout(function(){ watch(n+1); },1000); })(0);
+  try{ var mj=document.getElementById('idj-maj'); if(mj&&!document.getElementById('cx-reload')){ var rb=document.createElement('button'); rb.id='cx-reload'; rb.className='idj-import'; rb.textContent='⟳ Actualiser'; rb.title='Relire les idées et les posts prêts dans le cloud'; rb.onclick=function(){ cxReloadCloud(); if(window.toast) toast('⟳ Idées et posts relus dans le cloud'); }; mj.parentNode.insertBefore(rb, mj); } }catch(e){}
   /* ═══════════ INTÉGRATION : onglets, recherche, bouton Ajouter ═══════════ */
   if(window.commSwitch){ var _cs=window.commSwitch; window.commSwitch=function(tab){
     if(tab==='posts'||tab==='meta'||tab==='pret'){ /* anciens onglets → leur nouvelle maison */
