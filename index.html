@@ -1843,7 +1843,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     </div>
   </div>
   </div>
-  <div class="logo-ver app-ver">Achille App — v12.06</div>
+  <div class="logo-ver app-ver">Achille App — v12.07</div>
 </aside>
 <div id="mob-bk" onclick="mobNav(false)"></div>
 <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Réduire la barre latérale">‹</button>
@@ -14881,7 +14881,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     startRealtime();
     var ov=document.getElementById('ach-login-overlay'); if(ov) ov.classList.add('ach-hidden');
     var ub=document.getElementById('ach-userbar'); if(ub) ub.style.display='none';
-    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v12.06';
+    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v12.07';
     flag('Synchronis\u00e9');
     // fin de l'init : on autorise la journalisation des actions
     setTimeout(function(){ installInterceptor._init=false; }, 1500);
@@ -28573,7 +28573,7 @@ details.cx-more{margin-top:8px;} details.cx-more>summary{font-size:11.5px;color:
   };
   /* v12.04 : le post éditorial « Vacances de la Toussaint » (15/10, test) quitte Appartements → Instagram + Facebook (demande Laurent) */
   /* v12.06 : ne dépend plus de la règle éditoriale (la vraie ligne n'avait ni texte ni src) : edito forcé + Instagram ET Facebook */
-  function cxMigToussaint(){ try{ if(!window.commPostsSet) return; regRows().forEach(function(o){ if(o&&!o.cxnet2&&/toussaint/i.test(''+(o.ref||'')+' '+(o.texte||''))){ commPostsSet(o.id,{edito:1,reseaux:['Instagram','Facebook'],cxnet:1,cxnet2:1}); } }); }catch(e){ window.achErr&&achErr(e); } }
+  function cxMigToussaint(){ try{ if(!window.commPostsSet) return; regRows().forEach(function(o){ if(o&&!o.cxnet2&&(''+(o.date||'')).slice(0,10)<='2026-10-29'&&/vacances de la toussaint/i.test(''+(o.ref||'')+' '+(o.texte||''))){   /* v12.07 : uniquement l'ancienne ligne (pas les futurs posts Toussaint) */ commPostsSet(o.id,{edito:1,reseaux:['Instagram','Facebook'],cxnet:1,cxnet2:1}); } }); }catch(e){ window.achErr&&achErr(e); } }
   window.cxMigToussaint=cxMigToussaint;
   (function w2(n){ if((window.ACH_PULLED)||(!window.ACH_REAL&&n>3)){ cxMigToussaint(); return; } if(n<120) setTimeout(function(){ w2(n+1); },1000); })(0);
   /* rsRender (import Meta) écrit ses statuts dans #rs-st : on rafraîchit notre vue après chaque import */
