@@ -1843,7 +1843,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     </div>
   </div>
   </div>
-  <div class="logo-ver app-ver">Achille App — v11.68</div>
+  <div class="logo-ver app-ver">Achille App — v11.69</div>
 </aside>
 <div id="mob-bk" onclick="mobNav(false)"></div>
 <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Réduire la barre latérale">‹</button>
@@ -14864,7 +14864,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     startRealtime();
     var ov=document.getElementById('ach-login-overlay'); if(ov) ov.classList.add('ach-hidden');
     var ub=document.getElementById('ach-userbar'); if(ub) ub.style.display='none';
-    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v11.68';
+    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v11.69';
     flag('Synchronis\u00e9');
     // fin de l'init : on autorise la journalisation des actions
     setTimeout(function(){ installInterceptor._init=false; }, 1500);
@@ -27456,7 +27456,7 @@ a.pp-btn{text-decoration:none;display:inline-block;}
 .pp-dem-x{border:1px solid var(--border);background:#fff;border-radius:7px;font-size:11px;padding:3px 8px;cursor:pointer;}
 .pp-badge-dem{font-size:10px;font-weight:700;padding:2px 9px;border-radius:12px;white-space:nowrap;background:rgba(90,74,117,.10);color:#5a4a75;border:1px solid rgba(90,74,117,.35);}
 #pp-zoom{position:fixed;inset:0;z-index:99999;background:rgba(26,26,24,.82);display:flex;align-items:center;justify-content:center;padding:18px;cursor:zoom-out;}
-#pp-zoom img{max-width:min(92vw,620px);max-height:90vh;border-radius:8px;box-shadow:0 20px 60px rgba(0,0,0,.5);}
+#pp-zoom > img{max-width:min(92vw,620px);max-height:90vh;border-radius:8px;box-shadow:0 20px 60px rgba(0,0,0,.5);}
 @media (max-width:880px){ .pp-body{grid-template-columns:1fr;} .pp-thumbs{grid-template-columns:repeat(4,1fr);} .pp-thumb.one{max-width:100%;} }
 </style>
 <script>
@@ -27570,7 +27570,8 @@ a.pp-btn{text-decoration:none;display:inline-block;}
   var DEM_K='ach_pret_demandes_v1', DEM_CLOUD='idees_posts_demandes', _askSrc='idee';
   function demList(){ return lsArr(DEM_K); }
   function demSave(a){ try{ localStorage.setItem(DEM_K, JSON.stringify(a)); }catch(e){window.achErr&&achErr(e)} demPush(a); }
-  function demPush(a){ if(typeof window.achKVSet!=='function') return; var open=(a||demList()).filter(function(d){ return d&&!d.done&&!d.del; }); try{ window.achKVSet(DEM_CLOUD, {maj:new Date().toISOString(), n:open.length, demandes:open}); }catch(e){window.achErr&&achErr(e)} }
+  function demPush(a){ if(typeof window.achKVSet!=='function') return; var open=(a||demList()).filter(function(d){ return d&&!d.done&&!d.del; }); var fm=[]; try{ fm=window.stFondsMasques?stFondsMasques():[]; }catch(e){} try{ window.achKVSet(DEM_CLOUD, {maj:new Date().toISOString(), n:open.length, demandes:open, fonds_masques:fm}); }catch(e){window.achErr&&achErr(e)} }
+  window.ppDemPush=function(){ demPush(); };   /* v11.69 : le studio signale les fonds retirés */
   window.ppAskToggle=function(){ var b=document.getElementById('pp-ask-body'), c=document.getElementById('pp-ask-chev'); if(!b) return; var o=b.style.display==='none'; b.style.display=o?'':'none'; if(c) c.textContent=o?'▴':'▾'; if(o){ ppAskCartes(); demRender(); } };
   window.ppAskSrc=function(s,btn){ _askSrc=s; document.querySelectorAll('.pp-src-btn').forEach(function(b){ b.classList.toggle('on', b.getAttribute('data-src')===s); });
     var l=document.getElementById('pp-ask-lien-row'), c=document.getElementById('pp-ask-carte-row'), lb=document.getElementById('pp-ask-txt-lbl'), ta=document.getElementById('pp-ask-txt');
@@ -27681,6 +27682,19 @@ a.pp-btn{text-decoration:none;display:inline-block;}
 .st-photos{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;}
 .st-ph{aspect-ratio:1;border-radius:6px;overflow:hidden;border:2px solid transparent;cursor:pointer;background:#eee;}
 .st-ph.on{border-color:var(--terra);} .st-ph img{width:100%;height:100%;object-fit:cover;display:block;}
+.st-sw-wrap{max-height:300px;overflow:auto;padding-right:4px;}
+.st-sw-g{font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:#a09890;margin:6px 0 4px;}
+.st-sw-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;}
+.st-sw{position:relative;cursor:pointer;}
+.st-sw-in{aspect-ratio:4/5;border-radius:7px;border:2px solid transparent;box-shadow:0 0 0 1px var(--border);display:flex;align-items:center;justify-content:center;overflow:hidden;}
+.st-sw-in span{font-family:'AchKenoky',serif;font-size:18px;}
+.st-sw.on .st-sw-in{border-color:var(--terra);box-shadow:0 0 0 1px var(--terra);}
+.st-sw.off{opacity:.55;}
+.st-sw-n{font-size:9.5px;color:var(--gris);line-height:1.2;margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.st-sw-x{position:absolute;top:3px;right:3px;width:20px;height:20px;border-radius:50%;border:none;background:rgba(26,26,24,.65);color:#fff;font-size:11px;line-height:20px;padding:0;cursor:pointer;display:none;}
+.st-sw:hover .st-sw-x,.st-sw-x.rest{display:block;}
+@media (hover:none){ .st-sw-x{display:block;} }
+.st-sw-acts{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;}
 .st-up{border:1px dashed var(--border);border-radius:8px;padding:8px;text-align:center;font-size:12px;color:var(--gris);cursor:pointer;}
 .st-up:hover{border-color:var(--terra);color:var(--terra);}
 .st-bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;padding:10px 16px;border-top:1px solid var(--border);background:#fff;}
@@ -27701,10 +27715,47 @@ a.pp-btn{text-decoration:none;display:inline-block;}
   'use strict';
   var KIT='https://iagxsulepbwlnfrslspn.supabase.co/storage/v1/object/public/posts-visuels/_charte/officielle/';
   var COL={creme:'#e2d8cb',olive:'#4c533b',terra:'#b47360',noir:'#1a1a18',gris:'#7a807b'};
-  var BG={olive:{img:'tex-olive.jpg',story:'tex-olive-story.jpg',sq:'tex-olive-sq.jpg',fg:'#e2d8cb',logo:'creme',acc:'#e2d8cb'},
-          creme:{img:'tex-creme.jpg',story:'tex-creme.jpg',sq:'tex-creme-sq.jpg',fg:'#1a1a18',logo:'noir',acc:'#b47360'},
-          terra:{color:'#b47360',fg:'#e2d8cb',logo:'creme',acc:'#e2d8cb'},
-          noir:{color:'#1a1a18',fg:'#e2d8cb',logo:'creme',acc:'#b47360'}};
+  /* v11.69 : BIBLIOTHÈQUE DE FONDS — présélections + fonds importés ; chacun peut être masqué (ach_studio_fonds_v1, partagé) */
+  var FONDS_K='ach_studio_fonds_v1';
+  function tex(f,a,b,c){ return function(fmt){ return 'background-image:url('+KIT+(fmt==='story'?(b||a):(fmt==='sq'?(c||a):a))+');background-size:cover;background-position:center'; }; }
+  function uni(c){ return function(){ return 'background:'+c; }; }
+  function grad(a,b){ return function(){ return 'background:linear-gradient(160deg,'+a+' 0%,'+b+' 100%)'; }; }
+  function motif(c){ return uni(c); }
+  function motifDeco(m,op){ return '<div class="st-abs" style="inset:0;background-image:url('+KIT+m+');background-size:640px auto;background-repeat:repeat;opacity:'+op+'"></div>'; }
+  var CLAIR={fg:'#1a1a18',logo:'noir',acc:'#b47360',light:true}, FONCE={fg:'#e2d8cb',logo:'creme',acc:'#e2d8cb',light:false};
+  function F(id,nom,grp,css,tone,extra){ return Object.assign({id:id,nom:nom,grp:grp,css:css},tone,extra||{}); }
+  var FONDS=[
+    F('olive','Papier olive embossé','Textures',tex('tex-olive.jpg','tex-olive.jpg','tex-olive-story.jpg','tex-olive-sq.jpg'),FONCE),
+    F('creme','Papier crème','Textures',tex('tex-creme.jpg','tex-creme.jpg','tex-creme.jpg','tex-creme-sq.jpg'),CLAIR),
+    F('ivoire','Ivoire','Unis',uni('#f4efe7'),CLAIR),
+    F('blanc','Blanc cassé','Unis',uni('#faf8f5'),CLAIR),
+    F('creme-uni','Crème','Unis',uni('#e2d8cb'),CLAIR),
+    F('sable','Sable','Unis',uni('#d6c8b4'),CLAIR),
+    F('olive-uni','Olive','Unis',uni('#4c533b'),FONCE),
+    F('olive-fonce','Olive profond','Unis',uni('#353a2a'),FONCE),
+    F('terra','Terra','Unis',uni('#b47360'),FONCE),
+    F('terra-doux','Terra poudré','Unis',uni('#d9b3a4'),CLAIR),
+    F('gris','Gris vert','Unis',uni('#7a807b'),FONCE),
+    F('noir','Noir','Unis',uni('#1a1a18'),Object.assign({},FONCE,{acc:'#b47360'})),
+    F('deg-olive-noir','Olive → noir','Dégradés',grad('#4c533b','#1a1a18'),FONCE),
+    F('deg-terra-olive','Terra → olive','Dégradés',grad('#b47360','#4c533b'),FONCE),
+    F('deg-ivoire-sable','Ivoire → sable','Dégradés',grad('#f7f3ec','#d6c8b4'),CLAIR),
+    F('deg-terra-ivoire','Terra → ivoire','Dégradés',grad('#d9b3a4','#f4efe7'),CLAIR),
+    F('motif-olive','Olive · motif monogramme','Motifs',motif('#4c533b'),FONCE,{deco:motifDeco('motif-creme.png',.09)}),
+    F('motif-ivoire','Ivoire · motif monogramme','Motifs',motif('#f4efe7'),CLAIR,{deco:motifDeco('motif-olive.png',.07)}),
+    F('motif-terra','Terra · motif monogramme','Motifs',motif('#b47360'),FONCE,{deco:motifDeco('motif-creme.png',.11)}),
+    F('cadre-ivoire','Ivoire encadré','Cadres',uni('#f4efe7'),CLAIR,{deco:'<div class="st-abs" style="inset:34px;border:1.5px solid #4c533b;opacity:.55"></div><div class="st-abs" style="inset:46px;border:1px solid #4c533b;opacity:.3"></div>'}),
+    F('cadre-olive','Olive encadré','Cadres',uni('#4c533b'),FONCE,{deco:'<div class="st-abs" style="inset:34px;border:1.5px solid #e2d8cb;opacity:.6"></div><div class="st-abs" style="inset:46px;border:1px solid #e2d8cb;opacity:.3"></div>'}),
+    F('photo-interieur','Photo intérieur (voilée)','Photos',uni('#1a1a18'),FONCE,{photo:'photo-interieur.jpg'}),
+    F('photo-vitrine','Photo vitrine (voilée)','Photos',uni('#1a1a18'),FONCE,{photo:'photo-vitrine.jpg'}),
+    F('photo-enseigne','Photo enseigne (voilée)','Photos',uni('#1a1a18'),FONCE,{photo:'photo-enseigne.jpg'})
+  ];
+  function fondsPrefs(){ try{ var o=JSON.parse(localStorage.getItem(FONDS_K)||'{}'); if(!o||typeof o!=='object') o={}; o.masques=Array.isArray(o.masques)?o.masques:[]; o.perso=Array.isArray(o.perso)?o.perso:[]; return o; }catch(e){ return {masques:[],perso:[]}; } }
+  function fondsSave(o){ try{ localStorage.setItem(FONDS_K, JSON.stringify(o)); }catch(e){ if(window.toast) toast('✗ Fond trop lourd pour être enregistré'); return false; } try{ if(window.ppDemPush) ppDemPush(); }catch(e){} return true; }
+  function allFonds(){ var pr=fondsPrefs(); return FONDS.concat(pr.perso.map(function(x){ return F(x.id,x.nom||'Mon fond','Mes fonds',function(){ return 'background-image:url('+x.img+');background-size:cover;background-position:center'; },x.light?CLAIR:FONCE,{perso:true}); })); }
+  function bgd(id, def){ var L=allFonds(); return L.filter(function(f){ return f.id===id; })[0]||L.filter(function(f){ return f.id===(def||'olive'); })[0]||FONDS[0]; }
+  function bgDeco(b){ var h=b.deco||''; if(b.photo) h='<img class="st-abs" src="'+KIT+b.photo+'" style="left:-40px;top:-40px;width:calc(100% + 80px);height:calc(100% + 80px);object-fit:cover;filter:blur(14px)"><div class="st-abs" style="inset:0;background:rgba(26,26,24,.58)"></div>'+h; return h; }
+  window.stFondsMasques=function(){ return fondsPrefs().masques.slice(); };
   var PHOTOS=[['photo-enseigne.jpg','Enseigne'],['photo-vitrine.jpg','Vitrine'],['photo-interieur.jpg','Intérieur'],['photo-interieur2.jpg','Intérieur 2']];
   var PRET_K='ach_pret_v1';
   function esc(t){ return (''+(t==null?'':t)).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
@@ -27714,35 +27765,35 @@ a.pp-btn{text-decoration:none;display:inline-block;}
   function lsObj(k){ try{ var o=JSON.parse(localStorage.getItem(k)||'{}'); return (o&&typeof o==='object'&&!Array.isArray(o))?o:{}; }catch(e){ return {}; } }
   /* ── gabarits « Papier Achille » ── */
   function wrap(sl, inner){
-    var b=BG[sl.bg]||BG.olive, cls='st-slide'+(sl.fmt==='story'?' story':(sl.fmt==='sq'?' sq':''));
-    var style=b.color?('background:'+b.color):('background-image:url('+KIT+(sl.fmt==='story'?b.story:(sl.fmt==='sq'?b.sq:b.img))+')');
+    var b=bgd(sl.bg,'olive'), cls='st-slide'+(sl.fmt==='story'?' story':(sl.fmt==='sq'?' sq':''));
+    var style=b.css(sl.fmt);
     var top=sl.fmt==='story'?150:86, lw=sl.fmt==='sq'?340:300;
     var logo=(sl.logo==='left')?'<img class="st-abs" src="'+KIT+'logo-secondaire-'+b.logo+'.png" style="top:'+top+'px;left:90px;width:240px">':'<img class="st-abs" src="'+KIT+'logo-secondaire-'+b.logo+'.png" style="top:'+top+'px;left:0;right:0;margin:auto;width:'+lw+'px">';
     var foot=sl.foot===false?'':'<div class="st-foot" style="color:'+b.fg+';bottom:'+(sl.footb||70)+'px">NEUILLY-SUR-SEINE · PARIS 16e · PARIS 17e</div>';
-    return '<div class="'+cls+'" style="'+style+';color:'+b.fg+'">'+logo+inner+foot+'</div>';
+    return '<div class="'+cls+'" style="'+style+';color:'+b.fg+'">'+bgDeco(b)+logo+inner+foot+'</div>';
   }
   function seal(s,x,y,rot){ if(!s||(!s.l1&&!s.l2)) return ''; return '<div class="st-seal" style="left:'+x+'px;top:'+y+'px;transform:rotate('+(rot||-8)+'deg)"><div>'+(s.l1?'<b>'+esc(s.l1)+'</b>':'')+esc(s.l2||'')+'</div></div>'; }
   var TPL={
     cover:{ nom:'Couverture', champs:[['titre','Titre','ta'],['sous','Sous-titre','ta'],['seal_l1','Cachet — mot fort','t'],['seal_l2','Cachet — complément','t'],['photo','Photo','photo'],['bg','Fond','bg']],
       def:{bg:'olive',logo:'center',footb:44},
-      html:function(p){ var b=BG[p.bg]||BG.olive; return wrap(p,
+      html:function(p){ var b=bgd(p.bg,'olive'); return wrap(p,
         (p.photo?'<div class="st-oval" style="width:560px;height:700px;left:260px;top:230px"><img src="'+photoUrl(p.photo)+'"></div>':'')
         +seal({l1:p.seal_l1,l2:p.seal_l2},70,700,-8)
         +'<div class="st-abs st-k" style="left:70px;right:70px;top:'+(p.photo?920:520)+'px;font-size:'+(p.photo?98:120)+'px;text-align:center">'+kt(p.titre||'')+'</div>'
         +(p.sous?'<div class="st-abs st-it" style="left:70px;right:70px;top:'+(p.photo?1138:800)+'px;font-size:'+(p.photo?40:48)+'px;line-height:1.15;text-align:center;opacity:.9">'+br(p.sous)+'</div>':'')); } },
     point:{ nom:'Point numéroté', champs:[['num','Numéro','t'],['total','Sur (total)','t'],['phrase','Phrase (citation)','ta'],['label','Petit titre de la réponse','t'],['antidote','Réponse / conseil','ta'],['detail','Détail (petit texte)','ta'],['bg','Fond','bg']],
       def:{bg:'creme',logo:'left'},
-      html:function(p){ var b=BG[p.bg]||BG.creme; return wrap(p,
+      html:function(p){ var b=bgd(p.bg,'creme'); return wrap(p,
         (p.num?'<div class="st-abs st-lbl" style="top:98px;right:90px;color:'+b.acc+';font-size:18px">'+esc(p.num)+(p.total?' / '+esc(p.total):'')+'</div>'
         +'<div class="st-abs st-k" style="left:90px;top:300px;font-size:300px;line-height:.8;color:'+b.acc+';opacity:.22">'+esc(p.num)+'</div>':'')
         +'<div class="st-abs st-it" style="left:90px;right:90px;top:430px;font-size:74px;line-height:1.1">'+br(p.phrase||'')+'</div>'
         +'<div class="st-abs st-line" style="left:92px;top:720px;background:'+b.acc+'"></div>'
         +'<div class="st-abs st-lbl" style="left:92px;top:760px;color:'+b.acc+';font-size:19px">'+esc(p.label||'L’antidote')+'</div>'
-        +'<div class="st-abs st-k" style="left:90px;right:90px;top:810px;font-size:58px;color:'+(p.bg==='creme'?COL.olive:b.fg)+'">'+kt(p.antidote||'')+'</div>'
+        +'<div class="st-abs st-k" style="left:90px;right:90px;top:810px;font-size:58px;color:'+(b.light?COL.olive:b.fg)+'">'+kt(p.antidote||'')+'</div>'
         +(p.detail?'<div class="st-abs" style="left:90px;right:220px;top:1040px;font-size:27px;line-height:1.45;opacity:.8">'+br(p.detail)+'</div>':'')); } },
     final:{ nom:'Finale', champs:[['titre','Titre','ta'],['sous','Appel à l’action','t'],['seal_l1','Cachet — mot fort','t'],['seal_l2','Cachet — complément','t'],['photo','Photo','photo'],['source','Source (petit)','t'],['bg','Fond','bg']],
       def:{bg:'olive',logo:'center'},
-      html:function(p){ var b=BG[p.bg]||BG.olive; return wrap(p,
+      html:function(p){ var b=bgd(p.bg,'olive'); return wrap(p,
         (p.photo?'<div class="st-oval" style="width:520px;height:650px;left:280px;top:250px"><img src="'+photoUrl(p.photo)+'"></div>':'<img class="st-abs" src="'+KIT+'submark-'+b.logo+'.png" style="left:0;right:0;margin:auto;top:320px;height:460px">')
         +seal({l1:p.seal_l1,l2:p.seal_l2},780,720,7)
         +'<div class="st-abs st-k" style="left:70px;right:70px;top:960px;font-size:96px;text-align:center">'+kt(p.titre||'')+'</div>'
@@ -27750,15 +27801,15 @@ a.pp-btn{text-decoration:none;display:inline-block;}
         +(p.source?'<div class="st-abs" style="left:0;right:0;bottom:116px;text-align:center;font-size:15px;letter-spacing:.14em;opacity:.6">'+esc(p.source)+'</div>':'')); } },
     quote:{ nom:'Citation + courbe', champs:[['phrase','Citation','ta'],['seal_l1','Cachet — mot fort','t'],['seal_l2','Cachet — complément','t'],['morale','Moralité / conclusion','ta'],['legende','Légende (petit)','t'],['bg','Fond','bg']],
       def:{bg:'creme',logo:'left'},
-      html:function(p){ var b=BG[p.bg]||BG.creme; return wrap(p,
+      html:function(p){ var b=bgd(p.bg,'creme'); return wrap(p,
         '<div class="st-abs st-it" style="left:90px;right:90px;top:250px;font-size:70px;line-height:1.12">'+br(p.phrase||'')+'</div>'
         +seal({l1:p.seal_l1,l2:p.seal_l2},780,740,9)
         +'<svg class="st-abs" style="left:90px;top:520px" width="900" height="420" viewBox="0 0 900 420" fill="none"><path d="M20 120 C 140 110, 220 190, 330 220 S 520 330, 600 300 S 760 160, 880 60" stroke="'+b.acc+'" stroke-width="5" stroke-linecap="round"/><circle cx="880" cy="60" r="12" fill="'+b.acc+'"/></svg>'
         +(p.legende?'<div class="st-abs st-lbl" style="left:120px;top:900px;font-size:20px;opacity:.7">'+esc(p.legende)+'</div>':'')
-        +'<div class="st-abs st-k" style="left:90px;right:90px;top:1000px;font-size:54px;color:'+(p.bg==='creme'?COL.olive:b.fg)+'">'+kt(p.morale||'')+'</div>'); } },
+        +'<div class="st-abs st-k" style="left:90px;right:90px;top:1000px;font-size:54px;color:'+(b.light?COL.olive:b.fg)+'">'+kt(p.morale||'')+'</div>'); } },
     example:{ nom:'Exemple chiffré', champs:[['kicker','Surtitre','t'],['l1','Ligne 1 — libellé','t'],['v1','Ligne 1 — valeur','t'],['l2','Ligne 2 — libellé','t'],['v2','Ligne 2 — valeur','t'],['texte','Texte','ta'],['bg','Fond','bg']],
       def:{bg:'creme',logo:'left'},
-      html:function(p){ var b=BG[p.bg]||BG.creme; var vc=(p.bg==='creme'?COL.terra:b.acc); return wrap(p,
+      html:function(p){ var b=bgd(p.bg,'creme'); var vc=(b.light?COL.terra:b.acc); return wrap(p,
         (p.kicker?'<div class="st-abs st-lbl" style="left:0;right:0;top:300px;text-align:center;color:'+b.acc+';font-size:22px">'+esc(p.kicker)+'</div>':'')
         +'<div class="st-abs st-line" style="left:0;right:0;margin:auto;top:360px;background:'+b.acc+'"></div>'
         +'<div class="st-abs" style="left:90px;right:90px;top:430px;text-align:center;font-size:42px">'+esc(p.l1||'')+' <span class="st-k" style="font-size:66px;margin-left:14px">'+kt(p.v1||'')+'</span></div>'
@@ -27768,14 +27819,14 @@ a.pp-btn{text-decoration:none;display:inline-block;}
         +(p.texte?'<div class="st-abs" style="left:130px;right:130px;top:820px;text-align:center;font-size:35px;line-height:1.45;opacity:.85">'+br(p.texte)+'</div>':'')); } },
     quiz:{ nom:'Story quiz (vrai / faux)', champs:[['kicker','Surtitre','t'],['phrase','Affirmation','ta'],['a','Réponse A','t'],['b','Réponse B','t'],['hint','Rappel (petit)','t'],['bg','Fond','bg']],
       def:{bg:'creme',logo:'center',fmt:'story',a:'VRAI',b:'FAUX',hint:'PLACER ICI LE STICKER QUIZ'},
-      html:function(p){ var b=BG[p.bg]||BG.creme; p.fmt='story'; var pc=(p.bg==='creme'?COL.terra:b.acc); return wrap(p,
+      html:function(p){ var b=bgd(p.bg,'creme'); p.fmt='story'; var pc=(b.light?COL.terra:b.acc); return wrap(p,
         (p.kicker?'<div class="st-abs st-lbl" style="left:0;right:0;top:620px;text-align:center;color:'+b.acc+';font-size:24px">'+esc(p.kicker)+'</div>':'')
         +'<div class="st-abs st-it" style="left:90px;right:90px;top:700px;text-align:center;font-size:80px;line-height:1.16">'+br(p.phrase||'')+'</div>'
         +'<div class="st-abs" style="left:0;right:0;top:1100px;display:flex;gap:40px;justify-content:center"><span style="font-size:28px;letter-spacing:.3em;border:1.5px solid '+pc+';color:'+pc+';padding:22px 50px;border-radius:60px">'+esc(p.a||'VRAI')+'</span><span style="font-size:28px;letter-spacing:.3em;border:1.5px solid '+pc+';color:'+pc+';padding:22px 50px;border-radius:60px">'+esc(p.b||'FAUX')+'</span></div>'
         +(p.hint?'<div class="st-abs" style="left:0;right:0;top:1230px;text-align:center;font-size:18px;letter-spacing:.15em;opacity:.45">'+esc(p.hint)+'</div>':'')); } },
     message:{ nom:'Story message', champs:[['titre','Titre','ta'],['sous','Sous-titre','ta'],['texte','Texte','ta'],['source','Source (petit)','t'],['bg','Fond','bg']],
       def:{bg:'olive',logo:'center',fmt:'story'},
-      html:function(p){ var b=BG[p.bg]||BG.olive; p.fmt='story'; return wrap(p,
+      html:function(p){ var b=bgd(p.bg,'olive'); p.fmt='story'; return wrap(p,
         '<div class="st-abs st-k" style="left:80px;right:80px;top:560px;text-align:center;font-size:104px">'+kt(p.titre||'')+'</div>'
         +(p.sous?'<div class="st-abs st-it" style="left:80px;right:80px;top:850px;text-align:center;font-size:58px;line-height:1.2;color:'+b.acc+'">'+br(p.sous)+'</div>':'')
         +'<div class="st-abs st-line" style="left:0;right:0;margin:auto;top:1060px;background:'+b.acc+'"></div>'
@@ -27784,7 +27835,7 @@ a.pp-btn{text-decoration:none;display:inline-block;}
         +(p.source?'<div class="st-abs" style="left:60px;right:60px;bottom:210px;text-align:center;font-size:14px;letter-spacing:.1em;opacity:.5;line-height:1.6">'+esc(p.source)+'</div>':'')); } },
     square:{ nom:'Carré LinkedIn', champs:[['kicker','Surtitre','t'],['titre','Titre','ta'],['texte','Texte','ta'],['bg','Fond','bg']],
       def:{bg:'olive',logo:'center',fmt:'sq'},
-      html:function(p){ var b=BG[p.bg]||BG.olive; p.fmt='sq'; return wrap(p,
+      html:function(p){ var b=bgd(p.bg,'olive'); p.fmt='sq'; return wrap(p,
         '<img class="st-abs" src="'+KIT+'submark-'+b.logo+'.png" style="left:0;right:0;margin:auto;top:290px;height:700px;opacity:.09">'
         +(p.kicker?'<div class="st-abs st-lbl" style="left:0;right:0;top:300px;text-align:center;color:'+b.acc+';font-size:22px">'+esc(p.kicker)+'</div>':'')
         +'<div class="st-abs st-k" style="left:100px;right:100px;top:380px;font-size:96px;text-align:center">'+kt(p.titre||'')+'</div>'
@@ -27822,7 +27873,7 @@ a.pp-btn{text-decoration:none;display:inline-block;}
     var w=document.createElement('div'); w.id='st-ov';
     w.innerHTML='<div class="st-win"><div class="st-head"><h3>🎨 '+esc(p.titre||'')+'</h3><span class="st-mod" id="st-mod"></span><button class="st-btn" onclick="stClose()">✕ Fermer</button></div>'
       +'<div class="st-body"><div class="st-prev"><div class="st-stage" id="st-stage"></div><div class="st-thumbs" id="st-thumbs"></div></div><div class="st-form" id="st-form"></div></div>'
-      +'<div class="st-bar"><button class="st-btn" onclick="stReset()">↺ Revenir à la version de Claude</button><span style="flex:1"></span><button class="st-btn" id="st-exp" onclick="stExportCur(this)">⬇ Exporter les PNG</button><button class="st-btn st-main" onclick="stSave()">💾 Enregistrer</button></div></div>';
+      +'<div class="st-bar"><button class="st-btn" onclick="stReset()">↺ Revenir à la version de Claude</button><span style="flex:1"></span><button class="st-btn" onclick="stFinal(this)" title="Affiche le PNG exact qui sera publié">👁 Rendu final</button><button class="st-btn" id="st-exp" onclick="stExportCur(this)">⬇ Exporter les PNG</button><button class="st-btn st-main" onclick="stSave()">💾 Enregistrer</button></div></div>';
     w.addEventListener('click', function(e){ if(e.target===w) stClose(); });
     document.body.appendChild(w); stPaint();
   };
@@ -27836,7 +27887,7 @@ a.pp-btn{text-decoration:none;display:inline-block;}
     var m=document.getElementById('st-mod'); if(m) m.textContent=(lsObj(PRET_K)[''+ST.p.id]||{}).slides?'version modifiée':'';
     var f='<div style="font-size:12px;color:var(--gris-2)">Slide '+(ST.cur+1)+' · '+esc(T.nom)+'</div>';
     (T.champs||[]).forEach(function(c){ var k=c[0], lab=c[1], ty=c[2], v=sl[k]==null?'':sl[k];
-      if(ty==='bg'){ f+='<div><label>'+esc(lab)+'</label><select onchange="stSet(\''+k+'\',this.value)">'+['olive','creme','terra','noir'].map(function(b){ return '<option value="'+b+'"'+((sl.bg||T.def.bg)===b?' selected':'')+'>'+({olive:'Olive (papier embossé)',creme:'Crème (papier)',terra:'Terra',noir:'Noir'})[b]+'</option>'; }).join('')+'</select></div>'; }
+      if(ty==='bg'){ f+=bgPicker(sl, T); }
       else if(ty==='photo'){ f+='<div><label>'+esc(lab)+'</label><div class="st-photos">'+PHOTOS.map(function(ph){ return '<div class="st-ph'+(v===ph[0]?' on':'')+'" title="'+esc(ph[1])+'" onclick="stSet(\''+k+'\',\''+ph[0]+'\')"><img src="'+KIT+ph[0]+'"></div>'; }).join('')+(v&&v.indexOf('data:')===0?'<div class="st-ph on" title="Votre photo"><img src="'+v+'"></div>':'')+'</div>'
         +'<label class="st-up" style="margin-top:6px">📷 Choisir une photo sur cet appareil<input type="file" accept="image/*" style="display:none" onchange="stPhoto(this,\''+k+'\')"></label>'
         +(v?'<button class="st-btn" style="margin-top:6px" onclick="stSet(\''+k+'\',\'\')">Sans photo</button>':'')+'</div>'; }
@@ -27844,6 +27895,44 @@ a.pp-btn{text-decoration:none;display:inline-block;}
       else { f+='<div><label>'+esc(lab)+'</label><input type="text" value="'+esc(v)+'" oninput="stSet(\''+k+'\',this.value)"></div>'; } });
     document.getElementById('st-form').innerHTML=f;
   }
+  /* ── v11.69 : sélecteur de fonds visuel (masquer / réafficher / importer / appliquer à toutes) ── */
+  var _showMasked=false;
+  function swatch(f, cur, masked){
+    var st=f.css('')+';'+(f.photo?'background-image:linear-gradient(rgba(26,26,24,.55),rgba(26,26,24,.55)),url('+KIT+f.photo+');background-size:cover;background-position:center':'');
+    return '<div class="st-sw'+(f.id===cur?' on':'')+(masked?' off':'')+'" title="'+esc(f.nom)+'" onclick="stSet(\'bg\',\''+f.id+'\')">'
+      +'<div class="st-sw-in" style="position:relative;'+st+'">'+(f.deco?'<div style="position:absolute;inset:0;transform:scale(.12);transform-origin:0 0;width:833%;height:833%">'+f.deco+'</div>':'')+'<span style="position:relative;color:'+f.fg+'">Aa</span></div>'
+      +(masked?'<button class="st-sw-x rest" title="Réafficher ce fond" onclick="event.stopPropagation();stFondShow(\''+f.id+'\')">↺</button>'
+               :'<button class="st-sw-x" title="Retirer ce fond de la bibliothèque" onclick="event.stopPropagation();stFondHide(\''+f.id+'\')">✕</button>')
+      +'<div class="st-sw-n">'+esc(f.nom)+'</div></div>';
+  }
+  function bgPicker(sl, T){
+    var cur=sl.bg||T.def.bg, pr=fondsPrefs(), L=allFonds(), vis=L.filter(function(f){ return pr.masques.indexOf(f.id)<0; }), mk=L.filter(function(f){ return pr.masques.indexOf(f.id)>=0; });
+    var grps={}; vis.forEach(function(f){ (grps[f.grp]=grps[f.grp]||[]).push(f); });
+    var h='<div><label>Fond</label><div class="st-sw-wrap">';
+    Object.keys(grps).forEach(function(g){ h+='<div class="st-sw-g">'+esc(g)+'</div><div class="st-sw-grid">'+grps[g].map(function(f){ return swatch(f,cur,false); }).join('')+'</div>'; });
+    h+='</div><div class="st-sw-acts"><label class="st-btn" style="cursor:pointer">＋ Importer un fond<input type="file" accept="image/*" style="display:none" onchange="stFondImport(this)"></label>'
+      +'<button class="st-btn" onclick="stFondAll()" title="Mettre ce fond sur toutes les slides de ce post">Appliquer à toutes les slides</button></div>';
+    if(mk.length) h+='<div style="margin-top:6px"><button class="st-btn" onclick="stToggleMasked()">'+(_showMasked?'▴ Cacher':'▾ Voir')+' les fonds retirés ('+mk.length+')</button>'+(_showMasked?'<div class="st-sw-grid" style="margin-top:6px">'+mk.map(function(f){ return swatch(f,cur,true); }).join('')+'</div>':'')+'</div>';
+    return h+'</div>';
+  }
+  window.stToggleMasked=function(){ _showMasked=!_showMasked; stPaint(); };
+  window.stFondHide=function(id){ var f=bgd(id); var pr=fondsPrefs();
+    if(f.perso){ if(!confirm('Supprimer définitivement le fond « '+f.nom+' » ?')) return; pr.perso=pr.perso.filter(function(x){ return x.id!==id; }); }
+    else { if(pr.masques.indexOf(id)<0) pr.masques.push(id); }
+    if(fondsSave(pr) && window.toast) toast(f.perso?'🗑 Fond supprimé':'✕ « '+f.nom+' » retiré — Claude ne l’utilisera plus'); stPaint(); };
+  window.stFondShow=function(id){ var pr=fondsPrefs(); pr.masques=pr.masques.filter(function(x){ return x!==id; }); fondsSave(pr); stPaint(); };
+  window.stFondAll=function(){ var b=ST.slides[ST.cur].bg; if(!b) return; ST.slides.forEach(function(s){ s.bg=b; }); stPaint(); if(window.toast) toast('Fond appliqué aux '+ST.slides.length+' slides — pensez à 💾 Enregistrer'); };
+  window.stFondImport=function(inp){ var f=inp.files&&inp.files[0]; if(!f) return; var r=new FileReader(); r.onload=function(){ var im=new Image(); im.onload=function(){
+      var W=1080, s=W/im.width, c=document.createElement('canvas'); c.width=W; c.height=Math.round(im.height*s); var x=c.getContext('2d'); x.drawImage(im,0,0,c.width,c.height);
+      var d=x.getImageData(0,0,c.width,c.height).data, sum=0, n=0; for(var k=0;k<d.length;k+=4*97){ sum+=0.2126*d[k]+0.7152*d[k+1]+0.0722*d[k+2]; n++; }
+      var light=(sum/n)>150, nom=(f.name||'Mon fond').replace(/\.[^.]+$/,'').slice(0,40);
+      var pr=fondsPrefs(), id='perso-'+Date.now().toString(36); pr.perso.push({id:id, nom:nom, img:c.toDataURL('image/jpeg',.82), light:light});
+      if(fondsSave(pr)){ stSet('bg',id); if(window.toast) toast('＋ Fond ajouté à votre bibliothèque'); } };
+    im.src=r.result; }; r.readAsDataURL(f); };
+  /* rendu final : le PNG exact qui sera exporté / publié */
+  window.stFinal=function(btn){ var t=btn.textContent; btn.textContent='⏳ Rendu…'; btn.disabled=true;
+    renderPng(ST.slides[ST.cur]).then(function(url){ btn.textContent=t; btn.disabled=false; var w=document.createElement('div'); w.id='pp-zoom'; w.style.cursor='zoom-out'; w.style.zIndex='99999'; w.innerHTML='<div style="text-align:center"><img src="'+url+'" style="max-width:min(92vw,620px);max-height:86vh;border-radius:6px;box-shadow:0 20px 60px rgba(0,0,0,.5)"><div style="color:#fff;font-size:12px;margin-top:8px;font-family:Jost,sans-serif">Rendu final, identique au PNG exporté · cliquer pour fermer</div></div>'; w.onclick=function(){ w.remove(); }; document.body.appendChild(w); })
+      .catch(function(e){ btn.textContent=t; btn.disabled=false; if(window.toast) toast('✗ Rendu impossible : '+(e&&e.message||e)); }); };
   window.stGo=function(i){ ST.cur=i; stPaint(); };
   window.stSet=function(k,v){ ST.slides[ST.cur][k]=v; var stage=document.getElementById('st-stage'); if(stage){ stage.innerHTML=scaled(ST.slides[ST.cur],stW(ST.slides[ST.cur],stage)); } if(k==='photo'||k==='bg') stPaint(); };
   window.stPhoto=function(inp,k){ var f=inp.files&&inp.files[0]; if(!f) return; var r=new FileReader(); r.onload=function(){ var im=new Image(); im.onload=function(){ var mx=1400, s=Math.min(1,mx/Math.max(im.width,im.height)); var c=document.createElement('canvas'); c.width=Math.round(im.width*s); c.height=Math.round(im.height*s); c.getContext('2d').drawImage(im,0,0,c.width,c.height); stSet(k, c.toDataURL('image/jpeg',.86)); }; im.src=r.result; }; r.readAsDataURL(f); };
