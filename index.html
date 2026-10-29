@@ -1843,7 +1843,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     </div>
   </div>
   </div>
-  <div class="logo-ver app-ver">Achille App — v12.07</div>
+  <div class="logo-ver app-ver">Achille App — v12.08</div>
 </aside>
 <div id="mob-bk" onclick="mobNav(false)"></div>
 <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Réduire la barre latérale">‹</button>
@@ -3267,20 +3267,22 @@ table.es-t td.del button{border:none;background:none;color:var(--gris-2);cursor:
     </div>
     <div class="comm-body">
       <div class="comm-panel active" id="comm-panel-posts">
+        <div class="cx-pubtop" id="comm-app-kpis"></div>
         <div id="comm-alerts" class="comm-alerts" style="display:none"></div>
         <div class="comm-tablewrap">
           <table class="comm-table mob-cards">
             <thead><tr>
-              <th class="comm-sort" data-tbl="posts" data-field="ref" onclick="commSetSort('posts','ref')">Réf<span class="comm-arrow"></span></th><th class="comm-sort" data-tbl="posts" data-field="adresse" onclick="commSetSort('posts','adresse')">Adresse<span class="comm-arrow"></span></th><th>Ville · Arrond.</th><th>Superficie</th><th>Ch.</th><th>Clients</th><th class="comm-sort" data-tbl="posts" data-field="date" onclick="commSetSort('posts','date')" title="Couleur de la date : vert = postée il y a moins dʼ1 mois · orange = 1 à 2 mois · rouge = plus de 2 mois">Date<span class="comm-arrow"></span><span class="comm-info">ⓘ</span></th><th>Réseau</th><th>Auteur</th><th>Pub</th><th>Statut</th><th></th>
+              <th></th><th class="comm-sort" data-tbl="posts" data-field="date" onclick="commSetSort('posts','date')" title="Couleur de la date : vert = postée il y a moins dʼ1 mois · orange = 1 à 2 mois · rouge = plus de 2 mois">Date<span class="comm-arrow"></span><span class="comm-info">ⓘ</span></th><th>Réseaux</th><th class="comm-sort" data-tbl="posts" data-field="ref" onclick="commSetSort('posts','ref')">Réf<span class="comm-arrow"></span></th><th class="comm-sort" data-tbl="posts" data-field="adresse" onclick="commSetSort('posts','adresse')">Adresse<span class="comm-arrow"></span></th><th>Ville · Arrond.</th><th>Superficie</th><th>Ch.</th><th>Clients</th><th>Auteur</th><th>Pub</th><th>Statut</th><th class="cx-th-col"></th>
             </tr></thead>
             <tbody id="comm-posts-body"></tbody>
           </table>
         </div>
       </div>
       <div class="comm-panel" id="comm-panel-courriers">
+        <div class="cx-pubtop" id="comm-cour-kpis"></div>
         <div class="comm-tablewrap">
           <table class="comm-table mob-cards">
-            <thead><tr>
+            <thead><tr><th class="cx-th-col"></th>
               <th class="comm-sort" data-tbl="cour" data-field="date" onclick="commSetSort('cour','date')" title="Couleur de la date : vert = postée il y a moins dʼ1 mois · orange = 1 à 2 mois · rouge = plus de 2 mois">Date<span class="comm-arrow"></span><span class="comm-info">ⓘ</span></th><th class="comm-sort" data-tbl="cour" data-field="adresse" onclick="commSetSort('cour','adresse')">Adresse<span class="comm-arrow"></span></th><th>Ville · Arrond.</th><th>Source info</th><th>Commentaires</th><th>Situation</th><th>Résultats</th><th></th>
             </tr></thead>
             <tbody id="comm-cour-body"></tbody>
@@ -13741,7 +13743,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
   function reseauBadges(a){
     a=arr(a);
     if(!a.length) return '<span class="comm-ph">+ choisir</span>';
-    return a.map(function(n){ return '<span class="comm-rb" style="background:'+(RES_COL[n]||'#888')+'" title="'+n+'">'+(RES_SHORT[n]||'?')+'</span>'; }).join('');
+    return a.map(function(n){ return '<span class="comm-rb" style="background:'+(RES_COL[n]||'#888')+'" title="'+n+'">'+esc(n)+'</span>'; }).join('');   /* v12.08 : nom complet, en pastille (comme Publications) */
   }
   function closeReseauPop(){ var p=document.getElementById('comm-reseau-pop'); if(p)p.remove(); document.removeEventListener('mousedown', reseauOutside, true); }
   function reseauOutside(e){ var p=document.getElementById('comm-reseau-pop'); if(p && !p.contains(e.target)) closeReseauPop(); }
@@ -13789,7 +13791,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     return '<td style="min-width:190px"><input data-table="'+tbl+'" data-id="'+id+'" data-field="adresse" class="comm-in" value="'+esc(val)+'" placeholder="Adresse…" autocomplete="off" oninput="commAC(this)" onchange="commField(this)"></td>';
   }
   function cellDate(tbl,id,val){
-    return '<td style="min-width:126px"><input data-table="'+tbl+'" data-id="'+id+'" data-field="date" type="date" class="comm-in comm-date" value="'+esc(val)+'" style="color:'+dateColor(val)+'" onchange="commField(this)"></td>';
+    return '<td style="min-width:126px"><input data-table="'+tbl+'" data-id="'+id+'" data-field="date" type="date" class="comm-in comm-date'+(val?'':' vide')+'" value="'+esc(val)+'" style="color:'+dateColor(val)+'" onchange="commField(this)"></td>';
   }
   function postRow(o){
     var sup='<td style="min-width:84px"><span class="comm-m2"><input data-table="posts" data-id="'+o.id+'" data-field="superficie" type="number" class="comm-in comm-num" value="'+esc(o.superficie)+'" onchange="commField(this)"><i>m²</i></span></td>';
@@ -13799,14 +13801,15 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     var pub='<td style="min-width:70px"><div class="comm-pub" onclick="commPubToggle(this,\''+o.id+'\')">'+pubBadge(o.pub)+'</div></td>';
     var stat='<td style="min-width:112px"><input data-table="posts" data-id="'+o.id+'" data-field="statut" class="comm-in" list="comm-statuts" value="'+esc(o.statut)+'" onchange="commField(this)"></td>';
     var del='<td style="white-space:nowrap;"><button class="comm-repost" onclick="commRepost(\''+o.id+'\')" title="Republier ce bien à la date du jour">↻</button><button class="comm-del" onclick="commDel(\'posts\',\''+o.id+'\')" title="Supprimer la ligne">✕</button></td>';
-    return '<tr>'+refCell(o)+cellAddr('posts',o.id,o.adresse)+cellIn('posts',o.id,'ville',o.ville,'',106)
+    /* v12.08 : même présentation que Publications — vignette, Date, Réseaux, puis le bien */
+    return '<tr><td class="cx-td-th"><div class="cx-th app" title="Appartement">🏠</div></td>'+cellDate('posts',o.id,o.date)+res+refCell(o)+cellAddr('posts',o.id,o.adresse)+cellIn('posts',o.id,'ville',o.ville,'',106)
       +sup+cellIn('posts',o.id,'chambres',o.chambres,'number',46,' style="width:40px"')+cellIn('posts',o.id,'clients',o.clients,'',104)
-      +cellDate('posts',o.id,o.date)+res+aut+pub+stat+del+'</tr>';
+      +aut+pub+stat+del+'</tr>';
   }
   function courRow(o){
     var sit='<td style="min-width:120px"><input data-table="cour" data-id="'+o.id+'" data-field="situation" class="comm-in" list="comm-situations" value="'+esc(o.situation)+'" onchange="commField(this)"></td>';
     var del='<td><button class="comm-del" onclick="commDel(\'cour\',\''+o.id+'\')" title="Supprimer la ligne">✕</button></td>';
-    return '<tr>'+cellDate('cour',o.id,o.date)+cellAddr('cour',o.id,o.adresse)+cellIn('cour',o.id,'ville',o.ville,'',120)
+    return '<tr><td class="cx-td-th"><div class="cx-th cour" title="Boîtage">📬</div></td>'+cellDate('cour',o.id,o.date)+cellAddr('cour',o.id,o.adresse)+cellIn('cour',o.id,'ville',o.ville,'',120)
       +cellIn('cour',o.id,'source',o.source,'',130)+cellIn('cour',o.id,'commentaires',o.commentaires,'',180)
       +sit+cellIn('cour',o.id,'resultats',o.resultats,'',140)+del+'</tr>';
   }
@@ -13814,8 +13817,18 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
   /* v12.04 : les posts éditoriaux (idées publiées, sans adresse) vivent dans Publications, pas dans Appartements */
   window.commPostsAll=function(){ return relirePosts().slice(); };
   window.commPostsSet=function(id,patch){ relirePosts(); var o=posts.filter(function(x){ return x&&x.id===id; })[0]; if(!o) return false; Object.assign(o,patch||{}); savePosts(); try{ commRenderPosts(); }catch(e){} return true; };
-  function commRenderPosts(){ commCountRefs(); var b=document.getElementById('comm-posts-body'); if(b) b.innerHTML=commView(posts.filter(function(o){ return !commIsEditorial(o); }),'posts').map(postRow).join(''); updateCount(); commApplyPerms(); commSyncSort(); commRenderAlerts(); }
-  function commRenderCour(){ var b=document.getElementById('comm-cour-body'); if(b) b.innerHTML=commView(cour,'cour').map(courRow).join(''); updateCount(); commApplyPerms(); commSyncSort(); }
+  /* v12.08 : bandeau de chiffres identique à Publications */
+  function frDl(d){ if(!d) return '—'; var x=new Date((''+d).slice(0,10)+'T12:00:00'); return isNaN(x)?'—':x.toLocaleDateString('fr-FR',{day:'numeric',month:'short',year:'numeric'}); }
+  function kpi(l,v,sub){ return '<div class="cx-kpi"><div class="l">'+l+'</div><div class="v"'+((''+v).length>6?' style="font-size:15px"':'')+'>'+v+'</div><div class="s">'+sub+'</div></div>'; }
+  function commKpisApp(list){ var h=document.getElementById('comm-app-kpis'); if(!h) return;
+    var last=list.reduce(function(m,o){ return (o.date&&o.date>m)?o.date:m; },''), mo=new Date().toISOString().slice(0,7), nMo=list.filter(function(o){ return (''+(o.date||'')).slice(0,7)===mo; }).length;
+    var refs={}; list.forEach(function(o){ var k=refKey(o.ref); if(k) refs[k]=1; });
+    h.innerHTML='<div class="cx-kpis">'+kpi('Appartements',list.length,'publication'+(list.length>1?'s':'')+' · '+Object.keys(refs).length+' référence'+(Object.keys(refs).length>1?'s':''))+kpi('Dernière publication',frDl(last),'')+kpi('Ce mois-ci',nMo,'publication'+(nMo>1?'s':''))+'</div>'; }
+  function commKpisCour(list){ var h=document.getElementById('comm-cour-kpis'); if(!h) return;
+    var last=list.reduce(function(m,o){ return (o.date&&o.date>m)?o.date:m; },''), ok=list.filter(function(o){ return /^\s*ok\b/i.test(o.situation||''); }).length, mod=list.filter(function(o){ return /code/i.test(o.situation||''); }).length;
+    h.innerHTML='<div class="cx-kpis">'+kpi('Boîtage',list.length,'courrier'+(list.length>1?'s':''))+kpi('Dernier boîtage',frDl(last),'')+kpi('Situation « ok »',ok,mod?mod+' code'+(mod>1?'s':'')+' à revoir':'')+'</div>'; }
+  function commRenderPosts(){ commCountRefs(); var b=document.getElementById('comm-posts-body'); if(b) b.innerHTML=commView(posts.filter(function(o){ return !commIsEditorial(o); }),'posts').map(postRow).join(''); try{ commKpisApp(posts.filter(function(o){ return !commIsEditorial(o); })); }catch(e){} updateCount(); commApplyPerms(); commSyncSort(); commRenderAlerts(); }
+  function commRenderCour(){ var b=document.getElementById('comm-cour-body'); if(b) b.innerHTML=commView(cour,'cour').map(courRow).join(''); try{ commKpisCour(cour); }catch(e){} updateCount(); commApplyPerms(); commSyncSort(); }
   function updateCount(){ var el=document.getElementById('comm-count'); if(!el) return;
     var tbl=commTab==='posts'?'posts':'cour', all=commTab==='posts'?posts.filter(function(o){ return !commIsEditorial(o); }):cour;
     var shown=all.filter(function(o){return commMatch(o,tbl);}).length;
@@ -14881,7 +14894,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     startRealtime();
     var ov=document.getElementById('ach-login-overlay'); if(ov) ov.classList.add('ach-hidden');
     var ub=document.getElementById('ach-userbar'); if(ub) ub.style.display='none';
-    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v12.07';
+    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v12.08';
     flag('Synchronis\u00e9');
     // fin de l'init : on autorise la journalisation des actions
     setTimeout(function(){ installInterceptor._init=false; }, 1500);
@@ -28149,6 +28162,25 @@ details.cx-more{margin-top:8px;} details.cx-more>summary{font-size:11.5px;color:
 .cx-acts{display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end;}
 .cx-acts a,.cx-acts button{border:1px solid var(--border);background:#fff;border-radius:7px;font-size:11px;padding:3px 8px;cursor:pointer;font-family:'Jost',sans-serif;color:var(--gris);text-decoration:none;white-space:nowrap;} .cx-acts a:hover,.cx-acts button:hover{border-color:var(--terra);color:var(--terra);}
 .cx-pubtab .cx-pub-empty{border:none;box-shadow:none;background:transparent;}
+/* v12.08 : Appartements & Boîtage habillés comme Publications (même vignette, mêmes pastilles, même densité) */
+.cx-th{width:38px!important;height:38px!important;font-size:16px!important;border-radius:8px;} .cx-td-th{width:38px;padding-right:2px!important;}
+.cx-th.app{background:linear-gradient(160deg,#f4efe7,#e2d8cb);} .cx-th.cour{background:linear-gradient(160deg,#eef0e6,#dcdfcc);}
+#comm-panel-posts .comm-table td,#comm-panel-courriers .comm-table td,.cx-pubtab .comm-table td{padding:7px 10px;vertical-align:middle;}
+#comm-panel-posts .comm-table thead th,#comm-panel-courriers .comm-table thead th,.cx-pubtab .comm-table thead th{padding:11px 10px;}
+#comm-panel-posts .comm-in,#comm-panel-courriers .comm-in{font-size:13px;}
+.cx-pt,.cx-ptt{font-size:13px;}
+#comm-panel-posts .comm-date,#comm-panel-courriers .comm-date{font-weight:500;font-size:12.5px;}
+.comm-date.vide{color:transparent!important;} .comm-date.vide:focus,tr:hover .comm-date.vide{color:var(--gris-2)!important;}
+#comm-panel-posts .comm-date::-webkit-calendar-picker-indicator,#comm-panel-courriers .comm-date::-webkit-calendar-picker-indicator{opacity:0;transition:opacity .15s;}
+#comm-panel-posts tr:hover .comm-date::-webkit-calendar-picker-indicator,#comm-panel-courriers tr:hover .comm-date::-webkit-calendar-picker-indicator,.comm-date:focus::-webkit-calendar-picker-indicator{opacity:.6;}
+#comm-panel-posts select.comm-in{-webkit-appearance:none;appearance:none;background:transparent;cursor:pointer;}
+#comm-panel-posts tr:hover select.comm-in{background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23999' fill='none' stroke-width='1.5'/%3E%3C/svg%3E") no-repeat right 4px center;}
+.comm-rb{height:auto!important;min-width:0!important;padding:2px 8px!important;border-radius:10px!important;font-size:10px!important;font-weight:700;letter-spacing:.06em;text-transform:uppercase;margin:1px 4px 1px 0;line-height:1.4;}
+#comm-panel-posts .comm-reseau{display:flex;flex-wrap:wrap;align-items:center;min-width:96px;}
+#comm-panel-posts .comm-refcell .comm-in{min-width:110px;} #comm-panel-posts td:has(.comm-refcell){min-width:170px!important;} #comm-panel-posts td:has(.comm-reseau){min-width:110px!important;}
+#comm-app-kpis,#comm-cour-kpis{margin-bottom:12px;} #comm-app-kpis:empty,#comm-cour-kpis:empty{display:none;}
+#comm-panel-courriers{padding-top:4px;}
+@media (max-width:880px){ table.mob-cards td.cx-td-th{display:none!important;} }
 @media (max-width:760px){ .cx-td-s,.cx-pubtab th:nth-child(8){display:none;} .cx-td-p{min-width:200px;} }
 /* ── mobile (règle PC/mobile : tout sous 880px) ── */
 @media (max-width:880px){
@@ -28549,7 +28581,7 @@ details.cx-more{margin-top:8px;} details.cx-more>summary{font-size:11.5px;color:
     function sth(key,label,title){ return '<th class="comm-sort'+(PUB.tri===key?' comm-sort-active':'')+'" onclick="cxPubTri(\''+key+'\')" title="'+title+'">'+label+(PUB.tri===key?' ▾':'')+'</th>'; }
     function row(x){
       var isA=x.src==='appart', isM=x.src==='meta', th='';
-      if(x.live){ try{ th=stLiveThumbs(x.live,64); }catch(e){ th=''; } }
+      if(x.live){ try{ th=stLiveThumbs(x.live,38); }catch(e){ th=''; } }
       var thumb='<div class="cx-th'+(isA?' app':'')+'"'+(x.img?' style="background-image:url(\''+esc(x.img)+'\')"':'')+'>'+(th||(isA?'🏠':(x.img?'':'📝')))+'</div>';
       var cell=isA?'<div class="cx-pt open"><b>'+esc(x.titre||x.txt||'Appartement')+'</b></div>'+(x.info?'<div class="cx-ps">'+esc(x.info)+'</div>':'')
         :((x.titre&&txKey(x.txt).indexOf(txKey(x.titre).slice(0,30))!==0)?'<div class="cx-ptt">'+esc(x.titre)+'</div>':'')+'<div class="cx-pt" onclick="cxPubTxt(this)" title="Déplier / replier">'+esc(x.txt||'(sans texte)')+'</div>'+(x.type&&x.type!=='post'?'<div class="cx-ps">'+esc(x.type)+'</div>':'');
