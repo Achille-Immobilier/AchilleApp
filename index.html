@@ -1843,7 +1843,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     </div>
   </div>
   </div>
-  <div class="logo-ver app-ver">Achille App — v12.05</div>
+  <div class="logo-ver app-ver">Achille App — v12.06</div>
 </aside>
 <div id="mob-bk" onclick="mobNav(false)"></div>
 <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Réduire la barre latérale">‹</button>
@@ -13952,7 +13952,17 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
   function commCountRefs(){ commRefCnt={}; posts.forEach(function(o){ var k=refKey(o.ref); if(k) commRefCnt[k]=(commRefCnt[k]||0)+1; }); }
   function isoToFr(s){ if(!s) return ''; var q=(''+s).split('-'); return q.length===3?(q[2]+'/'+q[1]+'/'+q[0]):s; }
   function commDaysSince(iso){ if(!iso) return null; var d=new Date(iso+'T00:00:00'); if(isNaN(d.getTime())) return null; var n=new Date(); n.setHours(0,0,0,0); return Math.round((n-d)/86400000); }
-  function commIsEditorial(o){ return !!(o && (o.src||o.texte) && !(o.adresse||'').trim()); }   /* v11.56 */
+  /* v12.06 : règle élargie — la ligne « Vacances de la Toussaint » (15/10) n'avait ni texte ni src (créée avant v11.40) et restait donc
+     classée « appartement ». Ordre : choix manuel (edito 1/0) > texte/src sans adresse > ligne née d'un post « 📣 Publié » > titre-phrase sans adresse. */
+  function commIsEditorial(o){
+    if(!o) return false; if(o.edito===1) return true; if(o.edito===0) return false;
+    if((o.adresse||'').trim()) return false;
+    if(o.src||o.texte) return true;
+    var r=(''+(o.ref||'')).trim(); if(!r) return false;
+    try{ var tk=r.replace(/\s+/g,' ').toLowerCase(); if(JSON.parse(localStorage.getItem('ach_comm_avenir_v1')||'[]').some(function(c){ return c&&c.st==='publie'&&(''+(c.titre||'')).replace(/\s+/g,' ').trim().toLowerCase()===tk; })) return true; }catch(e){}
+    return r.length>=25 && /\s/.test(r) && !/^[A-Z]{2,4}\s?-?\d{2,5}\b/.test(r);
+  }
+  window.commIsEditorial=commIsEditorial;
   function commIsInactive(st){ var s=commNorm(st); return s.indexOf('vendu')>=0||s.indexOf('retir')>=0||s.indexOf('offre')>=0||s.indexOf('compromis')>=0||s.indexOf('pause')>=0||s.indexOf('archiv')>=0; }
   function refCell(o){
     var rk=refKey(o.ref), cnt=rk?(commRefCnt[rk]||0):0;
@@ -14871,7 +14881,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     startRealtime();
     var ov=document.getElementById('ach-login-overlay'); if(ov) ov.classList.add('ach-hidden');
     var ub=document.getElementById('ach-userbar'); if(ub) ub.style.display='none';
-    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v12.05';
+    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v12.06';
     flag('Synchronis\u00e9');
     // fin de l'init : on autorise la journalisation des actions
     setTimeout(function(){ installInterceptor._init=false; }, 1500);
@@ -28133,7 +28143,7 @@ details.cx-more{margin-top:8px;} details.cx-more>summary{font-size:11.5px;color:
 .cx-also{display:block;font-size:11px;color:var(--gris);margin-top:1px;line-height:1.3;}
 .cx-td-p{min-width:240px;max-width:540px;}
 .cx-pt{font-size:12.5px;line-height:1.45;color:var(--noir);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;white-space:pre-wrap;cursor:pointer;} .cx-pt.open{display:block;-webkit-line-clamp:unset;cursor:default;}
-.cx-ps{font-size:11px;color:var(--gris);margin-top:2px;}
+.cx-ps{font-size:11px;color:var(--gris);margin-top:2px;} .cx-ptt{font-size:12.5px;font-weight:600;color:var(--noir);margin-bottom:2px;line-height:1.35;}
 .cx-td-k{text-align:right;white-space:nowrap;font-size:12.5px;} .cx-na{color:#c8c4bb;}
 .cx-td-s{font-size:11px;color:var(--gris);white-space:nowrap;}
 .cx-acts{display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end;}
@@ -28431,7 +28441,7 @@ details.cx-more{margin-top:8px;} details.cx-more>summary{font-size:11.5px;color:
   var PUB={net:'tous', tri:'date', q:'', add:false};
   function metaKey(k){ return k==='instagram'?'ig':(k==='facebook'?'fb':''); }
   function regRows(){ try{ return window.commPostsAll?commPostsAll():lsArr('ach_comm_posts_v1'); }catch(e){ return []; } }
-  function isEdito(o){ return !!(o&&(o.src||o.texte)&&!(''+(o.adresse||'')).trim()); }   /* même règle que commIsEditorial (v11.56) */
+  function isEdito(o){ try{ if(window.commIsEditorial) return commIsEditorial(o); }catch(e){} return !!(o&&(o.src||o.texte)&&!(''+(o.adresse||'')).trim()); }   /* v12.06 : même règle que le tableau Appartements */
   function rowNets(o){ var r=Array.isArray(o&&o.reseaux)?o.reseaux:[]; return ORDER.filter(function(k){ return r.some(function(x){ return (''+x).toLowerCase()===NETS[k][0].toLowerCase(); }); }); }
   function txKey(t){ return (''+(t||'')).replace(/\s+/g,' ').slice(0,60).toLowerCase(); }
   /* v12.05 : une seule liste de publications réseaux, chaque item porte TOUS ses réseaux (x.nets) ; x.also = autres réseaux où le même texte existe (ligne séparée, ex. import Meta IG + FB) */
@@ -28439,17 +28449,22 @@ details.cx-more{margin-top:8px;} details.cx-more>summary{font-size:11.5px;color:
     var out=[];
     lsArr(RSP_K).forEach(function(p){ var k=p?(p.net==='ig'?'instagram':(p.net==='fb'?'facebook':'')):''; if(!k) return; out.push({id:p.id, src:'meta', nets:[k], d:p.d||'', txt:p.txt||'', type:p.type||'', url:p.url||'', img:p.img||'', likes:p.likes||0, com:p.com||0, reach:p.reach, saved:p.saved, shares:p.shares, views:p.views}); });
     var metaTx={}; out.forEach(function(x){ var t=txKey(x.txt); if(t) (metaTx[t]=metaTx[t]||[]).push(x.nets[0]); });
-    function push(x,ns){ var t=txKey(x.txt||x.titre), taken=t?(metaTx[t]||[]):[]; ns=ORDER.filter(function(k){ return ns.indexOf(k)>=0&&taken.indexOf(k)<0; }); if(!ns.length) return; x.nets=ns; out.push(x); }   /* déjà importée de Meta sur ce réseau : une seule fois */
+    var cavKey={};   /* v12.06 : un post « 📣 Publié » et la ligne de registre qu'il a créée = UNE publication (réseaux réunis) */
+    function push(x,ns){ var t=txKey(x.txt||x.titre), taken=t?(metaTx[t]||[]):[]; ns=ORDER.filter(function(k){ return ns.indexOf(k)>=0&&taken.indexOf(k)<0; }); if(!ns.length) return; x.nets=ns; out.push(x); return x; }
+    function keysOf(src,titre){ var a=[]; if(src) a.push('s:'+src); var t=txKey(titre); if(t) a.push('t:'+t); return a; }   /* déjà importée de Meta sur ce réseau : une seule fois */
     cavList().forEach(function(o){
       if(!o||o.st!=='publie') return;
       var p=o.src?prop(o.src):null, k=netOf(p,o);
       var img='', live=null; try{ live=(p&&window.stSlides)?stSlides(p):null; }catch(e){}
       if(!live){ var v=visuels(p); if(v.length) img=v[0].url; }
-      push({id:'cav:'+o.id, cav:o.id, src:'achille', d:(o.pub&&o.pub.d)||o.updated||o.created||'', txt:o.texte||o.titre||'', titre:o.titre||'', type:(p&&FORMATS[p.format])?FORMATS[p.format].replace(/^\S+\s/,''):'post', url:(o.pub&&o.pub.lien)||'', img:img, live:live?p:null, likes:0, com:0, par:(o.pub&&o.pub.par)||o.by||''}, [k]);
+      var cx=push({id:'cav:'+o.id, cav:o.id, src:'achille', d:(o.pub&&o.pub.d)||o.updated||o.created||'', txt:o.texte||o.titre||'', titre:o.titre||'', type:(p&&FORMATS[p.format])?FORMATS[p.format].replace(/^\S+\s/,''):'post', url:(o.pub&&o.pub.lien)||'', img:img, live:live?p:null, likes:0, com:0, par:(o.pub&&o.pub.par)||o.by||''}, [k]);
+      if(cx) keysOf(o.src,o.titre).forEach(function(kk){ cavKey[kk]=cx; });
     });
     /* posts éditoriaux du registre (ex : « Vacances de la Toussaint », 15/10) : ils quittent Appartements et vivent ici, sous leurs réseaux (par défaut Instagram + Facebook) */
     regRows().filter(isEdito).forEach(function(o){
       var ns=rowNets(o); if(!ns.length) ns=['instagram','facebook'];
+      var tw=keysOf(o.src,o.ref).map(function(kk){ return cavKey[kk]; }).filter(Boolean)[0];
+      if(tw){ ns.forEach(function(k){ if(tw.nets.indexOf(k)<0&&(metaTx[txKey(tw.txt||tw.titre)]||[]).indexOf(k)<0) tw.nets.push(k); }); tw.nets=ORDER.filter(function(k){ return tw.nets.indexOf(k)>=0; }); tw.reg=o.id; if(!tw.url&&o.lien) tw.url=o.lien; return; }
       push({id:'reg:'+o.id, reg:o.id, src:'registre', d:o.date||'', txt:o.texte||o.ref||'', titre:o.ref||'', type:'post', url:o.lien||'', img:'', likes:0, com:0, par:o.auteur||''}, ns);
     });
     lsArr(PUBM_K).forEach(function(m){ if(m&&!m.del&&NETS[m.net]) push({id:'man:'+m.id, man:m.id, src:'manuel', d:m.d||'', txt:m.txt||'', titre:m.titre||'', type:'post', url:m.url||'', img:'', likes:0, com:0, par:m.par||''}, [m.net]); });
@@ -28488,6 +28503,10 @@ details.cx-more{margin-top:8px;} details.cx-more>summary{font-size:11.5px;color:
     lsSet(CAV_K,a); if(window.toast) toast('💡 Repris dans « Idées en attente » — à retravailler');
   };
   window.cxPubTxt=function(el){ el.classList.toggle('open'); };
+  /* v12.06 : reclassement manuel d'une ligne du registre (1 = post réseaux, 0 = appartement) */
+  window.cxPubEdito=function(rid,v){ var o=regRows().filter(function(x){ return x&&x.id===rid; })[0]; if(!o||!window.commPostsSet) return;
+    var patch={edito:v}; if(v===1&&!rowNets(o).length) patch.reseaux=['Instagram','Facebook'];
+    commPostsSet(rid,patch); pubRender(); if(window.toast) toast(v===1?'📣 Classé en post réseaux':'🏠 Remis dans Appartements'); };
   function tagsHtml(x,k){
     var h='', ns=(x.nets||[]).slice(), cur=(k&&k!=='tous')?k:'';
     if(x.src==='appart') h+='<span class="tag" style="background:#b47360">🏠 Appartement</span>';
@@ -28533,11 +28552,13 @@ details.cx-more{margin-top:8px;} details.cx-more>summary{font-size:11.5px;color:
       if(x.live){ try{ th=stLiveThumbs(x.live,64); }catch(e){ th=''; } }
       var thumb='<div class="cx-th'+(isA?' app':'')+'"'+(x.img?' style="background-image:url(\''+esc(x.img)+'\')"':'')+'>'+(th||(isA?'🏠':(x.img?'':'📝')))+'</div>';
       var cell=isA?'<div class="cx-pt open"><b>'+esc(x.titre||x.txt||'Appartement')+'</b></div>'+(x.info?'<div class="cx-ps">'+esc(x.info)+'</div>':'')
-        :'<div class="cx-pt" onclick="cxPubTxt(this)" title="Déplier / replier">'+esc(x.txt||'(sans texte)')+'</div>'+(x.type&&x.type!=='post'?'<div class="cx-ps">'+esc(x.type)+'</div>':'');
+        :((x.titre&&txKey(x.txt).indexOf(txKey(x.titre).slice(0,30))!==0)?'<div class="cx-ptt">'+esc(x.titre)+'</div>':'')+'<div class="cx-pt" onclick="cxPubTxt(this)" title="Déplier / replier">'+esc(x.txt||'(sans texte)')+'</div>'+(x.type&&x.type!=='post'?'<div class="cx-ps">'+esc(x.type)+'</div>':'');
       function num(v){ return (isM&&v!=null)?'<b>'+n(v)+'</b>':'<span class="cx-na">—</span>'; }
       var acts=(x.url?'<a href="'+esc(x.url)+'" target="_blank" rel="noopener">Ouvrir ↗</a>':(x.cav&&isGerant()?'<button onclick="cxPubLink(\''+esc(x.cav)+'\')">🔗 Lien</button>':(x.reg&&isGerant()?'<button onclick="cxPubRegLink(\''+esc(x.reg)+'\')">🔗 Lien</button>':'')))
         +(x.cav?'<button onclick="cxOpen(\'cav\',\''+esc(x.cav)+'\');commSwitch(\'mix\')">Voir le post</button>':'')
         +(x.app?'<button onclick="cxPubGo(\'appart\')">Tableau</button>':'')
+        +(x.app&&isGerant()?'<button onclick="cxPubEdito(\''+esc(x.app)+'\',1)" title="Ce n’est pas un appartement : le classer comme post réseaux">📣 C’est un post</button>':'')
+        +(x.reg&&!x.cav&&isGerant()?'<button onclick="cxPubEdito(\''+esc(x.reg)+'\',0)" title="Le remettre dans le tableau Appartements">🏠</button>':'')
         +'<button onclick="cxPubIdee(\''+esc(x.id)+'\')" title="Reprendre comme idée">💡 Idée</button>'
         +(x.man&&isGerant()?'<button onclick="cxPubDel(\''+esc(x.man)+'\')" title="Retirer">✕</button>':'');
       return '<tr class="cx-row'+(isA?' app':'')+'"><td class="cx-td-th">'+thumb+'</td><td class="cx-td-d">'+esc(frD(x.d))+'</td><td class="cx-td-n">'+tagsHtml(x,k)+'</td><td class="cx-td-p">'+cell+'</td><td class="cx-td-k">'+num(x.likes)+'</td><td class="cx-td-k">'+num(x.com)+'</td><td class="cx-td-k">'+num(x.reach)+'</td><td class="cx-td-s">'+srcLbl(x)+'</td><td class="cx-td-a"><div class="cx-acts">'+acts+'</div></td></tr>';
@@ -28551,7 +28572,8 @@ details.cx-more{margin-top:8px;} details.cx-more>summary{font-size:11.5px;color:
     try{ if(window.stFit) stFit(root); }catch(e){}
   };
   /* v12.04 : le post éditorial « Vacances de la Toussaint » (15/10, test) quitte Appartements → Instagram + Facebook (demande Laurent) */
-  function cxMigToussaint(){ try{ if(!window.commPostsSet) return; regRows().forEach(function(o){ if(o&&isEdito(o)&&!o.cxnet&&/toussaint/i.test(''+(o.ref||'')+' '+(o.texte||''))) commPostsSet(o.id,{reseaux:['Instagram','Facebook'],cxnet:1}); }); }catch(e){ window.achErr&&achErr(e); } }
+  /* v12.06 : ne dépend plus de la règle éditoriale (la vraie ligne n'avait ni texte ni src) : edito forcé + Instagram ET Facebook */
+  function cxMigToussaint(){ try{ if(!window.commPostsSet) return; regRows().forEach(function(o){ if(o&&!o.cxnet2&&/toussaint/i.test(''+(o.ref||'')+' '+(o.texte||''))){ commPostsSet(o.id,{edito:1,reseaux:['Instagram','Facebook'],cxnet:1,cxnet2:1}); } }); }catch(e){ window.achErr&&achErr(e); } }
   window.cxMigToussaint=cxMigToussaint;
   (function w2(n){ if((window.ACH_PULLED)||(!window.ACH_REAL&&n>3)){ cxMigToussaint(); return; } if(n<120) setTimeout(function(){ w2(n+1); },1000); })(0);
   /* rsRender (import Meta) écrit ses statuts dans #rs-st : on rafraîchit notre vue après chaque import */
