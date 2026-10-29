@@ -1843,7 +1843,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     </div>
   </div>
   </div>
-  <div class="logo-ver app-ver">Achille App — v12.03</div>
+  <div class="logo-ver app-ver">Achille App — v12.04</div>
 </aside>
 <div id="mob-bk" onclick="mobNav(false)"></div>
 <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Réduire la barre latérale">‹</button>
@@ -3254,7 +3254,7 @@ table.es-t td.del button{border:none;background:none;color:var(--gris-2);cursor:
              💡 Idées & Posts à venir (liste à gauche + post prêt à droite) · 📣 Publier (Instagram / Facebook / LinkedIn / TikTok / Appartements) · 📬 Boîtage.
              Les anciens onglets Posts réseaux / Publiés (Meta) / Posts prêts sont fondus dedans — leurs boutons restent (masqués) pour la mécanique existante. -->
         <button class="comm-tab" id="comm-tab-mix" onclick="commSwitch('mix')">💡 Idées &amp; Posts à venir</button>
-        <button class="comm-tab" id="comm-tab-pub" onclick="commSwitch('pub')">📣 Publier</button>
+        <button class="comm-tab" id="comm-tab-pub" onclick="commSwitch('pub')">📣 Publications</button>
         <button class="comm-tab" id="comm-tab-cour" onclick="commSwitch('courriers')">📬 Boîtage</button>
         <button class="comm-tab cx-hide" id="comm-tab-posts" onclick="commSwitch('posts')">📱 Posts réseaux</button>
         <button class="comm-tab cx-hide" id="comm-tab-meta" onclick="commSwitch('meta')">📊 Publiés (Meta)</button><!-- v11.62 -->
@@ -13811,10 +13811,13 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
       +sit+cellIn('cour',o.id,'resultats',o.resultats,'',140)+del+'</tr>';
   }
 
-  function commRenderPosts(){ commCountRefs(); var b=document.getElementById('comm-posts-body'); if(b) b.innerHTML=commView(posts,'posts').map(postRow).join(''); updateCount(); commApplyPerms(); commSyncSort(); commRenderAlerts(); }
+  /* v12.04 : les posts éditoriaux (idées publiées, sans adresse) vivent dans Publications, pas dans Appartements */
+  window.commPostsAll=function(){ return relirePosts().slice(); };
+  window.commPostsSet=function(id,patch){ relirePosts(); var o=posts.filter(function(x){ return x&&x.id===id; })[0]; if(!o) return false; Object.assign(o,patch||{}); savePosts(); try{ commRenderPosts(); }catch(e){} return true; };
+  function commRenderPosts(){ commCountRefs(); var b=document.getElementById('comm-posts-body'); if(b) b.innerHTML=commView(posts.filter(function(o){ return !commIsEditorial(o); }),'posts').map(postRow).join(''); updateCount(); commApplyPerms(); commSyncSort(); commRenderAlerts(); }
   function commRenderCour(){ var b=document.getElementById('comm-cour-body'); if(b) b.innerHTML=commView(cour,'cour').map(courRow).join(''); updateCount(); commApplyPerms(); commSyncSort(); }
   function updateCount(){ var el=document.getElementById('comm-count'); if(!el) return;
-    var tbl=commTab==='posts'?'posts':'cour', all=commTab==='posts'?posts:cour;
+    var tbl=commTab==='posts'?'posts':'cour', all=commTab==='posts'?posts.filter(function(o){ return !commIsEditorial(o); }):cour;
     var shown=all.filter(function(o){return commMatch(o,tbl);}).length;
     var noun=commTab==='posts'?'post(s)':'courrier(s)';
     el.textContent=(commQuery&&shown!==all.length)?(shown+' / '+all.length+' '+noun):(all.length+' '+noun);
@@ -14868,7 +14871,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     startRealtime();
     var ov=document.getElementById('ach-login-overlay'); if(ov) ov.classList.add('ach-hidden');
     var ub=document.getElementById('ach-userbar'); if(ub) ub.style.display='none';
-    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v12.03';
+    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v12.04';
     flag('Synchronis\u00e9');
     // fin de l'init : on autorise la journalisation des actions
     setTimeout(function(){ installInterceptor._init=false; }, 1500);
@@ -28115,6 +28118,9 @@ details.cx-more{margin-top:8px;} details.cx-more>summary{font-size:11.5px;color:
 .cx-pc-a{display:flex;gap:6px;flex-wrap:wrap;margin-top:auto;padding-top:4px;}
 .cx-pc-a a,.cx-pc-a button{border:1px solid var(--border);background:#fff;border-radius:7px;font-size:11px;padding:4px 9px;cursor:pointer;font-family:'Jost',sans-serif;color:var(--gris);text-decoration:none;}
 .cx-pc-a a:hover,.cx-pc-a button:hover{border-color:var(--terra);color:var(--terra);}
+.cx-tags{position:absolute;left:8px;top:8px;display:flex;gap:4px;flex-wrap:wrap;max-width:75%;} .cx-tags .tag{position:static!important;}
+.cx-pc-app{height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;background:linear-gradient(160deg,#f4efe7,#e2d8cb);color:#4c533b;padding:26px 14px 30px;text-align:center;} .cx-pc-app span{font-size:24px;} .cx-pc-app b{font-family:'Cormorant Garamond',serif;font-size:20px;line-height:1.15;}
+.cx-pc.app .cx-pc-img{height:120px;}
 .cx-pub-empty{grid-column:1/-1;background:#fff;border:1px dashed var(--border);border-radius:12px;padding:28px;text-align:center;color:var(--gris);font-size:13px;line-height:1.6;}
 /* ── mobile (règle PC/mobile : tout sous 880px) ── */
 @media (max-width:880px){
@@ -28325,7 +28331,7 @@ details.cx-more{margin-top:8px;} details.cx-more>summary{font-size:11.5px;color:
     if(isAdmin()){
       if(!acted&&!ec&&p.statut==='propose'){
         h+='<button class="cx-act ok" onclick="cxAct(\'val\')" title="Part dans « Validés — à mettre en place »">✅ Valider</button>'
-          +'<span class="cx-prog">'+pubSel(p,null)+'<button class="cx-act pub" onclick="cxAct(\'pub\')" title="Déjà publié à la main → va dans Publier">📣 Publié !</button></span>'
+          +'<span class="cx-prog">'+pubSel(p,null)+'<button class="cx-act pub" onclick="cxAct(\'pub\')" title="Déjà publié à la main → va dans Publications">📣 Publié !</button></span>'
           +'<button class="cx-act lat" onclick="cxAct(\'later\')">🕐 Plus tard</button>'
           +'<button class="cx-act off" onclick="cxAct(\'off\')">❌ Supprimer</button>';
       } else if(acted){ h+='<button class="cx-btn" onclick="cxOpen(\'cav\',\''+esc(acted.id)+'\')">→ Ouvrir la carte dans sa liste</button>'; }
@@ -28360,7 +28366,7 @@ details.cx-more{margin-top:8px;} details.cx-more>summary{font-size:11.5px;color:
       if(o.st==='idee') h+='<button class="cx-act ok" onclick="cavStatut(\''+esc(id)+'\',\'valide\');cxRefresh();cxBadges()">✔ Valider — à mettre en place</button>';
       if(o.st!=='publie') h+='<span class="cx-prog">'+pubSel(p,o)+'<button class="cx-act pub" onclick="cavPublie(\''+esc(id)+'\')">📣 Publié !</button></span>';
       if(o.st==='valide') h+='<button class="cx-act lat" onclick="cavStatut(\''+esc(id)+'\',\'idee\');cxRefresh();cxBadges()">↩ Repasser en idée</button>';
-      if(o.st==='publie') h+='<button class="cx-act" onclick="cxUnpub(\''+esc(id)+'\')" title="Annuler la publication (retour dans Validés)">↩ Pas encore publié</button><button class="cx-btn" onclick="commSwitch(\'pub\');cxPubGo(\''+netOf(p,o)+'\')">→ Voir dans Publier</button>';
+      if(o.st==='publie') h+='<button class="cx-act" onclick="cxUnpub(\''+esc(id)+'\')" title="Annuler la publication (retour dans Validés)">↩ Pas encore publié</button><button class="cx-btn" onclick="commSwitch(\'pub\');cxPubGo(\''+netOf(p,o)+'\')">→ Voir dans Publications</button>';
       h+='<button class="cx-act off" onclick="cavDel(\''+esc(id)+'\')">✕ Supprimer</button>';
     } else { h+='<span class="cx-lock">Laurent décide — votre avis ci-dessus l’aide à choisir.</span>'; }
     h+='</div></div>';
@@ -28386,12 +28392,12 @@ details.cx-more{margin-top:8px;} details.cx-more>summary{font-size:11.5px;color:
   window.cavPublie=function(id, silent){
     var a=cavList(), o=a.filter(function(x){ return x&&x.id===id; })[0]; if(!o) return;
     var p=o.src?prop(o.src):null, k=netOf(p,o), s=pst(o.src||o.id);
-    if(!silent && !confirm('📣 « '+(o.titre||'')+' » est publié sur '+NETS[k][0]+' ?\n\nIl apparaîtra dans l’onglet Publier et quittera cette liste.')) return;
+    if(!silent && !confirm('📣 « '+(o.titre||'')+' » est publié sur '+NETS[k][0]+' ?\n\nIl apparaîtra dans l’onglet Publications et quittera cette liste.')) return;
     o.st='publie'; o.updated=now(); o.pub={d:(s.prog?s.prog:now()), net:k, lien:(o.pub&&o.pub.lien)||'', par:ini()};
     lsSet(CAV_K,a);
     try{ cavRender(); }catch(e){} try{ if(window.cavCount) cavCount(); }catch(e){} try{ idjRender(); }catch(e){}
     try{ if(window.idjTriPush) idjTriPush(); }catch(e){}
-    if(window.toast) toast('📣 Publié sur '+NETS[k][0]+' — retrouvez-le dans l’onglet Publier (pensez au lien 🔗)');
+    if(window.toast) toast('📣 Publié sur '+NETS[k][0]+' — retrouvez-le dans l’onglet Publications (pensez au lien 🔗)');
     try{ if(window.achLog) achLog('modification','Communication','publié sur '+NETS[k][0]+' : '+(o.titre||'')); }catch(e){}
     cxOpen('cav',id);
   };
@@ -28403,24 +28409,46 @@ details.cx-more{margin-top:8px;} details.cx-more>summary{font-size:11.5px;color:
   if(window.ppRender){ var _ppr=window.ppRender; window.ppRender=function(){ var r=_ppr.apply(this,arguments); try{ if(CX.kind) cxRefresh(); }catch(e){} return r; }; }
   if(window.cavDel){ var _cd=window.cavDel; window.cavDel=function(id){ var before=cavList().length; _cd.apply(this,arguments); if(cavList().length<before && CX.kind==='cav' && CX.id===id) cxClose(); }; }
 
-  /* ═══════════ PUBLIER ═══════════ */
-  var PUB={net:'instagram', tri:'date', q:'', add:false};
+  /* ═══════════ PUBLICATIONS (v12.04 : ex « Publier » — demande Laurent : « Tous » revient et regroupe réseaux + appartements) ═══════════ */
+  var PUB={net:'tous', tri:'date', q:'', add:false};
   function metaKey(k){ return k==='instagram'?'ig':(k==='facebook'?'fb':''); }
-  function pubItems(k){
+  function regRows(){ try{ return window.commPostsAll?commPostsAll():lsArr('ach_comm_posts_v1'); }catch(e){ return []; } }
+  function isEdito(o){ return !!(o&&(o.src||o.texte)&&!(''+(o.adresse||'')).trim()); }   /* même règle que commIsEditorial (v11.56) */
+  function rowNets(o){ var r=Array.isArray(o&&o.reseaux)?o.reseaux:[]; return ORDER.filter(function(k){ return r.some(function(x){ return (''+x).toLowerCase()===NETS[k][0].toLowerCase(); }); }); }
+  function txKey(t){ return (''+(t||'')).replace(/\s+/g,' ').slice(0,60).toLowerCase(); }
+  function socialItems(k){
     var out=[], mk=metaKey(k);
     if(mk) lsArr(RSP_K).forEach(function(p){ if(p&&p.net===mk) out.push({id:p.id, src:'meta', d:p.d||'', txt:p.txt||'', type:p.type||'', url:p.url||'', img:p.img||'', likes:p.likes||0, com:p.com||0, reach:p.reach, saved:p.saved, shares:p.shares, views:p.views}); });
-    var metaTx=out.map(function(x){ return (x.txt||'').replace(/\s+/g,' ').slice(0,60).toLowerCase(); });
+    var metaTx=out.map(function(x){ return txKey(x.txt); });
     cavList().forEach(function(o){
       if(!o||o.st!=='publie') return;
       var p=o.src?prop(o.src):null; if(netOf(p,o)!==k) return;
-      var tx=(o.texte||'').replace(/\s+/g,' ').slice(0,60).toLowerCase();
-      if(tx&&metaTx.indexOf(tx)>=0) return;   /* déjà importée de Meta : on ne l'affiche qu'une fois */
+      var tx=txKey(o.texte); if(tx&&metaTx.indexOf(tx)>=0) return;   /* déjà importée de Meta : une seule fois */
       var img='', live=null; try{ live=(p&&window.stSlides)?stSlides(p):null; }catch(e){}
       if(!live){ var v=visuels(p); if(v.length) img=v[0].url; }
       out.push({id:'cav:'+o.id, cav:o.id, src:'achille', d:(o.pub&&o.pub.d)||o.updated||o.created||'', txt:o.texte||o.titre||'', titre:o.titre||'', type:(p&&FORMATS[p.format])?FORMATS[p.format].replace(/^\S+\s/,''):'post', url:(o.pub&&o.pub.lien)||'', img:img, live:live?p:null, likes:0, com:0, par:(o.pub&&o.pub.par)||o.by||''});
     });
+    /* posts éditoriaux du registre (ex : « Vacances de la Toussaint », 15/10) : ils quittent Appartements et vivent ici, sous leurs réseaux */
+    regRows().filter(isEdito).forEach(function(o){
+      var ns=rowNets(o); if(!ns.length) ns=['instagram','facebook']; if(ns.indexOf(k)<0) return;
+      var tx=txKey(o.texte||o.ref); if(tx&&metaTx.indexOf(tx)>=0) return;
+      out.push({id:'reg:'+o.id, reg:o.id, src:'registre', d:o.date||'', txt:o.texte||o.ref||'', titre:o.ref||'', type:'post', url:o.lien||'', img:'', likes:0, com:0, par:o.auteur||''});
+    });
     lsArr(PUBM_K).forEach(function(m){ if(m&&!m.del&&m.net===k) out.push({id:'man:'+m.id, man:m.id, src:'manuel', d:m.d||'', txt:m.txt||'', titre:m.titre||'', type:'post', url:m.url||'', img:'', likes:0, com:0, par:m.par||''}); });
+    out.forEach(function(x){ x.nets=[k]; });
     return out;
+  }
+  function appartItems(){
+    return regRows().filter(function(o){ return o&&!isEdito(o); }).map(function(o){
+      return {id:'app:'+o.id, app:o.id, src:'appart', d:o.date||'', titre:(o.ref||'')+(o.adresse?' — '+o.adresse:''), ref:o.ref||'', txt:[o.adresse,o.ville].filter(function(s){ return (''+(s||'')).trim(); }).join(' · ')||(o.ref||''),
+        info:[o.superficie?o.superficie+' m²':'', o.chambres?o.chambres+' ch.':'', o.clients||'', o.statut||''].filter(Boolean).join(' · '), nets:rowNets(o), url:o.lien||'', type:'appartement', likes:0, com:0, par:o.auteur||''};
+    });
+  }
+  function pubItems(k){
+    if(k!=='tous') return socialItems(k);
+    var by={}, out=[];
+    ORDER.forEach(function(n){ socialItems(n).forEach(function(x){ if(by[x.id]){ if(by[x.id].nets.indexOf(n)<0) by[x.id].nets.push(n); return; } by[x.id]=x; out.push(x); }); });
+    return out.concat(appartItems());
   }
   function pubCount(k){ return pubItems(k).length; }
   window.cxPubGo=function(k){ PUB.net=k; PUB.add=false; try{ commSwitch('pub'); }catch(e){ pubRender(); } };
@@ -28428,39 +28456,49 @@ details.cx-more{margin-top:8px;} details.cx-more>summary{font-size:11.5px;color:
   window.cxPubAddToggle=function(){ PUB.add=!PUB.add; pubRender(); };
   window.cxPubAdd=function(){
     var d=(document.getElementById('cx-pa-d')||{}).value||'', t=(document.getElementById('cx-pa-t')||{}).value||'', u=(document.getElementById('cx-pa-u')||{}).value||'';
+    var net=PUB.net; if(net==='tous'){ net=(document.getElementById('cx-pa-n')||{}).value||'instagram'; }
     t=t.trim(); u=u.trim(); if(!t&&!u){ if(window.toast) toast('Collez le texte du post ou son lien'); return; }
-    var a=lsArr(PUBM_K); a.push({id:'pm-'+Date.now().toString(36)+Math.floor(Math.random()*1000), net:PUB.net, d:d?(d+'T12:00:00'):now(), txt:t.slice(0,3000), url:u.slice(0,500), par:ini(), le:now()});
+    var a=lsArr(PUBM_K); a.push({id:'pm-'+Date.now().toString(36)+Math.floor(Math.random()*1000), net:net, d:d?(d+'T12:00:00'):now(), txt:t.slice(0,3000), url:u.slice(0,500), par:ini(), le:now()});
     lsSet(PUBM_K,a); PUB.add=false; pubRender(); if(window.toast) toast('📣 Publication ajoutée');
-    try{ if(window.achLog) achLog('ajout','Communication','publication '+NETS[PUB.net][0]+' ajoutée à la main'); }catch(e){}
+    try{ if(window.achLog) achLog('ajout','Communication','publication '+NETS[net][0]+' ajoutée à la main'); }catch(e){}
   };
   window.cxPubDel=function(mid){ if(!confirm('Retirer cette publication ?')) return; var a=lsArr(PUBM_K); a.forEach(function(m){ if(m&&m.id===mid) m.del=1; }); lsSet(PUBM_K,a); pubRender(); };
   window.cxPubLink=function(cid){ var o=cavById(cid); if(!o) return; var v=prompt('Lien de la publication sur '+NETS[netOf(o.src?prop(o.src):null,o)][0]+' :', (o.pub&&o.pub.lien)||''); if(v===null) return; cxPubLien(cid, v); pubRender(); };
+  window.cxPubRegLink=function(rid){ var o=regRows().filter(function(x){ return x&&x.id===rid; })[0]; if(!o||!window.commPostsSet) return; var v=prompt('Lien de la publication :', o.lien||''); if(v===null) return; commPostsSet(rid,{lien:(v||'').trim()}); pubRender(); };
   window.cxPubIdee=function(id){
     var it=pubItems(PUB.net).filter(function(x){ return x.id===id; })[0]; if(!it) return;
-    var t=(it.titre||it.txt||'').split('\n')[0].slice(0,90)||('Publication '+NETS[PUB.net][0]+' du '+frD(it.d));
-    var a=cavList(); a.push({id:'cav-'+Date.now().toString(36)+Math.floor(Math.random()*1000), st:'idee', th:'astuce', titre:'↻ '+t, res:NETS[PUB.net][0], texte:(it.txt||'').slice(0,1500), by:ini(), origin:'meta', src:'', created:now(), updated:now()});
+    var nn=(it.nets&&it.nets[0]&&NETS[it.nets[0]])?NETS[it.nets[0]][0]:'';
+    var t=(it.titre||it.txt||'').split('\n')[0].slice(0,90)||('Publication '+nn+' du '+frD(it.d));
+    var a=cavList(); a.push({id:'cav-'+Date.now().toString(36)+Math.floor(Math.random()*1000), st:'idee', th:(it.src==='appart'?'bien':'astuce'), titre:'↻ '+t, res:(it.nets||[]).map(function(k){ return NETS[k][0]; }).join(' · '), texte:(it.txt||'').slice(0,1500), by:ini(), origin:'meta', src:'', created:now(), updated:now()});
     lsSet(CAV_K,a); if(window.toast) toast('💡 Repris dans « Idées en attente » — à retravailler');
   };
   window.cxPubTxt=function(el){ el.classList.toggle('open'); };
+  function tagsHtml(x){
+    var h=''; if(x.src==='appart') h+='<span class="tag" style="background:#b47360">🏠 Appartement</span>';
+    else (x.nets||[]).forEach(function(k,i){ h+='<span class="tag" style="background:'+NETS[k][1]+';'+(i?'margin-left:4px;position:relative;left:auto;top:auto':'')+'">'+esc(NETS[k][0])+'</span>'; });
+    return '<span class="cx-tags">'+h+'</span>';
+  }
+  function srcLbl(x){ return x.src==='meta'?'import Meta':(x.src==='achille'?'📣 marqué publié'+(x.par?' · '+esc(x.par):''):(x.src==='registre'?'registre'+(x.par?' · '+esc(x.par):''):(x.src==='appart'?(x.nets.length?x.nets.map(function(k){ return NETS[k][0]; }).join(' · '):'réseaux non précisés'):'ajouté'+(x.par?' · '+esc(x.par):'')))); }
   window.pubRender=function(){
     var root=document.getElementById('cx-pub-net'); if(!root) return;
-    var k=PUB.net, isApp=(k==='appart');
+    var k=PUB.net, isApp=(k==='appart'), isAll=(k==='tous');
     try{ var cfg0=document.getElementById('rs-cfg'), park0=document.getElementById('comm-panel-meta'); if(cfg0&&park0&&cfg0.parentNode!==park0) park0.appendChild(cfg0); }catch(e){}
-    /* chips */
-    var ch=document.getElementById('cx-pub-chips'); if(ch){ ch.innerHTML=ORDER.map(function(x){ return '<button class="cx-chip'+(k===x?' on':'')+'" onclick="cxPubGo(\''+x+'\')"><span class="dot" style="background:'+NETS[x][1]+'"></span>'+NETS[x][0]+' <span class="n">'+pubCount(x)+'</span></button>'; }).join('')
-      +'<button class="cx-chip'+(isApp?' on':'')+'" onclick="cxPubGo(\'appart\')">🏠 Appartements <span class="n">'+(function(){ try{ return JSON.parse(localStorage.getItem('ach_comm_posts_v1')||'[]').length; }catch(e){ return ''; } })()+'</span></button>'; }
+    var nApp=appartItems().length;
+    var ch=document.getElementById('cx-pub-chips'); if(ch){ ch.innerHTML='<button class="cx-chip'+(isAll?' on':'')+'" onclick="cxPubGo(\'tous\')">Tous <span class="n">'+pubCount('tous')+'</span></button>'
+      +ORDER.map(function(x){ return '<button class="cx-chip'+(k===x?' on':'')+'" onclick="cxPubGo(\''+x+'\')"><span class="dot" style="background:'+NETS[x][1]+'"></span>'+NETS[x][0]+' <span class="n">'+pubCount(x)+'</span></button>'; }).join('')
+      +'<button class="cx-chip'+(isApp?' on':'')+'" onclick="cxPubGo(\'appart\')">🏠 Appartements <span class="n">'+nApp+'</span></button>'; }
     var ap=document.getElementById('comm-panel-posts'); if(ap) ap.classList.toggle('active', isApp);
     root.style.display=isApp?'none':'';
     var cnt=document.getElementById('comm-count');
     if(isApp){ try{ document.body.classList.toggle('rs-is-gerant', isGerant()); }catch(e){} return; }
-    var N=NETS[k], L=pubItems(k), m=lsObj(RSM_K), mk=metaKey(k);
-    if(PUB.q) L=L.filter(function(x){ return ((x.txt||'')+' '+(x.titre||'')).toLowerCase().indexOf(PUB.q)>=0; });
+    var lab=isAll?'Tous':NETS[k][0], L=pubItems(k), m=lsObj(RSM_K), mk=isAll?'all':metaKey(k);
+    if(PUB.q) L=L.filter(function(x){ return ((x.txt||'')+' '+(x.titre||'')+' '+(x.info||'')).toLowerCase().indexOf(PUB.q)>=0; });
     L.sort(function(a,b){ if(PUB.tri==='date') return (''+b.d).localeCompare(''+a.d); return ((b[PUB.tri]||0)-(a[PUB.tri]||0)) || (''+b.d).localeCompare(''+a.d); });
-    if(cnt&&window._commTabCur==='pub') cnt.textContent=L.length+' publication'+(L.length>1?'s':'')+' · '+N[0];
-    /* en-tête : KPI + tri + import Meta + ajout */
+    if(cnt&&window._commTabCur==='pub') cnt.textContent=L.length+' publication'+(L.length>1?'s':'')+' · '+lab;
     var meta=L.filter(function(x){ return x.src==='meta'; }), likes=meta.reduce(function(a,x){ return a+(x.likes||0); },0), rl=meta.filter(function(x){ return x.reach!=null; }), reach=rl.reduce(function(a,x){ return a+(x.reach||0); },0);
+    var nSoc=L.filter(function(x){ return x.src!=='appart'; }).length, nAp=L.length-nSoc;
     var h='<div class="cx-pubtop"><div class="cx-kpis">'
-      +'<div class="cx-kpi"><div class="l">'+esc(N[0])+'</div><div class="v">'+L.length+'</div><div class="s">publication'+(L.length>1?'s':'')+(meta.length?' · '+meta.length+' importée'+(meta.length>1?'s':''):'')+'</div></div>'
+      +'<div class="cx-kpi"><div class="l">'+esc(lab)+'</div><div class="v">'+L.length+'</div><div class="s">'+(isAll?nSoc+' sur les réseaux · '+nAp+' appartement'+(nAp>1?'s':''):'publication'+(L.length>1?'s':'')+(meta.length?' · '+meta.length+' importée'+(meta.length>1?'s':''):''))+'</div></div>'
       +(meta.length?'<div class="cx-kpi"><div class="l">Moyenne</div><div class="v">'+n(Math.round(likes/meta.length))+' ❤️</div><div class="s">'+(rl.length?'portée moy. '+n(Math.round(reach/rl.length)):'likes par publication')+'</div></div>':'')
       +(mk?'<div class="cx-kpi"><div class="l">Dernier import Meta</div><div class="v" style="font-size:15px">'+(m.last?esc(frD(m.last)):'—')+'</div><div class="s">'+(m.last?'par '+esc(m.by||''):'⚙ Connexion Meta puis ⟳ Importer')+'</div></div>':'')
       +'</div><span style="flex:1"></span>'
@@ -28468,26 +28506,32 @@ details.cx-more{margin-top:8px;} details.cx-more>summary{font-size:11.5px;color:
       +(isGerant()&&mk?'<button class="cx-btn" onclick="rsImport()" title="Lire les publications Instagram et Facebook via l’API Meta">⟳ Importer</button><button class="cx-btn" onclick="rsCfgToggle()">⚙ Connexion Meta</button>':'')
       +(isGerant()?'<button class="cx-btn cx-main" onclick="cxPubAddToggle()">＋ Ajouter une publication</button>':'')
       +'</div><span class="rs-st" id="rs-st"></span><div id="cx-rscfg-slot"></div>';
-    if(PUB.add) h+='<div class="cx-addf"><input type="date" id="cx-pa-d" value="'+new Date().toISOString().slice(0,10)+'"><input type="url" id="cx-pa-u" placeholder="Lien de la publication (https://…)" style="flex:1;min-width:220px"><textarea id="cx-pa-t" placeholder="Texte du post publié sur '+esc(N[0])+'…"></textarea><button class="cx-btn cx-main" onclick="cxPubAdd()">Ajouter</button><button class="cx-btn" onclick="cxPubAddToggle()">Annuler</button></div>';
+    if(PUB.add) h+='<div class="cx-addf">'+(isAll?'<select id="cx-pa-n">'+ORDER.map(function(x){ return '<option value="'+x+'">'+NETS[x][0]+'</option>'; }).join('')+'</select>':'')+'<input type="date" id="cx-pa-d" value="'+new Date().toISOString().slice(0,10)+'"><input type="url" id="cx-pa-u" placeholder="Lien de la publication (https://…)" style="flex:1;min-width:220px"><textarea id="cx-pa-t" placeholder="Texte du post publié'+(isAll?'':' sur '+esc(lab))+'…"></textarea><button class="cx-btn cx-main" onclick="cxPubAdd()">Ajouter</button><button class="cx-btn" onclick="cxPubAddToggle()">Annuler</button></div>';
     h+='<div class="cx-pub-grid">';
-    if(!L.length){ h+='<div class="cx-pub-empty">'+(PUB.q?'Aucune publication ne correspond.':('Rien de publié sur '+esc(N[0])+' pour l’instant.<br>'+(mk?'⚙ Connexion Meta puis ⟳ Importer pour récupérer les publications existantes ; ':'')+'les posts marqués 📣 Publié dans « Idées & Posts à venir » arrivent ici automatiquement'+(isGerant()?', et ＋ Ajouter une publication pour un post déjà en ligne.':'.')))+'</div>'; }
-    else h+=L.slice(0,150).map(function(x){
+    if(!L.length){ h+='<div class="cx-pub-empty">'+(PUB.q?'Aucune publication ne correspond.':('Rien de publié'+(isAll?'':' sur '+esc(lab))+' pour l’instant.<br>'+(mk?'⚙ Connexion Meta puis ⟳ Importer pour récupérer les publications existantes ; ':'')+'les posts marqués 📣 Publié dans « Idées & Posts à venir » arrivent ici automatiquement'+(isGerant()?', et ＋ Ajouter une publication pour un post déjà en ligne.':'.')))+'</div>'; }
+    else h+=L.slice(0,200).map(function(x){
       var st=[]; if(x.src==='meta'){ st.push('❤️ <b>'+n(x.likes)+'</b>'); st.push('💬 <b>'+n(x.com)+'</b>'); if(x.reach!=null) st.push('👁 <b>'+n(x.reach)+'</b>'); if(x.saved!=null) st.push('🔖 <b>'+n(x.saved)+'</b>'); if(x.shares) st.push('↗ <b>'+n(x.shares)+'</b>'); if(x.views) st.push('▶ <b>'+n(x.views)+'</b>'); }
       var img=''; if(x.live){ try{ img=stLiveThumbs(x.live,300); }catch(e){ img=''; } }
-      return '<div class="cx-pc"><div class="cx-pc-img"'+(x.img?' style="background-image:url(\''+esc(x.img)+'\')"':'')+'>'+img+'<span class="tag" style="background:'+N[1]+'">'+esc(N[0])+'</span><span class="typ">'+esc(x.type||'')+'</span><span class="src">'+(x.src==='meta'?'import Meta':(x.src==='achille'?'📣 marqué publié'+(x.par?' · '+esc(x.par):''):'ajouté'+(x.par?' · '+esc(x.par):'')))+'</span></div>'
-        +'<div class="cx-pc-b"><div class="cx-pc-d">'+esc(frD(x.d))+'</div><div class="cx-pc-t" onclick="cxPubTxt(this)" title="Déplier">'+esc(x.txt||'(sans texte)')+'</div>'
+      if(x.src==='appart') img='<div class="cx-pc-app"><span>🏠</span><b>'+esc(x.ref||'Appartement')+'</b></div>';
+      return '<div class="cx-pc'+(x.src==='appart'?' app':'')+'"><div class="cx-pc-img"'+(x.img?' style="background-image:url(\''+esc(x.img)+'\')"':'')+'>'+img+tagsHtml(x)+'<span class="typ">'+esc(x.type||'')+'</span><span class="src">'+srcLbl(x)+'</span></div>'
+        +'<div class="cx-pc-b"><div class="cx-pc-d">'+esc(frD(x.d))+'</div>'
+        +(x.src==='appart'?'<div class="cx-pc-t">'+esc(x.txt||'')+'</div>'+(x.info?'<div class="cx-pc-s">'+esc(x.info)+'</div>':''):'<div class="cx-pc-t" onclick="cxPubTxt(this)" title="Déplier">'+esc(x.txt||'(sans texte)')+'</div>')
         +(st.length?'<div class="cx-pc-s">'+st.join('')+'</div>':'')
-        +'<div class="cx-pc-a">'+(x.url?'<a href="'+esc(x.url)+'" target="_blank" rel="noopener">Ouvrir ↗</a>':(x.cav&&isGerant()?'<button onclick="cxPubLink(\''+esc(x.cav)+'\')">🔗 Ajouter le lien</button>':''))
+        +'<div class="cx-pc-a">'+(x.url?'<a href="'+esc(x.url)+'" target="_blank" rel="noopener">Ouvrir ↗</a>':(x.cav&&isGerant()?'<button onclick="cxPubLink(\''+esc(x.cav)+'\')">🔗 Ajouter le lien</button>':(x.reg&&isGerant()?'<button onclick="cxPubRegLink(\''+esc(x.reg)+'\')">🔗 Ajouter le lien</button>':'')))
         +(x.cav?'<button onclick="cxOpen(\'cav\',\''+esc(x.cav)+'\');commSwitch(\'mix\')">Voir le post</button>':'')
+        +(x.app?'<button onclick="cxPubGo(\'appart\')">Voir dans le tableau</button>':'')
         +'<button onclick="cxPubIdee(\''+esc(x.id)+'\')">💡 Reprendre comme idée</button>'
         +(x.man&&isGerant()?'<button onclick="cxPubDel(\''+esc(x.man)+'\')">✕</button>':'')+'</div></div></div>';
-    }).join('')+(L.length>150?'<div class="cx-pub-empty">+ '+(L.length-150)+' autres — affinez la recherche</div>':'');
+    }).join('')+(L.length>200?'<div class="cx-pub-empty">+ '+(L.length-200)+' autres — affinez la recherche</div>':'');
     h+='</div>';
     root.innerHTML=h;
-    /* le bloc « Connexion Meta » existant (jeton local) vient se loger ici */
     try{ var cfgEl=document.getElementById('rs-cfg'), slot=document.getElementById('cx-rscfg-slot'); if(cfgEl&&slot){ slot.appendChild(cfgEl); } }catch(e){}
     try{ if(window.stFit) stFit(root); }catch(e){}
   };
+  /* v12.04 : le post éditorial « Vacances de la Toussaint » (15/10, test) quitte Appartements → Instagram + Facebook (demande Laurent) */
+  function cxMigToussaint(){ try{ if(!window.commPostsSet) return; regRows().forEach(function(o){ if(o&&isEdito(o)&&!o.cxnet&&/toussaint/i.test(''+(o.ref||'')+' '+(o.texte||''))) commPostsSet(o.id,{reseaux:['Instagram','Facebook'],cxnet:1}); }); }catch(e){ window.achErr&&achErr(e); } }
+  window.cxMigToussaint=cxMigToussaint;
+  (function w2(n){ if((window.ACH_PULLED)||(!window.ACH_REAL&&n>3)){ cxMigToussaint(); return; } if(n<120) setTimeout(function(){ w2(n+1); },1000); })(0);
   /* rsRender (import Meta) écrit ses statuts dans #rs-st : on rafraîchit notre vue après chaque import */
   if(window.rsRender){ var _rsr=window.rsRender; window.rsRender=function(){ var r=_rsr.apply(this,arguments); try{ if(window._commTabCur==='pub') pubRender(); }catch(e){} return r; }; }
 
