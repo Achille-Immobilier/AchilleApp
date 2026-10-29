@@ -1843,7 +1843,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     </div>
   </div>
   </div>
-  <div class="logo-ver app-ver">Achille App — v12.01</div>
+  <div class="logo-ver app-ver">Achille App — v12.02</div>
 </aside>
 <div id="mob-bk" onclick="mobNav(false)"></div>
 <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Réduire la barre latérale">‹</button>
@@ -14868,7 +14868,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     startRealtime();
     var ov=document.getElementById('ach-login-overlay'); if(ov) ov.classList.add('ach-hidden');
     var ub=document.getElementById('ach-userbar'); if(ub) ub.style.display='none';
-    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v12.01';
+    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v12.02';
     flag('Synchronis\u00e9');
     // fin de l'init : on autorise la journalisation des actions
     setTimeout(function(){ installInterceptor._init=false; }, 1500);
@@ -27664,6 +27664,7 @@ a.pp-btn{text-decoration:none;display:inline-block;}
 .st-lbl{font-size:22px;letter-spacing:.3em;text-transform:uppercase;}
 .st-line{height:1.5px;width:90px;background:#b47360;}
 .st-foot{position:absolute;left:0;right:0;bottom:70px;text-align:center;font-size:16px;letter-spacing:.3em;opacity:.7;}
+.st-foot2{font-size:15px;letter-spacing:.22em;line-height:1.75;opacity:.72;} .st-foot-rule{width:60px;height:1px;margin:0 auto 10px;opacity:.6;}
 /* vignettes vivantes dans les cartes */
 .pp-live{position:relative;overflow:hidden;border:1px solid var(--border);border-radius:8px;background:#f6f1e9;cursor:zoom-in;}
 .pp-live>.st-slide{pointer-events:none;}
@@ -27784,9 +27785,20 @@ a.pp-btn{text-decoration:none;display:inline-block;}
     /* v12.00 : logo (centré / à gauche / aucun), pied de page (oui / non) et couleur du texte (auto ou choisie) réglables par slide */
     var fg=(sl.fg&&COL[sl.fg])?COL[sl.fg]:b.fg;
     var logo=(sl.logo==='none')?'':((sl.logo==='left')?'<img class="st-abs" src="'+KIT+'logo-secondaire-'+b.logo+'.png" style="top:'+top+'px;left:90px;width:240px">':'<img class="st-abs" src="'+KIT+'logo-secondaire-'+b.logo+'.png" style="top:'+top+'px;left:0;right:0;margin:auto;width:'+lw+'px">');
-    var foot=(sl.foot===false||sl.foot==='non')?'':'<div class="st-foot" style="color:'+fg+';bottom:'+(sl.footb||70)+'px">NEUILLY-SUR-SEINE · PARIS 16e · PARIS 17e</div>';
-    return '<div class="'+cls+'" style="'+style+';color:'+fg+'">'+bgDeco(b)+logo+inner+foot+'</div>';
+    /* v12.02 : pied de page = les coordonnées de l'agence (demande Laurent 29/10 : « Neuilly · Paris 16 · Paris 17 nous enferme ») */
+    var fk=footKey(sl.foot), foot='';
+    if(fk!=='non'){ var F=FOOTS[fk]||FOOTS.full, fb=(sl.footb||70);
+      foot='<div class="st-foot st-foot2" style="color:'+fg+';bottom:'+(F.length>1?fb-12:fb)+'px">'+(F.length>1?'<div class="st-foot-rule" style="background:'+fg+'"></div>':'')+F.map(function(l){ return '<div>'+l+'</div>'; }).join('')+'</div>'; }
+    /* v12.02 : submark complet en filigrane, centré, sur les pages de texte (demande Laurent 29/10) */
+    var wmOn=(sl.wm==='oui')||(sl.wm!=='non' && WM_TPL.indexOf(sl.tpl)>=0), wm='';
+    if(wmOn){ var wh=(sl.fmt==='story')?1150:(sl.fmt==='sq'?820:900), ww=Math.round(wh*534/700), W0=(sl.fmt==='sq'?1200:1080), H0=(sl.fmt==='story'?1920:(sl.fmt==='sq'?1200:1350));
+      wm='<img class="st-abs" src="'+KIT+'submark-'+(b.light?'olive':'creme')+'.png" style="left:'+Math.round((W0-ww)/2)+'px;top:'+Math.round((H0-wh)/2)+'px;height:'+wh+'px;opacity:'+(b.light?'.06':'.055')+'">'; }
+    return '<div class="'+cls+'" style="'+style+';color:'+fg+'">'+bgDeco(b)+wm+logo+inner+foot+'</div>';
   }
+  var AG={adr:'115 AVENUE ACHILLE PERETTI · 92200 NEUILLY-SUR-SEINE', tel:'01 40 67 00 55', mail:'WELCOME@ACHILLE-IMMOBILIER.FR'};
+  var FOOTS={ full:[AG.adr, AG.tel+'&nbsp;&nbsp;·&nbsp;&nbsp;'+AG.mail], telmail:[AG.tel+'&nbsp;&nbsp;·&nbsp;&nbsp;'+AG.mail], tel:[AG.tel], mail:[AG.mail], adr:[AG.adr] };
+  function footKey(v){ if(v===false||v==='non') return 'non'; return FOOTS[v]?v:'full'; }   /* 'oui' / vide = coordonnées complètes */
+  var WM_TPL=['point','example','quote','message','quiz'];   /* pages de texte : filigrane submark par défaut */
   function seal(s,x,y,rot){ if(!s||(!s.l1&&!s.l2)) return ''; return '<div class="st-seal" style="left:'+x+'px;top:'+y+'px;transform:rotate('+(rot||-8)+'deg)"><div>'+(s.l1?'<b>'+esc(s.l1)+'</b>':'')+esc(s.l2||'')+'</div></div>'; }
   /* v11.70 : MISE EN PAGE AUTO — le texte vit dans des « zones » (haut/bas fixes) et se réduit tout seul s'il est long
      (variable --k, ajustée par stFit) : plus jamais de titre qui déborde sur le sous-titre ou le pied de page. */
@@ -27934,7 +27946,8 @@ a.pp-btn{text-decoration:none;display:inline-block;}
       +'<div class="st-mf-row"><label>Gabarit</label><select class="st-sel" onchange="stTpl(this.value)">'+Object.keys(TPL).map(function(k){ return '<option value="'+k+'"'+(k===sl.tpl?' selected':'')+'>'+esc(TPL[k].nom)+'</option>'; }).join('')+'</select></div>'
       +'<div class="st-mf-row"><label>Taille du texte</label><input type="range" min="0.6" max="1.3" step="0.05" value="'+(+sl.k||1)+'" oninput="stSet(\'k\',+this.value);document.getElementById(\'st-kv\').textContent=Math.round(this.value*100)+\' %\'"><span id="st-kv" class="st-kv">'+Math.round((+sl.k||1)*100)+' %</span></div>'
       +'<div class="st-mf-row"><label>Logo</label><select class="st-sel" onchange="stSet(\'logo\',this.value)">'+[['center','Centré en haut'],['left','À gauche'],['none','Sans logo']].map(function(o){ var cur=sl.logo||T.def.logo||'center'; return '<option value="'+o[0]+'"'+(cur===o[0]?' selected':'')+'>'+o[1]+'</option>'; }).join('')+'</select></div>'
-      +'<div class="st-mf-row"><label>Pied de page</label><select class="st-sel" onchange="stSet(\'foot\',this.value)">'+[['oui','Neuilly · Paris 16e · 17e'],['non','Sans']].map(function(o){ var cur=(sl.foot===false||sl.foot==='non')?'non':'oui'; return '<option value="'+o[0]+'"'+(cur===o[0]?' selected':'')+'>'+o[1]+'</option>'; }).join('')+'</select></div>'
+      +'<div class="st-mf-row"><label>Pied de page</label><select class="st-sel" onchange="stSet(\'foot\',this.value)">'+[['full','Adresse + téléphone + e-mail'],['telmail','Téléphone · e-mail'],['tel','Téléphone'],['mail','E-mail'],['adr','Adresse'],['non','Sans']].map(function(o){ var cur=footKey(sl.foot); return '<option value="'+o[0]+'"'+(cur===o[0]?' selected':'')+'>'+o[1]+'</option>'; }).join('')+'</select></div>'
+      +'<div class="st-mf-row"><label>Filigrane</label><select class="st-sel" onchange="stSet(\'wm\',this.value)">'+[['oui','Submark en filigrane'],['non','Sans filigrane']].map(function(o){ var cur=(sl.wm==='oui'||(sl.wm!=='non'&&WM_TPL.indexOf(sl.tpl)>=0))?'oui':'non'; return '<option value="'+o[0]+'"'+(cur===o[0]?' selected':'')+'>'+o[1]+'</option>'; }).join('')+'</select></div>'
       +'<div class="st-mf-row"><label>Couleur du texte</label><select class="st-sel" onchange="stSet(\'fg\',this.value)">'+[['','Automatique (selon le fond)'],['creme','Crème'],['olive','Olive'],['terra','Terra'],['noir','Noir'],['gris','Gris']].map(function(o){ return '<option value="'+o[0]+'"'+((sl.fg||'')===o[0]?' selected':'')+'>'+o[1]+'</option>'; }).join('')+'</select></div>'
       +'</div>';
     (T.champs||[]).forEach(function(c){ var k=c[0], lab=c[1], ty=c[2], v=sl[k]==null?'':sl[k];
