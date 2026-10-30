@@ -1843,7 +1843,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     </div>
   </div>
   </div>
-  <div class="logo-ver app-ver">Achille App — v12.09</div>
+  <div class="logo-ver app-ver">Achille App — v12.10</div>
 </aside>
 <div id="mob-bk" onclick="mobNav(false)"></div>
 <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Réduire la barre latérale">‹</button>
@@ -14230,6 +14230,8 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
       else out.push(it); });
     return out;
   }
+  /* v12.10 : horodatage d'une fiche-objet (maj / updated / updated_at / le), '' si absent */
+  function _ach_objTs(v){ if(!_ach_isObj(v)) return ''; var t=v.maj||v.updated||v.updated_at||v.le||''; t=''+t; return /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/.test(t)? t : ''; }
   function _ach_mergeAny(L, C, tomb){
     /* v8.03 : valeur SIMPLE horodatée {_ach_scalar:1, v, updated} (ex. solde en banque) :
        la plus récente gagne — avant, une chaîne brute n'était pas comparable et le cloud
@@ -14246,7 +14248,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
         if(lv===undefined) out[k]=cv; else if(cv===undefined) out[k]=lv;
         else if(_ach_isItemArr(lv) && _ach_isItemArr(cv)) out[k]=_ach_mergeArrays(lv, cv, tomb);
         else if(typeof lv==='number' && typeof cv==='number') out[k]=Math.max(lv, cv);
-        else out[k]=lv; });
+        else { var lt=_ach_objTs(lv), ct=_ach_objTs(cv); out[k]=(lt&&ct&&ct>lt)? cv : lv; } });   /* v12.10 : fiche horodatée des deux côtés → la plus RÉCENTE gagne (avant : toujours la locale) */
       return out;
     }
     return undefined;
@@ -14894,7 +14896,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     startRealtime();
     var ov=document.getElementById('ach-login-overlay'); if(ov) ov.classList.add('ach-hidden');
     var ub=document.getElementById('ach-userbar'); if(ub) ub.style.display='none';
-    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v12.09';
+    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v12.10';
     flag('Synchronis\u00e9');
     // fin de l'init : on autorise la journalisation des actions
     setTimeout(function(){ installInterceptor._init=false; }, 1500);
@@ -25251,7 +25253,7 @@ body.pi-grabbing *{user-select:none!important;}
         var ex=(''+(o.texte||'')).trim().split('\n')[0];
         var btns=(st==='idee'
             ? '<button class="cav-act ok" onclick="event.stopPropagation();cavStatut(\''+o.id+'\',\'valide\')" title="Valider : à mettre en place">✔ Valider</button>'
-            : '<button class="cav-act ok" onclick="event.stopPropagation();cavPublie(\''+o.id+'\')" title="C\u2019est publié ! La ligne part dans l\u2019onglet Posts réseaux">📣 Publié !</button><button class="cav-act" onclick="event.stopPropagation();cavStatut(\''+o.id+'\',\'idee\')" title="Repasser au stade d\u2019idée">↩ Idée</button>')
+            : '<button class="cav-act ok" onclick="event.stopPropagation();if(window.cxPubOpen){cxPubOpen(\''+o.id+'\');}else{cavPublie(\''+o.id+'\');}" title="C\u2019est publié ! Choisissez les réseaux">📣 Publié !</button><button class="cav-act" onclick="event.stopPropagation();cavStatut(\''+o.id+'\',\'idee\')" title="Repasser au stade d\u2019idée">↩ Idée</button>')
           +'<button class="cav-act del" onclick="event.stopPropagation();cavDel(\''+o.id+'\')" title="Supprimer">✕</button>';
         var h='<div class="icard" onclick="cavPop(\''+o.id+'\')" title="Voir / modifier le détail complet">'
           +'<div class="icard-top">'
@@ -27574,8 +27576,8 @@ a.pp-btn{text-decoration:none;display:inline-block;}
     box.innerHTML=h; count();
     try{ document.querySelectorAll('#pp-list .pp-txt').forEach(function(t){ t.style.height='auto'; t.style.height=Math.max(150,t.scrollHeight+4)+'px'; }); }catch(e){}
   };
-  window.ppEdit=function(eid,ta){ var id=decodeURIComponent(eid); clearTimeout(_saveT); var v=ta.value; _saveT=setTimeout(function(){ var p=byId(id); if(!p) return; if(v===texteOrig(p)){ var o=lsObj(PRET_K); if(o[id]){ delete o[id].texte; try{ localStorage.setItem(PRET_K,JSON.stringify(o)); }catch(e){} } } else setSt(id,{texte:v}); },600); };
-  window.ppReset=function(eid){ var id=decodeURIComponent(eid); var o=lsObj(PRET_K); if(o[id]){ delete o[id].texte; try{ localStorage.setItem(PRET_K,JSON.stringify(o)); }catch(e){} } ppRender(); };
+  window.ppEdit=function(eid,ta){ var id=decodeURIComponent(eid); clearTimeout(_saveT); var v=ta.value; _saveT=setTimeout(function(){ var p=byId(id); if(!p) return; if(v===texteOrig(p)){ var o=lsObj(PRET_K); if(o[id]){ delete o[id].texte; o[id].maj=new Date().toISOString(); try{ localStorage.setItem(PRET_K,JSON.stringify(o)); }catch(e){} } } else setSt(id,{texte:v}); },600); };
+  window.ppReset=function(eid){ var id=decodeURIComponent(eid); var o=lsObj(PRET_K); if(o[id]){ delete o[id].texte; o[id].maj=new Date().toISOString(); try{ localStorage.setItem(PRET_K,JSON.stringify(o)); }catch(e){} } ppRender(); };
   window.ppProg=function(eid,v){ var id=decodeURIComponent(eid); setSt(id,{prog:v||''}); ppRender(); if(v&&window.toast) toast('📅 Prévu le '+fdt(v)+' — pensez-y, la publication reste manuelle pour l’instant'); };
   window.ppZoom=function(u){ var w=document.createElement('div'); w.id='pp-zoom'; w.innerHTML='<img src="'+esc(u)+'" alt="">'; w.onclick=function(){ w.remove(); }; document.body.appendChild(w); };
   window.ppDl=function(eid,btn){
@@ -28032,7 +28034,7 @@ a.pp-btn{text-decoration:none;display:inline-block;}
   window.stTpl=function(tpl){ var T=TPL[tpl]; if(!T) return; var sl=ST.slides[ST.cur]; sl.tpl=tpl; if(T.def.fmt) sl.fmt=T.def.fmt; else delete sl.fmt; if(!sl.bg) sl.bg=T.def.bg; stPaint(); };
   window.stSet=function(k,v){ ST.slides[ST.cur][k]=v; var stage=document.getElementById('st-stage'); if(stage){ stage.innerHTML=scaled(ST.slides[ST.cur],stW(ST.slides[ST.cur],stage)); } if(k==='photo'||k==='bg') stPaint(); };
   window.stPhoto=function(inp,k){ var f=inp.files&&inp.files[0]; if(!f) return; var r=new FileReader(); r.onload=function(){ var im=new Image(); im.onload=function(){ var mx=1400, s=Math.min(1,mx/Math.max(im.width,im.height)); var c=document.createElement('canvas'); c.width=Math.round(im.width*s); c.height=Math.round(im.height*s); c.getContext('2d').drawImage(im,0,0,c.width,c.height); stSet(k, c.toDataURL('image/jpeg',.86)); }; im.src=r.result; }; r.readAsDataURL(f); };
-  window.stReset=function(){ var o=lsObj(PRET_K), id=''+ST.p.id; if(o[id]&&o[id].slides){ delete o[id].slides; try{ localStorage.setItem(PRET_K,JSON.stringify(o)); }catch(e){} } ST.slides=JSON.parse(JSON.stringify(ST.p.slides||[])); ST.cur=0; stPaint(); try{ ppRender(); }catch(e){} if(window.toast) toast('↺ Version de Claude rétablie'); };
+  window.stReset=function(){ var o=lsObj(PRET_K), id=''+ST.p.id; if(o[id]&&o[id].slides){ delete o[id].slides; o[id].maj=new Date().toISOString(); try{ localStorage.setItem(PRET_K,JSON.stringify(o)); }catch(e){} } ST.slides=JSON.parse(JSON.stringify(ST.p.slides||[])); ST.cur=0; stPaint(); try{ ppRender(); }catch(e){} if(window.toast) toast('↺ Version de Claude rétablie'); };
   window.stSave=function(){ var o=lsObj(PRET_K), id=''+ST.p.id; o[id]=Object.assign({},o[id]||{},{slides:ST.slides, maj:new Date().toISOString(), par:(window.ACH_USER&&ACH_USER.initials)||''}); try{ localStorage.setItem(PRET_K,JSON.stringify(o)); }catch(e){ if(window.toast) toast('✗ Trop lourd pour être enregistré — réduisez la photo'); return; } try{ ppRender(); }catch(e){} var m=document.getElementById('st-mod'); if(m) m.textContent='version modifiée'; if(window.toast) toast('💾 Visuel enregistré — partagé avec l’équipe'); try{ if(window.achLog) achLog('modification','Posts prêts','visuel modifié : '+(ST.p.titre||'')); }catch(e){} };
   window.stExportCur=function(btn){ var t=btn.textContent, i=0, L=ST.slides; btn.disabled=true; (function one(){ if(i>=L.length){ btn.textContent=t; btn.disabled=false; return; } btn.textContent='⬇ '+(i+1)+'/'+L.length+'…'; renderPng(L[i]).then(function(url){ var a=document.createElement('a'); a.href=url; a.download=(ST.p.id||'visuel')+'-'+(i+1)+'.png'; document.body.appendChild(a); a.click(); a.remove(); i++; setTimeout(one,500); }).catch(function(e){ if(window.toast) toast('✗ Export impossible : '+(e&&e.message||e)); btn.textContent=t; btn.disabled=false; }); })(); };
 })();
@@ -28092,6 +28094,14 @@ a.pp-btn{text-decoration:none;display:inline-block;}
 details.cx-more{margin-top:8px;} details.cx-more>summary{font-size:11.5px;color:var(--terra);cursor:pointer;}
 .cx-prog{display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--gris);flex-wrap:wrap;}
 .cx-nets{display:inline-flex;gap:4px;flex-wrap:wrap;}
+.cx-pubdd{position:relative;display:inline-block;}
+.cx-pubmenu{position:absolute;z-index:30;left:0;bottom:calc(100% + 6px);background:#fff;border:1px solid var(--border);border-radius:12px;box-shadow:0 10px 28px rgba(0,0,0,.16);padding:10px 12px;min-width:210px;display:flex;flex-direction:column;gap:8px;}
+.cx-pubmenu[hidden]{display:none;}
+.cx-pubmenu-t{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--gris);}
+.cx-pubmenu .cx-nets{flex-direction:column;align-items:stretch;gap:5px;}
+.cx-pubmenu .cx-netc{padding:6px 10px;font-size:12.5px;}
+.cx-pubok{align-self:stretch;justify-content:center;}
+.cx-prog .cx-pubmenu{top:calc(100% + 6px);bottom:auto;}
 .cx-netc{display:inline-flex;align-items:center;gap:4px;border:1px solid var(--border);border-radius:999px;padding:3px 9px 3px 6px;font-size:11.5px;color:var(--gris);background:#fff;cursor:pointer;user-select:none;}
 .cx-netc input{margin:0;accent-color:var(--nc);}
 .cx-netc.on{border-color:var(--nc);color:var(--nc);background:color-mix(in srgb,var(--nc) 9%,#fff);font-weight:600;}
@@ -28232,7 +28242,7 @@ details.cx-more{margin-top:8px;} details.cx-more>summary{font-size:11.5px;color:
   function ecartFor(id){ return lsArr(ECART_K).filter(function(o){ return o&&(''+o.id)===(''+id); })[0]||null; }
   function pst(id){ return lsObj(PRET_K)[''+id]||{}; }
   function pset(id,patch){ var o=lsObj(PRET_K); o[''+id]=Object.assign({},o[''+id]||{},patch,{maj:now(),par:ini()}); lsSet(PRET_K,o); }
-  function pdel(id,k){ var o=lsObj(PRET_K); if(o[''+id]){ delete o[''+id][k]; lsSet(PRET_K,o); } }
+  function pdel(id,k){ var o=lsObj(PRET_K); if(o[''+id]){ delete o[''+id][k]; o[''+id].maj=new Date().toISOString(); lsSet(PRET_K,o); } }
   function netOf(p,o){ /* réseau principal : post prêt > conseillé > mention de la carte */
     if(o&&o.pub){ var _pn=pubNetsOf(o); if(_pn.length) return _pn[0]; }
     var key=o?(o.src||o.id):(p&&p.id); var s=key?pst(''+key):{}; if(s.pubnet&&NETS[s.pubnet]) return s.pubnet;
@@ -28375,6 +28385,16 @@ details.cx-more{margin-top:8px;} details.cx-more>summary{font-size:11.5px;color:
   window.cxProg=function(v){ pset(CX.rid,{prog:v||''}); if(v&&window.toast) toast('📅 Prévu le '+fdt(v)); };
   function netChips(cur,fn,arg){ return '<span class="cx-nets" title="Cochez tous les réseaux où le post est publié">'+ORDER.map(function(k){ var on=cur.indexOf(k)>=0; return '<label class="cx-netc'+(on?' on':'')+'" style="--nc:'+NETS[k][1]+'"><input type="checkbox"'+(on?' checked':'')+' onchange="'+fn+'('+(arg?'\''+esc(arg)+'\',':'')+'\''+k+'\',this)">'+NETS[k][0]+'</label>'; }).join('')+'</span>'; }
   function pubSel(p,o){ return netChips(selNets(p,o),'cxPubNetT',''); }
+  /* v12.10 (Laurent) : bouton « 📣 Publié ▾ » qui déroule les réseaux du post à cocher, puis « Valider » */
+  function pubDD(label, chipsHtml, okJs, okLbl){
+    return '<span class="cx-pubdd"><button class="cx-act pub" onclick="cxPubDD(this,event)">'+label+' ▾</button>'
+      +'<div class="cx-pubmenu" hidden onclick="event.stopPropagation()"><div class="cx-pubmenu-t">Publié sur :</div>'+chipsHtml
+      +(okJs?'<button class="cx-act pub cx-pubok" onclick="'+okJs+'">'+okLbl+'</button>':'')+'</div></span>';
+  }
+  /* v12.10 : le « 📣 Publié ! » de la liste ouvre la carte à droite avec le bandeau des réseaux déroulé */
+  window.cxPubOpen=function(id){ cxOpen('cav',id); setTimeout(function(){ var bt=document.querySelector('#cx-detail .cx-pubdd > button'); if(bt){ bt.click(); try{ bt.scrollIntoView({block:'nearest'}); }catch(e){} } },60); };
+  window.cxPubDD=function(btn,ev){ if(ev) ev.stopPropagation(); var m=btn.nextElementSibling, open=m.hidden; document.querySelectorAll('.cx-pubmenu').forEach(function(x){ x.hidden=true; }); m.hidden=!open; };
+  document.addEventListener('click',function(){ document.querySelectorAll('.cx-pubmenu').forEach(function(x){ x.hidden=true; }); });
   window.cxPubNet=function(k){ pset(CX.rid,{pubnet:k, pubnets:[k]}); };
   window.cxPubNetT=function(k,cb){
     var p=prop(CX.rid), o=(CX.kind==='cav')?cavById(CX.id):null, a=selNets(p,o).slice(), i=a.indexOf(k);
@@ -28427,7 +28447,7 @@ details.cx-more{margin-top:8px;} details.cx-more>summary{font-size:11.5px;color:
     if(isAdmin()){
       if(!acted&&!ec&&p.statut==='propose'){
         h+='<button class="cx-act ok" onclick="cxAct(\'val\')" title="Part dans « Validés — à mettre en place »">✅ Valider</button>'
-          +'<span class="cx-prog">'+pubSel(p,null)+'<button class="cx-act pub" onclick="cxAct(\'pub\')" title="Déjà publié à la main → va dans Publications">📣 Publié !</button></span>'
+          +pubDD('📣 Publié', pubSel(p,null), 'cxAct(\'pub\')', '✓ Valider la publication')
           +'<button class="cx-act lat" onclick="cxAct(\'later\')">🕐 Plus tard</button>'
           +'<button class="cx-act off" onclick="cxAct(\'off\')">❌ Supprimer</button>';
       } else if(acted){ h+='<button class="cx-btn" onclick="cxOpen(\'cav\',\''+esc(acted.id)+'\')">→ Ouvrir la carte dans sa liste</button>'; }
@@ -28455,13 +28475,13 @@ details.cx-more{margin-top:8px;} details.cx-more>summary{font-size:11.5px;color:
       +'<div class="cx-txt-acts"><button class="cx-btn" onclick="achCopyText(document.getElementById(\'cx-tx\').value,this)">📋 Copier le texte</button><a class="cx-btn" href="'+N[2]+'" target="_blank" rel="noopener">↗ Ouvrir '+esc(N[0])+'</a><span class="cx-lock">enregistré pendant la frappe</span></div>';
     if(sg){ var oth=ORDER.filter(function(k){ return (''+(sg[k]||'')).trim(); }); if(oth.length) h+='<details class="cx-more"><summary>Versions proposées par Claude ('+oth.map(function(k){ return NETS[k][0]; }).join(', ')+')</summary>'+netTextsHtml(null,sg,rid,false)+'</details>'; }
     if(o.st!=='publie') h+=progHtml(p,rid);
-    if(o.st==='publie'){ var _pn=pubNetsOf(o); if(!_pn.length) _pn=[netOf(p,o)]; h+='<div class="cx-prog" style="margin-top:10px">📣 Publié sur '+(isAdmin()?netChips(_pn,'cxPubNetsEdit',id):'<b>'+esc(netsTxt(_pn))+'</b>')+'</div>'; }
+    if(o.st==='publie'){ var _pn=pubNetsOf(o); if(!_pn.length) _pn=[netOf(p,o)]; h+='<div class="cx-prog" style="margin-top:10px">'+(isAdmin()?pubDD('📣 Publié sur '+esc(netsTxt(_pn)), netChips(_pn,'cxPubNetsEdit',id), '', ''):'📣 Publié sur <b>'+esc(netsTxt(_pn))+'</b>')+'</div>'; }
     if(o.st==='publie'){ h+='<div class="cx-prog" style="margin-top:10px">🔗 Lien de la publication <input type="url" style="flex:1;min-width:200px" value="'+esc(o.pub&&o.pub.lien||'')+'" placeholder="https://…" onchange="cxPubLien(\''+esc(id)+'\',this.value)"'+(isGerant()?'':' readonly')+'></div>'; }
     h+=avisHtml(rid);
     h+='<div class="cx-bar">';
     if(isAdmin()){
       if(o.st==='idee') h+='<button class="cx-act ok" onclick="cavStatut(\''+esc(id)+'\',\'valide\');cxRefresh();cxBadges()">✔ Valider — à mettre en place</button>';
-      if(o.st!=='publie') h+='<span class="cx-prog">'+pubSel(p,o)+'<button class="cx-act pub" onclick="cavPublie(\''+esc(id)+'\')">📣 Publié !</button></span>';
+      if(o.st!=='publie') h+=pubDD('📣 Publié', pubSel(p,o), 'cavPublie(\''+esc(id)+'\',true)', '✓ Valider la publication');
       if(o.st==='valide') h+='<button class="cx-act lat" onclick="cavStatut(\''+esc(id)+'\',\'idee\');cxRefresh();cxBadges()">↩ Repasser en idée</button>';
       if(o.st==='publie') h+='<button class="cx-act" onclick="cxUnpub(\''+esc(id)+'\')" title="Annuler la publication (retour dans Validés)">↩ Pas encore publié</button><button class="cx-btn" onclick="commSwitch(\'pub\');cxPubGo(\''+netOf(p,o)+'\')">→ Voir dans Publications</button>';
       h+='<button class="cx-act off" onclick="cavDel(\''+esc(id)+'\')">✕ Supprimer</button>';
