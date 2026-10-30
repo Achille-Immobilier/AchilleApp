@@ -1843,7 +1843,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     </div>
   </div>
   </div>
-  <div class="logo-ver app-ver">Achille App — v12.10</div>
+  <div class="logo-ver app-ver">Achille App — v12.11</div>
 </aside>
 <div id="mob-bk" onclick="mobNav(false)"></div>
 <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Réduire la barre latérale">‹</button>
@@ -14896,7 +14896,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     startRealtime();
     var ov=document.getElementById('ach-login-overlay'); if(ov) ov.classList.add('ach-hidden');
     var ub=document.getElementById('ach-userbar'); if(ub) ub.style.display='none';
-    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v12.10';
+    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v12.11';
     flag('Synchronis\u00e9');
     // fin de l'init : on autorise la journalisation des actions
     setTimeout(function(){ installInterceptor._init=false; }, 1500);
@@ -25450,7 +25450,7 @@ body.pi-grabbing *{user-select:none!important;}
   function cavList(){ try{ var a=JSON.parse(localStorage.getItem(CAV_KEY)||'[]'); return Array.isArray(a)?a:[]; }catch(e){ return []; } }
   function dejaEnvoyee(id){ return cavList().some(function(o){ return o.src===id; }); }
   /* v11.18 : état d'une idée du matin déjà triée (validée / mise de côté) */
-  function cavItemFor(id){ return cavList().filter(function(o){ return o.src===id; })[0]||null; }
+  function cavItemFor(id){ return cavList().filter(function(o){ return o.src===id || (!o.src && o.id===id); })[0]||null; }   /* v12.11 : cartes de l'équipe reliées par leur id */
   /* v11.18 : écartées — clé synchronisée (partagée équipe) ; del:1 = supprimée définitivement
      (pierre tombale conservée pour que l'idée ne réapparaisse pas, purgée après 60 jours) */
   var ECART_K='ach_idj_ecart_v1';
@@ -25688,6 +25688,7 @@ body.pi-grabbing *{user-select:none!important;}
   function triDigest(){
     var out={};
     cavList().forEach(function(o){
+      if(o&&!o.src&&o.id&&byId(''+o.id)){ out[''+o.id]={ s:(o.st==='publie'?'publie':(o.st==='idee'?'plus_tard':'valide')), d:(''+(o.updated||o.created||'')).slice(0,10), par:''+(o.by||'') }; return; }   /* v12.11 */
       if(!o||!o.src) return;
       out[''+o.src]={ s:(o.st==='publie'?'publie':(o.st==='idee'?'plus_tard':'valide')),
         d:(''+(o.updated||o.created||'')).slice(0,10), par:''+(o.by||'') };
@@ -27504,7 +27505,7 @@ a.pp-btn{text-decoration:none;display:inline-block;}
   function props(){ return (_data&&Array.isArray(_data.propositions))?_data.propositions:[]; }
   function byId(id){ return props().filter(function(p){ return (''+p.id)===id; })[0]; }
   window.ppById=byId;   /* v11.67 : pour le studio */
-  function cavFor(id){ return lsArr(CAV_K).filter(function(o){ return o&&o.src===id; })[0]||null; }
+  function cavFor(id){ return lsArr(CAV_K).filter(function(o){ return o&&(o.src===id||(!o.src&&o.id===id)); })[0]||null; }
   function ecartFor(id){ return lsArr(ECART_K).filter(function(o){ return o&&(''+o.id)===id; })[0]||null; }
   function st(id){ return lsObj(PRET_K)[id]||{}; }
   function setSt(id,patch){ var o=lsObj(PRET_K); o[id]=Object.assign({},o[id]||{},patch,{maj:new Date().toISOString(),par:(window.ACH_USER&&ACH_USER.initials)||''}); try{ localStorage.setItem(PRET_K, JSON.stringify(o)); }catch(e){window.achErr&&achErr(e)} }
@@ -28238,7 +28239,7 @@ details.cx-more{margin-top:8px;} details.cx-more>summary{font-size:11.5px;color:
   function prop(id){ id=''+id; var p=null; try{ p=(window.ppById&&ppById(id))||null; }catch(e){} if(!p){ try{ p=(window.idjById&&idjById(id))||null; }catch(e){} } return p; }
   function cavList(){ return lsArr(CAV_K); }
   function cavById(id){ return cavList().filter(function(o){ return o&&o.id===id; })[0]||null; }
-  function cavFor(src){ return cavList().filter(function(o){ return o&&o.src===src; })[0]||null; }
+  function cavFor(src){ return cavList().filter(function(o){ return o&&(o.src===src||(!o.src&&o.id===src)); })[0]||null; }
   function ecartFor(id){ return lsArr(ECART_K).filter(function(o){ return o&&(''+o.id)===(''+id); })[0]||null; }
   function pst(id){ return lsObj(PRET_K)[''+id]||{}; }
   function pset(id,patch){ var o=lsObj(PRET_K); o[''+id]=Object.assign({},o[''+id]||{},patch,{maj:now(),par:ini()}); lsSet(PRET_K,o); }
@@ -28461,7 +28462,7 @@ details.cx-more{margin-top:8px;} details.cx-more>summary{font-size:11.5px;color:
   /* ── carte de l'équipe (Validés / Idées en attente / publiée) ── */
   function cavHtml(id){
     var o=cavById(id); if(!o) return null;
-    var p=o.src?prop(o.src):null, sg=o.sugg||(p&&window.idjSuggSnap?idjSuggSnap(p):null), rid=rootId('cav',id,o), s=pst(rid);
+    var p=prop(o.src||o.id), sg=o.sugg||(p&&window.idjSuggSnap?idjSuggSnap(p):null), rid=rootId('cav',id,o), s=pst(rid);
     var h='<div class="cx-d">'+headHtml(p,o,sg)
       +(isGerant()?'<input class="cx-tt-in" value="'+esc(o.titre||'')+'" title="Cliquez pour modifier le titre" onchange="cavEdit(\''+esc(id)+'\',this.value);try{cavRender()}catch(e){}">':'<div class="cx-tt">'+esc(o.titre||'')+'</div>');
     var auteur=(o.origin==='claude')?'<span class="cav-claude">💡 Claude</span><span>proposée le '+esc(fdate(o.pdate||''))+'</span>':(o.origin==='meta'?'<span>↻ reprise d’une publication</span>':'<span><b>'+esc(o.by||'')+'</b></span><span>ajoutée le '+esc(fdate((''+(o.created||'')).slice(0,10)))+'</span>');
@@ -28508,7 +28509,7 @@ details.cx-more{margin-top:8px;} details.cx-more>summary{font-size:11.5px;color:
   /* 📣 Publié ! — v12 : la carte passe « publiée » et apparaît dans l'onglet Publier (plus de ligne ajoutée au tableau Appartements) */
   window.cavPublie=function(id, silent){
     var a=cavList(), o=a.filter(function(x){ return x&&x.id===id; })[0]; if(!o) return;
-    var p=o.src?prop(o.src):null, s=pst(o.src||o.id), nets=selNets(p,o), k=nets[0];
+    var p=prop(o.src||o.id), s=pst(o.src||o.id), nets=selNets(p,o), k=nets[0];
     if(!silent && !confirm('📣 « '+(o.titre||'')+' » est publié sur '+netsTxt(nets)+' ?\n\nIl apparaîtra dans l’onglet Publications et quittera cette liste.')) return;
     o.st='publie'; o.updated=now(); o.pub={d:(s.prog?s.prog:now()), net:k, nets:nets, lien:(o.pub&&o.pub.lien)||'', par:ini()};   /* v12.09 : plusieurs réseaux */
     lsSet(CAV_K,a);
@@ -28522,6 +28523,20 @@ details.cx-more{margin-top:8px;} details.cx-more>summary{font-size:11.5px;color:
   window.idjPop=function(eid){ cxOpen('sugg', decodeURIComponent(eid)); };
   window.cavPop=function(id){ cxOpen('cav', id); };
   /* après chaque rendu des listes : pastilles d'avis + carte ouverte ; si la carte ouverte a disparu, on rafraîchit le détail */
+  /* v12.11 : « stock » de posts prêts (30/10) — une carte Validée / Idée en attente adopte UNE fois le texte final de sa fiche
+     (champ pret_le plus récent que la dernière modification de la carte) ; ensuite, chaque retouche de la carte reste prioritaire */
+  function adoptPret(){
+    try{ var a=cavList(), ch=false;
+      a.forEach(function(o){ if(!o||o.st==='publie') return; var p=prop(o.src||o.id); if(!p||!p.pret||!p.texte||!p.pret_le) return;
+        if((''+p.pret_le)>(''+(o.updated||o.created||'')) && o.texte!==p.texte){ o.texte=p.texte; o.updated=now(); ch=true; } });
+      if(ch) lsSet(CAV_K,a);
+      return ch;
+    }catch(e){ window.achErr&&achErr(e); return false; }
+  }
+  window.cxAdoptPret=adoptPret;
+  /* les fiches arrivent du cloud APRÈS le premier rendu des cartes : on réessaie à chaque rendu des idées */
+  if(window.idjRender){ var _ir0=window.idjRender; window.idjRender=function(){ var r=_ir0.apply(this,arguments); try{ if(adoptPret()&&window.cavRender) cavRender(); }catch(e){} return r; }; }
+  if(window.cavRender){ var _cr0=window.cavRender; window.cavRender=function(){ adoptPret(); return _cr0.apply(this,arguments); }; }
   ['idjRender','cavRender'].forEach(function(fn){ if(window[fn]){ var _f=window[fn]; window[fn]=function(){ var r=_f.apply(this,arguments); cxBadges(); return r; }; } });
   if(window.ppRender){ var _ppr=window.ppRender; window.ppRender=function(){ var r=_ppr.apply(this,arguments); try{ if(CX.kind) cxRefresh(); }catch(e){} return r; }; }
   if(window.cavDel){ var _cd=window.cavDel; window.cavDel=function(id){ var before=cavList().length; _cd.apply(this,arguments); if(cavList().length<before && CX.kind==='cav' && CX.id===id) cxClose(); }; }
@@ -28543,7 +28558,7 @@ details.cx-more{margin-top:8px;} details.cx-more>summary{font-size:11.5px;color:
     function keysOf(src,titre){ var a=[]; if(src) a.push('s:'+src); var t=txKey(titre); if(t) a.push('t:'+t); return a; }   /* déjà importée de Meta sur ce réseau : une seule fois */
     cavList().forEach(function(o){
       if(!o||o.st!=='publie') return;
-      var p=o.src?prop(o.src):null, k=netOf(p,o);
+      var p=prop(o.src||o.id), k=netOf(p,o);
       var img='', live=null; try{ live=(p&&window.stSlides)?stSlides(p):null; }catch(e){}
       if(!live){ var v=visuels(p); if(v.length) img=v[0].url; }
       var cx=push({id:'cav:'+o.id, cav:o.id, src:'achille', d:(o.pub&&o.pub.d)||o.updated||o.created||'', txt:o.texte||o.titre||'', titre:o.titre||'', type:(p&&FORMATS[p.format])?FORMATS[p.format].replace(/^\S+\s/,''):'post', url:(o.pub&&o.pub.lien)||'', img:img, live:live?p:null, likes:0, com:0, par:(o.pub&&o.pub.par)||o.by||''}, (pubNetsOf(o).length?pubNetsOf(o):[k]));
@@ -28582,7 +28597,7 @@ details.cx-more{margin-top:8px;} details.cx-more>summary{font-size:11.5px;color:
     try{ if(window.achLog) achLog('ajout','Communication','publication '+NETS[net][0]+' ajoutée à la main'); }catch(e){}
   };
   window.cxPubDel=function(mid){ if(!confirm('Retirer cette publication ?')) return; var a=lsArr(PUBM_K); a.forEach(function(m){ if(m&&m.id===mid) m.del=1; }); lsSet(PUBM_K,a); pubRender(); };
-  window.cxPubLink=function(cid){ var o=cavById(cid); if(!o) return; var v=prompt('Lien de la publication sur '+NETS[netOf(o.src?prop(o.src):null,o)][0]+' :', (o.pub&&o.pub.lien)||''); if(v===null) return; cxPubLien(cid, v); pubRender(); };
+  window.cxPubLink=function(cid){ var o=cavById(cid); if(!o) return; var v=prompt('Lien de la publication sur '+NETS[netOf(prop(o.src||o.id),o)][0]+' :', (o.pub&&o.pub.lien)||''); if(v===null) return; cxPubLien(cid, v); pubRender(); };
   window.cxPubRegLink=function(rid){ var o=regRows().filter(function(x){ return x&&x.id===rid; })[0]; if(!o||!window.commPostsSet) return; var v=prompt('Lien de la publication :', o.lien||''); if(v===null) return; commPostsSet(rid,{lien:(v||'').trim()}); pubRender(); };
   window.cxPubIdee=function(id){
     var it=pubItems(PUB.net).filter(function(x){ return x.id===id; })[0]; if(!it) return;
