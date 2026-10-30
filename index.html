@@ -1843,7 +1843,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     </div>
   </div>
   </div>
-  <div class="logo-ver app-ver">Achille App — v12.08</div>
+  <div class="logo-ver app-ver">Achille App — v12.09</div>
 </aside>
 <div id="mob-bk" onclick="mobNav(false)"></div>
 <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Réduire la barre latérale">‹</button>
@@ -14894,7 +14894,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     startRealtime();
     var ov=document.getElementById('ach-login-overlay'); if(ov) ov.classList.add('ach-hidden');
     var ub=document.getElementById('ach-userbar'); if(ub) ub.style.display='none';
-    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v12.08';
+    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v12.09';
     flag('Synchronis\u00e9');
     // fin de l'init : on autorise la journalisation des actions
     setTimeout(function(){ installInterceptor._init=false; }, 1500);
@@ -28091,6 +28091,10 @@ a.pp-btn{text-decoration:none;display:inline-block;}
 .cx-info b{color:var(--gris);font-weight:600;} .cx-info a{color:var(--terra);text-decoration:none;}
 details.cx-more{margin-top:8px;} details.cx-more>summary{font-size:11.5px;color:var(--terra);cursor:pointer;}
 .cx-prog{display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--gris);flex-wrap:wrap;}
+.cx-nets{display:inline-flex;gap:4px;flex-wrap:wrap;}
+.cx-netc{display:inline-flex;align-items:center;gap:4px;border:1px solid var(--border);border-radius:999px;padding:3px 9px 3px 6px;font-size:11.5px;color:var(--gris);background:#fff;cursor:pointer;user-select:none;}
+.cx-netc input{margin:0;accent-color:var(--nc);}
+.cx-netc.on{border-color:var(--nc);color:var(--nc);background:color-mix(in srgb,var(--nc) 9%,#fff);font-weight:600;}
 .cx-prog input,.cx-prog select{border:1px solid var(--border);border-radius:7px;padding:4px 7px;font-family:'Jost',sans-serif;font-size:12px;color:var(--noir);background:#fff;}
 .cx-bar{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;border-top:1px solid #f0ebe3;padding-top:12px;align-items:center;}
 .cx-act{border:1px solid var(--border);background:#fff;border-radius:8px;font-size:12px;padding:6px 11px;cursor:pointer;font-family:'Jost',sans-serif;white-space:nowrap;}
@@ -28230,12 +28234,24 @@ details.cx-more{margin-top:8px;} details.cx-more>summary{font-size:11.5px;color:
   function pset(id,patch){ var o=lsObj(PRET_K); o[''+id]=Object.assign({},o[''+id]||{},patch,{maj:now(),par:ini()}); lsSet(PRET_K,o); }
   function pdel(id,k){ var o=lsObj(PRET_K); if(o[''+id]){ delete o[''+id][k]; lsSet(PRET_K,o); } }
   function netOf(p,o){ /* réseau principal : post prêt > conseillé > mention de la carte */
-    if(o&&o.pub&&o.pub.net&&NETS[o.pub.net]) return o.pub.net;
+    if(o&&o.pub){ var _pn=pubNetsOf(o); if(_pn.length) return _pn[0]; }
     var key=o?(o.src||o.id):(p&&p.id); var s=key?pst(''+key):{}; if(s.pubnet&&NETS[s.pubnet]) return s.pubnet;
     if(p){ if(p.reseau&&NETS[p.reseau]) return p.reseau; var r=Array.isArray(p.reseaux_conseilles)?p.reseaux_conseilles:[]; for(var i=0;i<r.length;i++) if(NETS[r[i]]) return r[i]; }
     var res=(o&&o.res||'').toLowerCase(); for(var k in NETS) if(res.indexOf(NETS[k][0].toLowerCase())>=0) return k; if(/reel|stor/.test(res)) return 'instagram';
     return 'instagram';
   }
+  /* v12.09 (Laurent) : un post peut être publié sur PLUSIEURS réseaux (ex. Instagram + Facebook) — o.pub.nets = ['instagram','facebook'] ; o.pub.net = le premier (compatibilité) */
+  function validNets(a){ return ORDER.filter(function(k){ return Array.isArray(a)&&a.indexOf(k)>=0; }); }
+  function pubNetsOf(o){ if(!o||!o.pub) return []; var a=validNets(o.pub.nets); if(!a.length&&o.pub.net&&NETS[o.pub.net]) a=[o.pub.net]; return a; }
+  /* réseaux cochés avant de cliquer « Publié ! » : choix mémorisé > publication précédente > réseau principal */
+  function selNets(p,o){
+    var key=o?(o.src||o.id):(p&&p.id), s=key?pst(''+key):{};
+    var a=validNets(s.pubnets); if(a.length) return a;
+    if(s.pubnet&&NETS[s.pubnet]) return [s.pubnet];
+    a=pubNetsOf(o); if(a.length) return a;
+    return [netOf(p,o)];
+  }
+  function netsTxt(a){ return a.map(function(k){ return NETS[k][0]; }).join(' + '); }
   function recos(p){ var r=Array.isArray(p&&p.reseaux_conseilles)?p.reseaux_conseilles:[]; return r.filter(function(k){ return NETS[k]; }); }
   function texteOrig(p){ var k=netOf(p); return ''+(p.texte||p[k]||p.linkedin||p.instagram||p.facebook||p.tiktok||''); }
   function visuels(p){ return Array.isArray(p&&p.visuels)?p.visuels.filter(function(v){ return v&&v.url; }):[]; }
@@ -28305,8 +28321,8 @@ details.cx-more{margin-top:8px;} details.cx-more>summary{font-size:11.5px;color:
   };
   function headHtml(p,o,sg){
     var theme=(o&&o.th)||(p&&p.theme)||(sg&&sg.theme)||'astuce', fmt=(p&&p.format)||(sg&&sg.format)||'';
-    var k=netOf(p,o), N=NETS[k];
-    var h='<div class="cx-d-head">'+chipTheme(theme)+(fmt?'<span class="idj-fmt">'+(FORMATS[fmt]||esc(fmt))+'</span>':'')+'<span class="cx-net" style="background:'+N[1]+'">'+esc(N[0])+'</span>'
+    var k=netOf(p,o), N=NETS[k], _ns=(o&&o.st==='publie'&&pubNetsOf(o).length)?pubNetsOf(o):[k];   /* v12.09 : un tag par réseau de publication */
+    var h='<div class="cx-d-head">'+chipTheme(theme)+(fmt?'<span class="idj-fmt">'+(FORMATS[fmt]||esc(fmt))+'</span>':'')+_ns.map(function(kk){ return '<span class="cx-net" style="background:'+NETS[kk][1]+'">'+esc(NETS[kk][0])+'</span>'; }).join('')
       +(p&&p.demande_id?'<span class="pp-badge-dem" title="Post préparé à votre demande">✨ à votre demande</span>':'')+'<span class="sp"></span><button class="cx-x" onclick="cxClose()" title="Fermer">✕</button></div>';
     return h;
   }
@@ -28357,8 +28373,28 @@ details.cx-more{margin-top:8px;} details.cx-more>summary{font-size:11.5px;color:
     return '<div class="cx-prog" style="margin-top:10px">📅 Prévu le <input type="datetime-local" value="'+esc(v)+'" onchange="cxProg(this.value)">'+(p&&p.horaire&&!s.prog?'<span class="cx-lock">(horaire conseillé par Claude)</span>':'')+'</div>';
   }
   window.cxProg=function(v){ pset(CX.rid,{prog:v||''}); if(v&&window.toast) toast('📅 Prévu le '+fdt(v)); };
-  function pubSel(p,o){ var cur=netOf(p,o); return '<select onchange="cxPubNet(this.value)" title="Réseau de publication">'+ORDER.map(function(k){ return '<option value="'+k+'"'+(k===cur?' selected':'')+'>'+NETS[k][0]+'</option>'; }).join('')+'</select>'; }
-  window.cxPubNet=function(k){ pset(CX.rid,{pubnet:k}); };
+  function netChips(cur,fn,arg){ return '<span class="cx-nets" title="Cochez tous les réseaux où le post est publié">'+ORDER.map(function(k){ var on=cur.indexOf(k)>=0; return '<label class="cx-netc'+(on?' on':'')+'" style="--nc:'+NETS[k][1]+'"><input type="checkbox"'+(on?' checked':'')+' onchange="'+fn+'('+(arg?'\''+esc(arg)+'\',':'')+'\''+k+'\',this)">'+NETS[k][0]+'</label>'; }).join('')+'</span>'; }
+  function pubSel(p,o){ return netChips(selNets(p,o),'cxPubNetT',''); }
+  window.cxPubNet=function(k){ pset(CX.rid,{pubnet:k, pubnets:[k]}); };
+  window.cxPubNetT=function(k,cb){
+    var p=prop(CX.rid), o=(CX.kind==='cav')?cavById(CX.id):null, a=selNets(p,o).slice(), i=a.indexOf(k);
+    if(cb.checked&&i<0) a.push(k); if(!cb.checked&&i>=0) a.splice(i,1);
+    a=validNets(a); if(!a.length){ cb.checked=true; if(window.toast) toast('Au moins un réseau'); return; }
+    pset(CX.rid,{pubnets:a, pubnet:a[0]}); cb.parentNode.classList.toggle('on',cb.checked);
+  };
+  /* après publication : corriger les réseaux d'un post déjà publié (ex. ajouter Facebook) */
+  window.cxPubNetsEdit=function(id,k,cb){
+    var a=cavList(), o=a.filter(function(x){ return x&&x.id===id; })[0]; if(!o||!o.pub) return;
+    var n=pubNetsOf(o), i=n.indexOf(k);
+    if(cb.checked&&i<0) n.push(k); if(!cb.checked&&i>=0) n.splice(i,1);
+    n=validNets(n); if(!n.length){ cb.checked=true; if(window.toast) toast('Au moins un réseau'); return; }
+    o.pub.nets=n; o.pub.net=n[0]; o.updated=now(); lsSet(CAV_K,a);
+    try{ pset(o.src||o.id,{pubnets:n, pubnet:n[0]}); }catch(e){}
+    cb.parentNode.classList.toggle('on',cb.checked);
+    try{ cavRender(); }catch(e){} try{ if(PUB.net) pubRender(); }catch(e){} try{ cxRefresh(); }catch(e){}
+    if(window.toast) toast('📣 Publié sur '+netsTxt(n));
+    try{ if(window.achLog) achLog('modification','Communication','réseaux de publication : '+netsTxt(n)+' — '+(o.titre||'')); }catch(e){}
+  };
 
   /* ── suggestion du matin (propose / déjà triée) ── */
   function suggHtml(id){
@@ -28419,6 +28455,7 @@ details.cx-more{margin-top:8px;} details.cx-more>summary{font-size:11.5px;color:
       +'<div class="cx-txt-acts"><button class="cx-btn" onclick="achCopyText(document.getElementById(\'cx-tx\').value,this)">📋 Copier le texte</button><a class="cx-btn" href="'+N[2]+'" target="_blank" rel="noopener">↗ Ouvrir '+esc(N[0])+'</a><span class="cx-lock">enregistré pendant la frappe</span></div>';
     if(sg){ var oth=ORDER.filter(function(k){ return (''+(sg[k]||'')).trim(); }); if(oth.length) h+='<details class="cx-more"><summary>Versions proposées par Claude ('+oth.map(function(k){ return NETS[k][0]; }).join(', ')+')</summary>'+netTextsHtml(null,sg,rid,false)+'</details>'; }
     if(o.st!=='publie') h+=progHtml(p,rid);
+    if(o.st==='publie'){ var _pn=pubNetsOf(o); if(!_pn.length) _pn=[netOf(p,o)]; h+='<div class="cx-prog" style="margin-top:10px">📣 Publié sur '+(isAdmin()?netChips(_pn,'cxPubNetsEdit',id):'<b>'+esc(netsTxt(_pn))+'</b>')+'</div>'; }
     if(o.st==='publie'){ h+='<div class="cx-prog" style="margin-top:10px">🔗 Lien de la publication <input type="url" style="flex:1;min-width:200px" value="'+esc(o.pub&&o.pub.lien||'')+'" placeholder="https://…" onchange="cxPubLien(\''+esc(id)+'\',this.value)"'+(isGerant()?'':' readonly')+'></div>'; }
     h+=avisHtml(rid);
     h+='<div class="cx-bar">';
@@ -28451,14 +28488,14 @@ details.cx-more{margin-top:8px;} details.cx-more>summary{font-size:11.5px;color:
   /* 📣 Publié ! — v12 : la carte passe « publiée » et apparaît dans l'onglet Publier (plus de ligne ajoutée au tableau Appartements) */
   window.cavPublie=function(id, silent){
     var a=cavList(), o=a.filter(function(x){ return x&&x.id===id; })[0]; if(!o) return;
-    var p=o.src?prop(o.src):null, k=netOf(p,o), s=pst(o.src||o.id);
-    if(!silent && !confirm('📣 « '+(o.titre||'')+' » est publié sur '+NETS[k][0]+' ?\n\nIl apparaîtra dans l’onglet Publications et quittera cette liste.')) return;
-    o.st='publie'; o.updated=now(); o.pub={d:(s.prog?s.prog:now()), net:k, lien:(o.pub&&o.pub.lien)||'', par:ini()};
+    var p=o.src?prop(o.src):null, s=pst(o.src||o.id), nets=selNets(p,o), k=nets[0];
+    if(!silent && !confirm('📣 « '+(o.titre||'')+' » est publié sur '+netsTxt(nets)+' ?\n\nIl apparaîtra dans l’onglet Publications et quittera cette liste.')) return;
+    o.st='publie'; o.updated=now(); o.pub={d:(s.prog?s.prog:now()), net:k, nets:nets, lien:(o.pub&&o.pub.lien)||'', par:ini()};   /* v12.09 : plusieurs réseaux */
     lsSet(CAV_K,a);
     try{ cavRender(); }catch(e){} try{ if(window.cavCount) cavCount(); }catch(e){} try{ idjRender(); }catch(e){}
     try{ if(window.idjTriPush) idjTriPush(); }catch(e){}
-    if(window.toast) toast('📣 Publié sur '+NETS[k][0]+' — retrouvez-le dans l’onglet Publications (pensez au lien 🔗)');
-    try{ if(window.achLog) achLog('modification','Communication','publié sur '+NETS[k][0]+' : '+(o.titre||'')); }catch(e){}
+    if(window.toast) toast('📣 Publié sur '+netsTxt(nets)+' — retrouvez-le dans l’onglet Publications (pensez au lien 🔗)');
+    try{ if(window.achLog) achLog('modification','Communication','publié sur '+netsTxt(nets)+' : '+(o.titre||'')); }catch(e){}
     cxOpen('cav',id);
   };
   /* les anciens pop-ups ouvrent désormais le panneau de droite */
@@ -28489,7 +28526,7 @@ details.cx-more{margin-top:8px;} details.cx-more>summary{font-size:11.5px;color:
       var p=o.src?prop(o.src):null, k=netOf(p,o);
       var img='', live=null; try{ live=(p&&window.stSlides)?stSlides(p):null; }catch(e){}
       if(!live){ var v=visuels(p); if(v.length) img=v[0].url; }
-      var cx=push({id:'cav:'+o.id, cav:o.id, src:'achille', d:(o.pub&&o.pub.d)||o.updated||o.created||'', txt:o.texte||o.titre||'', titre:o.titre||'', type:(p&&FORMATS[p.format])?FORMATS[p.format].replace(/^\S+\s/,''):'post', url:(o.pub&&o.pub.lien)||'', img:img, live:live?p:null, likes:0, com:0, par:(o.pub&&o.pub.par)||o.by||''}, [k]);
+      var cx=push({id:'cav:'+o.id, cav:o.id, src:'achille', d:(o.pub&&o.pub.d)||o.updated||o.created||'', txt:o.texte||o.titre||'', titre:o.titre||'', type:(p&&FORMATS[p.format])?FORMATS[p.format].replace(/^\S+\s/,''):'post', url:(o.pub&&o.pub.lien)||'', img:img, live:live?p:null, likes:0, com:0, par:(o.pub&&o.pub.par)||o.by||''}, (pubNetsOf(o).length?pubNetsOf(o):[k]));
       if(cx) keysOf(o.src,o.titre).forEach(function(kk){ cavKey[kk]=cx; });
     });
     /* posts éditoriaux du registre (ex : « Vacances de la Toussaint », 15/10) : ils quittent Appartements et vivent ici, sous leurs réseaux (par défaut Instagram + Facebook) */
