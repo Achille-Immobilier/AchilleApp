@@ -1843,7 +1843,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     </div>
   </div>
   </div>
-  <div class="logo-ver app-ver">Achille App — v12.14</div>
+  <div class="logo-ver app-ver">Achille App — v12.15</div>
 </aside>
 <div id="mob-bk" onclick="mobNav(false)"></div>
 <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Réduire la barre latérale">‹</button>
@@ -14896,7 +14896,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     startRealtime();
     var ov=document.getElementById('ach-login-overlay'); if(ov) ov.classList.add('ach-hidden');
     var ub=document.getElementById('ach-userbar'); if(ub) ub.style.display='none';
-    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v12.14';
+    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v12.15';
     flag('Synchronis\u00e9');
     // fin de l'init : on autorise la journalisation des actions
     setTimeout(function(){ installInterceptor._init=false; }, 1500);
@@ -27718,6 +27718,12 @@ a.pp-btn{text-decoration:none;display:inline-block;}
 .st-photos{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;}
 .st-ph{aspect-ratio:1;border-radius:6px;overflow:hidden;border:2px solid transparent;cursor:pointer;background:#eee;}
 .st-ph.on{border-color:var(--terra);} .st-ph img{width:100%;height:100%;object-fit:cover;display:block;}
+/* v12.15 : choix de la photo (agence / banque / lien) */
+.st-phcur{display:flex;align-items:center;gap:8px;margin:2px 0 6px;font-size:12px;color:var(--gris-2);} .st-phcur img{width:46px;height:46px;object-fit:cover;border-radius:6px;}
+.st-phtabs{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:6px;} .st-phtabs .st-btn.on{background:var(--olive,#4c533b);color:#fff;border-color:var(--olive,#4c533b);}
+.st-bank-th{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:6px;} .st-chip{font:inherit;font-size:11px;padding:3px 9px;border-radius:999px;border:1px solid var(--border,#ddd);background:#f6f2ec;cursor:pointer;} .st-chip.on{background:var(--terra,#b47360);border-color:var(--terra,#b47360);color:#fff;}
+.st-bank{grid-template-columns:repeat(3,1fr);max-height:300px;overflow:auto;padding-right:2px;} .st-bank-msg{grid-column:1/-1;font-size:12px;color:var(--gris-2);padding:10px 2px;} .st-bank-note{font-size:11px;color:var(--gris-2);margin-top:4px;}
+.st-phurl{display:flex;gap:6px;} .st-phurl input{flex:1;min-width:0;}
 .st-sw-wrap{max-height:300px;overflow:auto;padding-right:4px;}
 .st-sw-g{font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:#a09890;margin:6px 0 4px;}
 .st-sw-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;}
@@ -27747,6 +27753,9 @@ a.pp-btn{text-decoration:none;display:inline-block;}
 .st-btn:disabled{opacity:.5;cursor:wait;}
 .st-mod{font-size:11px;color:#8a5a1e;font-style:italic;}
 @media (max-width:880px){ .st-body{grid-template-columns:1fr;} }
+/* v12.15 : l'aperçu reste visible pendant qu'on descend dans les réglages (photos, banque d'images) */
+@media (min-width:881px){ .st-prev{position:sticky;top:0;align-self:start;} }
+.st-form input[type=url]{width:100%;border:1px solid var(--border);border-radius:8px;padding:7px 10px;font-family:'Jost',sans-serif;font-size:13px;color:var(--noir);background:#fffdf9;}
 </style>
 <script>
 /* html-to-image 1.11.11 (MIT) — embarqué pour l'export PNG du studio */
@@ -27823,7 +27832,7 @@ a.pp-btn{text-decoration:none;display:inline-block;}
     var wmOn=(sl.wm==='oui')||(sl.wm!=='non' && WM_TPL.indexOf(sl.tpl)>=0), wm='';
     if(wmOn){ var wh=(sl.fmt==='story')?1150:(sl.fmt==='sq'?820:900), ww=Math.round(wh*534/700), W0=(sl.fmt==='sq'?1200:1080), H0=(sl.fmt==='story'?1920:(sl.fmt==='sq'?1200:1350));
       wm='<img class="st-abs" src="'+KIT+'submark-'+(b.light?'olive':'creme')+'.png" style="left:'+Math.round((W0-ww)/2)+'px;top:'+Math.round((H0-wh)/2)+'px;height:'+wh+'px;opacity:'+(b.light?'.06':'.055')+'">'; }
-    return '<div class="'+cls+'" style="'+style+';color:'+fg+'">'+bgDeco(b)+wm+logo+inner+foot+'</div>';
+    return '<div class="'+cls+'" style="'+style+';color:'+fg+'">'+bgDeco(b)+(sl.__under||'')+wm+logo+inner+foot+'</div>';
   }
   var AG={adr:'115 AVENUE ACHILLE PERETTI · 92200 NEUILLY-SUR-SEINE', tel:'01 40 67 00 55', mail:'WELCOME@ACHILLE-IMMOBILIER.FR'};
   var FOOTS={ full:[AG.adr, AG.tel+'&nbsp;&nbsp;·&nbsp;&nbsp;'+AG.mail], telmail:[AG.tel+'&nbsp;&nbsp;·&nbsp;&nbsp;'+AG.mail], tel:[AG.tel], mail:[AG.mail], adr:[AG.adr] };
@@ -27904,6 +27913,16 @@ a.pp-btn{text-decoration:none;display:inline-block;}
             +(p.texte?'<div style="'+fs(40)+';line-height:1.45;'+mt(56)+'">'+br(p.texte)+'</div>':''))
         +'<img class="st-abs" src="'+KIT+'submark-'+b.logo+'.png" style="left:0;right:0;margin:auto;top:1400px;height:160px">'
         +(p.source?'<div class="st-abs" style="left:60px;right:60px;bottom:210px;text-align:center;font-size:14px;letter-spacing:.1em;opacity:.5;line-height:1.6">'+esc(p.source)+'</div>':'')); } },
+    /* v12.15 : PHOTO PLEINE PAGE — une photo (agence, banque d'images, appareil ou lien) sur toute la slide, voile + titre */
+    photo:{ nom:'Photo pleine page', champs:[['photo','Photo','photo'],['kicker','Surtitre','t'],['titre','Titre','ta'],['sous','Sous-titre','ta'],['voile','Voile sur la photo','voile'],['fmt','Format','fmt']],
+      def:{bg:'noir',logo:'center',photo:'photo-interieur.jpg',voile:'moyen',wm:'non'},
+      html:function(p){ p.bg='noir'; var W=p.fmt==='sq'?1200:1080, H=p.fmt==='story'?1920:(p.fmt==='sq'?1200:1350), op={leger:.42,moyen:.66,fort:.84}[p.voile]||.66;
+        p.__under=(p.photo?'<img class="st-abs" src="'+photoUrl(p.photo)+'" style="left:0;top:0;width:'+W+'px;height:'+H+'px;object-fit:cover;'+phStyle(p)+'">':'')
+          +'<div class="st-abs" style="inset:0;background:linear-gradient(180deg,rgba(26,26,24,'+(op*.6).toFixed(2)+') 0%,rgba(26,26,24,'+(op*.12).toFixed(2)+') 36%,rgba(26,26,24,'+op+') 100%)"></div>';
+        return wrap(p, Z(Math.round(H*.45), p.fmt==='story'?300:160, 80, 'flex-end', 'center',
+          (p.kicker?'<div class="st-lbl" style="color:#e2d8cb;'+fs(24)+'">'+esc(p.kicker)+'</div>':'')
+          +'<div class="st-k" style="'+fs(100)+';'+mt(p.kicker?24:0)+'">'+kt(p.titre||'')+'</div>'
+          +(p.sous?'<div class="st-it" style="'+fs(44)+';line-height:1.15;opacity:.92;'+mt(22)+'">'+br(p.sous)+'</div>':''))); } },
     square:{ nom:'Carré LinkedIn', champs:[['kicker','Surtitre','t'],['titre','Titre','ta'],['texte','Texte','ta'],['bg','Fond','bg']],
       def:{bg:'olive',logo:'center',fmt:'sq'},
       html:function(p){ var b=bgd(p.bg,'olive'); p.fmt='sq'; return wrap(p,
@@ -27920,14 +27939,39 @@ a.pp-btn{text-decoration:none;display:inline-block;}
   window.stFit=stFit;
   try{ new MutationObserver(function(ms){ var hit=false; ms.forEach(function(m){ m.addedNodes&&m.addedNodes.forEach(function(n){ if(n.nodeType===1&&(n.classList.contains('st-zone')||n.querySelector&&n.querySelector('.st-zone'))) hit=true; }); }); if(hit){ requestAnimationFrame(function(){ stFit(); }); setTimeout(stFit,400); setTimeout(stFit,1500); } }).observe(document.documentElement,{childList:true,subtree:true}); }catch(e){}
   try{ if(document.fonts){ if(document.fonts.ready) document.fonts.ready.then(function(){ stFit(); }); if(document.fonts.addEventListener) document.fonts.addEventListener('loadingdone', function(){ stFit(); }); } }catch(e){}
-  function slideHtml(sl){ var T=TPL[sl.tpl]; if(!T) return '<div class="st-slide" style="background:#ccc"></div>'; var p=Object.assign({},T.def,sl); _zk=Math.min(1.4,Math.max(.5,+p.k||1)); return T.html(p); }
+  function slideHtml(sl){ var T=TPL[sl.tpl]; if(!T) return '<div class="st-slide" style="background:#ccc"></div>'; var p=Object.assign({},T.def,sl); _zk=Math.min(1.4,Math.max(.5,+p.k||1)); var h=T.html(p); if(p.phpos||p.phz) h=h.replace(/(<div class="st-oval"[^>]*>)<img /g,'$1<img style="'+phStyle(p)+'" '); return h; }
+  /* v12.15 : cadrage et zoom de la photo (champs phpos / phz de la slide) */
+  function phStyle(p){ var P={c:'50% 50%',t:'50% 0%',b:'50% 100%',l:'0% 50%',r:'100% 50%'}[p.phpos||'c']||'50% 50%', z=Math.min(2.5,Math.max(1,+p.phz||1)); return 'object-position:'+P+(z!==1?';transform:scale('+z+');transform-origin:'+P:''); }
   function fmtOf(sl){ var T=TPL[sl.tpl]; return sl.fmt||(T&&T.def&&T.def.fmt)||''; }
   function dims(sl){ var f=fmtOf(sl); return f==='story'?[1080,1920]:(f==='sq'?[1200,1200]:[1080,1350]); }
   function scaled(sl, w){ var d=dims(sl), s=w/d[0]; return '<div style="width:'+w+'px;height:'+Math.round(d[1]*s)+'px;position:relative;overflow:hidden"><div style="transform:scale('+s+');transform-origin:0 0;position:absolute;left:0;top:0">'+slideHtml(sl)+'</div></div>'; }
   window.stSlides=function(p){ var s=lsObj(PRET_K)[''+p.id]; if(s&&Array.isArray(s.slides)) return {slides:s.slides, mod:true}; return Array.isArray(p.slides)?{slides:p.slides, mod:false}:null; };
-  window.stLiveThumbs=function(p, w){ var o=stSlides(p); if(!o) return ''; return o.slides.map(function(sl,i){ return '<div class="pp-live" onclick="stZoom(\''+encodeURIComponent(''+p.id)+'\','+i+')" title="Agrandir">'+scaled(sl,w)+(o.slides.length>1?'<span class="n" style="position:absolute;left:5px;top:4px;font-size:10px;font-weight:700;background:rgba(26,26,24,.65);color:#fff;border-radius:9px;padding:1px 6px">'+(i+1)+'</span>':'')+'</div>'; }).join(''); };
-  window.stZoom=function(eid,i){ var p=stFind(decodeURIComponent(eid)); if(!p) return; var o=stSlides(p); var w=document.createElement('div'); w.id='pp-zoom'; w.style.cursor='zoom-out'; var ww=Math.min(window.innerWidth*.92,620); w.innerHTML='<div style="border-radius:8px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.5)">'+scaled(o.slides[i],ww)+'</div>'; w.onclick=function(){ w.remove(); }; document.body.appendChild(w); };
-  function stFind(id){ try{ return (window.ppById&&ppById(id))||null; }catch(e){ return null; } }
+  /* v12.15 (Laurent 30/10 : « je veux TOUJOURS avoir la possibilité de modifier tout ce qui compose un post ») :
+     un post sans slides reçoit une proposition de visuel tirée de son titre et de son texte — modifiable dans le studio comme les autres. */
+  var THL={infoimmo:'Lecture de marché',astuce:'Le conseil Achille',humour:'Clin d’œil',vielocale:'Vie de quartier',sondage:'Question du jour',achille:'Achille Immobilier'};
+  function cleanT(t){ return (''+(t||'')).replace(/^\s*(carrousel[^—]*|meme|vidéo|quiz[^—]*|question à la communauté|stories?)\s*—\s*/i,'').trim(); }
+  function cut(t,n){ t=(''+(t||'')).replace(/\s+/g,' ').trim(); if(t.length<=n) return t; var c=t.slice(0,n), i=Math.max(c.lastIndexOf('. '),c.lastIndexOf(' : '),c.lastIndexOf(', ')); c=(i>n*.5)?c.slice(0,i+1):(c.slice(0,c.lastIndexOf(' '))+'…'); return c.trim(); }
+  var BUL=/^(\d{1,2}[.)]|•|✅|❌|👉|📍|🎃|–|-)\s+/;
+  function autoSlides(p){
+    p=p||{}; var net=p.reseau||(Array.isArray(p.reseaux_conseilles)&&p.reseaux_conseilles[0])||'';
+    var txt=''+(p.texte||(net&&p[net])||p.instagram||p.linkedin||p.facebook||p.tiktok||'');
+    txt=txt.split('\n').filter(function(l){ return !/^\s*#/.test(l); }).join('\n');
+    var tt=cleanT(p.titre)||cut(txt,80)||'Achille Immobilier';
+    var paras=txt.split(/\n\s*\n/).map(function(x){ return x.replace(/\s+/g,' ').trim(); }).filter(Boolean);
+    var src=(p.source&&p.source.nom)?('SOURCE : '+(''+p.source.nom).split(' — ')[0].toUpperCase()):'';
+    if(net==='linkedin') return [{tpl:'square', bg:'deg-olive-noir', kicker:THL[p.theme]||'Achille Immobilier', titre:cut(tt,70), texte:cut(paras[1]||paras[0]||'',230)}];
+    var bul=txt.split('\n').map(function(l){ return l.trim(); }).filter(function(l){ return BUL.test(l); }).slice(0,6);
+    var S=[{tpl:'cover', bg:'olive', titre:cut(tt,70), sous:cut(paras[0]||'',110), seal_l1:'', seal_l2:'', photo:'photo-interieur.jpg'}];
+    if(bul.length>=2) bul.forEach(function(l,i){ l=l.replace(BUL,''); var m=l.split(/\s+[—→]\s+|\s:\s/); S.push({tpl:'point', bg:(i%2?'deg-olive-noir':'deg-ivoire-sable'), num:''+(i+1), total:''+bul.length, phrase:cut(m[0],80), label:'', antidote:cut(m.slice(1).join(' — '),140), detail:''}); });
+    var last=paras.slice(-1)[0]||'';
+    S.push({tpl:'final', bg:'terra', titre:cut(last,90)||'Parlons-en.', sous:'Une question ? Écrivez-nous · lien en bio', seal_l1:'', seal_l2:'', photo:'', source:src});
+    return S;
+  }
+  window.stAutoSlides=autoSlides;
+  window.stSlidesAny=function(p){ var o=stSlides(p); if(o&&o.slides&&o.slides.length) return o; return {slides:autoSlides(p), mod:false, auto:true}; };
+  window.stLiveThumbs=function(p, w){ var o=stSlidesAny(p); if(!o) return ''; return o.slides.map(function(sl,i){ return '<div class="pp-live" onclick="stZoom(\''+encodeURIComponent(''+p.id)+'\','+i+')" title="Agrandir">'+scaled(sl,w)+(o.slides.length>1?'<span class="n" style="position:absolute;left:5px;top:4px;font-size:10px;font-weight:700;background:rgba(26,26,24,.65);color:#fff;border-radius:9px;padding:1px 6px">'+(i+1)+'</span>':'')+'</div>'; }).join(''); };
+  window.stZoom=function(eid,i){ var p=stFind(decodeURIComponent(eid)); if(!p) return; var o=stSlidesAny(p); var w=document.createElement('div'); w.id='pp-zoom'; w.style.cursor='zoom-out'; var ww=Math.min(window.innerWidth*.92,620); w.innerHTML='<div style="border-radius:8px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.5)">'+scaled(o.slides[i],ww)+'</div>'; w.onclick=function(){ w.remove(); }; document.body.appendChild(w); };
+  function stFind(id){ var p=null; try{ p=(window.ppById&&ppById(id))||null; }catch(e){} if(!p){ try{ p=(window.idjById&&idjById(id))||null; }catch(e){} } if(!p){ try{ p=(window.cxPseudo&&cxPseudo(id))||null; }catch(e){} } return p; }
   /* ── export PNG ── */
   function renderPng(sl){
     var d=dims(sl); var host=document.createElement('div'); host.style.cssText='position:fixed;left:-20000px;top:0;'; host.innerHTML=slideHtml(sl); document.body.appendChild(host);
@@ -27938,7 +27982,7 @@ a.pp-btn{text-decoration:none;display:inline-block;}
       .then(function(url){ host.remove(); return url; }, function(e){ host.remove(); throw e; });
   }
   window.stExport=function(eid,btn){
-    var p=stFind(decodeURIComponent(eid)); if(!p) return; var o=stSlides(p); if(!o) return; var t=btn?btn.textContent:'', i=0;
+    var p=stFind(decodeURIComponent(eid)); if(!p) return; var o=stSlidesAny(p); if(!o) return; var t=btn?btn.textContent:'', i=0;
     (function one(){ if(i>=o.slides.length){ if(btn) btn.textContent=t; return; } if(btn) btn.textContent='⬇ '+(i+1)+'/'+o.slides.length+'…';
       renderPng(o.slides[i]).then(function(url){ var a=document.createElement('a'); a.href=url; a.download=(p.id||'visuel')+'-'+(i+1)+'.png'; document.body.appendChild(a); a.click(); a.remove(); i++; setTimeout(one,500); })
         .catch(function(e){ if(window.toast) toast('✗ Export impossible : '+(e&&e.message||e)); if(btn) btn.textContent=t; }); })();
@@ -27946,7 +27990,7 @@ a.pp-btn{text-decoration:none;display:inline-block;}
   /* ── studio (éditeur) ── */
   var ST={p:null, slides:null, cur:0};
   window.stOpen=function(eid){
-    var p=stFind(decodeURIComponent(eid)); if(!p) return; var o=stSlides(p); if(!o) return;
+    var p=stFind(decodeURIComponent(eid)); if(!p) return; var o=stSlidesAny(p); if(!o) return;
     ST.p=p; ST.slides=JSON.parse(JSON.stringify(o.slides)); ST.cur=0;
     var w=document.createElement('div'); w.id='st-ov';
     w.innerHTML='<div class="st-win"><div class="st-head"><h3>🎨 '+esc(p.titre||'')+'</h3><span class="st-mod" id="st-mod"></span><button class="st-btn" onclick="stClose()">✕ Fermer</button></div>'
@@ -27982,12 +28026,49 @@ a.pp-btn{text-decoration:none;display:inline-block;}
       +'</div>';
     (T.champs||[]).forEach(function(c){ var k=c[0], lab=c[1], ty=c[2], v=sl[k]==null?'':sl[k];
       if(ty==='bg'){ f+=bgPicker(sl, T); }
-      else if(ty==='photo'){ f+='<div><label>'+esc(lab)+'</label><div class="st-photos">'+PHOTOS.map(function(ph){ return '<div class="st-ph'+(v===ph[0]?' on':'')+'" title="'+esc(ph[1])+'" onclick="stSet(\''+k+'\',\''+ph[0]+'\')"><img src="'+KIT+ph[0]+'"></div>'; }).join('')+(v&&v.indexOf('data:')===0?'<div class="st-ph on" title="Votre photo"><img src="'+v+'"></div>':'')+'</div>'
-        +'<label class="st-up" style="margin-top:6px">📷 Choisir une photo sur cet appareil<input type="file" accept="image/*" style="display:none" onchange="stPhoto(this,\''+k+'\')"></label>'
-        +(v?'<button class="st-btn" style="margin-top:6px" onclick="stSet(\''+k+'\',\'\')">Sans photo</button>':'')+'</div>'; }
+      else if(ty==='photo'){ f+=photoField(k,lab,v,sl); }
+      else if(ty==='fmt'){ f+='<div><label>'+esc(lab)+'</label><select class="st-sel" onchange="stSet(\''+k+'\',this.value)">'+[['','Portrait 4:5 (Instagram / Facebook)'],['sq','Carré (LinkedIn)'],['story','Story 9:16']].map(function(o){ return '<option value="'+o[0]+'"'+((v||'')===o[0]?' selected':'')+'>'+o[1]+'</option>'; }).join('')+'</select></div>'; }
+      else if(ty==='voile'){ f+='<div><label>'+esc(lab)+'</label><select class="st-sel" onchange="stSet(\''+k+'\',this.value)">'+[['leger','Léger'],['moyen','Moyen'],['fort','Fort']].map(function(o){ return '<option value="'+o[0]+'"'+((v||'moyen')===o[0]?' selected':'')+'>'+o[1]+'</option>'; }).join('')+'</select></div>'; }
       else if(ty==='ta'){ f+='<div><label>'+esc(lab)+'</label><textarea oninput="stSet(\''+k+'\',this.value)">'+esc(v)+'</textarea></div>'; }
       else { f+='<div><label>'+esc(lab)+'</label><input type="text" value="'+esc(v)+'" oninput="stSet(\''+k+'\',this.value)"></div>'; } });
     document.getElementById('st-form').innerHTML=f;
+    stBankFill();
+  }
+  /* ── v12.15 : choix de la photo — photos de l'agence, BANQUE D'IMAGES (bucket posts-visuels/_banque, lue en direct), lien ou appareil ── */
+  var STO='https://iagxsulepbwlnfrslspn.supabase.co/storage/v1', SK='sb_publishable_k2cnvYiGaEM_Z4PHG2xv_A_H6GSjKwe';
+  var BANK_T={facades:'Façades',toits:'Toits de Paris',salon:'Salons',cheminee:'Cheminées','salle-a-manger':'Salles à manger',cuisine:'Cuisines',chambre:'Chambres',sdb:'Salles de bains',parquet:'Parquets',moulures:'Moulures & couloirs',interieurs:'Caractère',escalier:'Escaliers',fenetres:'Fenêtres & lumière',cles:'Clés'};
+  var _phTab='kit', _bankT='', _bank={}, _bankThemes=null;
+  function stoList(prefix){ return fetch(STO+'/object/list/posts-visuels',{method:'POST',headers:{apikey:SK,Authorization:'Bearer '+SK,'Content-Type':'application/json'},body:JSON.stringify({prefix:prefix,limit:1000,sortBy:{column:'name',order:'asc'}})}).then(function(r){ if(!r.ok) throw new Error('HTTP '+r.status); return r.json(); }); }
+  function bankUrl(t,n,mini){ return STO+'/object/public/posts-visuels/_banque/'+(mini?'_mini/':'')+t+'/'+n; }
+  function bankThemes(cb){ if(_bankThemes) return cb(_bankThemes);
+    stoList('_banque/').then(function(a){ var f=(a||[]).filter(function(e){ return e&&!e.id&&e.name&&e.name.charAt(0)!=='_'; }).map(function(e){ return e.name; });
+      var ord=Object.keys(BANK_T).filter(function(k){ return f.indexOf(k)>=0; }).concat(f.filter(function(k){ return !BANK_T[k]; })); _bankThemes=ord.length?ord:Object.keys(BANK_T); cb(_bankThemes); })
+      .catch(function(){ _bankThemes=Object.keys(BANK_T); cb(_bankThemes); }); }
+  function bankList(t,cb){ if(_bank[t]) return cb(_bank[t]);
+    stoList('_banque/'+t+'/').then(function(a){ _bank[t]=(a||[]).filter(function(e){ return e&&e.id&&/\.(jpe?g|png|webp)$/i.test(e.name); }).map(function(e){ return e.name; }); cb(_bank[t]); }).catch(function(){ cb(null); }); }
+  function photoField(k,lab,v,sl){
+    var tabs=[['kit','🏠 Agence'],['banque','🖼 Banque d’images'],['lien','🔗 Lien ou appareil']];
+    var h='<div class="st-phf"><label>'+esc(lab)+'</label>'
+      +(v?'<div class="st-phcur"><img src="'+esc(photoUrl(v))+'" alt=""><span>Photo actuelle</span><button class="st-btn" onclick="stSet(\''+k+'\',\'\')">Sans photo</button></div>':'<div class="st-phcur"><span>Aucune photo sur cette slide</span></div>')
+      +'<div class="st-phtabs">'+tabs.map(function(t){ return '<button class="st-btn'+(_phTab===t[0]?' on':'')+'" onclick="stPhTab(\''+t[0]+'\')">'+t[1]+'</button>'; }).join('')+'</div>';
+    if(_phTab==='kit') h+='<div class="st-photos">'+PHOTOS.map(function(ph){ return '<div class="st-ph'+(v===ph[0]?' on':'')+'" title="'+esc(ph[1])+'" onclick="stSet(\''+k+'\',\''+ph[0]+'\')"><img src="'+KIT+ph[0]+'"></div>'; }).join('')+'</div>';
+    else if(_phTab==='banque') h+='<div class="st-bank-th" id="st-bank-th" data-k="'+esc(k)+'"></div><div class="st-photos st-bank" id="st-bank" data-k="'+esc(k)+'"><div class="st-bank-msg">Chargement de la banque d’images…</div></div><div class="st-bank-note">Photos libres de droits (Unsplash) — jamais présentées comme un bien de l’agence.</div>';
+    else h+='<div class="st-phurl"><input type="url" id="st-phu" placeholder="Collez le lien d’une image (https://…)" value="'+esc(/^https?:/.test(''+v)?v:'')+'"><button class="st-btn" onclick="var u=document.getElementById(\'st-phu\').value.trim(); if(/^https?:\\/\\//.test(u)) stSet(\''+k+'\',u); else if(window.toast) toast(\'Collez un lien qui commence par https://\')">Appliquer</button></div>'
+      +'<label class="st-up" style="margin-top:6px">📷 Choisir une photo sur cet appareil<input type="file" accept="image/*" style="display:none" onchange="stPhoto(this,\''+k+'\')"></label>';
+    if(v) h+='<div class="st-mf-row" style="margin-top:8px"><label>Cadrage</label><select class="st-sel" onchange="stSet(\'phpos\',this.value)">'+[['c','Centré'],['t','Haut'],['b','Bas'],['l','Gauche'],['r','Droite']].map(function(o){ return '<option value="'+o[0]+'"'+((sl.phpos||'c')===o[0]?' selected':'')+'>'+o[1]+'</option>'; }).join('')+'</select></div>'
+      +'<div class="st-mf-row"><label>Zoom</label><input type="range" min="1" max="2" step="0.05" value="'+(+sl.phz||1)+'" oninput="stSet(\'phz\',+this.value);document.getElementById(\'st-zv\').textContent=Math.round(this.value*100)+\' %\'"><span id="st-zv" class="st-kv">'+Math.round((+sl.phz||1)*100)+' %</span></div>';
+    return h+'</div>';
+  }
+  window.stPhTab=function(t){ _phTab=t; stPaint(); };
+  window.stBankTheme=function(t){ _bankT=t; stBankFill(); };
+  function stBankFill(){
+    var th=document.getElementById('st-bank-th'), g=document.getElementById('st-bank'); if(!th||!g) return; var k=g.getAttribute('data-k')||'photo';
+    bankThemes(function(L){ if(!_bankT||L.indexOf(_bankT)<0) _bankT=L[0];
+      th.innerHTML=L.map(function(t){ return '<button class="st-chip'+(t===_bankT?' on':'')+'" onclick="stBankTheme(\''+t+'\')">'+esc(BANK_T[t]||t)+'</button>'; }).join('');
+      bankList(_bankT,function(a){ var cur=(ST.slides&&ST.slides[ST.cur]||{})[k]||'';
+        if(!a){ g.innerHTML='<div class="st-bank-msg">Banque d’images indisponible pour le moment (connexion ?).</div>'; return; }
+        if(!a.length){ g.innerHTML='<div class="st-bank-msg">Aucune photo dans ce thème.</div>'; return; }
+        g.innerHTML=a.map(function(n){ var u=bankUrl(_bankT,n,false); return '<div class="st-ph'+(cur===u?' on':'')+'" title="Utiliser cette photo" onclick="stSet(\''+k+'\',\''+u+'\')"><img loading="lazy" src="'+bankUrl(_bankT,n,true)+'" onerror="this.onerror=null;this.src=\''+u+'\'"></div>'; }).join(''); }); });
   }
   /* ── v11.69 : sélecteur de fonds visuel (masquer / réafficher / importer / appliquer à toutes) ── */
   var _showMasked=false;
@@ -28034,9 +28115,9 @@ a.pp-btn{text-decoration:none;display:inline-block;}
   window.stDel=function(){ if(ST.slides.length<2) return; if(!confirm('Supprimer la slide '+(ST.cur+1)+' ?')) return; ST.slides.splice(ST.cur,1); ST.cur=Math.min(ST.cur,ST.slides.length-1); stPaint(); };
   window.stAdd=function(tpl){ var T=TPL[tpl]; if(!T) return; var cur=ST.slides[ST.cur]||{}; var n=Object.assign({},T.def,{tpl:tpl}); if(cur.bg) n.bg=cur.bg; if(T.def.fmt) n.fmt=T.def.fmt; else if(cur.fmt&&cur.fmt!=='story'&&cur.fmt!=='sq') n.fmt=cur.fmt; ST.slides.splice(ST.cur+1,0,n); ST.cur++; stPaint(); if(window.toast) toast('＋ Slide « '+T.nom+' » ajoutée — remplissez ses champs'); };
   window.stTpl=function(tpl){ var T=TPL[tpl]; if(!T) return; var sl=ST.slides[ST.cur]; sl.tpl=tpl; if(T.def.fmt) sl.fmt=T.def.fmt; else delete sl.fmt; if(!sl.bg) sl.bg=T.def.bg; stPaint(); };
-  window.stSet=function(k,v){ ST.slides[ST.cur][k]=v; var stage=document.getElementById('st-stage'); if(stage){ stage.innerHTML=scaled(ST.slides[ST.cur],stW(ST.slides[ST.cur],stage)); } if(k==='photo'||k==='bg') stPaint(); };
+  window.stSet=function(k,v){ ST.slides[ST.cur][k]=v; var stage=document.getElementById('st-stage'); if(stage){ stage.innerHTML=scaled(ST.slides[ST.cur],stW(ST.slides[ST.cur],stage)); } if(k==='photo'||k==='bg'||k==='fmt') stPaint(); };
   window.stPhoto=function(inp,k){ var f=inp.files&&inp.files[0]; if(!f) return; var r=new FileReader(); r.onload=function(){ var im=new Image(); im.onload=function(){ var mx=1400, s=Math.min(1,mx/Math.max(im.width,im.height)); var c=document.createElement('canvas'); c.width=Math.round(im.width*s); c.height=Math.round(im.height*s); c.getContext('2d').drawImage(im,0,0,c.width,c.height); stSet(k, c.toDataURL('image/jpeg',.86)); }; im.src=r.result; }; r.readAsDataURL(f); };
-  window.stReset=function(){ var o=lsObj(PRET_K), id=''+ST.p.id; if(o[id]&&o[id].slides){ delete o[id].slides; o[id].maj=new Date().toISOString(); try{ localStorage.setItem(PRET_K,JSON.stringify(o)); }catch(e){} } ST.slides=JSON.parse(JSON.stringify(ST.p.slides||[])); ST.cur=0; stPaint(); try{ ppRender(); }catch(e){} if(window.toast) toast('↺ Version de Claude rétablie'); };
+  window.stReset=function(){ var o=lsObj(PRET_K), id=''+ST.p.id; if(o[id]&&o[id].slides){ delete o[id].slides; o[id].maj=new Date().toISOString(); try{ localStorage.setItem(PRET_K,JSON.stringify(o)); }catch(e){} } ST.slides=JSON.parse(JSON.stringify((ST.p.slides&&ST.p.slides.length)?ST.p.slides:autoSlides(ST.p))); ST.cur=0; stPaint(); try{ ppRender(); }catch(e){} if(window.toast) toast('↺ Version de Claude rétablie'); };
   window.stSave=function(){ var o=lsObj(PRET_K), id=''+ST.p.id; o[id]=Object.assign({},o[id]||{},{slides:ST.slides, maj:new Date().toISOString(), par:(window.ACH_USER&&ACH_USER.initials)||''}); try{ localStorage.setItem(PRET_K,JSON.stringify(o)); }catch(e){ if(window.toast) toast('✗ Trop lourd pour être enregistré — réduisez la photo'); return; } try{ ppRender(); }catch(e){} var m=document.getElementById('st-mod'); if(m) m.textContent='version modifiée'; if(window.toast) toast('💾 Visuel enregistré — partagé avec l’équipe'); try{ if(window.achLog) achLog('modification','Posts prêts','visuel modifié : '+(ST.p.titre||'')); }catch(e){} };
   window.stExportCur=function(btn){ var t=btn.textContent, i=0, L=ST.slides; btn.disabled=true; (function one(){ if(i>=L.length){ btn.textContent=t; btn.disabled=false; return; } btn.textContent='⬇ '+(i+1)+'/'+L.length+'…'; renderPng(L[i]).then(function(url){ var a=document.createElement('a'); a.href=url; a.download=(ST.p.id||'visuel')+'-'+(i+1)+'.png'; document.body.appendChild(a); a.click(); a.remove(); i++; setTimeout(one,500); }).catch(function(e){ if(window.toast) toast('✗ Export impossible : '+(e&&e.message||e)); btn.textContent=t; btn.disabled=false; }); })(); };
 })();
@@ -28081,6 +28162,8 @@ a.pp-btn{text-decoration:none;display:inline-block;}
 .cx-vis{display:grid;grid-template-columns:repeat(auto-fill,120px);gap:6px;}
 .cx-vis .pp-thumb{aspect-ratio:4/5;}
 .cx-vis-acts{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;}
+.cx-vid video{display:block;max-width:220px;max-height:390px;border-radius:8px;background:#000;}
+.cx-sel{font:inherit;font-size:13px;padding:4px 8px;border:1px solid var(--border);border-radius:8px;background:#fff;}
 .cx-btn{border:1px solid var(--border);background:#fff;color:var(--gris);border-radius:8px;font-size:11.5px;padding:5px 12px;cursor:pointer;font-family:'Jost',sans-serif;white-space:nowrap;text-decoration:none;display:inline-block;}
 .cx-btn:hover{border-color:var(--terra);color:var(--terra);}
 .cx-btn.cx-main{border-color:var(--terra);color:var(--terra);font-weight:600;}
@@ -28351,17 +28434,29 @@ details.cx-more{margin-top:8px;} details.cx-more>summary{font-size:11.5px;color:
   function visHtml(p){
     if(!p) return '';
     var eid=encodeURIComponent(''+p.id), vis=visuels(p), live=null; try{ live=window.stSlides?stSlides(p):null; }catch(e){}
-    var h='';
+    var G=isGerant(), h='';
+    var modBtn=G?'<button class="cx-btn cx-main" onclick="stOpen(\''+eid+'\')">🎨 Modifier le visuel</button>':'';
     if(live&&live.slides&&live.slides.length){
       h+='<div class="cx-sec">Visuel'+(live.slides.length>1?'s · '+live.slides.length+' slides':'')+(live.mod?' <span class="cx-mod">(modifié)</span>':'')+'</div><div class="cx-vis">'+stLiveThumbs(p,120)+'</div>'
-        +'<div class="cx-vis-acts">'+(isGerant()?'<button class="cx-btn cx-main" onclick="stOpen(\''+eid+'\')">🎨 Modifier le visuel</button>':'')
+        +'<div class="cx-vis-acts">'+modBtn
         +'<button class="cx-btn" onclick="stExport(\''+eid+'\',this)">⬇ Télécharger '+(live.slides.length>1?'les '+live.slides.length+' images':'le visuel')+'</button>'
         +(p.source_url?'<a class="cx-btn" href="'+esc(p.source_url)+'" download title="Version PowerPoint / Canva">✏️ PowerPoint</a>':'')+'</div>';
     } else if(vis.length){
       h+='<div class="cx-sec">Visuel'+(vis.length>1?'s · '+vis.length:'')+'</div><div class="cx-vis">'+vis.map(function(v,i){ return '<div class="pp-thumb" onclick="ppZoom(\''+esc(v.url)+'\')"><img src="'+esc(v.url)+'" alt="" loading="lazy">'+(vis.length>1?'<span class="n">'+(i+1)+'</span>':'')+'</div>'; }).join('')+'</div>'
-        +'<div class="cx-vis-acts"><button class="cx-btn" onclick="ppDl(\''+eid+'\',this)">⬇ Télécharger '+(vis.length>1?'les '+vis.length+' images':'le visuel')+'</button>'
+        +'<div class="cx-vis-acts">'+(G?'<button class="cx-btn cx-main" onclick="stOpen(\''+eid+'\')" title="Recrée ce visuel dans le studio, où tout est modifiable">🎨 Modifier dans le studio</button>':'')
+        +'<button class="cx-btn" onclick="ppDl(\''+eid+'\',this)">⬇ Télécharger '+(vis.length>1?'les '+vis.length+' images':'le visuel')+'</button>'
         +(p.source_url?'<a class="cx-btn" href="'+esc(p.source_url)+'" download>✏️ PowerPoint</a>':'')+'</div>';
-    } else if(p.format==='video'){ h+='<div class="cx-sec">Visuel</div><div class="pp-novis">🎬 Vidéo à tourner : le script est dans le texte ci-dessous.</div>'; }
+    } else {
+      /* v12.15 : jamais de post sans visuel modifiable — proposition automatique tirée du texte */
+      var a=null; try{ a=window.stSlidesAny?stSlidesAny(p):null; }catch(e){}
+      if(a&&a.slides&&a.slides.length){
+        h+='<div class="cx-sec">Visuel <span class="cx-mod">proposé automatiquement à partir du texte — à personnaliser</span></div><div class="cx-vis">'+stLiveThumbs(p,120)+'</div>'
+          +'<div class="cx-vis-acts">'+modBtn+'<button class="cx-btn" onclick="stExport(\''+eid+'\',this)">⬇ Télécharger '+(a.slides.length>1?'les '+a.slides.length+' images':'le visuel')+'</button></div>';
+      }
+      if(p.format==='video'&&!p.video_url) h+='<div class="pp-novis" style="margin-top:6px">🎬 Vidéo à tourner : le script est dans le texte ci-dessous.</div>';
+    }
+    if(p.video_url) h+='<div class="cx-sec">Vidéo'+(p.tiktok?' TikTok':'')+'</div><div class="cx-vid"><video src="'+esc(p.video_url)+'" controls preload="metadata" playsinline></video></div>'
+      +'<div class="cx-vis-acts"><a class="cx-btn" href="'+esc(p.video_url)+'" download target="_blank" rel="noopener">⬇ Télécharger la vidéo</a></div>';
     return h;
   }
   /* textes par réseau (suggestion non « prête ») : modifiables, enregistrés dans ach_pret_v1[id].t_<réseau> */
@@ -28382,8 +28477,14 @@ details.cx-more{margin-top:8px;} details.cx-more>summary{font-size:11.5px;color:
   function progHtml(p, rid){
     if(!isGerant()) return '';
     var s=pst(rid), v=s.prog||(p&&p.horaire||'').slice(0,16);
-    return '<div class="cx-prog" style="margin-top:10px">📅 Prévu le <input type="datetime-local" value="'+esc(v)+'" onchange="cxProg(this.value)">'+(p&&p.horaire&&!s.prog?'<span class="cx-lock">(horaire conseillé par Claude)</span>':'')+'</div>';
+    var o=(CX&&CX.kind==='cav')?cavById(CX.id):null, nk=netOf(p,o);
+    return '<div class="cx-prog" style="margin-top:10px">📅 Prévu le <input type="datetime-local" value="'+esc(v)+'" onchange="cxProg(this.value)">'+(p&&p.horaire&&!s.prog?'<span class="cx-lock">(horaire conseillé par Claude)</span>':'')+'</div>'
+      +'<div class="cx-prog" style="margin-top:8px">📲 Réseau principal <select class="cx-sel" onchange="cxNet(this.value)">'+ORDER.map(function(k){ return '<option value="'+k+'"'+(k===nk?' selected':'')+'>'+esc(NETS[k][0])+'</option>'; }).join('')+'</select><span class="cx-lock">(bouton « Ouvrir » et réseaux cochés à la publication)</span></div>';
   }
+  window.cxNet=function(k){ if(!NETS[k]||!CX.rid) return; pset(CX.rid,{pubnet:k, pubnets:[k]}); cxRefresh(); if(window.toast) toast('📲 Réseau principal : '+NETS[k][0]); };
+  /* v12.15 : une carte d'équipe sans fiche de Claude a quand même son studio (clé = la carte) */
+  window.cxPseudo=function(id){ id=''+id; var o=cavById(id)||cavFor(id); if(!o) return null; var sg=o.sugg||{};
+    return Object.assign({},sg,{id:''+(o.src||o.id), titre:o.titre||sg.titre||'', texte:o.texte||sg.texte||'', reseau:netOf(null,o), theme:o.theme||sg.theme||''}); };
   window.cxProg=function(v){ pset(CX.rid,{prog:v||''}); if(v&&window.toast) toast('📅 Prévu le '+fdt(v)); };
   function netChips(cur,fn,arg){ return '<span class="cx-nets" title="Cochez tous les réseaux où le post est publié">'+ORDER.map(function(k){ var on=cur.indexOf(k)>=0; return '<label class="cx-netc'+(on?' on':'')+'" style="--nc:'+NETS[k][1]+'"><input type="checkbox"'+(on?' checked':'')+' onchange="'+fn+'('+(arg?'\''+esc(arg)+'\',':'')+'\''+k+'\',this)">'+NETS[k][0]+'</label>'; }).join('')+'</span>'; }
   function pubSel(p,o){ return netChips(selNets(p,o),'cxPubNetT',''); }
@@ -28470,7 +28571,7 @@ details.cx-more{margin-top:8px;} details.cx-more>summary{font-size:11.5px;color:
     var st=o.st==='publie'?'<span class="cx-state pub">📣 Publiée'+(o.pub&&o.pub.d?' le '+esc(fdate((''+o.pub.d).slice(0,10))):'')+'</span>':(o.st==='idee'?'<span class="cx-state lat">🕐 Idée en attente</span>':'<span class="cx-state val">✅ Validée — à mettre en place</span>');
     h+='<div class="cx-meta">'+auteur+(o.res?'<span class="idj-reco">⭐ '+esc(o.res)+'</span>':'')+st+(p&&p.horaire&&o.st!=='publie'?'<span class="pp-when">⏰ Conseillé : '+esc(fdt(p.horaire))+'</span>':'')+'</div>';
     h+=infoHtml(p||sg);
-    h+=visHtml(p);
+    h+=visHtml(p||(window.cxPseudo?cxPseudo(id):null));
     var N=NETS[netOf(p,o)];
     h+='<div class="cx-sec">'+(o.st==='publie'?'Texte publié':'Votre texte de travail — '+esc(N[0]))+'</div>'
       +'<textarea class="cx-txt" id="cx-tx" '+(isGerant()?'oninput="cxCavEdit(\''+esc(id)+'\',this)"':'readonly')+' placeholder="Écrivez ici le texte complet du post…">'+esc(o.texte||'')+'</textarea>'
