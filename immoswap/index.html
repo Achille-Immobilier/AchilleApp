@@ -30,8 +30,8 @@ header{display:flex;justify-content:space-between;align-items:center;gap:12px;pa
 .welcome .meta{font-size:.68rem;letter-spacing:.2em;text-transform:uppercase;color:var(--beige)}
 .welcome .go{background:var(--terra);color:var(--white);border-color:var(--terra);padding:14px 34px;font-weight:500;margin-top:6px}
 .welcome .go:hover{background:#A36452;border-color:#A36452}
-.how{display:grid;grid-template-columns:1fr 1fr;gap:10px;width:100%;margin-top:6px}
-.how div{border:1px solid rgba(250,248,245,.25);border-radius:8px;padding:10px 8px;font-size:.78rem;color:var(--beige)}
+.how{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;width:100%;margin-top:6px}
+.how div{border:1px solid rgba(250,248,245,.25);border-radius:8px;padding:10px 6px;font-size:.72rem;line-height:1.3;color:var(--beige)}
 .how b{display:block;font-family:var(--display);font-size:1.15rem;font-weight:500;color:var(--blanc)}
 
 /* cartes */
@@ -61,6 +61,7 @@ header{display:flex;justify-content:space-between;align-items:center;gap:12px;pa
   opacity:0;pointer-events:none;background:rgba(255,255,255,.92);z-index:2}
 .stamp.l{left:16px;color:var(--terra);border-color:var(--terra);transform:rotate(-9deg)}
 .stamp.r{right:16px;color:var(--kaki);border-color:var(--kaki);transform:rotate(9deg)}
+.stamp.d{left:50%;top:auto;bottom:22%;transform:translateX(-50%);color:var(--gris);border-color:var(--gris);font-size:1.25rem}
 
 .controls{display:grid;grid-template-columns:1fr auto 1fr;gap:10px;align-items:center}
 button,.btn{font-family:var(--body);font-size:.88rem;font-weight:400;color:var(--noir);background:var(--white);border:1px solid var(--beige);
@@ -93,6 +94,15 @@ textarea{resize:vertical;min-height:84px;line-height:1.4}
 .recap li:last-child{border-bottom:none}
 .recap li span:first-child{color:var(--gris)}
 .recap li span:last-child{text-align:right;font-weight:400;min-width:0}
+.team{display:flex;gap:14px;align-items:center;margin:14px 0 4px}
+.team img{width:96px;height:96px;object-fit:cover;border-radius:50%;border:2px solid var(--beige);flex:none}
+.team .ph{width:96px;height:96px;border-radius:50%;background:var(--beige-l);border:1px dashed var(--beige-3);flex:none}
+.team div{min-width:0}
+.team b{display:block;font-family:var(--display);font-weight:500;font-size:1.35rem;line-height:1.1}
+.team span{color:var(--gris);font-size:.85rem;line-height:1.45}
+.site{display:block;text-align:center;font-size:.85rem;color:var(--kaki);padding:12px 14px;border:1px solid var(--beige);border-radius:10px;background:var(--white);text-decoration:none;line-height:1.45}
+.site:hover{border-color:var(--kaki)}
+.site u{text-decoration:underline;text-underline-offset:3px}
 .actions{display:flex;flex-direction:column;gap:10px;margin-top:14px}
 .wa{background:var(--terra);color:var(--white);border-color:var(--terra);font-weight:500;padding:14px}
 .wa:hover{background:#A36452;border-color:#A36452}
@@ -151,7 +161,7 @@ textarea{resize:vertical;min-height:84px;line-height:1.4}
 @media (max-width:380px){.card h2{font-size:1.7rem}.stack{min-height:400px}}
 </style>
 <div id="root"></div>
-<script type="application/json" id="deck">{"welcomeTitle":"Et si trouver votre futur chez-vous était aussi simple que de trouver l'âme soeur...","welcomeText":"Swipez selon vos envies, nous revenons vers vous dès qu'un bien vous correspond !","whatsapp":"33140670055","phoneLabel":"01 40 67 00 55","email":"welcome@achille-immobilier.fr","secteurs":["Neuilly-sur-Seine","Levallois-Perret","Paris 16e","Paris 17e","Paris 8e","Autre"],"budgets":["\u003c 700 k€","700 k€ – 1 M€","1 – 1,5 M€","1,5 – 2,5 M€","2,5 – 4 M€","> 4 M€"],"pieces":["2","3","4","5","6 et +"],"cards":[{"type":"ab","kicker":"Le genre","q":"Appartement ou maison ?","a":"Appartement","b":"Maison","ia":"appart","ib":"maison","id":"c1","on":true,"p":""},{"type":"ab","kicker":"Le style","q":"Ancien ou moderne ?","p":"Charme de l'ancien, ou grandes baies et volumes nets.","a":"Ancien","b":"Moderne","ia":"haussmann","ib":"moderne","id":"c2","on":true},{"type":"yn","kicker":"Haussmannien ?","q":"Haussmannien ?","lab":"Éléments d'époque","ill":"cheminee","id":"c10","on":true,"p":"Cheminée, moulures, parquet ?"},{"type":"yn","kicker":"Extérieur","q":"Un espace extérieur est-il essentiel?","p":"Simple balcon ou jardin/terrasse pour le café du matin ou les dîners d'été?","lab":"Extérieur","ill":"balcon","id":"c3","on":true},{"type":"ab","kicker":"L'état","q":"Prêt à emménager ou Travaux souhaités ?","p":"Poser ses valises, ou tout refaire à son goût.","a":"Prêt à vivre","b":"À rénover","ia":"pret","ib":"renover","id":"c5","on":true},{"type":"ab","kicker":"La hauteur","q":"Plutôt en étage élevé ?","p":"Avec ascenseur, loin du bruit de la rue.","lab":"Étage élevé","ill":"etage","id":"c6","on":true,"a":"Peu importe","b":"A partir du 2ème étage"},{"type":"yn","kicker":"La lumière","q":"Plein sud, baigné de lumière ?","lab":"Exposition lumineuse","ill":"soleil","id":"c7","on":true,"p":""},{"type":"yn","kicker":"La vue","q":"Une vue dégagée ?","p":"Pas de vis-à-vis, du ciel par la fenêtre.","lab":"Vue dégagée","ill":"vue","id":"c8","on":true},{"type":"ab","kicker":"La cuisine","q":"Cuisine ouverte ou fermée ?","a":"Ouverte","b":"Fermée","ia":"ilot","ib":"porte","id":"c9","on":true,"p":""},{"type":"yn","kicker":"Pratique","q":"Un parking, indispensable ?","lab":"Parking","ill":"parking","id":"c11","on":true,"p":""},{"type":"yn","kicker":"Pratique","q":"Une cave ?","lab":"Cave","ill":"cave","id":"c12","on":true,"p":""},{"type":"yn","kicker":"L'immeuble","q":"Un gardien dans l'immeuble ?","lab":"Gardien","ill":"gardien","id":"c13","on":true,"p":""},{"type":"ab","kicker":"Le quartier","q":"Calme ou animé ?","p":"Rue résidentielle, ou commerces au pied de l'immeuble.","a":"Calme","b":"Animé","ia":"calme","ib":"anime","id":"c14","on":true},{"type":"yn","kicker":"Le quotidien","q":"Les écoles à pied ?","lab":"Écoles à proximité","ill":"ecole","id":"c15","on":true,"p":""},{"type":"yn","kicker":"Le quotidien","q":"Le métro à moins de 5 minutes ?","lab":"Métro proche","ill":"metro","id":"c16","on":true,"p":""}],"chambres":["1","2","3","4","5 et +"],"public":true}</script>
+<script type="application/json" id="deck">{"welcomeTitle":"Et si trouver votre futur chez-vous était aussi simple que de trouver l'âme sœur…","welcomeText":"Swipez selon vos envies, nous revenons vers vous dès qu'un bien vous correspond !","whatsapp":"33140670055","phoneLabel":"01 40 67 00 55","email":"welcome@achille-immobilier.fr","secteurs":["Neuilly-sur-Seine","Levallois-Perret","Paris 16e","Paris 17e","Paris 8e","Autre"],"budgets":["\u003c 700 k€","700 k€ – 1 M€","1 – 1,5 M€","1,5 – 2,5 M€","2,5 – 4 M€","> 4 M€"],"pieces":["2","3","4","5","6 et +"],"cards":[{"type":"ab","kicker":"Le genre","q":"Appartement ou maison ?","a":"Appartement","b":"Maison","ia":"appart","ib":"maison","id":"c1","on":true,"p":""},{"type":"ab","kicker":"Le style","q":"Ancien ou moderne ?","p":"Charme de l'ancien, ou grandes baies et volumes nets.","a":"Ancien","b":"Moderne","ia":"haussmann","ib":"moderne","id":"c2","on":true},{"type":"yn","kicker":"Le cachet","q":"Haussmannien ?","lab":"Éléments d'époque","ill":"cheminee","id":"c10","on":true,"p":"Cheminée, moulures, parquet."},{"type":"yn","kicker":"Extérieur","q":"Un espace extérieur est-il essentiel ?","p":"Simple balcon, ou jardin et terrasse pour le café du matin et les dîners d'été ?","lab":"Extérieur","ill":"balcon","id":"c3","on":true},{"type":"ab","kicker":"L'état","q":"Prêt à emménager ou travaux à prévoir ?","p":"Poser ses valises, ou tout refaire à son goût.","a":"Prêt à vivre","b":"À rénover","ia":"pret","ib":"renover","id":"c5","on":true},{"type":"ab","kicker":"La hauteur","q":"Plutôt en étage élevé ?","p":"Avec ascenseur, loin du bruit de la rue.","lab":"Étage élevé","ill":"etage","id":"c6","on":true,"a":"Tous étages","b":"À partir du 2ᵉ étage"},{"type":"yn","kicker":"La lumière","q":"Plein sud, baigné de lumière ?","lab":"Exposition lumineuse","ill":"soleil","id":"c7","on":true,"p":""},{"type":"yn","kicker":"La vue","q":"Une vue dégagée ?","p":"Pas de vis-à-vis, du ciel par la fenêtre.","lab":"Vue dégagée","ill":"vue","id":"c8","on":true},{"type":"ab","kicker":"La cuisine","q":"Cuisine ouverte ou fermée ?","a":"Ouverte","b":"Fermée","ia":"ilot","ib":"porte","id":"c9","on":true,"p":""},{"type":"yn","kicker":"Pratique","q":"Un parking, indispensable ?","lab":"Parking","ill":"parking","id":"c11","on":true,"p":""},{"type":"yn","kicker":"Pratique","q":"Une cave ?","lab":"Cave","ill":"cave","id":"c12","on":true,"p":""},{"type":"yn","kicker":"L'immeuble","q":"Un gardien dans l'immeuble ?","lab":"Gardien","ill":"gardien","id":"c13","on":true,"p":""},{"type":"ab","kicker":"Le quartier","q":"Calme ou animé ?","p":"Rue résidentielle, ou commerces au pied de l'immeuble.","a":"Calme","b":"Animé","ia":"calme","ib":"anime","id":"c14","on":true},{"type":"yn","kicker":"Le quotidien","q":"Les écoles à pied ?","lab":"Écoles à proximité","ill":"ecole","id":"c15","on":true,"p":""},{"type":"yn","kicker":"Le quotidien","q":"Le métro à moins de 5 minutes ?","lab":"Métro proche","ill":"metro","id":"c16","on":true,"p":""}],"chambres":["1","2","3","4","5 et +"],"phraseOk":"Bonne nouvelle : nous avons au moins un bien à vous proposer.","phrasePointue":"Votre recherche est pointue, mais nous allons y travailler.","rappel":"Envoyez-nous votre profil : Marine ou Laurent vous rappellent dans les meilleurs délais.","seuilPointu":8,"teamNames":"Marine & Laurent","site":"https://www.achille-immobilier.fr","siteText":"En attendant notre réponse, découvrez nos biens déjà en vente sur notre site.","public":true}</script>
 <script id="app-js">
 (function(){
 const RESET=':root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px/1.4 system-ui,-apple-system,"Segoe UI",sans-serif}img{max-width:100%}[hidden]{display:none!important}';
@@ -190,7 +200,7 @@ const IL_NAMES={appart:'Appartement',maison:'Maison',haussmann:'Haussmannien',mo
 const svg=k=>IL[k]?`<svg class="il" viewBox="0 0 160 120" aria-hidden="true">${IL[k]}</svg>`:'';
 
 /* ---------- jeu ---------- */
-let screen='welcome', i=0, ans={}, hist=[], fin={sect:[],budget:'',unit:'Pièces',pieces:'',contact:'',prenom:'',tel:'',email:''};
+let screen='welcome', i=0, ans={}, hist=[], fin={sect:[],budget:'',unit:'Pièces',pieces:'',contact:'',prenom:'',tel:'',email:'',note:''};
 let canEdit=false, artifactNs=null, downloadsNs=null, edOpen=false, editId=null, status={t:'',err:false};
 const active=()=>deck.cards.filter(c=>c.on!==false);
 const dirty=()=>JSON.stringify(deck)!==SAVED;
@@ -205,7 +215,7 @@ function cardHTML(c,n,tot){
   const [L,R]=lbl(c);
   return `${visual(c)}<div class="txt"><div class="kicker">${String(n+1).padStart(2,'0')} / ${tot} · ${esc(c.kicker)}</div><h2>${esc(c.q)}</h2>${c.p?`<p>${esc(c.p)}</p>`:''}</div>
   <div class="opts"><span class="l"><small>← Gauche</small><b>${esc(L)}</b></span><span class="r"><small>Droite →</small><b>${esc(R)}</b></span></div>
-  <div class="stamp l">${esc(L)}</div><div class="stamp r">${esc(R)}</div>`;
+  <div class="stamp l">${esc(L)}</div><div class="stamp r">${esc(R)}</div><div class="stamp d">Peu importe ↓</div>`;
 }
 function shell(inner,progress){
   const admin=canEdit&&!deck.public?`<div class="adminbar"><span>${dirty()?'Modifications non enregistrées':'Mode agence'}</span><span style="display:flex;gap:6px">${dirty()?'<button class="save" data-act="save">Enregistrer</button>':''}<button data-act="editor">Gérer les cartes</button></span></div>`:'';
@@ -219,13 +229,13 @@ function render(){
   if(screen==='welcome'){
     shell(`<section class="welcome"><div class="mono" role="img" aria-label="Monogramme Achille"></div><div class="logo-c" role="img" aria-label="Achille Immobilier"></div>
       <h1>${esc(deck.welcomeTitle)}</h1><p>${esc(deck.welcomeText)}</p>
-      <div class="how"><div><b>← Gauche</b>non, ou l'option de gauche</div><div><b>Droite →</b>oui, ou l'option de droite</div></div>
+      <div class="how"><div><b>← Gauche</b>non, ou l'option de gauche</div><div><b>↓ Bas</b>peu importe</div><div><b>Droite →</b>oui, ou l'option de droite</div></div>
       <button class="go" data-act="start">Commencer · ${esc(deck.duration||'2 minutes')}</button></section>`,{label:''});
   } else if(screen==='cards'){
     if(i>=tot){screen='final';return render();}
     const c=cs[i],[L,R]=lbl(c);
     shell(`<div class="stack" id="stack"></div>
-      <div class="controls" style="margin-top:16px"><button class="no" data-act="left">← ${esc(L)}</button><button class="ghost" data-act="skip">Peu importe</button><button class="yes" data-act="right">${esc(R)} →</button></div>
+      <div class="controls" style="margin-top:16px"><button class="no" data-act="left">← ${esc(L)}</button><button class="ghost" data-act="skip">↓ Peu importe</button><button class="yes" data-act="right">${esc(R)} →</button></div>
       <div style="display:flex;justify-content:center;margin-top:4px"><button class="ghost" data-act="undo" ${hist.length?'':'disabled'}>↶ Carte précédente</button></div>`,
       {label:`${i+1} / ${tot}`,pct:i/(tot+1)*100});
     const st=document.getElementById('stack');
@@ -241,17 +251,20 @@ function render(){
       <fieldset><legend>Vos coordonnées</legend><label class="f" for="prenom">Prénom<input id="prenom" autocomplete="given-name" value="${esc(fin.prenom)}"></label>
       <label class="f" for="tel">Téléphone${fin.contact==='WhatsApp'?' (WhatsApp)':''}<input id="tel" type="tel" autocomplete="tel" value="${esc(fin.tel)}"></label>
       <label class="f" for="email">E-mail${fin.contact==='E-mail'?'':' (facultatif)'}<input id="email" type="email" autocomplete="email" value="${esc(fin.email)}" ${fin.contact==='E-mail'?'required':''}></label></fieldset>
+      <fieldset><legend>Une précision ?</legend><label class="f" for="note">N'hésitez pas à nous écrire : un quartier, une contrainte, ce que vous ne voulez plus voir…<textarea id="note" rows="3">${esc(fin.note)}</textarea></label></fieldset>
       <button class="primary" type="submit">Voir mon profil de recherche</button></form>
       <div style="display:flex;justify-content:center;margin-top:6px"><button class="ghost" data-act="undo">↶ Revenir aux cartes</button></div></section>`,{label:'Dernière étape',pct:tot/(tot+1)*100});
   } else {
     const {rows,flex}=summary(), m=message();
     shell(`<section class="step"><div class="eyebrow">Votre profil</div><h2>${fin.prenom?esc(fin.prenom)+', voici':'Voici'} ce que vous cherchez.</h2>
-      <p class="lead">Envoyez-le à l'agence : on vous écrit dès qu'un bien correspond, souvent avant sa mise en ligne.</p>
-      <div class="recap"><ul>${rows.map(([a,b])=>`<li><span>${esc(a)}</span><span>${esc(b)}</span></li>`).join('')}${flex.length?`<li><span>Peu importe</span><span>${esc(flex.join(', '))}</span></li>`:''}</ul></div>
+      <p class="lead"><b style="font-weight:500;color:var(--kaki)">${esc(pointue()?(deck.phrasePointue||''):(deck.phraseOk||''))}</b></p>
+      <div class="team">${deck.teamPhoto?`<img src="${esc(deck.teamPhoto)}" alt="${esc(deck.teamNames||'')}">`:(canEdit?'<div class="ph" title="Ajoutez votre photo dans Gérer les cartes"></div>':'')}<div><b>${esc(deck.teamNames||'')}</b><span>${esc(deck.rappel||'')}</span></div></div>
+      <div class="recap"><ul>${rows.map(([a,b])=>`<li><span>${esc(a)}</span><span>${esc(b)}</span></li>`).join('')}${flex.length?`<li><span>Peu importe</span><span>${esc(flex.join(', '))}</span></li>`:''}${fin.note?`<li><span>Précision</span><span>${esc(fin.note)}</span></li>`:''}</ul></div>
       <div class="actions">${(()=>{const wa=`https://wa.me/${esc(deck.whatsapp)}?text=${encodeURIComponent(m)}`,ml=`mailto:${esc(deck.email)}?subject=${encodeURIComponent('Mes critères de recherche'+(fin.prenom?' – '+fin.prenom:''))}&body=${encodeURIComponent(m)}`;
         const W=c=>`<a class="btn ${c}" href="${wa}" target="_blank" rel="noopener">Envoyer à l'agence sur WhatsApp</a>`, M=c=>`<a class="btn ${c}" href="${ml}">Envoyer à l'agence par e-mail</a>`;
         return fin.contact==='E-mail'?M('wa')+W(''):W('wa')+M('');})()}
       <p class="note" style="color:var(--gris)">Si le bouton e-mail ne s'ouvre pas, écrivez-nous à ${esc(deck.email)} en collant votre profil.</p>
+      ${deck.site?`<a class="site" href="${esc(deck.site)}" target="_blank" rel="noopener">${esc(deck.siteText||'')}<br><u>${esc(deck.site.replace(/^https?:\/\//,'').replace(/\/$/,''))}</u></a>`:''}
       <button data-act="copy">Copier mon profil</button><p class="note" id="note" aria-live="polite"></p><button class="ghost" data-act="restart">Recommencer</button></div></section>`,{label:'Terminé',pct:100});
   }
 }
@@ -265,30 +278,41 @@ function summary(){
     rows.push(c.type==='yn'?[c.lab||c.q,v?'Oui':'Non']:[c.kicker,v]);});
   return {rows,flex};
 }
+function pointue(){
+  const seuil=+deck.seuilPointu||8;
+  let oui=0;active().forEach(c=>{if(c.type==='yn'&&ans[c.id]===true)oui++;});
+  const bas=deck.budgets&&fin.budget===deck.budgets[0];
+  const grand=(fin.unit==='Chambres'&&['4','5 et +'].includes(fin.pieces))||(fin.unit!=='Chambres'&&['5','6 et +'].includes(fin.pieces));
+  const maison=Object.values(ans).includes('Maison');
+  return oui>=seuil||(bas&&(maison||grand))||(bas&&oui>=seuil-2);
+}
 function message(){
   const {rows,flex}=summary();
   let m='Bonjour Achille Immobilier, voici mes critères de recherche (Swipe Achille) :\n';
   if(fin.prenom)m+=`Prénom : ${fin.prenom}\n`; if(fin.tel)m+=`Téléphone : ${fin.tel}\n`; if(fin.email)m+=`E-mail : ${fin.email}\n`;
   if(fin.contact)m+=`Je préfère échanger par : ${fin.contact}\n`;
-  rows.forEach(([a,b])=>m+=`• ${a} : ${b}\n`); if(flex.length)m+=`Peu importe : ${flex.join(', ')}`;
+  rows.forEach(([a,b])=>m+=`• ${a} : ${b}\n`); if(flex.length)m+=`Peu importe : ${flex.join(', ')}\n`; if(fin.note)m+=`Précision : ${fin.note}`;
   return m.trim();
 }
 function drag(el){
-  let x0=0,y0=0,dx=0,on=false;const sl=el.querySelector('.stamp.l'),sr=el.querySelector('.stamp.r');
-  el.addEventListener('pointerdown',e=>{on=true;x0=e.clientX;y0=e.clientY;dx=0;el.setPointerCapture(e.pointerId);el.style.transition='none';el.style.cursor='grabbing'});
-  el.addEventListener('pointermove',e=>{if(!on)return;dx=e.clientX-x0;const dy=e.clientY-y0;
-    el.style.transform=`translate(${dx}px,${dy*.25}px) rotate(${dx/18}deg)`;sl.style.opacity=Math.max(0,-dx/90);sr.style.opacity=Math.max(0,dx/90)});
+  let x0=0,y0=0,dx=0,dy=0,on=false;const sl=el.querySelector('.stamp.l'),sr=el.querySelector('.stamp.r'),sd=el.querySelector('.stamp.d');
+  el.addEventListener('pointerdown',e=>{on=true;x0=e.clientX;y0=e.clientY;dx=0;dy=0;el.setPointerCapture(e.pointerId);el.style.transition='none';el.style.cursor='grabbing'});
+  el.addEventListener('pointermove',e=>{if(!on)return;dx=e.clientX-x0;dy=e.clientY-y0;
+    const down=dy>0&&Math.abs(dx)<70&&dy>Math.abs(dx);
+    el.style.transform=down?`translate(${dx*.3}px,${dy*.6}px)`:`translate(${dx}px,${dy*.25}px) rotate(${dx/18}deg)`;
+    sl.style.opacity=down?0:Math.max(0,-dx/90);sr.style.opacity=down?0:Math.max(0,dx/90);sd.style.opacity=down?Math.max(0,(dy-20)/90):0});
   const end=()=>{if(!on)return;on=false;el.style.cursor='grab';
-    if(dx>90)fly(el,'right');else if(dx<-90)fly(el,'left');else{el.style.transition='transform .25s';el.style.transform='';sl.style.opacity=0;sr.style.opacity=0}};
+    const down=dy>90&&Math.abs(dx)<70&&dy>Math.abs(dx);
+    if(down)fly(el,'skip');else if(dx>90)fly(el,'right');else if(dx<-90)fly(el,'left');else{el.style.transition='transform .25s';el.style.transform='';sl.style.opacity=0;sr.style.opacity=0;sd.style.opacity=0}};
   el.addEventListener('pointerup',end);el.addEventListener('pointercancel',end);
 }
 function fly(el,dir){
   if(!el||el.dataset.gone)return;el.dataset.gone=1;
   const c=active()[i];
   ans[c.id]=dir==='skip'?null:c.type==='yn'?dir==='right':(dir==='left'?c.a:c.b);hist.push(i);
-  if(dir!=='skip')el.querySelector(dir==='left'?'.stamp.l':'.stamp.r').style.opacity=1;
+  el.querySelector(dir==='left'?'.stamp.l':dir==='right'?'.stamp.r':'.stamp.d').style.opacity=1;
   el.style.transition=reduce?'none':'transform .32s ease-in,opacity .32s';
-  el.style.transform=`translate(${dir==='left'?'-140%':dir==='right'?'140%':'0'},${dir==='skip'?'-110%':'0'}) rotate(${dir==='left'?-16:dir==='right'?16:0}deg)`;el.style.opacity=0;
+  el.style.transform=`translate(${dir==='left'?'-140%':dir==='right'?'140%':'0'},${dir==='skip'?'130%':'0'}) rotate(${dir==='left'?-16:dir==='right'?16:0}deg)`;el.style.opacity=0;
   setTimeout(()=>{i++;render()},reduce?0:290);
 }
 function undo(){if(!hist.length)return;i=hist.pop();delete ans[active()[i].id];screen='cards';render();}
@@ -339,6 +363,16 @@ function editorHTML(){
    <div class="two"><label class="f" for="s-wa">Numéro WhatsApp (format international)<input id="s-wa" data-s="whatsapp" value="${esc(deck.whatsapp)}"></label>
    <label class="f" for="s-pl">Numéro affiché<input id="s-pl" data-s="phoneLabel" value="${esc(deck.phoneLabel)}"></label></div>
    <label class="f" for="s-em">E-mail de réception<input id="s-em" type="email" data-s="email" value="${esc(deck.email)}"></label>
+   <h4>Page de fin</h4>
+   <label class="f" for="s-ok">Phrase si la recherche est réaliste<input id="s-ok" data-s="phraseOk" value="${esc(deck.phraseOk||'')}"></label>
+   <label class="f" for="s-po">Phrase si la recherche est très pointue<input id="s-po" data-s="phrasePointue" value="${esc(deck.phrasePointue||'')}"></label>
+   <label class="f" for="s-se">« Très pointue » à partir de ce nombre de « oui » (ou petit budget + maison / grand logement)<input id="s-se" type="number" min="1" data-s="seuilPointu" value="${esc(deck.seuilPointu||8)}"></label>
+   <label class="f" for="s-tn">Prénoms affichés<input id="s-tn" data-s="teamNames" value="${esc(deck.teamNames||'')}"></label>
+   <label class="f" for="s-ra">Phrase de rappel<input id="s-ra" data-s="rappel" value="${esc(deck.rappel||'')}"></label>
+   <div class="photo">${deck.teamPhoto?`<img src="${esc(deck.teamPhoto)}" alt="Photo de l'équipe" style="height:72px;border-radius:50%;aspect-ratio:1;object-fit:cover"><button type="button" data-act="rmteam">Retirer la photo</button>`:'<span>Votre photo, affichée en rond à côté de vos prénoms.</span>'}
+     <span class="btn filebtn">${deck.teamPhoto?'Changer la photo':'Ajouter votre photo'}<input type="file" id="e-team" accept="image/*"></span></div>
+   <label class="f" for="s-si">Adresse du site<input id="s-si" data-s="site" value="${esc(deck.site||'')}"></label>
+   <label class="f" for="s-st">Phrase vers le site<input id="s-st" data-s="siteText" value="${esc(deck.siteText||'')}"></label>
    <h4>Mise en ligne</h4>
    <p class="lead" style="font-size:.85rem">Cette page est privée. Pour vos clients, téléchargez la version publique (sans ce panneau) et mettez-la en ligne.</p>
    ${downloadsNs?'<button data-act="export">Télécharger la version publique</button>':'<p class="lead" style="font-size:.85rem">Téléchargement indisponible dans cette vue.</p>'}
@@ -379,7 +413,7 @@ root.addEventListener('click',e=>{
   else if(a==='left'||a==='right'||a==='skip')fly(top,a);
   else if(a==='undo')undo();
   else if(a==='copy'){const n=document.getElementById('note');navigator.clipboard.writeText(message()).then(()=>n.textContent='Profil copié.').catch(()=>n.textContent='Copie impossible ici : faites une capture d\'écran.');}
-  else if(a==='restart'){screen='welcome';i=0;ans={};hist=[];fin={sect:[],budget:'',unit:'Pièces',pieces:'',contact:'',prenom:'',tel:'',email:''};render();}
+  else if(a==='restart'){screen='welcome';i=0;ans={};hist=[];fin={sect:[],budget:'',unit:'Pièces',pieces:'',contact:'',prenom:'',tel:'',email:'',note:''};render();}
   else if(a==='editor'){edOpen=true;status={t:'',err:false};render();}
   else if(a==='closeed'){edOpen=false;editId=null;screen='welcome';i=0;ans={};hist=[];render();}
   else if(a==='save')save();
@@ -387,11 +421,12 @@ root.addEventListener('click',e=>{
   else if(a==='add'){const c={id:newId(),type:'yn',kicker:'',q:'',p:'',lab:'',ill:'',on:true};deck.cards.push(c);editId=c.id;render();document.getElementById('e-q')?.focus();}
   else if(a==='closeform'){editId=null;render();}
   else if(a==='rmimg'){delete cur().img;render();}
+  else if(a==='rmteam'){delete deck.teamPhoto;render();}
   if(b.dataset.chip){const k=b.dataset.chip,v=b.dataset.v;
     if(b.dataset.m==='1'){fin[k]=fin[k].includes(v)?fin[k].filter(x=>x!==v):[...fin[k],v];b.setAttribute('aria-pressed',fin[k].includes(v));}
     else{fin[k]=fin[k]===v?'':v;document.querySelectorAll(`[data-chip="${k}"]`).forEach(x=>x.setAttribute('aria-pressed',x.dataset.v===fin[k]));}
     if(k==='unit'){if(!fin.unit)fin.unit='Pièces';fin.pieces='';}
-    if(k==='contact'||k==='unit'){['prenom','tel','email'].forEach(f=>{const el=document.getElementById(f);if(el)fin[f]=el.value.trim();});const y=scrollY;render();scrollTo(0,y);}}
+    if(k==='contact'||k==='unit'){['prenom','tel','email','note'].forEach(f=>{const el=document.getElementById(f);if(el)fin[f]=el.value.trim();});const y=scrollY;render();scrollTo(0,y);}}
   if(b.dataset.ed){const k=+b.dataset.k,c=deck.cards;
     if(b.dataset.ed==='up'&&k){[c[k-1],c[k]]=[c[k],c[k-1]];}
     if(b.dataset.ed==='down'&&k<c.length-1){[c[k+1],c[k]]=[c[k],c[k+1]];}
@@ -413,9 +448,10 @@ root.addEventListener('change',e=>{
   if(t.id==='e-type'){const c=cur();c.type=t.value;if(c.type==='ab'){c.a=c.a||'Option A';c.b=c.b||'Option B';}render();}
   if(t.id==='e-on'){cur().on=t.checked;render();}
   if(t.id==='e-img'&&t.files[0]){const c=cur();loadImg(t.files[0],u=>{c.img=u;render();});}
+  if(t.id==='e-team'&&t.files[0]){loadImg(t.files[0],u=>{deck.teamPhoto=u;render();});}
 });
 root.addEventListener('submit',e=>{if(e.target.id!=='ff')return;e.preventDefault();
-  ['prenom','tel','email'].forEach(f=>fin[f]=document.getElementById(f).value.trim());screen='recap';render();});
+  ['prenom','tel','email','note'].forEach(f=>fin[f]=document.getElementById(f).value.trim());screen='recap';render();});
 document.addEventListener('keydown',e=>{
   if(screen!=='cards'||edOpen||/INPUT|TEXTAREA|SELECT/.test(e.target.tagName))return;
   const top=document.querySelector('.card:not(.under)');
