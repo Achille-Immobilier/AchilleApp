@@ -263,7 +263,8 @@ function render(){
       <div class="recap"><ul>${rows.map(([a,b])=>`<li><span>${esc(a)}</span><span>${esc(b)}</span></li>`).join('')}${flex.length?`<li><span>Peu importe</span><span>${esc(flex.join(', '))}</span></li>`:''}${fin.note?`<li><span>Précision</span><span>${esc(fin.note)}</span></li>`:''}</ul></div>
       <div class="actions">${(()=>{const wa=`https://wa.me/${esc(deck.whatsapp)}?text=${encodeURIComponent(m)}`,ml=`mailto:${esc(deck.email)}?subject=${encodeURIComponent('Mes critères de recherche'+(fin.prenom?' – '+fin.prenom:''))}&body=${encodeURIComponent(m)}`;
         const W=c=>`<a class="btn ${c}" href="${wa}" target="_blank" rel="noopener">Envoyer à l'agence sur WhatsApp</a>`, M=c=>`<a class="btn ${c}" href="${ml}">Envoyer à l'agence par e-mail</a>`;
-        return fin.contact==='E-mail'?M('wa')+W(''):W('wa')+M('');})()}
+        const H=`<p class="note" style="color:var(--gris);margin-top:-4px">${fin.contact==='E-mail'?'Votre messagerie':'WhatsApp'} s'ouvre avec votre message déjà rédigé : il ne vous reste qu'à appuyer sur Envoyer.</p>`;
+        return fin.contact==='E-mail'?M('wa')+H+W(''):W('wa')+H+M('');})()}
       <p class="note" style="color:var(--gris)">Si le bouton e-mail ne s'ouvre pas, écrivez-nous à ${esc(deck.email)} en collant votre profil.</p>
       ${deck.site?`<a class="site" href="${esc(deck.site)}" target="_blank" rel="noopener">${esc(deck.siteText||'')}<br><u>${esc(deck.site.replace(/^https?:\/\//,'').replace(/\/$/,''))}</u></a>`:''}
       <button data-act="copy">Copier mon profil</button><p class="note" id="note" aria-live="polite"></p><button class="ghost" data-act="restart">Recommencer</button></div></section>`,{label:'Terminé',pct:100});
