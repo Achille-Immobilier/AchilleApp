@@ -14368,12 +14368,15 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
       return v;
     });
   };
+  /* v11.60 : la liste ne charge plus le contenu des fichiers (b64), seulement la fiche.
+     Avant, chaque ouverture de l'appli téléchargeait ~10 Mo de documents (quota Supabase). */
+  var DOC_META_SEL='key,name:value->>name,type:value->>type,by:value->>by,date:value->>date,desc:value->>desc,themeId:value->>themeId,theme:value->>theme,ord:value->ord,affdoc:value->affdoc,access:value->access';
   window.achDocsList = function(){
     if(!db) return Promise.resolve([]);
-    return db.from('app_data').select('key,value').like('key','doc%').then(function(r){
+    return db.from('app_data').select(DOC_META_SEL).like('key','doc%').then(function(r){
       if(r.error) return [];
       return (r.data||[]).filter(function(row){return row.key.indexOf('doc_')===0;}).map(function(row){
-        var v=row.value; if(typeof v==='string'){ try{ v=JSON.parse(v);}catch(e){window.achErr&&achErr(e)} }
+        var v={}; Object.keys(row).forEach(function(k){ if(k!=='key' && row[k]!==null && row[k]!==undefined) v[k]=row[k]; });
         return {key:row.key, meta:v};
       });
     }, function(){ return []; });
@@ -14387,10 +14390,9 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
   };
   window.achDocsUpdateMeta = function(key, patch){
     if(!db||!ME) return Promise.resolve(false);
-    return window.achDocsList().then(function(list){
-      var it=list.find(function(x){return x.key===key;});
-      if(!it||!it.meta) return false;
-      var meta=Object.assign({}, it.meta, patch||{});
+    return window.achDocsFetchOne(key).then(function(full){   /* v11.60 : fiche complète (avec le fichier) lue à l'unité */
+      if(!full) return false;
+      var meta=Object.assign({}, full, patch||{});
       return db.from('app_data').upsert({key:key, value:meta, updated_by:ME.id, updated_at:new Date().toISOString()},{onConflict:'key'}).then(function(r){ return !(r&&r.error); }, function(){ return false; });
     });
   };
@@ -15195,11 +15197,11 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
   };
 
   window.docsDownloadCustom=function(key){
-    if(!window.achDocsList) return;
-    window.achDocsList().then(function(list){
-      var it=list.find(function(x){return x.key===key;});
-      if(!it||!it.meta||!it.meta.b64){ alert('Document introuvable.'); return; }
-      dl(b64ToBlob(it.meta.b64, it.meta.type), it.meta.name||'document');
+    if(!window.achDocsFetchOne) return;
+    if(window.toast) toast('T\u00e9l\u00e9chargement\u2026');
+    window.achDocsFetchOne(key).then(function(m){   /* v11.60 : le fichier n'est lu qu'au clic */
+      if(!m||!m.b64){ alert('Document introuvable.'); return; }
+      dl(b64ToBlob(m.b64, m.type), m.name||'document');
     });
   };
   window.docsDeleteCustom=function(key){
