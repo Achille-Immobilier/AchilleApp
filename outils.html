@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Outils · AchilleApp</title>
+<style>
+body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:#F3EFE6;color:#2B2E22}
+main{max-width:720px;margin:0 auto;padding:40px 20px}
+h1{font-weight:600;font-size:26px;margin:0 0 6px}
+p.lead{color:#5a5e4e;margin:0 0 32px}
+.card{background:#fff;border-radius:14px;padding:22px 24px;margin-bottom:18px;box-shadow:0 2px 10px rgba(0,0,0,.05)}
+.card h2{font-size:17px;margin:0 0 6px}
+.card p{margin:0 0 14px;color:#5a5e4e;font-size:15px}
+.bm{display:inline-block;background:#4C533B;color:#fff;text-decoration:none;padding:12px 20px;border-radius:999px;font-weight:600;cursor:grab}
+.bm.alt{background:#B76E5A}
+ol{padding-left:20px;color:#5a5e4e;font-size:15px}
+small{color:#8a8d7c}
+</style></head><body><main>
+<h1>Outils AchilleApp</h1>
+<p class="lead">Boutons à glisser dans la barre de favoris de Chrome (Ctrl + Maj + B pour l'afficher). Ils remplacent les anciens liens.</p>
+
+<div class="card">
+<h2>1. Importer une annonce dans l'AchilleApp</h2>
+<p>Sur une annonce (SeLoger, Bien'ici, Leboncoin…), cliquez : l'annonce s'ouvre pré-remplie dans l'AchilleApp, à la nouvelle adresse.</p>
+<a class="bm" href="javascript:(function(){var d=document;function cap(){var t=&#x27;&#x27;;try{var L=d.querySelectorAll(&#x27;script[type=&quot;application/ld+json&quot;]&#x27;);for(var i=0;i&lt;L.length;i++)t+=L[i].textContent+&#x27;\n&#x27;}catch(e){}t=t.slice(0,4000);try{t+=d.title+&#x27;\n&#x27;+(d.body?d.body.innerText.slice(0,40000):&#x27;&#x27;)}catch(e){}var p=[];try{var A=d.querySelectorAll(&#x27;a[href^=&quot;tel:&quot;]&#x27;);for(var i1=0;i1&lt;A.length;i1++){var v=A[i1].getAttribute(&#x27;href&#x27;).slice(4);if(v&amp;&amp;p.indexOf(v)&lt;0)p.push(v)}}catch(e){}var im=[];try{var og=d.querySelector(&#x27;meta[property=&quot;og:image&quot;]&#x27;);if(og&amp;&amp;og.content&amp;&amp;og.content.indexOf(&#x27;http&#x27;)===0)im.push(og.content)}catch(e){}try{var H=d.documentElement.innerHTML,G=H.match(/https?:\\?\/\\?\/[^&quot;&#x27;\s\\]{8,300}\.(?:jpe?g|webp|png)[^&quot;&#x27;\s\\]{0,160}/gi)||[];for(var i2=0;i2&lt;G.length&amp;&amp;im.length&lt;9;i2++){var s2=G[i2].replace(/\\\//g,&#x27;/&#x27;);if(/logo|icon|sprite|avatar|\.svg|favicon/i.test(s2))continue;if(im.indexOf(s2)&lt;0)im.push(s2)}}catch(e){}var J=&#x27;&#x27;;try{var SC=d.querySelectorAll(&#x27;script:not([src])&#x27;);for(var i4=0;i4&lt;SC.length;i4++){var tc=SC[i4].textContent||&#x27;&#x27;;if(tc.length&gt;3000)J+=tc}}catch(e){}J=J.replace(/\\+&quot;/g,&#x27;&quot;&#x27;);var pl=&#x27;&#x27;;try{var mf=J.match(/&quot;floorplans&quot;:\[[^\]]{0,2000}/);if(mf){var mu=mf[0].match(/&quot;url&quot;:&quot;(https?:[^&quot;]{5,300})&quot;/);if(mu)pl=mu[1].replace(/\\\//g,&#x27;/&#x27;)}}catch(e){}var eg=&#x27;&#x27;;try{var mr=J.match(/&quot;rating&quot;:&quot;([A-G])&quot;/);if(mr)eg=mr[1]}catch(e){}var at={};try{var MA=J.match(/&quot;key&quot;:&quot;(?:energy_rate|floor_number|square|rooms|nb_bedrooms|construction_year)&quot;,&quot;value&quot;:&quot;[^&quot;]{1,20}&quot;/g)||[];for(var i5=0;i5&lt;MA.length;i5++){var mm=MA[i5].match(/&quot;key&quot;:&quot;([a-z_]+)&quot;,&quot;value&quot;:&quot;([^&quot;]+)&quot;/);if(mm&amp;&amp;!(mm[1] in at))at[mm[1]]=mm[2]}}catch(e){}var o={u:location.href,x:t,p:p.slice(0,4),i:im,pl:pl,e:eg,a:at};var h=btoa(unescape(encodeURIComponent(JSON.stringify(o)))).replace(/\+/g,&#x27;-&#x27;).replace(/\//g,&#x27;_&#x27;).replace(/=+$/,&#x27;&#x27;);var u=&#x27;https://achilleapp.pages.dev/#pgimp=&#x27;+h;var w=window.open(u,&#x27;_blank&#x27;);if(!w)location.href=u}var b=null,B=d.querySelectorAll(&#x27;button,a&#x27;);for(var i3=0;i3&lt;B.length;i3++){if(/afficher le num|voir le num/i.test(B[i3].textContent||&#x27;&#x27;)){b=B[i3];break}}if(b){try{b.click()}catch(e){}setTimeout(cap,1700)}else cap()})();" onclick="return false">➜ Importer dans AchilleApp</a>
+</div>
+
+<div class="card">
+<h2>2. Rechercher le descriptif sur FIPAC</h2>
+<p>Inchangé, fourni ici pour tout avoir au même endroit.</p>
+<a class="bm alt" href="javascript:(function(){var d=document;function norm(x){x=x.replace(/[’‘`]/g,&quot;&#x27;&quot;);x=x.replace(/(\d)[.,](\d)/g,&#x27;$1§$2&#x27;);x=x.replace(/[^A-Za-zÀ-ÿ0-9&#x27;\-§ ]/g,&#x27; &#x27;);x=x.replace(/§/g,&#x27;,&#x27;).replace(/\s+/g,&#x27; &#x27;).trim();return x}var s=(&#x27;&#x27;+window.getSelection()).replace(/\s+/g,&#x27; &#x27;).trim(),src=s;if(!s){var best=&#x27;&#x27;,bs=0,w=d.createTreeWalker(d.body,NodeFilter.SHOW_TEXT,null),n;while((n=w.nextNode())){var v=(n.nodeValue||&#x27;&#x27;).replace(/\s+/g,&#x27; &#x27;).trim();if(v.length&lt;120)continue;if(/conditions|consentement|cookie|acceptez|estimation|politique|tracking|georisques/i.test(v))continue;var sc=((v.match(/[a-zà-ÿ],\s/g)||[]).length*3+(v.match(/[a-zà-ÿ]\.\s/g)||[]).length*2)*100+Math.min(v.length,1400);if(sc&gt;bs){bs=sc;best=v}}src=best;s=best}s=norm(s).split(&#x27; &#x27;).slice(0,12).join(&#x27; &#x27;);try{var dec=(src.match(/\d{1,4},\d{1,2}/)||[])[0];if(dec&amp;&amp;s.indexOf(dec)&lt;0)s+=&#x27; &#x27;+dec}catch(e){}if(!s){try{var b=d.createElement(&#x27;div&#x27;);b.textContent=&#x27;Descriptif introuvable sur cette page&#x27;;b.style.cssText=&#x27;position:fixed;top:14px;left:50%;transform:translateX(-50%);z-index:2147483647;background:#7a5c9e;color:#fff;padding:10px 18px;border-radius:999px;font:14px/1.4 sans-serif;box-shadow:0 6px 24px rgba(0,0,0,.3)&#x27;;d.body.appendChild(b);setTimeout(function(){b.remove()},3500)}catch(e){}return}var u=&#x27;https://www.fipac.fr/client/mes-fiches.php?f_mots_cles=&#x27;+encodeURIComponent(s);var o=window.open(u,&#x27;_blank&#x27;);if(!o)location.href=u})();" onclick="return false">➜ Chercher sur FIPAC</a>
+</div>
+
+<div class="card">
+<h2>Installation</h2>
+<ol>
+<li>Supprimez l'ancien favori « Importer » (clic droit → Supprimer).</li>
+<li>Glissez le bouton vert ci-dessus dans la barre de favoris.</li>
+<li>Testez sur une annonce : l'AchilleApp doit s'ouvrir sur <b>achilleapp.pages.dev</b>.</li>
+</ol>
+<small>Les boutons ne font rien sur cette page : ils agissent sur la page d'une annonce.</small>
+</div>
+</main></body></html>
