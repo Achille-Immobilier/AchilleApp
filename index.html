@@ -1850,7 +1850,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     </div>
   </div>
   </div>
-  <div class="logo-ver app-ver">Achille App — v12.20</div>
+  <div class="logo-ver app-ver">Achille App — v12.21</div>
 </aside>
 <div id="mob-bk" onclick="mobNav(false)"></div>
 <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Réduire la barre latérale">‹</button>
@@ -14981,7 +14981,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     startRealtime();
     var ov=document.getElementById('ach-login-overlay'); if(ov) ov.classList.add('ach-hidden');
     var ub=document.getElementById('ach-userbar'); if(ub) ub.style.display='none';
-    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v12.20';
+    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v12.21';
     flag('Synchronis\u00e9');
     // fin de l'init : on autorise la journalisation des actions
     setTimeout(function(){ installInterceptor._init=false; }, 1500);
@@ -22429,8 +22429,15 @@ async function docgenPdf(docKey, data, assets){
       yy-=fs+3;
     });
   }
+  /* v12.21 (Laurent 05/11) : les polices Belleza / Kenoky n'ont pas l'espace fine insécable (U+202F, que le navigateur met
+     dans « 515 000 € ») ni quelques autres signes → ils sortaient en carré. Toute chaîne dessinée passe par pdfClean(). */
+  function pdfClean(t){ return String(t==null?'':t)
+    .replace(/[\u202f\u00a0\u2007\u2009\u200a\u2002\u2003\u3000]/g,' ')
+    .replace(/[\u200b\u200c\u200d\ufeff]/g,'')
+    .replace(/[\u2010\u2011\u2012\u2212]/g,'-'); }
+  function patchPage(pg){ var _dt=pg.drawText.bind(pg); pg.drawText=function(t,o){ return _dt(pdfClean(t),o); }; return pg; }
   function addPage(first){
-    page=pdf.addPage([PW,PH]); footer(page);
+    page=patchPage(pdf.addPage([PW,PH])); footer(page);
     if(T.banner){
       page.drawImage(banner,{x:PW-49.5-104.1, y:PH-13-46.7, width:104.1, height:46.7});   /* v8.08 : logo légèrement remonté pour dégager le titre */
     }
@@ -22439,7 +22446,7 @@ async function docgenPdf(docKey, data, assets){
   }
   function need(h){ if(y-h<MB) addPage(false); }
   function wrap(text, font, size, width){
-    var out=[]; var paras=String(text||'').split(/\n/);
+    var out=[]; var paras=pdfClean(text).split(/\n/);
     paras.forEach(function(par){
       var words=par.split(/\s+/).filter(Boolean);
       if(!words.length){ out.push(''); return; }
@@ -22453,6 +22460,8 @@ async function docgenPdf(docKey, data, assets){
     });
     return out;
   }
+  /* v12.21 : plus de texte justifié (rendu irrégulier signalé par Laurent 05/11) — tout est aligné à gauche */
+  var PDF_JUSTIFY=false;
   function para(text, opts){
     opts=opts||{};
     var font=opts.font||belleza, size=opts.size||BS, lh=opts.lh||size*1.42, color=opts.color||noir;
@@ -22460,7 +22469,7 @@ async function docgenPdf(docKey, data, assets){
     var lines=wrap(text,font,size,width);
     lines.forEach(function(ln,i){
       need(lh);
-      if(opts.justify && i<lines.length-1 && ln.indexOf(' ')>0){
+      if(PDF_JUSTIFY && opts.justify && i<lines.length-1 && ln.indexOf(' ')>0){
         var words=ln.split(' ');
         var tw=0; words.forEach(function(w){tw+=font.widthOfTextAtSize(w,size);});
         var gap=(width-tw)/(words.length-1);
@@ -22500,7 +22509,7 @@ async function docgenPdf(docKey, data, assets){
     else if(b.t==='mention'){ sp(6); para(b.v,{size:11.5}); sp(4); }
     else if(b.t==='fourchette'){
       if(b.opt && g(b.opt)!=='1') return;   /* v8.08 : fourchette optionnelle décochée → non affichée */
-      var fbase=(g(b.k+'_txt')||b.def), famt=(g(b.k+'_prix')||'… €');
+      var fbase=(g(b.k+'_txt')||b.def), famt=pdfClean(g(b.k+'_prix')||'… €');
       var flines=wrap(fbase, belleza, BS, CW);
       /* v9.13 : PAVÉ INSÉCABLE — la hauteur du pavé entier (libellé + texte + montant) est
          réservée d'un coup : si elle ne tient pas sur la page, on passe à la suivante AVANT
@@ -22516,10 +22525,10 @@ async function docgenPdf(docKey, data, assets){
       flines.forEach(function(ln,i){
         need(BS*1.42);
         var last=(i===flines.length-1);
-        if(!last && ln.indexOf(' ')>0){
+        if(!last){
           var ws=ln.split(' '), tw=0; ws.forEach(function(w){tw+=belleza.widthOfTextAtSize(w,BS);});
-          var gp=(CW-tw)/(ws.length-1);
-          if(gp<BS*1.6){ var cx=ML; ws.forEach(function(w){ page.drawText(w,{x:cx,y:y-BS,size:BS,font:belleza,color:noir}); cx+=belleza.widthOfTextAtSize(w,BS)+gp; }); }
+          var gp=(ws.length>1)?(CW-tw)/(ws.length-1):0;
+          if(PDF_JUSTIFY && ws.length>1 && gp<BS*1.6){ var cx=ML; ws.forEach(function(w){ page.drawText(w,{x:cx,y:y-BS,size:BS,font:belleza,color:noir}); cx+=belleza.widthOfTextAtSize(w,BS)+gp; }); }
           else page.drawText(ln,{x:ML,y:y-BS,size:BS,font:belleza,color:noir});
           y-=BS*1.42;
         } else {
