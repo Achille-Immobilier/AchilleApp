@@ -1850,7 +1850,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     </div>
   </div>
   </div>
-  <div class="logo-ver app-ver">Achille App — v12.23</div>
+  <div class="logo-ver app-ver">Achille App — v12.24</div>
 </aside>
 <div id="mob-bk" onclick="mobNav(false)"></div>
 <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Réduire la barre latérale">‹</button>
@@ -14982,7 +14982,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     startRealtime();
     var ov=document.getElementById('ach-login-overlay'); if(ov) ov.classList.add('ach-hidden');
     var ub=document.getElementById('ach-userbar'); if(ub) ub.style.display='none';
-    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v12.23';
+    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v12.24';
     flag('Synchronis\u00e9');
     // fin de l'init : on autorise la journalisation des actions
     setTimeout(function(){ installInterceptor._init=false; }, 1500);
@@ -27890,6 +27890,10 @@ a.pp-btn{text-decoration:none;display:inline-block;}
 .st-bank{grid-template-columns:repeat(3,1fr);max-height:300px;overflow:auto;padding-right:2px;} .st-bank-msg{grid-column:1/-1;font-size:12px;color:var(--gris-2);padding:10px 2px;} .st-bank-note{font-size:11px;color:var(--gris-2);margin-top:4px;}
 .st-phurl{display:flex;gap:6px;} .st-phurl input{flex:1;min-width:0;}
 .st-sw-wrap{max-height:300px;overflow:auto;padding-right:4px;}
+/* v12.24 : effet + voile du fond photo, banque d'images dans le choix du fond */
+.st-fx{background:#f6f2ea;border:1px solid #e8e0d2;border-radius:8px;padding:6px 8px 2px;margin:4px 0 8px;}
+.st-fx .st-phcur{margin:2px 0 6px;}
+.st-bgbank{margin:8px 0 6px;} .st-bgbank>.st-btn.on{background:var(--olive,#4c533b);color:#fff;border-color:var(--olive,#4c533b);} .st-bgbank .st-bank-th{margin-top:8px;}
 .st-sw-g{font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:#a09890;margin:6px 0 4px;}
 .st-sw-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;}
 .st-sw{position:relative;cursor:pointer;}
@@ -27970,9 +27974,23 @@ a.pp-btn{text-decoration:none;display:inline-block;}
   ];
   function fondsPrefs(){ try{ var o=JSON.parse(localStorage.getItem(FONDS_K)||'{}'); if(!o||typeof o!=='object') o={}; o.masques=Array.isArray(o.masques)?o.masques:[]; o.perso=Array.isArray(o.perso)?o.perso:[]; return o; }catch(e){ return {masques:[],perso:[]}; } }
   function fondsSave(o){ try{ localStorage.setItem(FONDS_K, JSON.stringify(o)); }catch(e){ if(window.toast) toast('✗ Fond trop lourd pour être enregistré'); return false; } try{ if(window.ppDemPush) ppDemPush(); }catch(e){} return true; }
-  function allFonds(){ var pr=fondsPrefs(); return FONDS.concat(pr.perso.map(function(x){ return F(x.id,x.nom||'Mon fond','Mes fonds',function(){ return 'background-image:url('+x.img+');background-size:cover;background-position:center'; },x.light?CLAIR:FONCE,{perso:true}); })); }
-  function bgd(id, def){ var L=allFonds(); return L.filter(function(f){ return f.id===id; })[0]||L.filter(function(f){ return f.id===(def||'olive'); })[0]||FONDS[0]; }
-  function bgDeco(b){ var h=b.deco||''; if(b.photo) h='<img class="st-abs" src="'+KIT+b.photo+'" style="left:-40px;top:-40px;width:calc(100% + 80px);height:calc(100% + 80px);object-fit:cover;filter:blur(14px)"><div class="st-abs" style="inset:0;background:rgba(26,26,24,.58)"></div>'+h; return h; }
+  function allFonds(){ var pr=fondsPrefs(); return FONDS.concat(pr.perso.map(function(x){ return F(x.id,x.nom||'Mon fond','Mes fonds',function(){ return 'background-image:url('+x.img+');background-size:cover;background-position:center'; },x.light?CLAIR:FONCE,{perso:true,img:x.img}); })); }
+  /* v12.24 (Laurent 06/11) : une photo de la BANQUE D'IMAGES peut servir de fond à n'importe quelle slide — id de fond « url:<adresse> » */
+  function bgd(id, def){ id=''+(id||''); if(id.indexOf('url:')===0) return F(id,'Photo de la banque','Banque d’images',uni('#1a1a18'),FONCE,{photo:id.slice(4),bank:true});
+    var L=allFonds(); return L.filter(function(f){ return f.id===id; })[0]||L.filter(function(f){ return f.id===(def||'olive'); })[0]||FONDS[0]; }
+  /* v12.24 : EFFET sur la photo de fond (sl.fx) + VOILE (sl.vo). Photos de l'agence / de la banque : floutée + voile moyen par défaut (rendu
+     inchangé) ; fond importé : tel quel par défaut (rendu inchangé). Rien de farfelu : flou, flou léger, nette, noir & blanc, sépia, assombrie en bas. */
+  var FX={flou:['Floutée','blur(14px)'], flou2:['Légèrement floutée','blur(5px)'], net:['Nette',''], nb:['Noir et blanc','grayscale(1)'], sepia:['Sépia doux','sepia(.55) saturate(.85)'], deg:['Assombrie vers le bas','']};
+  var FXO=['flou','flou2','net','nb','sepia','deg'];
+  var VO={aucun:0, leger:.38, moyen:.58, fort:.74}, VOO=[['aucun','Sans voile'],['leger','Léger'],['moyen','Moyen'],['fort','Fort']];
+  function fxDef(b){ return b&&b.perso?'net':'flou'; }
+  function voDef(b){ return b&&b.perso?'aucun':'moyen'; }
+  function bgDeco(b, sl){ var h=b.deco||''; sl=sl||{};
+    var src=b.photo?photoUrl(b.photo):((b.perso&&(sl.fx||sl.vo))?b.img:'');
+    if(src){ var fx=FX[sl.fx]?sl.fx:fxDef(b), vo=(VO[sl.vo]!=null)?sl.vo:voDef(b), op=VO[vo], filt=FX[fx][1], bleed=/blur/.test(filt)?40:0;
+      var veil=(fx==='deg')?'background:linear-gradient(180deg,rgba(26,26,24,'+(op*.5).toFixed(2)+') 0%,rgba(26,26,24,'+(op*.55).toFixed(2)+') 40%,rgba(26,26,24,'+Math.min(.92,op*1.5+.12).toFixed(2)+') 100%)':(op?'background:rgba(26,26,24,'+op+')':'');
+      h='<img class="st-abs" src="'+src+'" style="left:-'+bleed+'px;top:-'+bleed+'px;width:calc(100% + '+(2*bleed)+'px);height:calc(100% + '+(2*bleed)+'px);object-fit:cover;'+(filt?'filter:'+filt:'')+'">'+(veil?'<div class="st-abs" style="inset:0;'+veil+'"></div>':'')+h; }
+    return h; }
   window.stFondsMasques=function(){ return fondsPrefs().masques.slice(); };
   var PHOTOS=[['photo-enseigne.jpg','Enseigne'],['photo-vitrine.jpg','Vitrine'],['photo-interieur.jpg','Intérieur'],['photo-interieur2.jpg','Intérieur 2']];
   var PRET_K='ach_pret_v1';
@@ -27997,7 +28015,7 @@ a.pp-btn{text-decoration:none;display:inline-block;}
     var wmOn=(sl.wm==='oui')||(sl.wm!=='non' && WM_TPL.indexOf(sl.tpl)>=0), wm='';
     if(wmOn){ var wh=(sl.fmt==='story')?1150:(sl.fmt==='sq'?820:900), ww=Math.round(wh*534/700), W0=(sl.fmt==='sq'?1200:1080), H0=(sl.fmt==='story'?1920:(sl.fmt==='sq'?1200:1350));
       wm='<img class="st-abs" src="'+KIT+'submark-'+(b.light?'olive':'creme')+'.png" style="left:'+Math.round((W0-ww)/2)+'px;top:'+Math.round((H0-wh)/2)+'px;height:'+wh+'px;opacity:'+(b.light?'.06':'.055')+'">'; }
-    return '<div class="'+cls+'" style="'+style+';color:'+fg+'">'+bgDeco(b)+(sl.__under||'')+wm+logo+inner+foot+'</div>';
+    return '<div class="'+cls+'" style="'+style+';color:'+fg+'">'+bgDeco(b,sl)+(sl.__under||'')+wm+logo+inner+foot+'</div>';
   }
   var AG={adr:'115 AVENUE ACHILLE PERETTI · 92200 NEUILLY-SUR-SEINE', tel:'01 40 67 00 55', mail:'WELCOME@ACHILLE-IMMOBILIER.FR'};
   var FOOTS={ full:[AG.adr, AG.tel+'&nbsp;&nbsp;·&nbsp;&nbsp;'+AG.mail], telmail:[AG.tel+'&nbsp;&nbsp;·&nbsp;&nbsp;'+AG.mail], tel:[AG.tel], mail:[AG.mail], adr:[AG.adr] };
@@ -28079,10 +28097,11 @@ a.pp-btn{text-decoration:none;display:inline-block;}
         +'<img class="st-abs" src="'+KIT+'submark-'+b.logo+'.png" style="left:0;right:0;margin:auto;top:1400px;height:160px">'
         +(p.source?'<div class="st-abs" style="left:60px;right:60px;bottom:210px;text-align:center;font-size:14px;letter-spacing:.1em;opacity:.5;line-height:1.6">'+esc(p.source)+'</div>':'')); } },
     /* v12.15 : PHOTO PLEINE PAGE — une photo (agence, banque d'images, appareil ou lien) sur toute la slide, voile + titre */
-    photo:{ nom:'Photo pleine page', champs:[['photo','Photo','photo'],['kicker','Surtitre','t'],['titre','Titre','ta'],['sous','Sous-titre','ta'],['voile','Voile sur la photo','voile'],['fmt','Format','fmt']],
+    photo:{ nom:'Photo pleine page', champs:[['photo','Photo','photo'],['kicker','Surtitre','t'],['titre','Titre','ta'],['sous','Sous-titre','ta'],['fx','Effet sur la photo','fxph'],['voile','Voile sur la photo','voile'],['fmt','Format','fmt']],
       def:{bg:'noir',logo:'center',photo:'photo-interieur.jpg',voile:'moyen',wm:'non'},
       html:function(p){ p.bg='noir'; var W=p.fmt==='sq'?1200:1080, H=p.fmt==='story'?1920:(p.fmt==='sq'?1200:1350), op={leger:.42,moyen:.66,fort:.84}[p.voile]||.66;
-        p.__under=(p.photo?'<img class="st-abs" src="'+photoUrl(p.photo)+'" style="left:0;top:0;width:'+W+'px;height:'+H+'px;object-fit:cover;'+phStyle(p)+'">':'')
+        var _fx=(FX[p.fx]&&p.fx!=='deg')?FX[p.fx][1]:'';   /* v12.24 */
+        p.__under=(p.photo?'<img class="st-abs" src="'+photoUrl(p.photo)+'" style="left:0;top:0;width:'+W+'px;height:'+H+'px;object-fit:cover;'+phStyle(p)+(_fx?';filter:'+_fx:'')+'">':'')
           +'<div class="st-abs" style="inset:0;background:linear-gradient(180deg,rgba(26,26,24,'+(op*.6).toFixed(2)+') 0%,rgba(26,26,24,'+(op*.12).toFixed(2)+') 36%,rgba(26,26,24,'+op+') 100%)"></div>';
         return wrap(p, Z(Math.round(H*.45), p.fmt==='story'?300:160, 80, 'flex-end', 'center',
           (p.kicker?'<div class="st-lbl" style="color:#e2d8cb;'+fs(24)+'">'+esc(p.kicker)+'</div>':'')
@@ -28195,6 +28214,7 @@ a.pp-btn{text-decoration:none;display:inline-block;}
       if(ty==='bg'){ f+=bgPicker(sl, T); }
       else if(ty==='photo'){ f+=photoField(k,lab,v,sl); }
       else if(ty==='fmt'){ f+='<div><label>'+esc(lab)+'</label><select class="st-sel" onchange="stSet(\''+k+'\',this.value)">'+[['','Portrait 4:5 (Instagram / Facebook)'],['sq','Carré (LinkedIn)'],['story','Story 9:16']].map(function(o){ return '<option value="'+o[0]+'"'+((v||'')===o[0]?' selected':'')+'>'+o[1]+'</option>'; }).join('')+'</select></div>'; }
+      else if(ty==='fxph'){ f+='<div><label>'+esc(lab)+'</label><select class="st-sel" onchange="stSet(\''+k+'\',this.value)">'+['net','flou2','flou','nb','sepia'].map(function(o){ return '<option value="'+o+'"'+((v||'net')===o?' selected':'')+'>'+FX[o][0]+'</option>'; }).join('')+'</select></div>'; }
       else if(ty==='voile'){ f+='<div><label>'+esc(lab)+'</label><select class="st-sel" onchange="stSet(\''+k+'\',this.value)">'+[['leger','Léger'],['moyen','Moyen'],['fort','Fort']].map(function(o){ return '<option value="'+o[0]+'"'+((v||'moyen')===o[0]?' selected':'')+'>'+o[1]+'</option>'; }).join('')+'</select></div>'; }
       else if(ty==='ta'){ f+='<div><label>'+esc(lab)+'</label><textarea oninput="stSet(\''+k+'\',this.value)">'+esc(v)+'</textarea></div>'; }
       else { f+='<div><label>'+esc(lab)+'</label><input type="text" value="'+esc(v)+'" oninput="stSet(\''+k+'\',this.value)"></div>'; } });
@@ -28235,24 +28255,37 @@ a.pp-btn{text-decoration:none;display:inline-block;}
       bankList(_bankT,function(a){ var cur=(ST.slides&&ST.slides[ST.cur]||{})[k]||'';
         if(!a){ g.innerHTML='<div class="st-bank-msg">Banque d’images indisponible pour le moment (connexion ?).</div>'; return; }
         if(!a.length){ g.innerHTML='<div class="st-bank-msg">Aucune photo dans ce thème.</div>'; return; }
-        g.innerHTML=a.map(function(n){ var u=bankUrl(_bankT,n,false); return '<div class="st-ph'+(cur===u?' on':'')+'" title="Utiliser cette photo" onclick="stSet(\''+k+'\',\''+u+'\')"><img loading="lazy" src="'+bankUrl(_bankT,n,true)+'" onerror="this.onerror=null;this.src=\''+u+'\'"></div>'; }).join(''); }); });
+        g.innerHTML=a.map(function(n){ var u=bankUrl(_bankT,n,false), val=(k==='bg')?('url:'+u):u; return '<div class="st-ph'+(cur===val?' on':'')+'" title="'+(k==='bg'?'Mettre cette photo en fond':'Utiliser cette photo')+'" onclick="stSet(\''+k+'\',\''+val+'\')"><img loading="lazy" src="'+bankUrl(_bankT,n,true)+'" onerror="this.onerror=null;this.src=\''+u+'\'"></div>'; }).join(''); }); });
   }
   /* ── v11.69 : sélecteur de fonds visuel (masquer / réafficher / importer / appliquer à toutes) ── */
   var _showMasked=false;
   function swatch(f, cur, masked){
-    var st=f.css('')+';'+(f.photo?'background-image:linear-gradient(rgba(26,26,24,.55),rgba(26,26,24,.55)),url('+KIT+f.photo+');background-size:cover;background-position:center':'');
+    var st=f.css('')+';'+(f.photo?'background-image:linear-gradient(rgba(26,26,24,.55),rgba(26,26,24,.55)),url('+photoUrl(f.photo)+');background-size:cover;background-position:center':'');
     return '<div class="st-sw'+(f.id===cur?' on':'')+(masked?' off':'')+'" title="'+esc(f.nom)+'" onclick="stSet(\'bg\',\''+f.id+'\')">'
       +'<div class="st-sw-in" style="position:relative;'+st+'">'+(f.deco?'<div style="position:absolute;inset:0;transform:scale(.12);transform-origin:0 0;width:833%;height:833%">'+f.deco+'</div>':'')+'<span style="position:relative;color:'+f.fg+'">Aa</span></div>'
       +(masked?'<button class="st-sw-x rest" title="Réafficher ce fond" onclick="event.stopPropagation();stFondShow(\''+f.id+'\')">↺</button>'
                :'<button class="st-sw-x" title="Retirer ce fond de la bibliothèque" onclick="event.stopPropagation();stFondHide(\''+f.id+'\')">✕</button>')
       +'<div class="st-sw-n">'+esc(f.nom)+'</div></div>';
   }
+  var _bgBank=false;   /* v12.24 : bloc « Banque d'images » du sélecteur de fond, déplié ou non */
+  window.stBgBank=function(){ _bgBank=!_bgBank; stPaint(); };
   function bgPicker(sl, T){
     var cur=sl.bg||T.def.bg, pr=fondsPrefs(), L=allFonds(), vis=L.filter(function(f){ return pr.masques.indexOf(f.id)<0; }), mk=L.filter(function(f){ return pr.masques.indexOf(f.id)>=0; });
     var grps={}; vis.forEach(function(f){ (grps[f.grp]=grps[f.grp]||[]).push(f); });
-    var h='<div><label>Fond</label><div class="st-sw-wrap">';
+    var b=bgd(cur,T.def.bg), isPh=!!(b.photo||b.perso);
+    var h='<div><label>Fond</label>';
+    /* v12.24 : effet + voile quand le fond est une photo (agence, banque, importée) */
+    if(isPh){ var fxc=FX[sl.fx]?sl.fx:fxDef(b), voc=(VO[sl.vo]!=null)?sl.vo:voDef(b);
+      h+='<div class="st-fx"><div class="st-mf-row"><label>Effet</label><select class="st-sel" onchange="stSet(\'fx\',this.value)">'+FXO.map(function(o){ return '<option value="'+o+'"'+(fxc===o?' selected':'')+'>'+FX[o][0]+'</option>'; }).join('')+'</select></div>'
+        +'<div class="st-mf-row"><label>Voile</label><select class="st-sel" onchange="stSet(\'vo\',this.value)">'+VOO.map(function(o){ return '<option value="'+o[0]+'"'+(voc===o[0]?' selected':'')+'>'+o[1]+'</option>'; }).join('')+'</select></div>'
+        +(b.bank?'<div class="st-phcur"><img src="'+esc(photoUrl(b.photo))+'" alt=""><span>Photo de la banque d’images</span></div>':'')+'</div>'; }
+    h+='<div class="st-sw-wrap">';
     Object.keys(grps).forEach(function(g){ h+='<div class="st-sw-g">'+esc(g)+'</div><div class="st-sw-grid">'+grps[g].map(function(f){ return swatch(f,cur,false); }).join('')+'</div>'; });
-    h+='</div><div class="st-sw-acts"><label class="st-btn" style="cursor:pointer">＋ Importer un fond<input type="file" accept="image/*" style="display:none" onchange="stFondImport(this)"></label>'
+    h+='</div>';
+    /* v12.24 : la banque d'images, directement dans le choix du fond (Laurent : « accès à la banque dès qu'une image est à insérer ») */
+    h+='<div class="st-bgbank"><button class="st-btn'+(_bgBank?' on':'')+'" onclick="stBgBank()">🖼 Banque d’images '+(_bgBank?'▴':'▾')+'</button>'
+      +(_bgBank?'<div class="st-bank-th" id="st-bank-th" data-k="bg"></div><div class="st-photos st-bank" id="st-bank" data-k="bg"><div class="st-bank-msg">Chargement de la banque d’images…</div></div><div class="st-bank-note">Photos libres de droits (Unsplash) — jamais présentées comme un bien de l’agence. La photo choisie devient le fond de cette slide, avec l’effet et le voile réglés ci-dessus.</div>':'')+'</div>';
+    h+='<div class="st-sw-acts"><label class="st-btn" style="cursor:pointer">＋ Importer un fond<input type="file" accept="image/*" style="display:none" onchange="stFondImport(this)"></label>'
       +'<button class="st-btn" onclick="stFondAll()" title="Mettre ce fond sur toutes les slides de ce post">Appliquer à toutes les slides</button></div>';
     if(mk.length) h+='<div style="margin-top:6px"><button class="st-btn" onclick="stToggleMasked()">'+(_showMasked?'▴ Cacher':'▾ Voir')+' les fonds retirés ('+mk.length+')</button>'+(_showMasked?'<div class="st-sw-grid" style="margin-top:6px">'+mk.map(function(f){ return swatch(f,cur,true); }).join('')+'</div>':'')+'</div>';
     return h+'</div>';
@@ -28263,7 +28296,7 @@ a.pp-btn{text-decoration:none;display:inline-block;}
     else { if(pr.masques.indexOf(id)<0) pr.masques.push(id); }
     if(fondsSave(pr) && window.toast) toast(f.perso?'🗑 Fond supprimé':'✕ « '+f.nom+' » retiré — Claude ne l’utilisera plus'); stPaint(); };
   window.stFondShow=function(id){ var pr=fondsPrefs(); pr.masques=pr.masques.filter(function(x){ return x!==id; }); fondsSave(pr); stPaint(); };
-  window.stFondAll=function(){ var b=ST.slides[ST.cur].bg; if(!b) return; ST.slides.forEach(function(s){ s.bg=b; }); stPaint(); if(window.toast) toast('Fond appliqué aux '+ST.slides.length+' slides — pensez à 💾 Enregistrer'); };
+  window.stFondAll=function(){ var c=ST.slides[ST.cur], b=c.bg; if(!b) return; ST.slides.forEach(function(s){ s.bg=b; if(c.fx) s.fx=c.fx; else delete s.fx; if(c.vo) s.vo=c.vo; else delete s.vo; }); stPaint(); if(window.toast) toast('Fond appliqué aux '+ST.slides.length+' slides — pensez à 💾 Enregistrer'); };
   window.stFondImport=function(inp){ var f=inp.files&&inp.files[0]; if(!f) return; var r=new FileReader(); r.onload=function(){ var im=new Image(); im.onload=function(){
       var W=1080, s=W/im.width, c=document.createElement('canvas'); c.width=W; c.height=Math.round(im.height*s); var x=c.getContext('2d'); x.drawImage(im,0,0,c.width,c.height);
       var d=x.getImageData(0,0,c.width,c.height).data, sum=0, n=0; for(var k=0;k<d.length;k+=4*97){ sum+=0.2126*d[k]+0.7152*d[k+1]+0.0722*d[k+2]; n++; }
@@ -28282,7 +28315,7 @@ a.pp-btn{text-decoration:none;display:inline-block;}
   window.stDel=function(){ if(ST.slides.length<2) return; if(!confirm('Supprimer la slide '+(ST.cur+1)+' ?')) return; ST.slides.splice(ST.cur,1); ST.cur=Math.min(ST.cur,ST.slides.length-1); stPaint(); };
   window.stAdd=function(tpl){ var T=TPL[tpl]; if(!T) return; var cur=ST.slides[ST.cur]||{}; var n=Object.assign({},T.def,{tpl:tpl}); if(cur.bg) n.bg=cur.bg; if(T.def.fmt) n.fmt=T.def.fmt; else if(cur.fmt&&cur.fmt!=='story'&&cur.fmt!=='sq') n.fmt=cur.fmt; ST.slides.splice(ST.cur+1,0,n); ST.cur++; stPaint(); if(window.toast) toast('＋ Slide « '+T.nom+' » ajoutée — remplissez ses champs'); };
   window.stTpl=function(tpl){ var T=TPL[tpl]; if(!T) return; var sl=ST.slides[ST.cur]; sl.tpl=tpl; if(T.def.fmt) sl.fmt=T.def.fmt; else delete sl.fmt; if(!sl.bg) sl.bg=T.def.bg; stPaint(); };
-  window.stSet=function(k,v){ ST.slides[ST.cur][k]=v; var stage=document.getElementById('st-stage'); if(stage){ stage.innerHTML=scaled(ST.slides[ST.cur],stW(ST.slides[ST.cur],stage)); } if(k==='photo'||k==='bg'||k==='fmt') stPaint(); };
+  window.stSet=function(k,v){ ST.slides[ST.cur][k]=v; var stage=document.getElementById('st-stage'); if(stage){ stage.innerHTML=scaled(ST.slides[ST.cur],stW(ST.slides[ST.cur],stage)); } if(k==='photo'||k==='bg'||k==='fmt'||k==='fx'||k==='vo') stPaint(); };
   window.stPhoto=function(inp,k){ var f=inp.files&&inp.files[0]; if(!f) return; var r=new FileReader(); r.onload=function(){ var im=new Image(); im.onload=function(){ var mx=1400, s=Math.min(1,mx/Math.max(im.width,im.height)); var c=document.createElement('canvas'); c.width=Math.round(im.width*s); c.height=Math.round(im.height*s); c.getContext('2d').drawImage(im,0,0,c.width,c.height); stSet(k, c.toDataURL('image/jpeg',.86)); }; im.src=r.result; }; r.readAsDataURL(f); };
   window.stReset=function(){ var o=lsObj(PRET_K), id=''+ST.p.id; if(o[id]&&o[id].slides){ delete o[id].slides; o[id].maj=new Date().toISOString(); try{ localStorage.setItem(PRET_K,JSON.stringify(o)); }catch(e){} } ST.slides=JSON.parse(JSON.stringify((ST.p.slides&&ST.p.slides.length)?ST.p.slides:autoSlides(ST.p))); ST.cur=0; stPaint(); try{ ppRender(); }catch(e){} if(window.toast) toast('↺ Version de Claude rétablie'); };
   window.stSave=function(){ if(!stAdm()) return; var o=lsObj(PRET_K), id=''+ST.p.id; o[id]=Object.assign({},o[id]||{},{slides:ST.slides, maj:new Date().toISOString(), par:(window.ACH_USER&&ACH_USER.initials)||''}); try{ localStorage.setItem(PRET_K,JSON.stringify(o)); }catch(e){ if(window.toast) toast('✗ Trop lourd pour être enregistré — réduisez la photo'); return; } try{ ppRender(); }catch(e){} var m=document.getElementById('st-mod'); if(m) m.textContent='version modifiée'; if(window.toast) toast('💾 Visuel enregistré — partagé avec l’équipe'); try{ if(window.achLog) achLog('modification','Posts prêts','visuel modifié : '+(ST.p.titre||'')); }catch(e){} };
