@@ -661,6 +661,7 @@ body:not(.rs-is-gerant) .rs-gerant{display:none;}
 .ct-sp:hover{border-color:var(--terra);color:var(--terra);} .ct-sp b{font-weight:600;color:var(--noir);}
 .ct-acts{display:flex;gap:4px;} .ct-acts a,.ct-acts button{border:1px solid var(--border);background:#fff;border-radius:8px;padding:5px 9px;font-size:14px;cursor:pointer;text-decoration:none;color:var(--noir);line-height:1;font-family:'Jost',sans-serif;}
 .ct-acts a:hover,.ct-acts button:hover{border-color:var(--terra);}
+.ct-more{border:1px solid var(--terra);color:var(--terra);background:#fff;border-radius:8px;padding:8px 16px;font-family:'Jost',sans-serif;font-size:13px;cursor:pointer;} .ct-more:hover{background:rgba(180,115,96,.08);}
 .ct-empty{background:#fff;border:1px dashed var(--border);border-radius:10px;padding:26px;text-align:center;color:var(--gris-2);font-size:13px;line-height:1.6;}
 @media (max-width:880px){ .ct-row{grid-template-columns:minmax(0,1fr) auto;} .ct-src{grid-column:1/-1;} .ct-tel{grid-column:1/-1;} .ct-acts a,.ct-acts button{min-height:38px;min-width:42px;display:inline-flex;align-items:center;justify-content:center;} }
 /* v12.19 : adresses récentes sous la barre de recherche */
@@ -1880,7 +1881,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     </div>
   </div>
   </div>
-  <div class="logo-ver app-ver">Achille App — v12.28</div>
+  <div class="logo-ver app-ver">Achille App — v12.29</div>
 </aside>
 <div id="mob-bk" onclick="mobNav(false)"></div>
 <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Réduire la barre latérale">‹</button>
@@ -15039,7 +15040,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     startRealtime();
     var ov=document.getElementById('ach-login-overlay'); if(ov) ov.classList.add('ach-hidden');
     var ub=document.getElementById('ach-userbar'); if(ub) ub.style.display='none';
-    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v12.28';
+    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v12.29';
     flag('Synchronis\u00e9');
     // fin de l'init : on autorise la journalisation des actions
     setTimeout(function(){ installInterceptor._init=false; }, 1500);
@@ -29289,7 +29290,8 @@ details.cx-more{margin-top:8px;} details.cx-more>summary{font-size:11.5px;color:
     E.filter(function(e){ return e.t.length; }).forEach(function(e){ var g=null; e.t.forEach(function(t){ if(byTel[t]) g=byTel[t]; }); if(!g){ var nk=nomKey(e.nom); if(nk.length>=3&&byNom[nk]) g=byNom[nk]; } add(g||mk(),e); });
     E.filter(function(e){ return !e.t.length; }).forEach(function(e){ var nk=nomKey(e.nom); if(nk.length<3) return; add(byNom[nk]||mk(),e); });
     G.forEach(function(g){ var ns=Object.keys(g.noms).sort(function(a,b){ return (g.noms[b]-g.noms[a])||(b.length-a.length); }); g.nom=ns[0]||''; g.autres=ns.slice(1); g.key=fold(g.nom)+' '+g.tels.map(telPretty).join(' ')+' '+g.tels.join(' ')+' '+g.mails.join(' ')+' '+g.autres.map(fold).join(' '); });
-    G.sort(function(a,b){ return (a.nom?0:1)-(b.nom?0:1) || fold(a.nom).localeCompare(fold(b.nom)); });
+    G.forEach(function(g){ g.sk=sortKey(g.nom); });
+    G.sort(function(a,b){ return (a.nom?0:1)-(b.nom?0:1) || a.sk.localeCompare(b.sk); });
     return G;
   }
   window.achContacts=build;
@@ -29297,14 +29299,18 @@ details.cx-more{margin-top:8px;} details.cx-more>summary{font-size:11.5px;color:
   /* ── PAGE ── */
   function match(g,q){ var qd=q.replace(/[\s.\-()]/g,'').replace(/^\+33/,'0').replace(/^0033/,'0'); if(/^\d{3,}$/.test(qd)) return g.tels.some(function(t){ return t.indexOf(qd)>=0; });
     var toks=fold(q).split(' ').filter(Boolean); return toks.every(function(t){ return g.key.indexOf(t)>=0; }); }
-  var _G=null;
-  window.ctRender=function(){
+  var _G=null, _ctN=80;
+  window.ctMore=function(){ _ctN+=80; ctRender(true); };
+  /* clé de tri : le nom de famille (mot tout en majuscules s'il y en a un, sinon le dernier mot), puis le reste */
+  function sortKey(n){ n=''+(n||''); var w=n.replace(/^(m|mr|mme|mlle|me)\.?\s+/i,'').split(/[\s\/]+/).filter(Boolean); var up=w.filter(function(x){ return x.length>1&&x===x.toUpperCase()&&/[A-ZÀ-Ý]/.test(x); }); var lw=w.filter(function(x){ return /[a-zà-ÿ]/i.test(x); }); return fold((up[0]||lw[lw.length-1]||'')+' '+n); }
+  window.ctRender=function(keepN){
+    if(!keepN) _ctN=80;
     var box=document.getElementById('ct-list'), hint=document.getElementById('ct-hint'); if(!box) return;
     var q=(document.getElementById('ct-in')||{}).value||''; q=q.trim();
     _G=build(); var L=q?_G.filter(function(g){ return match(g,q); }):_G;
     if(hint) hint.textContent=_G.length+' contact'+(_G.length>1?'s':'')+' trouvés dans l’app'+(q?' · '+L.length+' correspondant'+(L.length>1?'s':''):'');
     if(!L.length){ box.innerHTML='<div class="ct-empty">'+(q?'Personne ne correspond à « '+esc(q)+' ».<br>Essayez un bout de numéro, un nom de famille ou des initiales.':'Aucun contact pour le moment.')+'</div>'; return; }
-    var MAX=80; box.innerHTML=L.slice(0,MAX).map(function(g,i){ var idx=_G.indexOf(g);
+    var MAX=_ctN; box.innerHTML=L.slice(0,MAX).map(function(g,i){ var idx=_G.indexOf(g);
       var nom=g.nom?esc(g.nom):'<span class="ct-sans">sans nom</span>';
       var autres=g.autres.length?'<small>aussi noté : '+esc(g.autres.slice(0,3).join(' · '))+'</small>':'';
       var tel=g.tels.length?g.tels.map(function(t){ return '<a href="tel:'+t+'">'+telPretty(t)+'</a>'; }).join('<br>'):'<span style="color:var(--gris-2)">numéro inconnu</span>';
@@ -29313,7 +29319,7 @@ details.cx-more{margin-top:8px;} details.cx-more>summary{font-size:11.5px;color:
       var t0=g.tels[0]||'';
       var acts=t0?'<a href="tel:'+t0+'" title="Appeler">📞</a><a href="https://wa.me/33'+t0.slice(1)+'" target="_blank" rel="noopener" title="Écrire sur WhatsApp">💬</a><button onclick="achCopyText(\''+telPretty(t0)+'\',this)" title="Copier le numéro">📋</button>':'';
       return '<div class="ct-row"><div class="ct-nom">'+nom+autres+'</div><div class="ct-tel">'+tel+mail+'</div><div class="ct-src">'+src+'</div><div class="ct-acts">'+acts+'</div></div>'; }).join('')
-      +(L.length>MAX?'<div class="ct-empty">'+(L.length-MAX)+' autres — précisez la recherche.</div>':'');
+      +(L.length>MAX?'<div class="ct-empty"><button class="ct-more" onclick="ctMore()">Voir '+Math.min(80,L.length-MAX)+' contacts de plus</button><div style="margin-top:6px">'+MAX+' affichés sur '+L.length+' — ou précisez la recherche</div></div>':'');
   };
   window.ctGo=function(gi,si){ try{ var e=_G[gi].src[si]; if(e&&e.go) e.go(); }catch(x){} };
   window.ctOpen=function(q){ nav('contacts'); setTimeout(function(){ var i=document.getElementById('ct-in'); if(i){ i.value=q||''; ctRender(); i.focus(); } },80); };
