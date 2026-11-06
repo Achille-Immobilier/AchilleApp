@@ -1850,7 +1850,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     </div>
   </div>
   </div>
-  <div class="logo-ver app-ver">Achille App — v12.21</div>
+  <div class="logo-ver app-ver">Achille App — v12.23</div>
 </aside>
 <div id="mob-bk" onclick="mobNav(false)"></div>
 <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Réduire la barre latérale">‹</button>
@@ -3361,6 +3361,7 @@ table.es-t td.del button{border:none;background:none;color:var(--gris-2);cursor:
       </div>
       <div class="comm-panel" id="comm-panel-mix">
         <div class="mix-stack">
+          <div class="ach-nf" id="ach-nf"></div><!-- v12.23 : filtre rapide par réseau (Tous · in · f · IG · ♪) -->
           <div class="mix-sec">
             <div class="mix-col-tt">☀️ Suggestions du jour</div>
             <div class="idj-head"><span class="idj-hint">Proposées chaque matin par la veille automatique — triez en un clic : ✅ validée, 🕐 en attente, ❌ archivée. Vos retours à Claude se donnent toujours dans la conversation du matin.</span><span style="display:flex;align-items:center;gap:10px;"><!-- v12.12 : bouton « Importer les idées du matin » retiré (demande Laurent 30/10) --><span class="idj-maj" id="idj-maj"></span></span></div>
@@ -14981,7 +14982,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     startRealtime();
     var ov=document.getElementById('ach-login-overlay'); if(ov) ov.classList.add('ach-hidden');
     var ub=document.getElementById('ach-userbar'); if(ub) ub.style.display='none';
-    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v12.21';
+    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v12.23';
     flag('Synchronis\u00e9');
     // fin de l'init : on autorise la journalisation des actions
     setTimeout(function(){ installInterceptor._init=false; }, 1500);
@@ -22224,7 +22225,7 @@ var DOCGEN_TEMPLATES = {
       { t:'fourchette', k:'f_basse', l:'Fourchette sécurisée', prix:'882 000 €', opt:'f_basse_on', optLabel:'Afficher la fourchette sécurisée', def:"La fourchette sécurisée correspond à un prix permettant une vente rapide, dans un délai court, en tenant compte d’une négociation limitée. Elle se situe autour de" },
       { t:'fourchette', k:'f_mediane', l:'Fourchette de marché', prix:'950 000 €', opt:'f_mediane_on', optLabel:'Afficher la fourchette de marché', def:"La fourchette de marché représente le prix cohérent avec le marché d’aujourd’hui, équilibrant attractivité pour les acquéreurs et valorisation optimale de votre bien. Elle se situe autour de" },
       { t:'fourchette', k:'f_haute', l:'Fourchette ambitieuse', prix:'1 015 000 €', opt:'f_haute_on', optLabel:'Afficher la fourchette ambitieuse', def:"La fourchette ambitieuse correspond au plein potentiel de votre bien. Elle est atteignable sur un délai de commercialisation plus long, dès lors que la présentation du bien et le ciblage des acquéreurs sont à la hauteur de ses atouts — ce sur quoi nous engageons nos moyens. Elle se situe autour de" },
-      { t:'p', k:'conclusion', rows:3, def:"Cette fourchette correspond à un positionnement cohérent avec le marché actuel et devrait permettre une vente dans des délais raisonnables, sous réserve des évolutions des conditions du marché et du profil des potentiels acquéreurs. Le choix du prix de mise en vente dépendra de votre stratégie, de votre calendrier et de vos priorités. Notre rôle sera ensuite de vous accompagner afin d’adapter ce positionnement au fil des retours du marché, tout en défendant au mieux la valeur de votre bien." },
+      { t:'p', k:'conclusion', rows:3, def:"Cette estimation correspond à un positionnement cohérent avec le marché actuel et devrait permettre une vente dans des délais raisonnables, sous réserve des évolutions des conditions du marché et du profil des potentiels acquéreurs. Le choix du prix de mise en vente dépendra de votre stratégie, de votre calendrier et de vos priorités. Notre rôle sera ensuite de vous accompagner afin d’adapter ce positionnement au fil des retours du marché, tout en défendant au mieux la valeur de votre bien." },
       { t:'h', v:'Cadre et limites de cette estimation' },
       { t:'p', k:'cadre', rows:2, def:"Le présent avis de valeur est fourni à titre indicatif, sur la base des informations communiquées, de sa localisation et de l’analyse du marché à la date de rédaction. Il ne constitue ni un engagement de résultat, ni une garantie d’un prix de vente quel qu’il soit, et ne saurait se substituer à une étude financière ou bancaire." },
       { t:'mention', v:'Fait pour servir et valoir ce que de droit.' },
@@ -22249,7 +22250,7 @@ var DOCGEN_TEMPLATES = {
       { t:'h', v:'Estimation locative' },
       { t:'p', k:'intro_estim', rows:2, def:"Au regard des caractéristiques du bien, de son emplacement, de son état général, de sa performance énergétique et des loyers observés sur des biens comparables dans le secteur, la valeur locative estimée est la suivante :" },
       { t:'loyer', k:'loyer', l1:'Loyer mensuel estimé (meublé) :', def:'Entre 1 450 € et 1 550 € charges comprises.' },
-      { t:'p', k:'conclusion', rows:2, def:"Cette fourchette correspond à un positionnement cohérent avec le marché locatif actuel et permet une location dans des délais raisonnables, sous réserve des conditions du marché et du profil du locataire." },
+      { t:'p', k:'conclusion', rows:2, def:"Cette estimation correspond à un positionnement cohérent avec le marché locatif actuel et permet une location dans des délais raisonnables, sous réserve des conditions du marché et du profil du locataire." },
       { t:'h', v:'Cadre et limites de cette estimation' },
       { t:'p', k:'cadre', rows:2, def:"Le présent avis de valeur locative est fourni à titre indicatif, sur la base des informations communiquées, de sa localisation et de l’analyse du marché locatif à la date de rédaction. Il ne constitue ni un engagement de résultat, ni une garantie de revenus locatifs, et ne saurait se substituer à une étude financière ou bancaire." },
       { t:'mention', v:'Fait pour servir et valoir ce que de droit.' },
@@ -25226,6 +25227,69 @@ body.pi-grabbing *{user-select:none!important;}
 .cav-copy:hover{border-color:var(--terra);color:var(--terra);}
 .cav-body-hint{font-size:10.5px;color:var(--gris-2);}
 </style>
+<!-- ══ v12.23 (Laurent 06/11) : PASTILLES RÉSEAU « maison » sur toutes les cartes d'Idées & Posts à venir (pas de logos officiels),
+     compte LinkedIn (profil Laurent / page Achille, champ compte_linkedin déposé par la veille) et filtre rapide par réseau. ══ -->
+<style>
+.ach-nbw{display:inline-flex;align-items:center;gap:4px;flex:none;}
+.ach-nb{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:6px;font-family:'Jost',sans-serif;font-size:10.5px;font-weight:700;line-height:1;color:#fff;flex:none;letter-spacing:0;box-sizing:border-box;}
+.ach-nb-linkedin{background:#0a66c2;}
+.ach-nb-facebook{background:#1877f2;border-radius:50%;font-size:12px;}
+.ach-nb-instagram{background:linear-gradient(135deg,#f58529 0%,#dd2a7b 100%);font-size:9.5px;}
+.ach-nb-tiktok{background:#1a1a18;font-size:12.5px;}
+.ach-nb-acc{font-size:10.5px;color:var(--gris-2);white-space:nowrap;flex:none;}
+.idj-ec-row .ach-nbw{margin-right:2px;}
+/* filtre par réseau */
+.ach-nf{display:flex;align-items:center;gap:5px;flex-wrap:wrap;padding:0 2px;}
+.ach-nf:empty{display:none;}
+.ach-nf-l{font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--gris-2);margin-right:2px;}
+.ach-nf-b{display:inline-flex;align-items:center;gap:5px;border:1px solid var(--border);background:#fff;border-radius:999px;padding:4px 9px 4px 4px;font-family:'Jost',sans-serif;font-size:12px;color:var(--gris);cursor:pointer;line-height:1.2;}
+.ach-nf-b.all{padding-left:10px;}
+.ach-nf-b .ach-nb{width:18px;height:18px;}
+.ach-nf-b .n{font-size:11px;opacity:.6;}
+.ach-nf-b:hover{border-color:var(--terra);color:var(--terra);}
+.ach-nf-b.on{border-color:var(--terra);color:var(--terra);background:rgba(180,115,96,.09);font-weight:600;}
+.ach-nf-b.on .n{opacity:.8;}
+.nf-hide{display:none!important;}
+.nf-none{font-style:italic;}
+@media (max-width:880px){ .ach-nf-b{min-height:36px;padding-right:8px;} .ach-nf-b .lb{display:none;} }
+</style>
+<script>
+(function(){
+  'use strict';
+  var NB={ linkedin:['in','LinkedIn'], facebook:['f','Facebook'], instagram:['IG','Instagram'], tiktok:['♪','TikTok'] };
+  var ORDER=['linkedin','facebook','instagram','tiktok'];
+  window.ACH_NB=NB; window.ACH_NB_ORDER=ORDER;
+  function prop(id){ if(!id) return null; id=''+id; var p=null; try{ p=(window.ppById&&ppById(id))||null; }catch(e){} if(!p){ try{ p=(window.idjById&&idjById(id))||null; }catch(e){} } return p; }
+  /* mention libre d'une carte de l'équipe (« LinkedIn · Facebook », « Reels · TikTok », « Stories »…) → le PREMIER réseau cité */
+  function fromRes(res){ res=(''+(res||'')).toLowerCase(); var best='', bi=1e9; ORDER.forEach(function(k){ var i=res.indexOf(NB[k][1].toLowerCase()); if(i>=0&&i<bi){ bi=i; best=k; } }); if(!best&&/reel|stor/.test(res)) best='instagram'; return best; }
+  function firstOf(arr){ if(!Array.isArray(arr)) return ''; for(var i=0;i<arr.length;i++) if(NB[arr[i]]) return arr[i]; return ''; }
+  /* Réseau principal d'une carte (p = proposition de la veille, o = carte Validés / Idées en attente) :
+     1. choix fait dans le panneau (réseau de publication, réseau principal modifié par Laurent — cxNetPick) ;
+     2. champ `reseau` de la proposition, sinon `reseaux_conseilles[0]` ;
+     3. carte écrite par l'équipe : sa mention réseau (`res`), sinon la fiche embarquée (`sugg`). */
+  window.achNetInfo=function(p,o){
+    var acc='', k='';
+    if(!p&&o) p=prop(o.src||o.id);
+    if(p) acc=''+(p.compte_linkedin||'');
+    if(!acc&&o) acc=''+((o.sugg&&o.sugg.compte_linkedin)||o.compte_linkedin||'');
+    try{ if(window.cxNetPick){ k=cxNetPick(p,o)||''; } }catch(e){ k=''; }
+    if(!k&&p){ k=(p.reseau&&NB[p.reseau])?p.reseau:firstOf(p.reseaux_conseilles); }
+    if(!k&&o){ k=fromRes(o.res); if(!k&&o.sugg){ k=(o.sugg.reseau&&NB[o.sugg.reseau])?o.sugg.reseau:firstOf(o.sugg.reseaux_conseilles); } if(!k&&o.reseau&&NB[o.reseau]) k=o.reseau; }
+    if(!NB[k]) k='';
+    acc=(acc==='laurent'||acc==='achille')?acc:'';
+    return {k:k, acc:acc};
+  };
+  window.achNetKey=function(p,o){ return achNetInfo(p,o).k; };
+  window.achAccTxt=function(acc){ return acc==='laurent'?'profil Laurent':(acc==='achille'?'page Achille':''); };
+  window.achNetBadge=function(p,o){
+    var inf=achNetInfo(p,o); if(!inf.k) return '';
+    var h='<span class="ach-nb ach-nb-'+inf.k+'" title="'+NB[inf.k][1]+'">'+NB[inf.k][0]+'</span>';
+    if(inf.k==='linkedin'&&inf.acc) h+='<span class="ach-nb-acc" title="Compte LinkedIn">· '+achAccTxt(inf.acc)+'</span>';
+    return '<span class="ach-nbw">'+h+'</span>';
+  };
+  window.achNetAttr=function(p,o){ var k=achNetInfo(p,o).k; return k?' data-net="'+k+'"':''; };
+})();
+</script>
 <script>
 (function(){
   var KEY='ach_comm_avenir_v1';
@@ -25349,9 +25413,10 @@ body.pi-grabbing *{user-select:none!important;}
             ? '<button class="cav-act ok" onclick="event.stopPropagation();cavStatut(\''+o.id+'\',\'valide\')" title="Valider : à mettre en place">✔ Valider</button>'
             : '<button class="cav-act ok" onclick="event.stopPropagation();if(window.cxPubOpen){cxPubOpen(\''+o.id+'\');}else{cavPublie(\''+o.id+'\');}" title="C\u2019est publié ! Choisissez les réseaux">📣 Publié !</button><button class="cav-act" onclick="event.stopPropagation();cavStatut(\''+o.id+'\',\'idee\')" title="Repasser au stade d\u2019idée">↩ Idée</button>')
           +'<button class="cav-act del" onclick="event.stopPropagation();cavDel(\''+o.id+'\')" title="Supprimer">✕</button>';
-        var h='<div class="icard" onclick="cavPop(\''+o.id+'\')" title="Voir / modifier le détail complet">'
+        var h='<div class="icard"'+(window.achNetAttr?achNetAttr(null,o):'')+' onclick="cavPop(\''+o.id+'\')" title="Voir / modifier le détail complet">'
           +'<div class="icard-top">'
           +'<span class="cav-th" style="background:'+T[2]+'18;color:'+T[2]+';border:1px solid '+T[2]+'44;">'+T[0]+' '+T[1]+'</span>'
+          +(window.achNetBadge?achNetBadge(null,o):'')   /* v12.23 : pastille réseau */
           +'<span class="icard-tt">'+esc(o.titre)+'</span>'
           +btns
           +'</div>'
@@ -25571,6 +25636,7 @@ body.pi-grabbing *{user-select:none!important;}
     return { date:p.date||'', format:p.format||'', actu:p.actu||'', source:(p.source&&p.source.url)?{nom:p.source.nom||'',url:p.source.url,date:p.source.date||''}:null,
       angle:p.angle||'', concurrent:p.concurrent||'', conseil:p.conseil||'',
       reseaux_conseilles:Array.isArray(p.reseaux_conseilles)?p.reseaux_conseilles.slice():[],
+      reseau:p.reseau||'', compte_linkedin:p.compte_linkedin||'',   /* v12.23 */
       linkedin:p.linkedin||'', instagram:p.instagram||'', facebook:p.facebook||'', tiktok:p.tiktok||'' };
   }
   /* v11.47 : UNE seule fabrique (avant : copiée dans idjAct et idjMigrate) */
@@ -25758,9 +25824,10 @@ body.pi-grabbing *{user-select:none!important;}
         var metas=['<span class="cav-claude">💡 Claude</span>','proposée le '+esc(fdate(p.date))];
         if(recos(p).length) metas.push('<span class="idj-reco" title="'+esc(p.conseil||'Réseau(x) conseillé(s)')+'">⭐ '+recos(p).map(function(n){return n[1];}).join(' · ')+'</span>');
         if(note) metas.push(note);
-        h+='<div class="icard" onclick="idjPop(\''+eid+'\')" title="Voir le détail complet">'
+        h+='<div class="icard"'+(window.achNetAttr?achNetAttr(p,null):'')+' onclick="idjPop(\''+eid+'\')" title="Voir le détail complet">'
           +'<div class="icard-top">'
           +'<span class="cav-th" style="background:'+T[2]+'18;color:'+T[2]+';border:1px solid '+T[2]+'44;">'+T[0]+' '+esc(T[1])+'</span>'
+          +(window.achNetBadge?achNetBadge(p,null):'')   /* v12.23 : pastille réseau + compte LinkedIn */
           +'<span class="idj-fmt">'+Fm[0]+' '+esc(Fm[1])+'</span>'
           +'<span class="icard-tt">'+esc(p.titre)+'</span>'
           +tail
@@ -25816,7 +25883,8 @@ body.pi-grabbing *{user-select:none!important;}
       if(ecartFor(id)) { idjRender(); return; }
       var e=ecartList();
       e.push({ id:''+p.id, date:p.date||'', theme:p.theme||'', format:p.format||'', titre:''+(p.titre||''),
-        actu:''+(p.actu||''), conseil:''+(p.conseil||''), par:(window.ACH_USER&&ACH_USER.initials)||'LS', le:new Date().toISOString() });
+        actu:''+(p.actu||''), conseil:''+(p.conseil||''), reseau:(window.achNetKey?achNetKey(p,null):''), compte_linkedin:''+(p.compte_linkedin||''),   /* v12.23 */
+        par:(window.ACH_USER&&ACH_USER.initials)||'LS', le:new Date().toISOString() });
       ecartSave(e);
       if(window.toast) toast('❌ Archivée — retrouvez-la en bas, dans Archives');
       try{ if(window.achLog) achLog('modification','Communication','idée du matin écartée : '+(p.titre||'')); }catch(e2){window.achErr&&achErr(e2)}
@@ -25849,7 +25917,8 @@ body.pi-grabbing *{user-select:none!important;}
       } else if(p.statut==='rejete'){
         e=e||ecartList();
         e.push({ id:id, date:p.date||'', theme:p.theme||'', format:p.format||'', titre:''+(p.titre||''),
-          actu:''+(p.actu||''), par:'Claude', le:new Date().toISOString() });   /* v11.20 : sans la remarque */
+          actu:''+(p.actu||''), reseau:(window.achNetKey?achNetKey(p,null):''), compte_linkedin:''+(p.compte_linkedin||''),
+          par:'Claude', le:new Date().toISOString() });   /* v11.20 : sans la remarque */
         ne++;
       }
     });
@@ -25893,8 +25962,10 @@ body.pi-grabbing *{user-select:none!important;}
       list.sort(function(a,b){ return (''+b.le).localeCompare(''+a.le); });
       h+=list.map(function(o){
         var T=THEMES[o.theme]||['📌',o.theme||'—','#7a7570'], ei=encodeURIComponent(''+o.id);
-        return '<div class="idj-ec-row">'
+        var _pe=byId(''+o.id)||(o.reseau?{reseau:o.reseau,compte_linkedin:o.compte_linkedin||''}:null);   /* v12.23 */
+        return '<div class="idj-ec-row"'+(window.achNetAttr&&_pe?achNetAttr(_pe,null):'')+'>'
           +'<span class="cav-th" style="background:'+T[2]+'18;color:'+T[2]+';border:1px solid '+T[2]+'44;">'+T[0]+' '+esc(T[1])+'</span>'
+          +(window.achNetBadge&&_pe?achNetBadge(_pe,null):'')
           +'<span class="idj-ec-tt" title="'+esc(o.actu||o.titre)+'">'+esc(o.titre)+'</span>'
           +'<span class="idj-ec-meta">proposée le '+esc(fdate(o.date))+' · écartée le '+esc(fdate((''+(o.le||'')).slice(0,10)))+(o.par?' par '+esc(o.par):'')+'</span>'
           +(idjIsAdmin()
@@ -28434,6 +28505,8 @@ details.cx-more{margin-top:8px;} details.cx-more>summary{font-size:11.5px;color:
     var res=(o&&o.res||'').toLowerCase(); for(var k in NETS) if(res.indexOf(NETS[k][0].toLowerCase())>=0) return k; if(/reel|stor/.test(res)) return 'instagram';
     return 'instagram';
   }
+  /* v12.23 : le choix EXPLICITE (réseau de publication, réseau principal modifié dans le panneau) — '' sinon ; lu par achNetInfo pour les pastilles */
+  window.cxNetPick=function(p,o){ try{ if(o&&o.pub){ var _a=pubNetsOf(o); if(_a.length) return _a[0]; } var key=o?(o.src||o.id):(p&&p.id); var s=key?pst(''+key):{}; return (s.pubnet&&NETS[s.pubnet])?s.pubnet:''; }catch(e){ return ''; } };
   /* v12.09 (Laurent) : un post peut être publié sur PLUSIEURS réseaux (ex. Instagram + Facebook) — o.pub.nets = ['instagram','facebook'] ; o.pub.net = le premier (compatibilité) */
   function validNets(a){ return ORDER.filter(function(k){ return Array.isArray(a)&&a.indexOf(k)>=0; }); }
   function pubNetsOf(o){ if(!o||!o.pub) return []; var a=validNets(o.pub.nets); if(!a.length&&o.pub.net&&NETS[o.pub.net]) a=[o.pub.net]; return a; }
@@ -28517,6 +28590,7 @@ details.cx-more{margin-top:8px;} details.cx-more>summary{font-size:11.5px;color:
     var theme=(o&&o.th)||(p&&p.theme)||(sg&&sg.theme)||'astuce', fmt=(p&&p.format)||(sg&&sg.format)||'';
     var k=netOf(p,o), N=NETS[k], _ns=(o&&o.st==='publie'&&pubNetsOf(o).length)?pubNetsOf(o):[k];   /* v12.09 : un tag par réseau de publication */
     var h='<div class="cx-d-head">'+chipTheme(theme)+(fmt?'<span class="idj-fmt">'+(FORMATS[fmt]||esc(fmt))+'</span>':'')+_ns.map(function(kk){ return '<span class="cx-net" style="background:'+NETS[kk][1]+'">'+esc(NETS[kk][0])+'</span>'; }).join('')
+      +(function(){ try{ var _i=window.achNetInfo?achNetInfo(p,o):null; return (_i&&_i.k==='linkedin'&&_i.acc&&_ns.indexOf('linkedin')>=0)?'<span class="ach-nb-acc" title="Compte LinkedIn">· '+achAccTxt(_i.acc)+'</span>':''; }catch(e){ return ''; } })()   /* v12.23 */
       +(p&&p.demande_id?'<span class="pp-badge-dem" title="Post préparé à votre demande">✨ à votre demande</span>':'')+'<span class="sp"></span><button class="cx-x" onclick="cxClose()" title="Fermer">✕</button></div>';
     return h;
   }
@@ -28991,6 +29065,48 @@ details.cx-more{margin-top:8px;} details.cx-more>summary{font-size:11.5px;color:
   if(window.commInit){ var _ci=window.commInit; window.commInit=function(){ var keep=PUB.net; var x=_ci.apply(this,arguments); PUB.net=keep; try{ if(window._commTabCur==='pub') pubRender(); }catch(e){} return x; }; }
   window.addEventListener('storage', function(e){ if(!e||!e.key) return; if([CAV_K,ECART_K,PRET_K,AVIS_K,PUBM_K,RSP_K,RSM_K].indexOf(e.key)<0) return; try{ if(window._commTabCur==='pub') pubRender(); if(CX.kind){ cxRefresh(); } cxBadges(); }catch(x){} });
   if(window.setRole){ var _sr=window.setRole; window.setRole=function(r,btn){ var x=_sr.apply(this,arguments); try{ if(CX.kind) cxRefresh(); else { var b=box(); if(b){ parkAsk(); b.innerHTML=emptyHtml(); mountAsk(); } } if(window._commTabCur==='pub') pubRender(); }catch(e){} return x; }; }
+})();
+</script>
+<!-- ══ v12.23 (Laurent 06/11) : filtre par réseau (choix propre à l'appareil) + le post s'affiche là où l'on est ══ -->
+<style>
+/* PC : le panneau du post reste visible pendant qu'on fait défiler la liste. #comm-panel-mix était un conteneur défilant « vide »
+   (overflow auto sans débordement) : la position collante de .cx-right s'y accrochait au lieu du vrai défilement (.comm-body). */
+@media (min-width:881px){ #comm-panel-mix.comm-panel{overflow:visible;} .cx-right{top:0;max-height:calc(100vh - 178px);} }
+/* (mobile : le panneau est déjà plein écran — rien ne change sous 880px) */
+</style>
+<script>
+(function(){
+  'use strict';
+  var K='nf_idees_v1';   /* clé LOCALE (pas de préfixe ach_) : le filtre est un choix propre à l'appareil, jamais synchronisé */
+  var NB=window.ACH_NB||{}, ORDER=window.ACH_NB_ORDER||[];
+  function get(){ try{ var v=localStorage.getItem(K)||''; return NB[v]?v:''; }catch(e){ return ''; } }
+  function set(v){ try{ if(v) localStorage.setItem(K,v); else localStorage.removeItem(K); }catch(e){} }
+  window.achNfGet=get;
+  function apply(){
+    var root=document.getElementById('comm-panel-mix'); if(!root) return;
+    var f=get(), counts={all:0}; ORDER.forEach(function(k){ counts[k]=0; });
+    root.querySelectorAll('#idj-list .icard, #cav-list-valide .icard, #cav-list-idee .icard, #idj-ecart .idj-ec-row').forEach(function(c){
+      var k=c.getAttribute('data-net')||''; counts.all++; if(counts[k]!=null) counts[k]++;
+      c.classList.toggle('nf-hide', !!(f&&k!==f));
+    });
+    /* journées de suggestions sans carte visible → masquées ; sections Validés / Idées vides → une ligne d'explication */
+    root.querySelectorAll('#idj-list .cav-sec').forEach(function(sec){ sec.classList.toggle('nf-hide', !!(f&&!sec.querySelectorAll('.icard:not(.nf-hide)').length)); });
+    ['cav-list-valide','cav-list-idee'].forEach(function(id){ var b=document.getElementById(id); if(!b) return; var old=b.querySelector('.nf-none'); if(old) old.remove();
+      if(f&&b.querySelectorAll('.icard').length&&!b.querySelectorAll('.icard:not(.nf-hide)').length){ var d=document.createElement('div'); d.className='cav-empty nf-none'; d.textContent='Rien pour '+NB[f][1]+' ici.'; b.appendChild(d); } });
+    var el=document.getElementById('ach-nf'); if(!el) return;
+    var h='<button class="ach-nf-b all'+(f?'':' on')+'" onclick="achNfSet(\'\')" title="Toutes les cartes">Tous <span class="n">'+counts.all+'</span></button>';
+    ORDER.forEach(function(k){ h+='<button class="ach-nf-b'+(f===k?' on':'')+'" onclick="achNfSet(\''+k+'\')" title="'+NB[k][1]+' — '+counts[k]+' carte'+(counts[k]>1?'s':'')+'"><span class="ach-nb ach-nb-'+k+'">'+NB[k][0]+'</span><span class="lb">'+NB[k][1]+'</span> <span class="n">'+counts[k]+'</span></button>'; });
+    el.innerHTML=h;
+  }
+  window.achNfSet=function(k){ set(NB[k]?k:''); apply(); };
+  window.achNfApply=apply;
+  ['idjRender','cavRender'].forEach(function(fn){ if(window[fn]){ var _f=window[fn]; window[fn]=function(){ var r=_f.apply(this,arguments); try{ apply(); }catch(e){} return r; }; } });
+  /* clic sur une idée : le post doit être visible sans toucher au défilement. PC = panneau collant (CSS ci-dessus) ; mobile = panneau
+     plein écran (existant). Repli, si le panneau est quand même hors de l'écran : défilement doux jusqu'à lui. */
+  if(window.cxOpen){ var _co=window.cxOpen; window.cxOpen=function(){ var r=_co.apply(this,arguments);
+    try{ var b=document.getElementById('cx-detail'); if(b&&b.classList.contains('open')){ var rc=b.getBoundingClientRect(); if(rc.top<0||rc.top>window.innerHeight-80){ b.scrollIntoView({behavior:'smooth',block:'start'}); } } }catch(e){}
+    return r; }; }
+  apply();
 })();
 </script>
 
