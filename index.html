@@ -644,6 +644,25 @@ body:not(.rs-is-gerant) .rs-gerant{display:none;}
 .sect-btn:hover{background:var(--terra-l);}
 .sect-btn:disabled{background:var(--gris-2);cursor:wait;}
 .sect-body{flex:1;display:flex;overflow:hidden;}
+/* v12.28 : Contacts */
+.ct-wrap{max-width:1120px;margin:0 auto;font-family:'Jost',sans-serif;}
+.ct-bar{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:14px;}
+.ct-in{flex:1;min-width:240px;font-family:'Jost',sans-serif;font-size:15px;padding:11px 14px;border:1px solid var(--border);border-radius:10px;background:#fff;color:var(--noir);}
+.ct-in:focus{outline:none;border-color:var(--terra);}
+.ct-hint{font-size:12px;color:var(--gris-2);}
+.ct-row{display:grid;grid-template-columns:minmax(0,1.2fr) 200px minmax(0,1.6fr) auto;gap:6px 14px;align-items:center;background:#fff;border:1px solid var(--border);border-radius:10px;padding:10px 14px;margin-bottom:6px;}
+.ct-nom{font-weight:600;color:var(--noir);font-size:14px;line-height:1.3;min-width:0;}
+.ct-nom small{display:block;font-weight:400;color:var(--gris-2);font-size:11.5px;line-height:1.35;}
+.ct-nom .ct-sans{color:var(--gris-2);font-style:italic;font-weight:400;}
+.ct-tel{font-size:14px;color:var(--noir);white-space:nowrap;min-width:0;} .ct-tel a{color:inherit;text-decoration:none;} .ct-tel a:hover{color:var(--terra);}
+.ct-tel .ct-mail{display:block;font-size:11.5px;color:var(--gris-2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.ct-src{display:flex;flex-wrap:wrap;gap:4px;min-width:0;}
+.ct-sp{font-size:10.5px;border:1px solid var(--beige-3);border-radius:999px;padding:2px 9px;background:var(--beige);color:var(--gris);cursor:pointer;white-space:nowrap;max-width:280px;overflow:hidden;text-overflow:ellipsis;font-family:'Jost',sans-serif;}
+.ct-sp:hover{border-color:var(--terra);color:var(--terra);} .ct-sp b{font-weight:600;color:var(--noir);}
+.ct-acts{display:flex;gap:4px;} .ct-acts a,.ct-acts button{border:1px solid var(--border);background:#fff;border-radius:8px;padding:5px 9px;font-size:14px;cursor:pointer;text-decoration:none;color:var(--noir);line-height:1;font-family:'Jost',sans-serif;}
+.ct-acts a:hover,.ct-acts button:hover{border-color:var(--terra);}
+.ct-empty{background:#fff;border:1px dashed var(--border);border-radius:10px;padding:26px;text-align:center;color:var(--gris-2);font-size:13px;line-height:1.6;}
+@media (max-width:880px){ .ct-row{grid-template-columns:minmax(0,1fr) auto;} .ct-src{grid-column:1/-1;} .ct-tel{grid-column:1/-1;} .ct-acts a,.ct-acts button{min-height:38px;min-width:42px;display:inline-flex;align-items:center;justify-content:center;} }
 /* v12.19 : adresses récentes sous la barre de recherche */
 .sect-recent{background:var(--blanc);border-bottom:1px solid var(--border);padding:7px 22px 9px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-family:'Jost',sans-serif;font-size:12.5px;color:var(--gris-2);}
 .sect-recent-t{font-size:11px;letter-spacing:.08em;text-transform:uppercase;font-weight:600;margin-right:4px;}
@@ -1836,6 +1855,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     <div class="nav-item" onclick="navTo('finances',this)"><span class="nav-icon">💶</span><span class="nav-item-label">Finances</span></div>
     <div class="nav-item" onclick="navTo('encours',this)"><span class="nav-icon">◈</span><span class="nav-item-label">Ventes / En cours</span></div>
     <div class="nav-item" onclick="navTo('mandats',this)"><span class="nav-icon">📜</span><span class="nav-item-label">Mandats</span><span class="nav-badge" id="badge-mandats" style="display:none;"></span></div>
+    <div class="nav-item" onclick="navTo('contacts',this)"><span class="nav-icon">📇</span><span class="nav-item-label">Contacts</span></div><!-- v12.28 -->
   </div>
   <div class="nav-section" id="nav-admin-section">
     <div class="nav-lbl">Administration</div>
@@ -1860,7 +1880,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     </div>
   </div>
   </div>
-  <div class="logo-ver app-ver">Achille App — v12.27</div>
+  <div class="logo-ver app-ver">Achille App — v12.28</div>
 </aside>
 <div id="mob-bk" onclick="mobNav(false)"></div>
 <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Réduire la barre latérale">‹</button>
@@ -3396,6 +3416,15 @@ table.es-t td.del button{border:none;background:none;color:var(--gris-2);cursor:
   </div>
   <datalist id="comm-statuts"><option>disponible</option><option>sous offre</option><option>sous compromis</option><option>vendu</option><option>pause</option><option>peut être pause</option><option>retiré</option></datalist>
   <datalist id="comm-situations"><option>ok</option><option>en attente</option><option>à refaire</option></datalist>
+</div>
+<!-- ══ v12.28 (Laurent 06/11) : CONTACTS — retrouver vite une personne depuis un numéro, ou un numéro depuis un nom.
+     Aucune base nouvelle : l'annuaire se reconstruit à chaque affichage à partir de la pige, des ventes, des locations,
+     des mandats, du pipeline, des visites et du planning ; chaque ligne dit D'OÙ vient le contact et ouvre la fiche. ══ -->
+<div class="page" id="page-contacts">
+  <div class="ct-wrap">
+    <div class="ct-bar"><input class="ct-in" id="ct-in" placeholder="Un nom, des initiales ou un numéro (même partiel)…" autocomplete="off" oninput="ctRender()"><span class="ct-hint" id="ct-hint"></span></div>
+    <div id="ct-list"></div>
+  </div>
 </div>
 <div class="page" id="page-sectorisation">
     <div class="sect-page">
@@ -5369,6 +5398,7 @@ table.es-t td.del button{border:none;background:none;color:var(--gris-2);cursor:
     honoraires:'Honoraires', communication:'<span>Communication</span>',
     pige:'Pige <span>&amp; Veille</span>',
     mandats:'Registre des <span>Mandats</span>',
+    contacts:'<span>Contacts</span> — qui est-ce ?',   /* v12.28 */
     routines:'Routines <span>&amp; Objectifs</span>',
     acces:'Gestion des <span>Accès</span>'
   };
@@ -15009,7 +15039,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     startRealtime();
     var ov=document.getElementById('ach-login-overlay'); if(ov) ov.classList.add('ach-hidden');
     var ub=document.getElementById('ach-userbar'); if(ub) ub.style.display='none';
-    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v12.27';
+    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v12.28';
     flag('Synchronis\u00e9');
     // fin de l'init : on autorise la journalisation des actions
     setTimeout(function(){ installInterceptor._init=false; }, 1500);
@@ -27542,6 +27572,7 @@ body.pi-grabbing *{user-select:none!important;}
      sub:function(r){ return [r.date?frD(r.date):'', r.allDay?'journée':(r.timeStart||''), r.adresse, r.visiteur].filter(Boolean).join(' · '); },
      go:function(r){ nav('planning'); setTimeout(function(){ if(window.planEditEvent) planEditEvent(r.id); },300); }}
   );
+  window.gsAddMod=function(m,first){ if(first) MODS.unshift(m); else MODS.push(m); };   /* v12.28 : Contacts s'ajoute en tête */
   var _res=[], _sel=0;
   window.gsShow=function(){
     var ov=document.getElementById('gs-ov'); ov.classList.add('open');
@@ -29193,6 +29224,128 @@ details.cx-more{margin-top:8px;} details.cx-more>summary{font-size:11.5px;color:
   if(window.commInit){ var _ci=window.commInit; window.commInit=function(){ var keep=PUB.net; var x=_ci.apply(this,arguments); PUB.net=keep; try{ if(window._commTabCur==='pub') pubRender(); }catch(e){} return x; }; }
   window.addEventListener('storage', function(e){ if(!e||!e.key) return; if([CAV_K,ECART_K,PRET_K,AVIS_K,PUBM_K,RSP_K,RSM_K].indexOf(e.key)<0) return; try{ if(window._commTabCur==='pub') pubRender(); if(CX.kind){ cxRefresh(); } cxBadges(); }catch(x){} });
   if(window.setRole){ var _sr=window.setRole; window.setRole=function(r,btn){ var x=_sr.apply(this,arguments); try{ if(CX.kind) cxRefresh(); else { var b=box(); if(b){ parkAsk(); b.innerHTML=emptyHtml(); mountAsk(); } } if(window._commTabCur==='pub') pubRender(); }catch(e){} return x; }; }
+})();
+</script>
+<!-- ══ v12.28 (Laurent 06/11) : CONTACTS — annuaire reconstruit à la volée + remplissage automatique du planning ══ -->
+<script>
+(function(){
+  'use strict';
+  function arr(k){ try{ var a=JSON.parse(localStorage.getItem(k)||'[]'); return Array.isArray(a)?a:[]; }catch(e){ return []; } }
+  function esc(t){ return (''+(t==null?'':t)).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+  function can(sec){ try{ return !window.achCan||achCan(sec,'view'); }catch(e){ return true; } }
+  function isAdmin(){ return ((window.ACH_USER||{}).key||'admin')==='admin'; }
+  function fold(t){ return (''+(t||'')).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/\s+/g,' ').trim(); }
+  /* téléphone → 10 chiffres « 06… » (accepte +33, 0033, points, espaces) */
+  function telKey(t){ var d=(''+(t||'')).replace(/\D/g,''); if(d.indexOf('0033')===0) d='0'+d.slice(4); else if(d.indexOf('33')===0&&d.length===11) d='0'+d.slice(2); return (d.length===10&&d.charAt(0)==='0')?d:''; }
+  function telPretty(d){ return (''+d).replace(/(\d{2})(?=\d)/g,'$1 '); }
+  function tels(sv){ var out=[]; (''+(sv||'')).replace(/(?:\+33|0033|0)\s?[1-9](?:[\s.\-]?\d{2}){4}/g,function(m){ var k=telKey(m); if(k&&out.indexOf(k)<0) out.push(k); return m; }); return out; }
+  function mails(sv){ var m=(''+(sv||'')).match(/[\w.+\-]+@[\w\-]+\.[\w.\-]+/g)||[]; return m.map(function(x){ return x.toLowerCase(); }); }
+  function coord(c){ if(!c) return {t:[],m:[]}; if(typeof c==='object') return {t:tels((c.tel||'')+' '+(c.mail||'')), m:mails((c.mail||'')+' '+(c.tel||''))}; return {t:tels(c), m:mails(c)}; }
+  function nomKey(n){ return fold(n).replace(/\b(m|mr|mme|mlle|me|monsieur|madame|maitre|veuve|epouse|et|ou|&)\b\.?/g,' ').replace(/[^a-z0-9 ]/g,' ').replace(/\s+/g,' ').trim(); }
+  function nav(page){ var el=document.querySelector('.nav-item[onclick*="navTo(\''+page+'\'"]')||(page==='pige'?document.querySelector('.nav-item[onclick*="pigeGoHome"]'):null); if(window.navTo) navTo(page, el); }
+  function openLoc(id){ nav('encours'); setTimeout(function(){ var b=[].slice.call(document.querySelectorAll('#page-encours .comm-tab')).filter(function(x){ return (x.getAttribute('onclick')||'').indexOf("'loc'")>=0; })[0]; if(b) b.click(); setTimeout(function(){ if(window.locEdit) locEdit(id); },120); },220); }
+  function visites(){ var out=[], extra=arr('ach_bv_extra'), byN={}, dels={}, vu={};
+    extra.forEach(function(b){ if(b&&b.n!=null){ byN[b.n]=b; if(b.del) dels[b.n]=1; } });
+    function bon(b){ if(!b||b.n==null||vu[b.n]||dels[b.n]) return; vu[b.n]=1; var x=Object.assign({},b,byN[b.n]||{}); out.push({n:x.n,d:x.d||'',v:x.v||x.visiteur||'',a:x.a||x.adresse||''}); }
+    (window.BV_DATA||[]).forEach(bon); extra.forEach(bon); arr('ach_bv_pending').forEach(bon);
+    arr('ach_vsb_v1').forEach(function(o){ if(o&&o.id) out.push({vsb:o.id,d:o.d||'',v:o.v||'',a:o.a||''}); });
+    return out; }
+  function ouvrirVisite(v){ nav('visites'); setTimeout(function(){ try{ if(window.bvShowView) bvShowView(v.vsb?'vsb':'bons'); var i=document.getElementById(v.vsb?'vsb-search':'bv-search'); if(i){ i.value=v.v||v.a||''; } if(v.vsb){ if(window.vsbRender) vsbRender(); } else if(window.bvFilter) bvFilter(); }catch(e){} },260); }
+  function adrOf(a,v){ return [a,v].filter(Boolean).join(' ').replace(/\s+/g,' ').trim(); }
+
+  /* ── les ENTRÉES : une par mention d'une personne dans un module ── */
+  function entries(){
+    var E=[]; function push(nom,t,m,role,src,go,extra){ nom=(''+(nom||'')).replace(/\s+/g,' ').trim(); if(nom==='—'||nom==='-') nom=''; if(!nom&&!(t&&t.length)) return; E.push(Object.assign({nom:nom,t:t||[],m:m||[],role:role,src:src,go:go},extra||{})); }
+    if(can('pige')){
+      arr('ach_pige_v1').forEach(function(r){ if(!r||!r.id||r.del) return; var t=tels(r.tel), agence=(''+(r.agence||'')).trim(); var nom=(r.vendeur||'').trim()||agence; if(!nom&&!t.length) return;
+        push(nom,t,[],agence?'Agence (pige)':'Vendeur (pige)','Pige · '+(adrOf(r.adresse,r.ville)||'fiche'),function(){ nav('pige'); setTimeout(function(){ if(window.pigeEdit) pigeEdit(r.id); },250); },{owner:!agence,adr:adrOf(r.adresse,r.ville)}); });
+      arr('ach_pige_pros_v1').forEach(function(p){ if(!p) return; var t=tels(p.tel); if(!t.length) return; push(p.nom||'',t,[],'Professionnel (pige)','Pige · contact pro',function(){ nav('pige'); }); });
+    }
+    if(can('encours')){
+      arr('ach_encours_v1').forEach(function(r){ if(!r||r.id==null) return; var L='Vente · '+(r.addr||''), g=function(){ nav('encours'); if(isAdmin()) setTimeout(function(){ if(window.ecOpenModal) ecOpenModal(r.id); },250); };
+        [['vendeur','coordVend','Vendeur',1],['acquereur','coordAcq','Acquéreur',0],['notVendeur','coordNotV','Notaire du vendeur',0],['notAcq','coordNotA','Notaire de l’acquéreur',0]].forEach(function(p){ var c=coord(r[p[1]]); push(r[p[0]],c.t,c.m,p[2],L,g,{owner:!!p[3],buyer:p[0]==='acquereur',adr:r.addr||''}); }); });
+      arr('ach_locations_v1').forEach(function(l){ if(!l||l.id==null) return; var L='Location · '+(l.addr||''), g=function(){ openLoc(l.id); };
+        var cb=coord(l.coordBail); push(l.bailleur,cb.t,cb.m,'Propriétaire bailleur',L,g,{owner:true,adr:l.addr||''});
+        var locs=(Array.isArray(l.locs)&&l.locs.length)?l.locs:(l.locataire?[{nom:l.locataire,coord:l.coordLoc||''}]:[]);
+        locs.forEach(function(x){ if(!x) return; var c=coord(x.coord); push(x.nom,c.t,c.m,'Locataire',L,g); });
+        if(l.garant){ var cg=coord(l.coordGarant); push(l.garant,cg.t,cg.m,'Garant',L,g); } });
+    }
+    if(can('mandats')) arr('ach_mandats_v1').forEach(function(m){ if(!m||!m.id||m.del) return; push(m.mdt,tels(m.tels),mails(m.mails),'Mandant','Mandat'+(m.num?' n° '+m.num:'')+' · '+adrOf(m.adresse,m.ville),function(){ nav('mandats'); setTimeout(function(){ if(window.mdEdit) mdEdit(m.id); },250); },{owner:true,adr:adrOf(m.adresse,m.ville)}); });
+    if(can('pipeline')) arr('ach_affaires_v1').forEach(function(a){ if(!a||!a.id) return; var L='Pipeline · '+(a.adresse||a.bien||''), g=function(){ nav('pipeline'); setTimeout(function(){ if(window.affEdit) affEdit(a.id); },250); };
+      push(a.client,[],[],'Client (pipeline)',L,g,{buyer:true}); push(a.vendeur,[],[],'Vendeur (pipeline)',L,g,{owner:true,adr:a.adresse||''}); });
+    if(can('visites')) visites().forEach(function(v){ push(v.v,[],[],'Visiteur','Visite'+(v.d?' du '+v.d:'')+' · '+(v.a||''),function(){ ouvrirVisite(v); },{buyer:true}); });
+    if(can('planning')) arr('ach_plan_events').filter(function(e){ try{ return e&&e.id&&!(window.planVisib&&planVisib(e)==='masked'); }catch(x){ return !!(e&&e.id); } }).forEach(function(e){
+      var L='RDV '+(e.type||'')+(e.date?' du '+e.date.split('-').reverse().join('/'):'')+(e.adresse?' · '+e.adresse:''), g=function(){ nav('planning'); setTimeout(function(){ if(window.planEditEvent) planEditEvent(e.id); },300); };
+      push(e.visiteur,[],[],'Visiteur (RDV)',L,g,{buyer:true}); push(e.proprio,[],[],e.type==='notaire'?'Partie (acte)':'Propriétaire (RDV)',L,g,{owner:e.type!=='notaire',adr:e.adresse||''}); });
+    return E;
+  }
+  /* ── REGROUPEMENT : par numéro de téléphone d'abord, puis par nom pour les mentions sans numéro ── */
+  function build(){
+    var E=entries(), G=[], byTel={}, byNom={};
+    function mk(){ var g={tels:[],mails:[],noms:{},src:[],ownerAdr:[]}; G.push(g); return g; }
+    function add(g,e){ e.t.forEach(function(t){ if(g.tels.indexOf(t)<0) g.tels.push(t); byTel[t]=g; }); e.m.forEach(function(m){ if(g.mails.indexOf(m)<0) g.mails.push(m); });
+      if(e.nom){ g.noms[e.nom]=(g.noms[e.nom]||0)+1; var nk=nomKey(e.nom); if(nk.length>=3&&!byNom[nk]) byNom[nk]=g; }
+      g.src.push(e); if(e.owner&&e.adr&&g.ownerAdr.indexOf(e.adr)<0) g.ownerAdr.push(e.adr); }
+    E.filter(function(e){ return e.t.length; }).forEach(function(e){ var g=null; e.t.forEach(function(t){ if(byTel[t]) g=byTel[t]; }); if(!g){ var nk=nomKey(e.nom); if(nk.length>=3&&byNom[nk]) g=byNom[nk]; } add(g||mk(),e); });
+    E.filter(function(e){ return !e.t.length; }).forEach(function(e){ var nk=nomKey(e.nom); if(nk.length<3) return; add(byNom[nk]||mk(),e); });
+    G.forEach(function(g){ var ns=Object.keys(g.noms).sort(function(a,b){ return (g.noms[b]-g.noms[a])||(b.length-a.length); }); g.nom=ns[0]||''; g.autres=ns.slice(1); g.key=fold(g.nom)+' '+g.tels.map(telPretty).join(' ')+' '+g.tels.join(' ')+' '+g.mails.join(' ')+' '+g.autres.map(fold).join(' '); });
+    G.sort(function(a,b){ return (a.nom?0:1)-(b.nom?0:1) || fold(a.nom).localeCompare(fold(b.nom)); });
+    return G;
+  }
+  window.achContacts=build;
+
+  /* ── PAGE ── */
+  function match(g,q){ var qd=q.replace(/[\s.\-()]/g,'').replace(/^\+33/,'0').replace(/^0033/,'0'); if(/^\d{3,}$/.test(qd)) return g.tels.some(function(t){ return t.indexOf(qd)>=0; });
+    var toks=fold(q).split(' ').filter(Boolean); return toks.every(function(t){ return g.key.indexOf(t)>=0; }); }
+  var _G=null;
+  window.ctRender=function(){
+    var box=document.getElementById('ct-list'), hint=document.getElementById('ct-hint'); if(!box) return;
+    var q=(document.getElementById('ct-in')||{}).value||''; q=q.trim();
+    _G=build(); var L=q?_G.filter(function(g){ return match(g,q); }):_G;
+    if(hint) hint.textContent=_G.length+' contact'+(_G.length>1?'s':'')+' trouvés dans l’app'+(q?' · '+L.length+' correspondant'+(L.length>1?'s':''):'');
+    if(!L.length){ box.innerHTML='<div class="ct-empty">'+(q?'Personne ne correspond à « '+esc(q)+' ».<br>Essayez un bout de numéro, un nom de famille ou des initiales.':'Aucun contact pour le moment.')+'</div>'; return; }
+    var MAX=80; box.innerHTML=L.slice(0,MAX).map(function(g,i){ var idx=_G.indexOf(g);
+      var nom=g.nom?esc(g.nom):'<span class="ct-sans">sans nom</span>';
+      var autres=g.autres.length?'<small>aussi noté : '+esc(g.autres.slice(0,3).join(' · '))+'</small>':'';
+      var tel=g.tels.length?g.tels.map(function(t){ return '<a href="tel:'+t+'">'+telPretty(t)+'</a>'; }).join('<br>'):'<span style="color:var(--gris-2)">numéro inconnu</span>';
+      var mail=g.mails.length?'<span class="ct-mail" title="'+esc(g.mails.join(' · '))+'">'+esc(g.mails[0])+(g.mails.length>1?' +'+(g.mails.length-1):'')+'</span>':'';
+      var src=g.src.slice(0,8).map(function(e,j){ return '<span class="ct-sp" title="Ouvrir : '+esc(e.src)+'" onclick="ctGo('+idx+','+g.src.indexOf(e)+')"><b>'+esc(e.role)+'</b> · '+esc(e.src)+'</span>'; }).join('')+(g.src.length>8?'<span class="ct-sp" title="'+esc(g.src.slice(8).map(function(e){ return e.role+' · '+e.src; }).join('\n'))+'">+'+(g.src.length-8)+'</span>':'');
+      var t0=g.tels[0]||'';
+      var acts=t0?'<a href="tel:'+t0+'" title="Appeler">📞</a><a href="https://wa.me/33'+t0.slice(1)+'" target="_blank" rel="noopener" title="Écrire sur WhatsApp">💬</a><button onclick="achCopyText(\''+telPretty(t0)+'\',this)" title="Copier le numéro">📋</button>':'';
+      return '<div class="ct-row"><div class="ct-nom">'+nom+autres+'</div><div class="ct-tel">'+tel+mail+'</div><div class="ct-src">'+src+'</div><div class="ct-acts">'+acts+'</div></div>'; }).join('')
+      +(L.length>MAX?'<div class="ct-empty">'+(L.length-MAX)+' autres — précisez la recherche.</div>':'');
+  };
+  window.ctGo=function(gi,si){ try{ var e=_G[gi].src[si]; if(e&&e.go) e.go(); }catch(x){} };
+  window.ctOpen=function(q){ nav('contacts'); setTimeout(function(){ var i=document.getElementById('ct-in'); if(i){ i.value=q||''; ctRender(); i.focus(); } },80); };
+  if(window.navTo){ var _nc=window.navTo; window.navTo=function(id,el){ var r=_nc.apply(this,arguments); if(id==='contacts'){ try{ ctRender(); }catch(e){} } return r; }; }
+  /* recherche globale (Ctrl K) : les contacts en tête des résultats */
+  try{ if(window.gsAddMod) gsAddMod({key:'_contacts', ico:'📇', name:'Contacts', perm:'contacts',
+    read:function(){ return build().map(function(g,i){ return {id:'ct'+i, nom:g.nom, autres:g.autres.join(' '), tel:g.tels.map(telPretty).join(' '), mail:g.mails.join(' '), roles:g.src.map(function(e){ return e.role; }).filter(function(x,i,a){ return a.indexOf(x)===i; }).join(' · '), g:g}; }); },
+    lab:function(r){ return (r.nom||'(sans nom)')+(r.tel?' — '+r.tel.split(' ').slice(0,5).join(' '):''); },
+    sub:function(r){ return [r.roles, r.g.src[0]&&r.g.src[0].src].filter(Boolean).join(' · '); },
+    go:function(r){ ctOpen(r.g.tels[0]?telPretty(r.g.tels[0]):r.nom); }}, true); }catch(e){}
+
+  /* ── PLANNING : remplissage automatique (propriétaire ↔ adresse, visiteurs connus) ── */
+  function owners(){ var o={}, byAdr={}; build().forEach(function(g){ if(!g.nom) return; g.src.forEach(function(e){ if(e.owner){ (o[g.nom]=o[g.nom]||[]); if(e.adr&&o[g.nom].indexOf(e.adr)<0) o[g.nom].push(e.adr); if(e.adr){ var k=fold(e.adr); if(!byAdr[k]) byAdr[k]=g.nom; } } }); }); return {o:o,byAdr:byAdr}; }
+  function visitors(){ var v={}; build().forEach(function(g){ if(!g.nom) return; if(g.src.some(function(e){ return e.buyer; })) v[g.nom]=1; }); return Object.keys(v); }
+  function dl(id){ var d=document.getElementById(id); if(!d){ d=document.createElement('datalist'); d.id=id; document.body.appendChild(d); } return d; }
+  function opt(v,l){ return '<option value="'+esc(v)+'"'+(l?' label="'+esc(l)+'"':'')+'></option>'; }
+  window.ctPlanFill=function(){
+    var P=owners(), pi=document.getElementById('plan-ev-proprio'), vi=document.getElementById('plan-ev-visiteur'); if(!pi||!vi) return;
+    dl('ach-ct-proprios').innerHTML=Object.keys(P.o).sort().map(function(n){ return opt(n,(P.o[n][0]||'')); }).join('');
+    dl('ach-ct-visiteurs').innerHTML=visitors().sort().map(function(n){ return opt(n); }).join('');
+    pi.setAttribute('list','ach-ct-proprios'); pi.autocomplete='off'; vi.setAttribute('list','ach-ct-visiteurs'); vi.autocomplete='off';
+    /* adresses des biens connus (pige, mandats, ventes, locations) ajoutées après les adresses récentes */
+    var ad=document.getElementById('ach-adr-recent'); if(ad){ var have={}; [].slice.call(ad.options).forEach(function(o){ have[fold(o.value)]=1; }); var more=''; Object.keys(P.byAdr).forEach(function(k){ var a=null; Object.keys(P.o).some(function(n){ return P.o[n].some(function(x){ if(fold(x)===k){ a=x; return true; } return false; }); }); if(a&&!have[k]){ have[k]=1; more+=opt(a,P.byAdr[k]); } }); ad.insertAdjacentHTML('beforeend',more); }
+    window._ctPlan=P;
+  };
+  function planLink(){
+    var pi=document.getElementById('plan-ev-proprio'), ai=document.getElementById('plan-ev-adresse'); if(!pi||!ai||pi._ctLinked) return; pi._ctLinked=true;
+    pi.addEventListener('change',function(){ var P=window._ctPlan||owners(); var n=pi.value.trim(); if(!n||ai.value.trim()) return; var k=Object.keys(P.o).filter(function(x){ return fold(x)===fold(n); })[0]; if(k&&P.o[k][0]){ ai.value=P.o[k][0]; if(window.toast) toast('📍 Adresse remplie d’après '+k); } });
+    ai.addEventListener('change',function(){ var P=window._ctPlan||owners(); var a=fold(ai.value); if(!a||pi.value.trim()) return; var k=Object.keys(P.byAdr).filter(function(x){ return x===a||x.indexOf(a)===0||a.indexOf(x)===0; })[0]; if(k){ pi.value=P.byAdr[k]; if(window.toast) toast('👤 Propriétaire rempli : '+P.byAdr[k]); } });
+  }
+  if(window.planToggleVisiteurField){ var _ptv=window.planToggleVisiteurField; window.planToggleVisiteurField=function(){ var r=_ptv.apply(this,arguments); try{ ctPlanFill(); planLink(); }catch(e){} return r; }; }
+  try{ planLink(); }catch(e){}
 })();
 </script>
 <!-- ══ v12.23 (Laurent 06/11) : filtre par réseau (choix propre à l'appareil) + le post s'affiche là où l'on est ══ -->
