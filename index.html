@@ -1850,7 +1850,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     </div>
   </div>
   </div>
-  <div class="logo-ver app-ver">Achille App — v12.24</div>
+  <div class="logo-ver app-ver">Achille App — v12.25</div>
 </aside>
 <div id="mob-bk" onclick="mobNav(false)"></div>
 <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Réduire la barre latérale">‹</button>
@@ -14982,7 +14982,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     startRealtime();
     var ov=document.getElementById('ach-login-overlay'); if(ov) ov.classList.add('ach-hidden');
     var ub=document.getElementById('ach-userbar'); if(ub) ub.style.display='none';
-    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v12.24';
+    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v12.25';
     flag('Synchronis\u00e9');
     // fin de l'init : on autorise la journalisation des actions
     setTimeout(function(){ installInterceptor._init=false; }, 1500);
@@ -25287,7 +25287,17 @@ body.pi-grabbing *{user-select:none!important;}
     if(inf.k==='linkedin'&&inf.acc) h+='<span class="ach-nb-acc" title="Compte LinkedIn">· '+achAccTxt(inf.acc)+'</span>';
     return '<span class="ach-nbw">'+h+'</span>';
   };
-  window.achNetAttr=function(p,o){ var k=achNetInfo(p,o).k; return k?' data-net="'+k+'"':''; };
+  window.achNetAttr=function(p,o){ var k=achNetInfo(p,o).k, L=achNetsOf(p,o); return (k?' data-net="'+k+'"':'')+(L.length?' data-nets="'+L.join(' ')+'"':''); };
+  /* v12.25 : TOUS les réseaux cibles d'une carte — principal d'abord, puis réseaux conseillés par la veille, puis réseaux cités dans la mention de la carte */
+  window.achNetsOf=function(p,o){ var inf=achNetInfo(p,o), L=[]; function add(k){ if(NB[k]&&L.indexOf(k)<0) L.push(k); }
+    if(inf.k) add(inf.k);
+    if(!p&&o) p=prop(o.src||o.id);
+    if(p) (Array.isArray(p.reseaux_conseilles)?p.reseaux_conseilles:[]).forEach(add);
+    if(o){ var res=(''+(o.res||'')).toLowerCase(); ORDER.forEach(function(k){ if(res.indexOf(NB[k][1].toLowerCase())>=0) add(k); }); if(/reel|stor/.test(res)) add('instagram');
+      if(o.sugg) (Array.isArray(o.sugg.reseaux_conseilles)?o.sugg.reseaux_conseilles:[]).forEach(add); }
+    return L; };
+  window.achNetBadges=function(p,o){ var inf=achNetInfo(p,o), L=achNetsOf(p,o); if(!L.length) return '';
+    return '<span class="ach-nbw" title="Réseaux cibles : '+L.map(function(k){ return NB[k][1]; }).join(', ')+'">'+L.map(function(k){ return '<span class="ach-nb ach-nb-'+k+'" title="'+NB[k][1]+'">'+NB[k][0]+'</span>'+((k==='linkedin'&&inf.acc)?'<span class="ach-nb-acc" title="Compte LinkedIn">· '+achAccTxt(inf.acc)+'</span>':''); }).join('')+'</span>'; };
 })();
 </script>
 <script>
@@ -25416,12 +25426,11 @@ body.pi-grabbing *{user-select:none!important;}
         var h='<div class="icard"'+(window.achNetAttr?achNetAttr(null,o):'')+' onclick="cavPop(\''+o.id+'\')" title="Voir / modifier le détail complet">'
           +'<div class="icard-top">'
           +'<span class="cav-th" style="background:'+T[2]+'18;color:'+T[2]+';border:1px solid '+T[2]+'44;">'+T[0]+' '+T[1]+'</span>'
-          +(window.achNetBadge?achNetBadge(null,o):'')   /* v12.23 : pastille réseau */
           +'<span class="icard-tt">'+esc(o.titre)+'</span>'
           +btns
           +'</div>'
           +(ex?'<div class="icard-ex">'+esc(ex)+'</div>':'')
-          +'<div class="icard-meta">'+auteur+(o.res?'<span>·</span><span class="idj-reco">⭐ '+esc(o.res)+'</span>':'')+'</div>'
+          +'<div class="icard-meta">'+auteur+(function(){ var nb=window.achNetBadges?achNetBadges(null,o):''; return nb?'<span>·</span>'+nb:''; })()+'</div>'   /* v12.25 : pastilles de tous les réseaux cibles, à la place de l'étoile */
           +'</div>';
         return h;
       }).join('')};
@@ -25822,12 +25831,11 @@ body.pi-grabbing *{user-select:none!important;}
         }
         /* v11.21 : carte compacte — le clic ouvre le détail complet en pop-up */
         var metas=['<span class="cav-claude">💡 Claude</span>','proposée le '+esc(fdate(p.date))];
-        if(recos(p).length) metas.push('<span class="idj-reco" title="'+esc(p.conseil||'Réseau(x) conseillé(s)')+'">⭐ '+recos(p).map(function(n){return n[1];}).join(' · ')+'</span>');
+        var _nb=window.achNetBadges?achNetBadges(p,null):''; if(_nb) metas.push(_nb);   /* v12.25 : pastilles de tous les réseaux cibles, à la place de l'étoile */
         if(note) metas.push(note);
         h+='<div class="icard"'+(window.achNetAttr?achNetAttr(p,null):'')+' onclick="idjPop(\''+eid+'\')" title="Voir le détail complet">'
           +'<div class="icard-top">'
           +'<span class="cav-th" style="background:'+T[2]+'18;color:'+T[2]+';border:1px solid '+T[2]+'44;">'+T[0]+' '+esc(T[1])+'</span>'
-          +(window.achNetBadge?achNetBadge(p,null):'')   /* v12.23 : pastille réseau + compte LinkedIn */
           +'<span class="idj-fmt">'+Fm[0]+' '+esc(Fm[1])+'</span>'
           +'<span class="icard-tt">'+esc(p.titre)+'</span>'
           +tail
@@ -28173,9 +28181,10 @@ a.pp-btn{text-decoration:none;display:inline-block;}
   };
   /* ── studio (éditeur) ── */
   var ST={p:null, slides:null, cur:0};
-  function stAdm(){ var k=(window.ACH_USER&&ACH_USER.key)||'admin'; if(k==='admin') return true; if(window.toast) toast('🔒 Seul Laurent peut modifier les visuels — vous pouvez donner votre avis sous le post'); return false; }
+  function stAdm(id){ var k=(window.ACH_USER&&ACH_USER.key)||'admin'; if(k==='admin') return true; try{ if(id!=null&&window.cxCanEdit&&cxCanEdit(''+id)) return true; }catch(e){}   /* v12.25 : la rédactrice du post aussi */
+    if(window.toast) toast('🔒 Ce post ne vous est pas confié — Laurent peut vous le confier ; vous pouvez donner votre avis sous le post'); return false; }
   window.stOpen=function(eid){
-    if(!stAdm()) return;
+    if(!stAdm(decodeURIComponent(eid))) return;
     var p=stFind(decodeURIComponent(eid)); if(!p) return; var o=stSlidesAny(p); if(!o) return;
     ST.p=p; ST.slides=JSON.parse(JSON.stringify(o.slides)); ST.cur=0;
     var w=document.createElement('div'); w.id='st-ov';
@@ -28318,7 +28327,7 @@ a.pp-btn{text-decoration:none;display:inline-block;}
   window.stSet=function(k,v){ ST.slides[ST.cur][k]=v; var stage=document.getElementById('st-stage'); if(stage){ stage.innerHTML=scaled(ST.slides[ST.cur],stW(ST.slides[ST.cur],stage)); } if(k==='photo'||k==='bg'||k==='fmt'||k==='fx'||k==='vo') stPaint(); };
   window.stPhoto=function(inp,k){ var f=inp.files&&inp.files[0]; if(!f) return; var r=new FileReader(); r.onload=function(){ var im=new Image(); im.onload=function(){ var mx=1400, s=Math.min(1,mx/Math.max(im.width,im.height)); var c=document.createElement('canvas'); c.width=Math.round(im.width*s); c.height=Math.round(im.height*s); c.getContext('2d').drawImage(im,0,0,c.width,c.height); stSet(k, c.toDataURL('image/jpeg',.86)); }; im.src=r.result; }; r.readAsDataURL(f); };
   window.stReset=function(){ var o=lsObj(PRET_K), id=''+ST.p.id; if(o[id]&&o[id].slides){ delete o[id].slides; o[id].maj=new Date().toISOString(); try{ localStorage.setItem(PRET_K,JSON.stringify(o)); }catch(e){} } ST.slides=JSON.parse(JSON.stringify((ST.p.slides&&ST.p.slides.length)?ST.p.slides:autoSlides(ST.p))); ST.cur=0; stPaint(); try{ ppRender(); }catch(e){} if(window.toast) toast('↺ Version de Claude rétablie'); };
-  window.stSave=function(){ if(!stAdm()) return; var o=lsObj(PRET_K), id=''+ST.p.id; o[id]=Object.assign({},o[id]||{},{slides:ST.slides, maj:new Date().toISOString(), par:(window.ACH_USER&&ACH_USER.initials)||''}); try{ localStorage.setItem(PRET_K,JSON.stringify(o)); }catch(e){ if(window.toast) toast('✗ Trop lourd pour être enregistré — réduisez la photo'); return; } try{ ppRender(); }catch(e){} var m=document.getElementById('st-mod'); if(m) m.textContent='version modifiée'; if(window.toast) toast('💾 Visuel enregistré — partagé avec l’équipe'); try{ if(window.achLog) achLog('modification','Posts prêts','visuel modifié : '+(ST.p.titre||'')); }catch(e){} };
+  window.stSave=function(){ if(!stAdm(ST.p&&ST.p.id)) return; var o=lsObj(PRET_K), id=''+ST.p.id; o[id]=Object.assign({},o[id]||{},{slides:ST.slides, maj:new Date().toISOString(), par:(window.ACH_USER&&ACH_USER.initials)||''}); try{ localStorage.setItem(PRET_K,JSON.stringify(o)); }catch(e){ if(window.toast) toast('✗ Trop lourd pour être enregistré — réduisez la photo'); return; } try{ ppRender(); }catch(e){} var m=document.getElementById('st-mod'); if(m) m.textContent='version modifiée'; if(window.toast) toast('💾 Visuel enregistré — partagé avec l’équipe'); try{ if(window.achLog) achLog('modification','Posts prêts','visuel modifié : '+(ST.p.titre||'')); }catch(e){} };
   window.stExportCur=function(btn){ var t=btn.textContent, i=0, L=ST.slides; btn.disabled=true; (function one(){ if(i>=L.length){ btn.textContent=t; btn.disabled=false; return; } btn.textContent='⬇ '+(i+1)+'/'+L.length+'…'; renderPng(L[i]).then(function(url){ var a=document.createElement('a'); a.href=url; a.download=(ST.p.id||'visuel')+'-'+(i+1)+'.png'; document.body.appendChild(a); a.click(); a.remove(); i++; setTimeout(one,500); }).catch(function(e){ if(window.toast) toast('✗ Export impossible : '+(e&&e.message||e)); btn.textContent=t; btn.disabled=false; }); })(); };
 })();
 </script>
@@ -28362,6 +28371,10 @@ a.pp-btn{text-decoration:none;display:inline-block;}
 .cx-vis{display:grid;grid-template-columns:repeat(auto-fill,120px);gap:6px;}
 .cx-vis .pp-thumb{aspect-ratio:4/5;}
 .cx-vis-acts{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;}
+.cx-redac{display:flex;align-items:center;gap:8px;flex-wrap:wrap;background:#f6f1e9;border:1px solid #e8dfd0;border-radius:10px;padding:8px 10px;margin:2px 0 10px;font-size:12px;color:var(--gris);}
+.cx-redac-l{white-space:nowrap;} .cx-redac b{color:var(--noir);}
+.cx-redac-n{font-size:10px;font-weight:700;padding:1px 7px;border-radius:10px;background:rgba(176,136,59,.12);color:#8a5a1e;border:1px solid rgba(176,136,59,.35);white-space:nowrap;}
+.cx-redac-n.prop{background:rgba(10,102,194,.10);color:#0a66c2;border-color:rgba(10,102,194,.35);}
 /* v12.16 : comptes en lecture (Marine, Liloé) — pas de boutons de décision ni de suppression dans les listes */
 body.cx-lecture #page-communication .cav-act, body.cx-lecture #page-communication .cx-act, body.cx-lecture #page-communication .idj-act, body.cx-lecture #page-communication .idj-qa, body.cx-lecture #page-communication .idj-ec-btn, body.cx-lecture #page-communication .cx-pubdd{display:none!important;}
 .cx-vid video{display:block;max-width:220px;max-height:390px;border-radius:8px;background:#000;}
@@ -28517,6 +28530,48 @@ details.cx-more{margin-top:8px;} details.cx-more>summary{font-size:11.5px;color:
   function isAdmin(){ try{ return ((window.ACH_USER&&ACH_USER.key)||'admin')==='admin'; }catch(e){ return true; } }
   /* v12.16 (Laurent 30/10) : dans Communication, SEUL le compte de Laurent (admin) modifie — Marine et Liloé consultent et donnent leur avis */
   function isGerant(){ return isAdmin(); }
+  /* v12.25 (Laurent 06/11) : un post peut être CONFIÉ à une rédactrice (Marine, Liloé…) — ach_pret_v1[rid].redac = {u:clé du compte, nom, par, le, st:'redaction'|'propose', ple}.
+     La rédactrice (et Laurent) retouchent le texte et le visuel de CE post ; les autres consultent. Laurent garde seul les décisions. */
+  function uKey(){ return (window.ACH_USER&&ACH_USER.key)||'admin'; }
+  function redacOf(rid){ var r=pst(''+rid).redac; return (r&&typeof r==='object'&&r.u)?r:null; }
+  function canEdit(rid){ if(isAdmin()) return true; var r=redacOf(rid); return !!(r&&r.u===uKey()); }
+  window.cxCanEdit=function(rid){ return canEdit(''+rid); };
+  window.cxRedacOf=function(rid){ return redacOf(''+rid); };
+  function redacteurs(){ var R=window.ROLES||{}; return Object.keys(R).filter(function(k){ return k!=='admin'; }).map(function(k){ return {u:k, nom:(R[k].name||k).split(' ')[0]+(k==='collaborateur'?' Z.':''), full:R[k].name||k}; }); }
+  window.cxConfier=function(u){ if(!isAdmin()||!CX.rid) return; var rid=CX.rid;
+    if(!u){ pdel(rid,'redac'); cxRefresh(); cxBadges(); if(window.toast) toast('✍️ Attribution retirée — le post est de nouveau à vous'); return; }
+    var R=redacteurs().filter(function(x){ return x.u===u; })[0]; if(!R) return;
+    pset(rid,{redac:{u:u, nom:R.nom, par:ini(), le:now(), st:'redaction'}}); cxRefresh(); cxBadges();
+    if(window.toast) toast('✍️ Confié à '+R.nom+' — elle peut retravailler le texte et le visuel, puis vous le proposer');
+    try{ if(window.achLog) achLog('modification','Communication','post confié à '+R.nom+' : '+(CX.titre||'')); }catch(e){} };
+  window.cxProposer=function(){ var rid=CX.rid, r=redacOf(rid); if(!r||r.u!==uKey()) return;
+    pset(rid,{redac:Object.assign({},r,{st:'propose', ple:now()})}); cxRefresh(); cxBadges();
+    if(window.toast) toast('📨 Proposé à Laurent — il voit votre version et peut la prendre ou vous la renvoyer');
+    try{ if(window.achLog) achLog('modification','Communication','post proposé à Laurent par '+r.nom+' : '+(CX.titre||'')); }catch(e){} };
+  window.cxReprendre=function(){ if(!isAdmin()) return; var rid=CX.rid, r=redacOf(rid); if(!r) return;
+    pdel(rid,'redac'); cxRefresh(); cxBadges(); if(window.toast) toast('✅ Version de '+r.nom+' reprise — le post est à vous');
+    try{ if(window.achLog) achLog('modification','Communication','version de '+r.nom+' reprise : '+(CX.titre||'')); }catch(e){} };
+  window.cxRetravailler=function(){ if(!isAdmin()) return; var rid=CX.rid, r=redacOf(rid); if(!r) return;
+    var m=prompt('Un mot pour '+r.nom+' ? (visible par toute l’équipe dans les avis)',''); if(m===null) return;
+    pset(rid,{redac:Object.assign({},r,{st:'redaction', ret:now()})});
+    if((m||'').trim()){ var o=lsObj(AVIS_K); o[rid]=Array.isArray(o[rid])?o[rid]:[]; o[rid].push({id:'av-'+Date.now().toString(36), par:ini(), le:now(), v:'↩', txt:('À retravailler — '+m.trim()).slice(0,600)}); lsSet(AVIS_K,o); try{ if(window.ppDemPush) ppDemPush(); }catch(e){} }
+    cxRefresh(); cxBadges(); if(window.toast) toast('↩ Renvoyé à '+r.nom+' pour retravail'); };
+  function redacHtml(rid){
+    var r=redacOf(rid), me=uKey(), h='<div class="cx-redac">';
+    if(isAdmin()){
+      if(!r){ h+='<span class="cx-redac-l">✍️ Rédaction</span><select class="cx-sel" onchange="cxConfier(this.value)"><option value="">Confier à…</option>'+redacteurs().map(function(x){ return '<option value="'+x.u+'">'+esc(x.full)+'</option>'; }).join('')+'</select><span class="cx-lock">la personne choisie pourra retravailler le texte et le visuel, puis vous le proposer</span>'; }
+      else { h+='<span class="cx-redac-l">✍️ Confié à <b>'+esc(r.nom)+'</b> le '+esc(fdate((r.le||'').slice(0,10)))+'</span>'
+        +(r.st==='propose'?'<span class="cx-state pub">📨 Proposé le '+esc(fdt(r.ple))+'</span><button class="cx-btn cx-main" onclick="cxReprendre()" title="Vous gardez sa version et reprenez la main">✅ Je prends</button><button class="cx-btn" onclick="cxRetravailler()">↩ À retravailler</button>'
+                          :'<span class="cx-state lat">✍️ En rédaction</span>'+(r.ret?'<span class="cx-lock">renvoyé le '+esc(fdate((r.ret||'').slice(0,10)))+'</span>':''))
+        +'<button class="cx-btn" onclick="cxConfier(\'\')" title="Retirer l’attribution">✕ Reprendre</button>'; }
+    } else if(r&&r.u===me){
+      h+='<span class="cx-redac-l">✍️ <b>Ce post vous est confié</b> — texte et visuel modifiables</span>'
+        +(r.st==='propose'?'<span class="cx-state pub">📨 Proposé à Laurent le '+esc(fdt(r.ple))+'</span><span class="cx-lock">vous pouvez encore corriger</span>'
+                          :'<button class="cx-btn cx-main" onclick="cxProposer()">📨 Proposer à Laurent</button>'+(r.ret?'<span class="cx-lock">renvoyé le '+esc(fdate((r.ret||'').slice(0,10)))+' — voir les avis</span>':''));
+    } else if(r){ h+='<span class="cx-redac-l">✍️ En rédaction par <b>'+esc(r.nom)+'</b>'+(r.st==='propose'?' — proposé à Laurent':'')+'</span>'; }
+    else return '';
+    return h+'</div>';
+  }
   function now(){ return new Date().toISOString(); }
   function fdate(d){ d=''+(d||''); var m=d.match(/^(\d{4})-(\d{2})-(\d{2})/); return m?(m[3]+'/'+m[2]):d; }
   function fdt(iso){ if(!iso) return ''; var d=new Date(iso); if(isNaN(d)) return ''+iso; return d.toLocaleDateString('fr-FR',{weekday:'short',day:'numeric',month:'short'})+' · '+('0'+d.getHours()).slice(-2)+'h'+('0'+d.getMinutes()).slice(-2); }
@@ -28588,6 +28643,9 @@ details.cx-more{margin-top:8px;} details.cx-more>summary{font-size:11.5px;color:
         var rid=rootId(kind,id), nn=avisFor(rid).length, meta=c.querySelector('.icard-meta');
         var old=c.querySelector('.cx-avis-n'); if(old) old.remove();
         if(nn&&meta){ var s=document.createElement('span'); s.className='cx-avis-n'; s.textContent='💬 '+nn; meta.appendChild(s); }
+        /* v12.25 : post confié → « ✍️ Liloé » (en rédaction) ou « 📨 Liloé » (proposé à Laurent) */
+        var oldR=c.querySelector('.cx-redac-n'); if(oldR) oldR.remove();
+        var rd=redacOf(rid); if(rd&&meta){ var sr=document.createElement('span'); sr.className='cx-redac-n'+(rd.st==='propose'?' prop':''); sr.title=(rd.st==='propose'?'Proposé à Laurent par ':'En rédaction par ')+rd.nom; sr.textContent=(rd.st==='propose'?'📨 ':'✍️ ')+rd.nom; meta.appendChild(sr); }
         c.classList.toggle('cx-on', CX.kind===kind && CX.id===id);
       });
     }catch(e){}
@@ -28640,7 +28698,7 @@ details.cx-more{margin-top:8px;} details.cx-more>summary{font-size:11.5px;color:
   function visHtml(p){
     if(!p) return '';
     var eid=encodeURIComponent(''+p.id), vis=visuels(p), live=null; try{ live=window.stSlides?stSlides(p):null; }catch(e){}
-    var G=isGerant(), h='';
+    var G=canEdit(''+p.id), h='';   /* v12.25 : Laurent ou la rédactrice du post */
     var modBtn=G?'<button class="cx-btn cx-main" onclick="stOpen(\''+eid+'\')">🎨 Modifier le visuel</button>':'';
     if(live&&live.slides&&live.slides.length){
       h+='<div class="cx-sec">Visuel'+(live.slides.length>1?'s · '+live.slides.length+' slides':'')+(live.mod?' <span class="cx-mod">(modifié)</span>':'')+'</div><div class="cx-vis">'+stLiveThumbs(p,120)+'</div>'
@@ -28735,19 +28793,21 @@ details.cx-more{margin-top:8px;} details.cx-more>summary{font-size:11.5px;color:
     else if(ec) st='<span class="cx-state off">❌ Archivée</span>';
     else if(p.statut==='publie') st='<span class="cx-state pub">📣 Publiée</span>';
     else if(p.statut==='rejete') st='<span class="cx-state off">Rejetée</span>';
-    h+='<div class="cx-meta"><span class="cav-claude">💡 Claude</span><span>proposée le '+esc(fdate(p.date))+'</span>'+(recos(p).length?'<span class="idj-reco" title="'+esc(p.conseil||'')+'">⭐ '+recos(p).map(function(k){ return NETS[k][0]; }).join(' · ')+'</span>':'')+st+(p.horaire?'<span class="pp-when">⏰ Conseillé : '+esc(fdt(p.horaire))+'</span>':'')+'</div>';
+    h+='<div class="cx-meta"><span class="cav-claude">💡 Claude</span><span>proposée le '+esc(fdate(p.date))+'</span>'+(window.achNetBadges?achNetBadges(p,acted):'')+st+(p.horaire?'<span class="pp-when">⏰ Conseillé : '+esc(fdt(p.horaire))+'</span>':'')+'</div>';
+    h+=redacHtml(id);   /* v12.25 */
     h+=infoHtml(p);
     h+=visHtml(p);
+    var E=canEdit(id);   /* v12.25 : Laurent ou la rédactrice du post */
     if(pret){
       var txt=(typeof s.texte==='string')?s.texte:texteOrig(p), N=NETS[netOf(p,acted)];
       h+='<div class="cx-sec">Texte définitif — '+esc(N[0])+'</div>'
-        +'<textarea class="cx-txt" id="cx-tx" '+(isGerant()?'oninput="cxEdit(this)"':'readonly')+'>'+esc(txt)+'</textarea>'
+        +'<textarea class="cx-txt" id="cx-tx" '+(E?'oninput="cxEdit(this)"':'readonly')+'>'+esc(txt)+'</textarea>'
         +'<div class="cx-txt-acts"><button class="cx-btn" onclick="achCopyText(document.getElementById(\'cx-tx\').value,this)">📋 Copier le texte</button><a class="cx-btn" href="'+N[2]+'" target="_blank" rel="noopener">↗ Ouvrir '+esc(N[0])+'</a>'
         +(typeof s.texte==='string'&&s.texte!==texteOrig(p)?'<button class="cx-btn" onclick="cxReset()">↺ Texte d’origine</button><span class="cx-mod">modifié'+(s.par?' par '+esc(s.par):'')+'</span>':'')+'</div>';
       var others=ORDER.filter(function(k){ return k!==netOf(p,acted)&&(''+(p[k]||'')).trim(); });
-      if(others.length) h+='<details class="cx-more"><summary>Autres versions ('+others.map(function(k){ return NETS[k][0]; }).join(', ')+')</summary>'+netTextsHtml(p,null,id,isGerant())+'</details>';
+      if(others.length) h+='<details class="cx-more"><summary>Autres versions ('+others.map(function(k){ return NETS[k][0]; }).join(', ')+')</summary>'+netTextsHtml(p,null,id,E)+'</details>';
     } else {
-      h+='<div class="cx-sec">Textes par réseau'+(isGerant()?' — modifiables':'')+'</div>'+netTextsHtml(p,null,id,isGerant());
+      h+='<div class="cx-sec">Textes par réseau'+(E?' — modifiables':'')+'</div>'+netTextsHtml(p,null,id,E);
     }
     h+=progHtml(p,id);
     h+=avisHtml(id);
@@ -28761,7 +28821,7 @@ details.cx-more{margin-top:8px;} details.cx-more>summary{font-size:11.5px;color:
           +'<button class="cx-act off" onclick="cxAct(\'off\')">❌ Supprimer</button>';
       } else if(acted){ h+='<button class="cx-btn" onclick="cxOpen(\'cav\',\''+esc(acted.id)+'\')">→ Ouvrir la carte dans sa liste</button>'; }
       else if(ec){ h+='<button class="cx-act" onclick="idjEcartRestore(\''+encodeURIComponent(id)+'\');cxRefresh()">↩ Restaurer</button>'; }
-    } else { h+='<span class="cx-lock">Laurent décide (valider / plus tard / supprimer / publié) — votre avis ci-dessus l’aide à choisir.</span>'; }
+    } else { h+='<span class="cx-lock">Laurent décide (valider / plus tard / supprimer / publié) — votre avis ci-dessus l’aide à choisir.'+(canEdit(id)?' Le texte et le visuel de ce post vous sont confiés.':'')+'</span>'; }
     h+='</div></div>';
     return h;
   }
@@ -28771,16 +28831,18 @@ details.cx-more{margin-top:8px;} details.cx-more>summary{font-size:11.5px;color:
   function cavHtml(id){
     var o=cavById(id); if(!o) return null;
     var p=prop(o.src||o.id), sg=o.sugg||(p&&window.idjSuggSnap?idjSuggSnap(p):null), rid=rootId('cav',id,o), s=pst(rid);
+    var E=canEdit(rid);   /* v12.25 : Laurent ou la rédactrice du post */
     var h='<div class="cx-d">'+headHtml(p,o,sg)
-      +(isGerant()?'<input class="cx-tt-in" value="'+esc(o.titre||'')+'" title="Cliquez pour modifier le titre" onchange="cavEdit(\''+esc(id)+'\',this.value);try{cavRender()}catch(e){}">':'<div class="cx-tt">'+esc(o.titre||'')+'</div>');
+      +(E?'<input class="cx-tt-in" value="'+esc(o.titre||'')+'" title="Cliquez pour modifier le titre" onchange="cavEdit(\''+esc(id)+'\',this.value);try{cavRender()}catch(e){}">':'<div class="cx-tt">'+esc(o.titre||'')+'</div>');
     var auteur=(o.origin==='claude')?'<span class="cav-claude">💡 Claude</span><span>proposée le '+esc(fdate(o.pdate||''))+'</span>':(o.origin==='meta'?'<span>↻ reprise d’une publication</span>':'<span><b>'+esc(o.by||'')+'</b></span><span>ajoutée le '+esc(fdate((''+(o.created||'')).slice(0,10)))+'</span>');
     var st=o.st==='publie'?'<span class="cx-state pub">📣 Publiée'+(o.pub&&o.pub.d?' le '+esc(fdate((''+o.pub.d).slice(0,10))):'')+'</span>':(o.st==='idee'?'<span class="cx-state lat">🕐 Idée en attente</span>':'<span class="cx-state val">✅ Validée — à mettre en place</span>');
-    h+='<div class="cx-meta">'+auteur+(o.res?'<span class="idj-reco">⭐ '+esc(o.res)+'</span>':'')+st+(p&&p.horaire&&o.st!=='publie'?'<span class="pp-when">⏰ Conseillé : '+esc(fdt(p.horaire))+'</span>':'')+'</div>';
+    h+='<div class="cx-meta">'+auteur+(window.achNetBadges?achNetBadges(p,o):'')+st+(p&&p.horaire&&o.st!=='publie'?'<span class="pp-when">⏰ Conseillé : '+esc(fdt(p.horaire))+'</span>':'')+'</div>';
+    h+=redacHtml(rid);   /* v12.25 */
     h+=infoHtml(p||sg);
     h+=visHtml(p||(window.cxPseudo?cxPseudo(id):null));
     var N=NETS[netOf(p,o)];
     h+='<div class="cx-sec">'+(o.st==='publie'?'Texte publié':'Votre texte de travail — '+esc(N[0]))+'</div>'
-      +'<textarea class="cx-txt" id="cx-tx" '+(isGerant()?'oninput="cxCavEdit(\''+esc(id)+'\',this)"':'readonly')+' placeholder="Écrivez ici le texte complet du post…">'+esc(o.texte||'')+'</textarea>'
+      +'<textarea class="cx-txt" id="cx-tx" '+(E?'oninput="cxCavEdit(\''+esc(id)+'\',this)"':'readonly')+' placeholder="Écrivez ici le texte complet du post…">'+esc(o.texte||'')+'</textarea>'
       +'<div class="cx-txt-acts"><button class="cx-btn" onclick="achCopyText(document.getElementById(\'cx-tx\').value,this)">📋 Copier le texte</button><a class="cx-btn" href="'+N[2]+'" target="_blank" rel="noopener">↗ Ouvrir '+esc(N[0])+'</a><span class="cx-lock">enregistré pendant la frappe</span></div>';
     if(sg){ var oth=ORDER.filter(function(k){ return (''+(sg[k]||'')).trim(); }); if(oth.length) h+='<details class="cx-more"><summary>Versions proposées par Claude ('+oth.map(function(k){ return NETS[k][0]; }).join(', ')+')</summary>'+netTextsHtml(null,sg,rid,false)+'</details>'; }
     if(o.st!=='publie') h+=progHtml(p,rid);
@@ -28795,7 +28857,7 @@ details.cx-more{margin-top:8px;} details.cx-more>summary{font-size:11.5px;color:
       if(o.st==='valide') h+='<button class="cx-act lat" onclick="cavStatut(\''+esc(id)+'\',\'idee\');cxRefresh();cxBadges()">↩ Repasser en idée</button>';
       if(o.st==='publie') h+='<button class="cx-act" onclick="cxUnpub(\''+esc(id)+'\')" title="Annuler la publication (retour dans Validés)">↩ Pas encore publié</button><button class="cx-btn" onclick="commSwitch(\'pub\');cxPubGo(\''+netOf(p,o)+'\')">→ Voir dans Publications</button>';
       h+='<button class="cx-act off" onclick="cavDel(\''+esc(id)+'\')">✕ Supprimer</button>';
-    } else { h+='<span class="cx-lock">Laurent décide — votre avis ci-dessus l’aide à choisir.</span>'; }
+    } else { h+='<span class="cx-lock">Laurent décide — votre avis ci-dessus l’aide à choisir.'+(E?' Le texte et le visuel de ce post vous sont confiés.':'')+'</span>'; }
     h+='</div></div>';
     return h;
   }
@@ -29086,10 +29148,16 @@ details.cx-more{margin-top:8px;} details.cx-more>summary{font-size:11.5px;color:
   if(window.commSearch){ var _cq=window.commSearch; window.commSearch=function(v){ _cq(v); PUB.q=(v||'').toLowerCase(); try{ if(window._commTabCur==='pub'&&PUB.net!=='appart') pubRender(); }catch(e){} }; }
   /* v12.16 : verrous — une action de modification lancée depuis un compte autre que celui de Laurent est refusée */
   function cxDeny(){ if(window.toast) toast('🔒 Seul Laurent peut modifier — vous pouvez consulter et donner votre avis'); }
-  ['cavTexte','cavEdit','cavStatut','cavPublie','cavDel','cxEdit','cxReset','cxNetEdit','cxNetReset','cxProg','cxNet','cxCavEdit','cxPubLien','cxUnpub','cxAct','cxPubNetT','cxPubNetsEdit','cxPubOpen','idjEcartRestore'].forEach(function(n){
+  ['cavStatut','cavPublie','cavDel','cxProg','cxNet','cxPubLien','cxUnpub','cxAct','cxPubNetT','cxPubNetsEdit','cxPubOpen','idjEcartRestore'].forEach(function(n){
     var f=window[n]; if(typeof f!=='function') return;
     window[n]=function(){ if(!isAdmin()){ cxDeny(); try{ cxRefresh(); }catch(e){} return; } return f.apply(this,arguments); };
   });
+  /* v12.25 : la retouche du texte / du titre est ouverte à Laurent ET à la rédactrice à qui le post est confié */
+  function cxDenyR(){ if(window.toast) toast('🔒 Ce post ne vous est pas confié — Laurent peut vous le confier ; vous pouvez donner votre avis'); }
+  ['cavTexte','cavEdit','cxCavEdit'].forEach(function(n){ var f=window[n]; if(typeof f!=='function') return;
+    window[n]=function(id){ if(!canEdit(rootId('cav',''+id))){ cxDenyR(); try{ cxRefresh(); }catch(e){} return; } return f.apply(this,arguments); }; });
+  ['cxEdit','cxReset','cxNetEdit','cxNetReset'].forEach(function(n){ var f=window[n]; if(typeof f!=='function') return;
+    window[n]=function(){ if(!canEdit(CX.rid)){ cxDenyR(); try{ cxRefresh(); }catch(e){} return; } return f.apply(this,arguments); }; });
   function cxRole(){ try{ document.body.classList.toggle('cx-lecture', !isAdmin()); }catch(e){} }
   window.cxRole=cxRole; cxRole();
   if(window.cavRender){ var _crR=window.cavRender; window.cavRender=function(){ cxRole(); return _crR.apply(this,arguments); }; }
@@ -29119,8 +29187,8 @@ details.cx-more{margin-top:8px;} details.cx-more>summary{font-size:11.5px;color:
     var root=document.getElementById('comm-panel-mix'); if(!root) return;
     var f=get(), counts={all:0}; ORDER.forEach(function(k){ counts[k]=0; });
     root.querySelectorAll('#idj-list .icard, #cav-list-valide .icard, #cav-list-idee .icard, #idj-ecart .idj-ec-row').forEach(function(c){
-      var k=c.getAttribute('data-net')||''; counts.all++; if(counts[k]!=null) counts[k]++;
-      c.classList.toggle('nf-hide', !!(f&&k!==f));
+      var ks=(c.getAttribute('data-nets')||c.getAttribute('data-net')||'').split(' ').filter(Boolean); counts.all++; ks.forEach(function(k){ if(counts[k]!=null) counts[k]++; });
+      c.classList.toggle('nf-hide', !!(f&&ks.indexOf(f)<0));
     });
     /* journées de suggestions sans carte visible → masquées ; sections Validés / Idées vides → une ligne d'explication */
     root.querySelectorAll('#idj-list .cav-sec').forEach(function(sec){ sec.classList.toggle('nf-hide', !!(f&&!sec.querySelectorAll('.icard:not(.nf-hide)').length)); });
