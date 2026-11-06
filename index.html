@@ -1920,7 +1920,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     </div>
   </div>
   </div>
-  <div class="logo-ver app-ver">Achille App — v12.34</div>
+  <div class="logo-ver app-ver">Achille App — v12.35</div>
 </aside>
 <div id="mob-bk" onclick="mobNav(false)"></div>
 <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Réduire la barre latérale">‹</button>
@@ -15110,7 +15110,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     startRealtime();
     var ov=document.getElementById('ach-login-overlay'); if(ov) ov.classList.add('ach-hidden');
     var ub=document.getElementById('ach-userbar'); if(ub) ub.style.display='none';
-    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v12.34';
+    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v12.35';
     flag('Synchronis\u00e9');
     // fin de l'init : on autorise la journalisation des actions
     setTimeout(function(){ installInterceptor._init=false; }, 1500);
@@ -16713,15 +16713,49 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
       var pg=(window.pgPipeline? pgPipeline() : {echanges:[],visite:[]});
       var rel=(pg.echanges||[]).filter(function(x){ return x.urg===3; }).length, oub=(pg.echanges||[]).filter(function(x){ return x.urg===2; }).length;
       var pgVu=(!window.achCan || achCan('pige','view'));
-      function it(ico,n,lbl,go,warn){ return '<span class="dm-it'+(warn&&n?' warn':'')+(n?'':' zero')+'" onclick="'+go+'">'+ico+' <b>'+n+'</b> '+lbl+'</span>'; }
+      /* v12.35 (Laurent 06/11) : « au-delà de me mener à la page, mettre en avant les sujets — quand je clique sur les 3 fiches
+         sans nouvelles je dois voir lesquelles ». Un clic déplie la liste juste dessous ; chaque ligne ouvre sa fiche. */
+      var evL=lsArr('ach_plan_events').filter(function(e){ if(!e||e.date!==auj) return false; try{ if(window.planVisib && planVisib(e)==='masked') return false; }catch(x){}
+        var us=Array.isArray(e.users)?e.users:[]; return !us.length || us.indexOf(k)>=0 || priv; }).sort(function(a,b){ return (''+(a.timeStart||'')).localeCompare(''+(b.timeStart||'')); });
+      var D={ rap:{n:dus.length, items:dus.slice().sort(function(a,b){ return (''+(a.date||'')).localeCompare(''+(b.date||'')); }), page:'openNotifs&&openNotifs()', pageLbl:'Ouvrir la cloche des rappels'},
+              rdv:{n:evL.length, items:evL, page:'navTo(\'planning\')', pageLbl:'Ouvrir le planning'},
+              rel:{n:rel, items:(pg.echanges||[]).filter(function(x){ return x.urg===3; }), page:'navTo(\'pige\');setTimeout(function(){try{pigeDossPick&&pigeDossPick(\'attente\')}catch(e){}},200)', pageLbl:'Ouvrir la pige (en attente)'},
+              oub:{n:oub, items:(pg.echanges||[]).filter(function(x){ return x.urg===2; }), page:'navTo(\'pige\');setTimeout(function(){try{pigeDossPick&&pigeDossPick(\'attente\')}catch(e){}},200)', pageLbl:'Ouvrir la pige (en attente)'} };
+      window._dmData=D;
+      var cur=window._dmOpen||'';
+      function it(key,ico,n,lbl,warn){ return '<span class="dm-it'+(warn&&n?' warn':'')+(n?'':' zero')+(cur===key?' on':'')+'" onclick="dmToggle(\''+key+'\')" title="'+(n?'Voir la liste':'Rien à signaler')+'">'+ico+' <b>'+n+'</b> '+lbl+(n?' <span class="dm-car">'+(cur===key?'\u25b4':'\u25be')+'</span>':'')+'</span>'; }
       return '<div class="dash-matin"><span class="dm-t">Aujourd\u2019hui</span>'
-        +it('\ud83d\udd14', dus.length, 'rappel'+(dus.length>1?'s':'')+' \u00e0 traiter'+(ret?' <i>(dont '+ret+' en retard)</i>':''), 'openNotifs&&openNotifs()', ret>0)
-        +it('\ud83d\udcc5', evs, 'rendez-vous', 'navTo(\'planning\')', false)
-        +(pgVu? it('\ud83d\udcde', rel, 'relance'+(rel>1?'s':'')+' de pige en retard', 'navTo(\'pige\');setTimeout(function(){try{pigeDossPick&&pigeDossPick(\'attente\')}catch(e){}},200)', true) : '')
-        +(pgVu? it('\u23f3', oub, 'fiche'+(oub>1?'s':'')+' sans nouvelle depuis 30 j', 'navTo(\'pige\');setTimeout(function(){try{pigeDossPick&&pigeDossPick(\'attente\')}catch(e){}},200)', false) : '')
-        +'<span class="dm-go" onclick="var a=document.getElementById(\'dash-agenda\');if(a)a.scrollIntoView({behavior:\'smooth\'})">Voir l\u2019agenda \u203a</span></div>';
+        +it('rap','\ud83d\udd14', dus.length, 'rappel'+(dus.length>1?'s':'')+' \u00e0 traiter'+(ret?' <i>(dont '+ret+' en retard)</i>':''), ret>0)
+        +it('rdv','\ud83d\udcc5', evs, 'rendez-vous', false)
+        +(pgVu? it('rel','\ud83d\udcde', rel, 'relance'+(rel>1?'s':'')+' de pige en retard', true) : '')
+        +(pgVu? it('oub','\u23f3', oub, 'fiche'+(oub>1?'s':'')+' sans nouvelle depuis 30 j', false) : '')
+        +'<span class="dm-go" onclick="var a=document.getElementById(\'dash-agenda\');if(a)a.scrollIntoView({behavior:\'smooth\'})">Voir l\u2019agenda \u203a</span></div>'
+        +(cur&&D[cur]&&D[cur].n?dmPanel(cur,D[cur]):'');
     }catch(e){ window.achErr&&achErr(e); return ''; }
   };
+
+  /* v12.35 : la liste dépliée sous le bandeau « Aujourd'hui » */
+  function dmFr(d){ var m=(''+(d||'')).match(/^(\d{4})-(\d{2})-(\d{2})/); return m?(m[3]+'/'+m[2]):''; }
+  function dmPanel(key,d){
+    var T={rap:'Rappels à traiter', rdv:'Rendez-vous du jour', rel:'Relances de pige en retard', oub:'Fiches de pige sans nouvelle depuis 30 jours'}[key];
+    var auj=achDayFR(), rows=d.items.slice(0,40).map(function(x){
+      if(key==='rap'){ var late=(''+(x.date||''))<auj;
+        return '<div class="dm-row" onclick="rapOuvrir&&rapOuvrir(\''+esc(x.id)+'\')"><span class="dm-r-t">'+esc(x.label||'Rappel')+(x.note?' <span class="dm-r-s">— '+esc(x.note)+'</span>':'')+'</span>'
+          +'<span class="dm-r-m'+(late?' late':'')+'">'+(late?'prévu le '+dmFr(x.date):'aujourd’hui')+'</span>'
+          +'<button class="dm-r-b" onclick="event.stopPropagation();rapDone(\''+esc(x.id)+'\');setTimeout(function(){try{affDashboard()}catch(e){}},150)" title="Marquer fait">✓ Fait</button></div>'; }
+      if(key==='rdv'){ return '<div class="dm-row" onclick="navTo(\'planning\');setTimeout(function(){try{planEditEvent(\''+esc(x.id)+'\')}catch(e){}},300)"><span class="dm-r-h">'+(x.allDay?'journée':esc(x.timeStart||''))+'</span><span class="dm-r-t">'+esc(x.title||'Rendez-vous')+'</span>'
+          +'<span class="dm-r-m">'+esc([x.visiteur,x.proprio].filter(Boolean).join(' · '))+'</span></div>'; }
+      var adr=[x.adresse,x.ville].filter(Boolean).join(' · ')||'Fiche de pige';
+      return '<div class="dm-row" onclick="rapGo(\'pige\',\''+esc(x.id)+'\')"><span class="dm-r-t">'+esc(adr)+(x.prix?' <span class="dm-r-s">— '+fmtEur(x.prix)+'</span>':'')+'</span>'
+        +'<span class="dm-r-m'+(key==='rel'?' late':'')+'">'+esc(x.motif||'')+(x.sous?' · '+esc(x.sous):'')+'</span><span class="dm-r-go">›</span></div>'; }).join('');
+    return '<div class="dm-pan"><div class="dm-pan-hd"><b>'+T+'</b> <span>'+d.n+'</span><span class="sp"></span><span class="dm-pan-pg" onclick="'+d.page+'">'+esc(d.pageLbl)+' ›</span><button class="dm-pan-x" onclick="dmToggle(\'\')" title="Replier">✕</button></div>'
+      +rows+(d.items.length>40?'<div class="dm-row dm-more">… et '+(d.items.length-40)+' autres — <span onclick="'+d.page+'">tout voir ›</span></div>':'')+'</div>';
+  }
+  window.dmToggle=function(key){ var d=window._dmData||{}; window._dmOpen=(window._dmOpen===key||!key||!(d[key]&&d[key].n))?'':key;
+    var el=document.querySelector('.dash-matin'); if(!el){ return; }
+    var old=document.querySelector('.dm-pan'); if(old) old.remove();
+    var tmp=document.createElement('div'); tmp.innerHTML=dashMatinHtml(); var nb=tmp.querySelector('.dash-matin'), np=tmp.querySelector('.dm-pan');
+    if(nb) el.replaceWith(nb); if(np) nb.insertAdjacentElement('afterend', np); };
 
   /* ---------- REPORTING ---------- */
   window.affReporting=function(){
@@ -27212,6 +27246,17 @@ body.pi-grabbing *{user-select:none!important;}
 .dm-it.zero{opacity:.55;}
 .dm-it:hover b{text-decoration:underline;}
 .dm-go{margin-left:auto;color:var(--terra);cursor:pointer;white-space:nowrap;font-size:12px;}
+/* v12.35 : liste dépliée sous le bandeau */
+.dm-it.on{background:rgba(180,115,96,.1);border-radius:7px;padding:2px 7px;margin:-2px -7px;} .dm-car{font-size:10px;color:var(--terra);}
+.dm-pan{background:#fff;border:1px solid var(--border);border-left:4px solid var(--terra);border-radius:10px;margin:-8px 0 14px;padding:6px 0 4px;font-family:'Jost',sans-serif;max-height:360px;overflow:auto;}
+.dm-pan-hd{display:flex;align-items:center;gap:8px;padding:4px 14px 8px;border-bottom:1px solid #f1ece4;font-size:13px;color:var(--noir);} .dm-pan-hd span{color:var(--gris-2);} .dm-pan-hd .sp{flex:1;}
+.dm-pan-pg{color:var(--terra)!important;cursor:pointer;font-size:12px;} .dm-pan-x{border:none;background:#f0ebe3;border-radius:7px;padding:3px 9px;cursor:pointer;font-size:12px;color:#6b6b63;}
+.dm-row{display:flex;align-items:center;gap:12px;padding:8px 14px;border-bottom:1px solid #f6f2ec;cursor:pointer;font-size:13px;} .dm-row:last-child{border-bottom:none;} .dm-row:hover{background:#fbf8f3;}
+.dm-r-h{font-weight:600;color:var(--terra);min-width:44px;} .dm-r-t{flex:1;min-width:0;color:var(--noir);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;} .dm-r-s{color:var(--gris-2);}
+.dm-r-m{font-size:12px;color:var(--gris-2);white-space:nowrap;} .dm-r-m.late{color:var(--rouge);} .dm-r-go{color:var(--terra);font-weight:600;}
+.dm-r-b{border:1px solid rgba(46,110,80,.45);color:var(--vert);background:#fff;border-radius:7px;padding:3px 9px;font-size:11.5px;cursor:pointer;font-family:'Jost',sans-serif;white-space:nowrap;}
+.dm-more{color:var(--gris-2);cursor:default;} .dm-more span{color:var(--terra);cursor:pointer;}
+@media (max-width:880px){ .dm-row{flex-wrap:wrap;gap:4px 10px;} .dm-r-t{flex-basis:100%;white-space:normal;} .dm-pan-hd{flex-wrap:wrap;} }
 @media (max-width:880px){
   /* v11.55 : fiche de pige — la rangée de boutons passe à la ligne (Supprimer / Fusionner étaient hors écran) */
   #modal-pige .modal-actions{flex-wrap:wrap;gap:6px;}
