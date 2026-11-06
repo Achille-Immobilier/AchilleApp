@@ -661,6 +661,25 @@ body:not(.rs-is-gerant) .rs-gerant{display:none;}
 .ct-sp:hover{border-color:var(--terra);color:var(--terra);} .ct-sp b{font-weight:600;color:var(--noir);}
 .ct-acts{display:flex;gap:4px;} .ct-acts a,.ct-acts button{border:1px solid var(--border);background:#fff;border-radius:8px;padding:5px 9px;font-size:14px;cursor:pointer;text-decoration:none;color:var(--noir);line-height:1;font-family:'Jost',sans-serif;}
 .ct-acts a:hover,.ct-acts button:hover{border-color:var(--terra);}
+.ct3-list{background:#fff;border:1px solid var(--border);border-radius:10px;overflow:hidden;}
+.ct3-row{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr) 150px 118px;gap:12px;align-items:center;height:44px;padding:0 14px;border-bottom:1px solid #f1ece4;cursor:pointer;font-family:'Jost',sans-serif;}
+.ct3-row:last-child{border-bottom:none;} .ct3-row:hover{background:#fbf8f3;}
+.ct3-nom{font-size:14px;font-weight:600;color:var(--noir);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.ct3-sans{color:var(--terra);font-style:italic;font-weight:500;} .ct3-inc{color:#8a5a1e;}
+.ct3-quoi{font-size:12px;line-height:18px;color:var(--gris-2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;} .ct3-n{font-size:10.5px;line-height:14px;display:inline-block;background:var(--beige);border-radius:999px;padding:0 6px;color:var(--gris);}
+.ct3-tel{font-size:14.5px;color:var(--noir);white-space:nowrap;letter-spacing:.02em;text-align:right;} .ct3-tel i{font-size:12px;color:var(--gris-2);letter-spacing:0;}
+.ct3-acts{display:flex;gap:4px;justify-content:flex-end;} .ct3-acts a,.ct3-acts button{border:1px solid var(--border);background:#fff;border-radius:7px;width:34px;height:28px;display:inline-flex;align-items:center;justify-content:center;font-size:13px;cursor:pointer;text-decoration:none;padding:0;}
+.ct3-acts a:hover,.ct3-acts button:hover{border-color:var(--terra);}
+#ct3-f{position:fixed;inset:0;z-index:99990;background:rgba(26,26,24,.4);display:flex;align-items:center;justify-content:center;padding:16px;}
+.ct3-f-card{background:#fff;border-radius:14px;max-width:560px;width:100%;max-height:86vh;overflow:auto;padding:18px 22px 20px;font-family:'Jost',sans-serif;box-shadow:0 18px 60px rgba(0,0,0,.3);}
+.ct3-f-hd{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;} .ct3-f-nom{font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:600;color:var(--noir);line-height:1.2;}
+.ct3-x{border:none;background:#f0ebe3;border-radius:8px;padding:6px 11px;cursor:pointer;font-size:14px;color:#6b6b63;}
+.ct3-f-sec{font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;color:#8f8878;font-weight:600;margin:14px 0 6px;}
+.ct3-f-tel{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:3px 0;} .ct3-f-tel>a{font-size:18px;color:var(--noir);text-decoration:none;letter-spacing:.02em;}
+.ct3-f-mail{font-size:13px;color:var(--gris);padding:2px 0;}
+.ct3-f-src{font-size:13px;color:var(--gris);padding:5px 0;border-top:1px solid #f3eee6;} .ct3-f-src:first-of-type{border-top:none;} .ct3-go{cursor:pointer;} .ct3-go:hover{color:var(--terra);} .ct3-go span{color:var(--terra);font-size:12px;}
+.ct3-f-note{font-size:13px;color:var(--noir);background:#f9f6f1;border-radius:8px;padding:8px 10px;margin-bottom:4px;}
+@media (max-width:880px){ .ct3-row{grid-template-columns:minmax(0,1fr) auto;grid-template-rows:22px 34px;height:72px;padding:7px 12px;gap:2px 10px;box-sizing:border-box;overflow:hidden;} .ct3-nom{grid-column:1;grid-row:1;} .ct3-quoi{grid-column:1;grid-row:2;} .ct3-tel{grid-column:2;grid-row:1;} .ct3-acts{grid-column:2;grid-row:2;} .ct3-acts a,.ct3-acts button{width:40px;height:34px;} }
 .ct-az{display:flex;flex-wrap:wrap;gap:3px;margin:0 0 12px;}
 .ct2-az{min-width:30px;height:30px;border:1px solid var(--border);background:#fff;border-radius:7px;font-family:'Jost',sans-serif;font-size:13px;font-weight:600;color:var(--noir);cursor:pointer;padding:0 6px;}
 .ct2-az:hover{border-color:var(--terra);color:var(--terra);} .ct2-az.on{background:var(--terra);border-color:var(--terra);color:#fff;} .ct2-az.vide{opacity:.3;cursor:default;}
@@ -1901,7 +1920,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     </div>
   </div>
   </div>
-  <div class="logo-ver app-ver">Achille App — v12.33</div>
+  <div class="logo-ver app-ver">Achille App — v12.34</div>
 </aside>
 <div id="mob-bk" onclick="mobNav(false)"></div>
 <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Réduire la barre latérale">‹</button>
@@ -3446,7 +3465,6 @@ table.es-t td.del button{border:none;background:none;color:var(--gris-2);cursor:
     <div class="ct-bar"><input class="ct-in" id="ct-in" type="search" placeholder="Tapez un numéro (même un bout) ou un nom…" autocomplete="off" oninput="ctRender()"><span class="ct-hint" id="ct-hint"></span></div>
     <div class="ct-az" id="ct-az"></div><!-- v12.33 : une page par lettre -->
     <!-- v12.30 : import des contacts Apimo (export CSV fait par Laurent dans Apimo) — réservé au compte de Laurent -->
-    <div class="ct-imp" id="ct-imp"></div>
     <div id="ct-list"></div>
   </div>
 </div>
@@ -4426,6 +4444,11 @@ table.es-t td.del button{border:none;background:none;color:var(--gris-2);cursor:
       <p>Exportez toutes les donn&eacute;es dans un fichier (&agrave; conserver, ou &agrave; d&eacute;poser sur un Drive partag&eacute;), ou restaurez une sauvegarde. Vos donn&eacute;es ne sont plus prisonni&egrave;res d'un seul navigateur.</p>
       <button class="data-btn" onclick="dataExport()">&#11015; Exporter une sauvegarde</button>
       <label class="data-btn" style="background:var(--kaki);">&#11014; Importer une sauvegarde<input type="file" accept="application/json" style="display:none" onchange="dataImport(this.files[0]);this.value='';"></label>
+    </div>
+    <div class="data-section" id="ctimp-sec">
+      <h4>Contacts Apimo</h4>
+      <p>À refaire seulement quand vous voulez rafraîchir les contacts : dans Apimo, Contacts → Exporter → CSV, puis choisissez le fichier ici. Les contacts apparaissent dans la page Contacts (visible par Laurent seul).</p>
+      <div class="ct-imp" id="ct-imp"></div>
     </div>
     <div class="data-section" id="traf-sec">
       <h4>Consommation du cloud — ce poste</h4>
@@ -15087,7 +15110,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     startRealtime();
     var ov=document.getElementById('ach-login-overlay'); if(ov) ov.classList.add('ach-hidden');
     var ub=document.getElementById('ach-userbar'); if(ub) ub.style.display='none';
-    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v12.33';
+    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v12.34';
     flag('Synchronis\u00e9');
     // fin de l'init : on autorise la journalisation des actions
     setTimeout(function(){ installInterceptor._init=false; }, 1500);
@@ -21506,9 +21529,9 @@ select.pg-chip{padding:6px 10px;}
       +ds.slice(0,7).map(function(d){ var o=T[d]; return '<tr><td>'+d.split('-').reverse().slice(0,2).join('/')+'</td><td>'+mo(o.l)+'</td><td>'+mo(o.p)+'</td><td>'+mo(o.r)+'</td><td>'+mo(o.f)+'</td><td><b>'+mo(tot(o))+'</b></td></tr>'; }).join('')+'</tbody></table>';
     if(top.length) h+='<div style="margin-top:8px;color:var(--gris);font-size:12px">Blocs les plus lourds (7 jours) : '+top.map(function(k){ return (TRL[k]||k)+' '+mo(k7[k]); }).join(' · ')+'</div>';
     el.innerHTML=h; };
-  if(window.navTo){ var _ntr=window.navTo; window.navTo=function(id,el){ var r=_ntr.apply(this,arguments); if(id==='acces'||id==='droits'){ setTimeout(function(){ try{ trafRender(); }catch(e){} },80); } return r; }; }
+  if(window.navTo){ var _ntr=window.navTo; window.navTo=function(id,el){ var r=_ntr.apply(this,arguments); if(id==='acces'||id==='droits'){ setTimeout(function(){ try{ trafRender(); }catch(e){} try{ if(window.ctImpRender) ctImpRender(); }catch(e){} },80); } return r; }; }
   window.accesTab=function(t){
-    if(t==='data'){ setTimeout(function(){ try{ trafRender(); }catch(e){} },30); }
+    if(t==='data'){ setTimeout(function(){ try{ trafRender(); }catch(e){} try{ if(window.ctImpRender) ctImpRender(); }catch(e){} },30); }
     var tabs={comptes:'acces-tab-comptes', droits:'acces-tab-droits', data:'acces-tab-data', evol:'acces-tab-evol'};
     Object.keys(tabs).forEach(function(k){
       var pane=document.getElementById(tabs[k]);
@@ -29305,7 +29328,7 @@ details.cx-more{margin-top:8px;} details.cx-more>summary{font-size:11.5px;color:
   function telKey(t){ var raw=(''+(t||'')).trim(), d=raw.replace(/\D/g,''); if(d.indexOf('0033')===0) d='0'+d.slice(4); else if(d.indexOf('33')===0&&d.length===11&&/^\+|^33/.test(raw.replace(/\s/g,''))) d='0'+d.slice(2);
     if(d.length===10&&d.charAt(0)==='0') return d; if(/^\+|^00/.test(raw)&&d.length>=8&&d.length<=15){ if(d.indexOf('00')===0) d=d.slice(2); return '+'+d; } return ''; }
   var CC3=/^(212|213|216|218|230|234|237|243|351|352|353|354|355|356|357|358|359|370|371|372|373|374|375|376|377|378|380|381|382|385|386|387|389|420|421|423|852|853|855|856|880|886|960|961|962|963|964|965|966|967|968|970|971|972|973|974|975|976|977|992|993|994|995|996|998)/;
-  function telPretty(d){ d=''+d; if(d.charAt(0)==='+'){ var n=d.slice(1), cl=(n.charAt(0)==='1'||n.charAt(0)==='7')?1:(CC3.test(n)?3:2); var rest=n.slice(cl); return '+'+n.slice(0,cl)+' '+rest.replace(/(\d{3})(?=\d)/g,'$1 '); } return d.replace(/(\d{2})(?=\d)/g,'$1 '); }
+  function telPretty(d){ d=''+d; if(d.charAt(0)==='+'){ var n=d.slice(1), cl=(n.charAt(0)==='1'||n.charAt(0)==='7')?1:(CC3.test(n)?3:2); var rest=n.slice(cl); return '+'+n.slice(0,cl)+' '+rest.replace(/\B(?=(\d{3})+$)/g,' '); }   /* v12.34 : groupes de 3 depuis la fin (plus de chiffre isolé) */ return d.replace(/(\d{2})(?=\d)/g,'$1 '); }
   function telDigits(k){ k=''+k; return k.charAt(0)==='+'?k.slice(1):'33'+k.slice(1); }
   function tels(sv){ var out=[]; (''+(sv||'')).replace(/(?:\+\d{1,3}|00\d{1,3}|0)\s?[1-9](?:[\s.\-]?\d{1,4}){2,6}/g,function(m){ var k=telKey(m); if(k&&out.indexOf(k)<0) out.push(k); return m; }); return out; }
   function mails(sv){ var m=(''+(sv||'')).match(/[\w.+\-]+@[\w\-]+\.[\w.\-]+/g)||[]; return m.map(function(x){ return x.toLowerCase(); }); }
@@ -29390,17 +29413,33 @@ details.cx-more{margin-top:8px;} details.cx-more>summary{font-size:11.5px;color:
     if(e.apimo){ var m=src.match(/suivi par (\w+)/); return r+' — Apimo'+(m?', suivi par '+(QUI[m[1]]||m[1]):''); }
     return r+' — '+src; }
   window.ctLettre=function(l){ _ctL=l; var i=document.getElementById('ct-in'); if(i) i.value=''; ctRender(); try{ document.getElementById('ct-az').scrollIntoView({block:'nearest'}); }catch(e){} };
-  function ligne(g){ var idx=_G.indexOf(g), ok=nomOk(g.nom);
-    var nom=g.nom?(ok?'<span class="ct2-nom">'+esc(g.nom)+'</span>':'<span class="ct2-nom">'+esc(g.nom)+'</span><span class="ct2-tag">nom incomplet</span>'):'<span class="ct2-nom ct2-sans">Numéro sans nom</span>';
-    var aussi=g.autres.length?'<div class="ct2-aussi">aussi noté : '+esc(g.autres.slice(0,3).join(' · '))+'</div>':'';
-    var src=g.src.slice(0,4).map(function(e){ var j=g.src.indexOf(e); return e.apimo?'<div class="ct2-src">'+esc(origine(e))+'</div>':'<div class="ct2-src ct2-go" onclick="ctGo('+idx+','+j+')" title="Ouvrir la fiche">'+esc(origine(e))+' <span>›</span></div>'; }).join('')
-      +(g.src.length>4?'<div class="ct2-src ct2-plus" title="'+esc(g.src.slice(4).map(origine).join('\n'))+'">et '+(g.src.length-4)+' autre'+(g.src.length>5?'s':'')+'…</div>':'');
-    var note=g.src.filter(function(e){ return e.apimo&&e.note; }).map(function(e){ return e.note; })[0]||'';
-    var t0=g.tels[0]||'';
-    var tel=g.tels.length?g.tels.slice(0,3).map(function(t){ return '<a class="ct2-tel" href="tel:'+(t.charAt(0)==='+'?t:'+'+telDigits(t))+'">'+telPretty(t)+'</a>'; }).join(''):'<span class="ct2-notel">pas de numéro</span>';
-    var mail=g.mails.length?'<div class="ct2-mail">'+esc(g.mails[0])+'</div>':'';
-    var acts=t0?'<div class="ct2-acts"><a href="tel:'+(t0.charAt(0)==='+'?t0:'+'+telDigits(t0))+'" title="Appeler">📞</a><a href="https://wa.me/'+telDigits(t0)+'" target="_blank" rel="noopener" title="WhatsApp">💬</a><button onclick="achCopyText(\''+telPretty(t0)+'\',this)" title="Copier le numéro">📋</button></div>':'';
-    return '<div class="ct2-row"><div class="ct2-l">'+nom+aussi+src+(note?'<div class="ct2-note">📝 '+esc(note)+'</div>':'')+'</div><div class="ct2-r"><div class="ct2-rt"><div class="ct2-tels">'+tel+'</div>'+acts+'</div>'+mail+'</div></div>'; }
+  /* v12.34 (Laurent 06/11) : « pas besoin de voir tous ces détails, ouvrir une fiche quand je veux le détail ; toutes les cartes
+     sous le même format » → UNE ligne par contact : nom · ce qu'il est (une info) · numéro · 📞 💬 📋 ; clic = fiche */
+  function court(e){ var r=(''+(e.role||'')).replace(/\s*\((pige|Apimo|RDV|pipeline)\)$/i,''); var m=(''+(e.src||'')).split(/\s·\s|\s—\s/)[0].replace(/^Visite du .*/,'Visite').replace(/^RDV .*/,'Planning').replace(/^Mandat.*/,'Mandat');
+    return r+' · '+(e.apimo?'Apimo':m); }
+  function telLink(t){ return 'tel:'+(t.charAt(0)==='+'?t:'+'+telDigits(t)); }
+  function ligne(g){ var idx=_G.indexOf(g), ok=nomOk(g.nom), t0=g.tels[0]||'';
+    var nom=g.nom?esc(g.nom):'Numéro sans nom';
+    var quoi=g.src.length?esc(court(g.src[0]))+(g.src.length>1?' <span class="ct3-n">+'+(g.src.length-1)+'</span>':''):'';
+    var acts=t0?'<a href="'+telLink(t0)+'" title="Appeler" onclick="event.stopPropagation()">📞</a><a href="https://wa.me/'+telDigits(t0)+'" target="_blank" rel="noopener" title="WhatsApp" onclick="event.stopPropagation()">💬</a><button onclick="event.stopPropagation();achCopyText(\''+telPretty(t0)+'\',this)" title="Copier le numéro">📋</button>':'';
+    return '<div class="ct3-row" onclick="ctFiche('+idx+')" title="Voir la fiche">'
+      +'<span class="ct3-nom'+(g.nom?(ok?'':' ct3-inc'):' ct3-sans')+'">'+nom+'</span>'
+      +'<span class="ct3-quoi">'+quoi+'</span>'
+      +'<span class="ct3-tel">'+(t0?telPretty(t0):'<i>pas de numéro</i>')+'</span>'
+      +'<span class="ct3-acts">'+acts+'</span></div>'; }
+  /* la fiche : tout le détail, à la demande */
+  window.ctFiche=function(i){ var g=_G&&_G[i]; if(!g) return; ctFicheClose();
+    var ok=nomOk(g.nom), t0=g.tels[0]||'';
+    var h='<div class="ct3-f-card"><div class="ct3-f-hd"><div><div class="ct3-f-nom">'+(g.nom?esc(g.nom):'Numéro sans nom')+'</div>'+(g.nom&&!ok?'<span class="ct2-tag" style="margin-left:0">nom incomplet</span>':'')+(g.autres.length?'<div class="ct2-aussi">aussi noté : '+esc(g.autres.join(' · '))+'</div>':'')+'</div><button class="ct3-x" onclick="ctFicheClose()" title="Fermer">✕</button></div>';
+    h+='<div class="ct3-f-sec">Coordonnées</div>'+(g.tels.length?g.tels.map(function(t){ return '<div class="ct3-f-tel"><a href="'+telLink(t)+'">'+telPretty(t)+'</a><span class="ct3-acts"><a href="'+telLink(t)+'" title="Appeler">📞</a><a href="https://wa.me/'+telDigits(t)+'" target="_blank" rel="noopener" title="WhatsApp">💬</a><button onclick="achCopyText(\''+telPretty(t)+'\',this)" title="Copier">📋</button></span></div>'; }).join(''):'<div class="ct2-notel">pas de numéro connu</div>')
+      +(g.mails.length?g.mails.map(function(m){ return '<div class="ct3-f-mail">'+esc(m)+'</div>'; }).join(''):'');
+    h+='<div class="ct3-f-sec">Où il apparaît</div>'+g.src.map(function(e,j){ return e.apimo?'<div class="ct3-f-src">'+esc(origine(e))+'</div>':'<div class="ct3-f-src ct3-go" onclick="ctFicheClose();ctGo('+i+','+j+')">'+esc(origine(e))+' <span>› ouvrir</span></div>'; }).join('');
+    var notes=g.src.filter(function(e){ return e.apimo&&e.note; }).map(function(e){ return e.note; });
+    if(notes.length) h+='<div class="ct3-f-sec">Commentaire Apimo</div>'+notes.map(function(n){ return '<div class="ct3-f-note">'+esc(n)+'</div>'; }).join('');
+    var w=document.createElement('div'); w.id='ct3-f'; w.innerHTML=h+'</div>'; w.addEventListener('click',function(ev){ if(ev.target===w) ctFicheClose(); }); document.body.appendChild(w);
+    document.addEventListener('keydown',_ctEsc); };
+  function _ctEsc(ev){ if(ev.key==='Escape') ctFicheClose(); }
+  window.ctFicheClose=function(){ var w=document.getElementById('ct3-f'); if(w) w.remove(); document.removeEventListener('keydown',_ctEsc); };
   window.ctRender=function(){
     var box=document.getElementById('ct-list'), hint=document.getElementById('ct-hint'), az=document.getElementById('ct-az'); if(!box) return;
     var q=(document.getElementById('ct-in')||{}).value||''; q=q.trim();
@@ -29416,7 +29455,7 @@ details.cx-more{margin-top:8px;} details.cx-more>summary{font-size:11.5px;color:
     else { L=par[_ctL]||[]; titre=(_ctL==='#'?'Sans nom ou nom incomplet':_ctL)+' — '+L.length+' contact'+(L.length>1?'s':''); }
     if(hint) hint.textContent=_G.length+' contacts';
     if(!L.length){ box.innerHTML='<div class="ct-empty">'+(q?'Personne ne correspond à « '+esc(q)+' ».<br>Essayez un bout de numéro ou un nom de famille.':'Aucun contact pour le moment.')+'</div>'; return; }
-    box.innerHTML='<div class="ct2-titre">'+titre+'</div>'+L.slice(0,400).map(ligne).join('')+(L.length>400?'<div class="ct-empty">Précisez la recherche ('+L.length+' résultats).</div>':'');
+    box.innerHTML='<div class="ct2-titre">'+titre+'</div><div class="ct3-list">'+L.slice(0,400).map(ligne).join('')+'</div>'+(L.length>400?'<div class="ct-empty">Précisez la recherche ('+L.length+' résultats).</div>':'');
   };
   window.ctGo=function(gi,si){ try{ var e=_G[gi].src[si]; if(e&&e.go) e.go(); }catch(x){} };
   /* ── IMPORT APIMO (CSV exporté par Laurent depuis Apimo → Contacts → Exporter) ── */
@@ -29458,7 +29497,8 @@ details.cx-more{margin-top:8px;} details.cx-more>summary{font-size:11.5px;color:
       ctRender(); };
     rd.readAsText(f,'utf-8'); };
   window.ctImportClear=function(){ if(!isAdmin()) return; if(!confirm('Retirer les contacts importés d’Apimo de l’app ?\n(Les contacts des autres modules restent.)')) return; try{ localStorage.setItem(AP_K, JSON.stringify({maj:new Date().toISOString(), n:0, items:[]})); }catch(e){} ctRender(); };
-  function impHtml(){ var el=document.getElementById('ct-imp'); if(!el) return; var st=apimoStore(); var n=st.items.length;
+  window.ctImpRender=function(){ try{ impHtml(); }catch(e){} };
+  function impHtml(){ var el=document.getElementById('ct-imp'); if(!el) return; var sec=document.getElementById('ctimp-sec'); if(sec) sec.style.display=isAdmin()?'':'none'; var st=apimoStore(); var n=st.items.length;
     var info=n?'<span class="ct-src-ap">Apimo</span><span>'+n+' contacts importés'+(st.maj?' le '+new Date(st.maj).toLocaleDateString('fr-FR'):'')+(st.par?' par '+esc(st.par):'')+'</span>':'';
     if(isAdmin()) el.innerHTML=info+'<label class="ct-upl" title="Dans Apimo : Contacts → Exporter → CSV, puis choisissez le fichier ici">⬆ '+(n?'Réimporter':'Importer')+' un export Apimo (CSV)<input type="file" accept=".csv,text/csv" style="display:none" onchange="ctImportFile(this)"></label>'+(n?'<button class="data-btn-sm" onclick="ctImportClear()">retirer</button>':'');
     else el.innerHTML=info; }
