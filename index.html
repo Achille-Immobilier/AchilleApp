@@ -661,6 +661,11 @@ body:not(.rs-is-gerant) .rs-gerant{display:none;}
 .ct-sp:hover{border-color:var(--terra);color:var(--terra);} .ct-sp b{font-weight:600;color:var(--noir);}
 .ct-acts{display:flex;gap:4px;} .ct-acts a,.ct-acts button{border:1px solid var(--border);background:#fff;border-radius:8px;padding:5px 9px;font-size:14px;cursor:pointer;text-decoration:none;color:var(--noir);line-height:1;font-family:'Jost',sans-serif;}
 .ct-acts a:hover,.ct-acts button:hover{border-color:var(--terra);}
+.ct-imp{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:12px;color:var(--gris-2);margin:-4px 0 12px;} .ct-imp:empty{display:none;}
+.ct-imp .st-up,.ct-imp label.ct-upl{border:1px solid var(--border);background:#fff;border-radius:8px;padding:6px 12px;cursor:pointer;color:var(--gris);font-size:12.5px;font-family:'Jost',sans-serif;} .ct-imp label.ct-upl:hover{border-color:var(--terra);color:var(--terra);}
+.ct-imp .ct-src-ap{font-size:10.5px;border:1px solid rgba(10,102,194,.3);background:rgba(10,102,194,.08);color:#0a66c2;border-radius:999px;padding:2px 9px;}
+.ct-sp.ap{border-color:rgba(10,102,194,.3);background:rgba(10,102,194,.06);cursor:default;} .ct-sp.ap:hover{color:var(--gris);border-color:rgba(10,102,194,.3);}
+.ct-note{grid-column:1/-1;font-size:11.5px;color:var(--gris-2);font-style:italic;line-height:1.35;margin-top:-2px;}
 .ct-more{border:1px solid var(--terra);color:var(--terra);background:#fff;border-radius:8px;padding:8px 16px;font-family:'Jost',sans-serif;font-size:13px;cursor:pointer;} .ct-more:hover{background:rgba(180,115,96,.08);}
 .ct-empty{background:#fff;border:1px dashed var(--border);border-radius:10px;padding:26px;text-align:center;color:var(--gris-2);font-size:13px;line-height:1.6;}
 @media (max-width:880px){ .ct-row{grid-template-columns:minmax(0,1fr) auto;} .ct-src{grid-column:1/-1;} .ct-tel{grid-column:1/-1;} .ct-acts a,.ct-acts button{min-height:38px;min-width:42px;display:inline-flex;align-items:center;justify-content:center;} }
@@ -1881,7 +1886,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     </div>
   </div>
   </div>
-  <div class="logo-ver app-ver">Achille App — v12.29</div>
+  <div class="logo-ver app-ver">Achille App — v12.31</div>
 </aside>
 <div id="mob-bk" onclick="mobNav(false)"></div>
 <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Réduire la barre latérale">‹</button>
@@ -3424,6 +3429,8 @@ table.es-t td.del button{border:none;background:none;color:var(--gris-2);cursor:
 <div class="page" id="page-contacts">
   <div class="ct-wrap">
     <div class="ct-bar"><input class="ct-in" id="ct-in" placeholder="Un nom, des initiales ou un numéro (même partiel)…" autocomplete="off" oninput="ctRender()"><span class="ct-hint" id="ct-hint"></span></div>
+    <!-- v12.30 : import des contacts Apimo (export CSV fait par Laurent dans Apimo) — réservé au compte de Laurent -->
+    <div class="ct-imp" id="ct-imp"></div>
     <div id="ct-list"></div>
   </div>
 </div>
@@ -4403,6 +4410,11 @@ table.es-t td.del button{border:none;background:none;color:var(--gris-2);cursor:
       <p>Exportez toutes les donn&eacute;es dans un fichier (&agrave; conserver, ou &agrave; d&eacute;poser sur un Drive partag&eacute;), ou restaurez une sauvegarde. Vos donn&eacute;es ne sont plus prisonni&egrave;res d'un seul navigateur.</p>
       <button class="data-btn" onclick="dataExport()">&#11015; Exporter une sauvegarde</button>
       <label class="data-btn" style="background:var(--kaki);">&#11014; Importer une sauvegarde<input type="file" accept="application/json" style="display:none" onchange="dataImport(this.files[0]);this.value='';"></label>
+    </div>
+    <div class="data-section" id="traf-sec">
+      <h4>Consommation du cloud — ce poste</h4>
+      <p>Ce que cet appareil a reçu du cloud Supabase (le quota gratuit est de 5 Go par mois pour toute l’équipe). Mesure approximative : le contenu des données, hors en-têtes.</p>
+      <div id="traf-body" style="font-size:13px;"></div>
     </div>
     <div class="data-section">
       <h4>Historique des modifications</h4>
@@ -13511,7 +13523,7 @@ CABLE|1|Villa Nova|48.73478|2.46475`;
 <script>
 (function(){
   var AUDIT_KEY='ach_audit_v1';
-  var LABELS={ach_pi_v4:'Post-its',ach_encours_v1:'Ventes (En cours)',ach_locations_v1:'Locations',ach_trash_v1:'Corbeille',ach_trash_log_v1:'Corbeille (mouvements)',ach_pige_dossiers_v1:'Pige (dossiers)',ach_todos_v1:'To-dos',ach_plan_events:'Planning',ach_vt_v4:'Visites',ach_bv_obs:'Bons de visite (observations)',ach_bv_extra:'Bons de visite',ach_bv_pending:'Bons de visite (validation)',ach_bv_notifs:'Notifications',ach_bv_cr_v1:'Comptes rendus de visite',ach_fin_v3:'Finances',ach_prosp_v1:'Prospection',ach_lex_html_v1:'Lexique', ach_cr_crit_v1:'Comptes rendus (critères)',ach_lex_proposals:'Lexique (propositions)',ach_pige_v1:'Pige',ach_mandats_v1:'Mandats',ach_docaff_v1:'Documents par affaire',ach_docs_cfg_v1:'Documents (réglages)', ach_docgen_assets_v1:'Générateur (charte & polices)', ach_dghist_v1:'Documents (historique des générations)', ach_rappels_v1:'Rappels', ach_redac_v1:'Rédaction quotidienne', ach_routines_v1:'Routines & Objectifs'};
+  var LABELS={ach_pi_v4:'Post-its',ach_encours_v1:'Ventes (En cours)',ach_locations_v1:'Locations',ach_trash_v1:'Corbeille',ach_trash_log_v1:'Corbeille (mouvements)',ach_pige_dossiers_v1:'Pige (dossiers)',ach_todos_v1:'To-dos',ach_plan_events:'Planning',ach_vt_v4:'Visites',ach_bv_obs:'Bons de visite (observations)',ach_bv_extra:'Bons de visite',ach_bv_pending:'Bons de visite (validation)',ach_bv_notifs:'Notifications',ach_bv_cr_v1:'Comptes rendus de visite',ach_fin_v3:'Finances',ach_prosp_v1:'Prospection',ach_lex_html_v1:'Lexique', ach_cr_crit_v1:'Comptes rendus (critères)',ach_lex_proposals:'Lexique (propositions)',ach_pige_v1:'Pige',ach_mandats_v1:'Mandats', ach_contacts_import_v1:'Contacts (import Apimo)',ach_docaff_v1:'Documents par affaire',ach_docs_cfg_v1:'Documents (réglages)', ach_docgen_assets_v1:'Générateur (charte & polices)', ach_dghist_v1:'Documents (historique des générations)', ach_rappels_v1:'Rappels', ach_redac_v1:'Rédaction quotidienne', ach_routines_v1:'Routines & Objectifs'};
   var _orig=localStorage.setItem.bind(localStorage);
   function curName(){var e=document.getElementById('s-name');return e?e.textContent:'?';}
   function curRole(){var e=document.getElementById('s-role');return e?e.textContent:'';}
@@ -14244,7 +14256,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     ach_pi_v4:'Post-its', ach_plan_events:'Planning', ach_todos_v1:'To-do',
     ach_prosp_v1:'Prospection', ach_lex_html_v1:'Lexique', ach_lex_proposals:'Lexique (propositions)',
     ach_fin_hist_v3:'Honoraires', ach_fin_ops_v3:'Finances', ach_fin_lines_v1:'Finances',
-    ach_fin_solde_v3:'Finances', ach_encours_v1:'Affaires en cours', ach_audit_v1:'Journal', ach_pige_v1:'Pige', ach_mandats_v1:'Mandats', ach_docaff_v1:'Documents par affaire', ach_docs_cfg_v1:'Documents (réglages)', ach_docgen_assets_v1:'Générateur (charte & polices)', ach_dghist_v1:'Documents (historique des générations)', ach_rappels_v1:'Rappels', ach_evol_v1:'Évolutions', ach_redac_v1:'Rédaction quotidienne', ach_routines_v1:'Routines & Objectifs', ach_tomb_v2:'(technique) suppressions',
+    ach_fin_solde_v3:'Finances', ach_encours_v1:'Affaires en cours', ach_audit_v1:'Journal', ach_pige_v1:'Pige', ach_mandats_v1:'Mandats', ach_contacts_import_v1:'Contacts (import Apimo)', ach_docaff_v1:'Documents par affaire', ach_docs_cfg_v1:'Documents (réglages)', ach_docgen_assets_v1:'Générateur (charte & polices)', ach_dghist_v1:'Documents (historique des générations)', ach_rappels_v1:'Rappels', ach_evol_v1:'Évolutions', ach_redac_v1:'Rédaction quotidienne', ach_routines_v1:'Routines & Objectifs', ach_tomb_v2:'(technique) suppressions',
     ach_affaires_v1:'Pipeline (affaires)', ach_aff_pins_v1:'Pipeline (épingles)', ach_locations_v1:'Locations', ach_trash_v1:'Corbeille', ach_trash_log_v1:'Corbeille (mouvements)', ach_pige_dossiers_v1:'Pige (dossiers)', ach_conc_v1:'Honoraires (concurrence)',
     ach_perms_v1:'Droits & Accès', ach_vsb_v1:'Visites sans bon', ach_bv_accomp:'Bons de visite (accompagnateurs)',
     ach_bv_cr_v1:'Comptes rendus de visite', ach_idj_ecart_v1:'Idées du matin (écartées)'
@@ -14271,7 +14283,20 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
      rattrapage COMPLET (ancien comportement, toutes valeurs) une fois par 24 h et par
      poste ; blocs « à réconcilier » (envoi raté, hors ligne) toujours retéléchargés ;
      au moindre doute (horodatage absent, lecture impossible) → on retélécharge. */
-  var SEEN_K='achille_sync_seen', FULL_K='achille_sync_full_at', DIRTY_K='achille_sync_dirty', FULL_EVERY=24*3600*1000;
+  /* v12.31 (Laurent 06/11, quota Egress) : rattrapage complet une fois par SEMAINE et par poste (avant : 24 h) ; les gros blocs
+     rarement modifiés (NO_FULL) ne sont jamais retéléchargés par le rattrapage, seulement quand leur horodatage change ;
+     l'écran de l'agence (compte public) ne charge pas les blocs qui ne le concernent pas (PUBLIC_SKIP). */
+  var SEEN_K='achille_sync_seen', FULL_K='achille_sync_full_at', DIRTY_K='achille_sync_dirty', FULL_EVERY=7*24*3600*1000;
+  var NO_FULL=['ach_contacts_import_v1'], PUBLIC_SKIP=['ach_contacts_import_v1'];
+  /* v12.31 : compteur de trafic de CE poste (clé locale achille_trafic_v1, 10 jours) — octets reçus du cloud par type */
+  var TRAF_K='achille_trafic_v1', _traf=null, _trafT=null;
+  function _trafDay(){ var d=new Date(); return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2); }
+  function _trafLoad(){ if(_traf) return _traf; try{ _traf=JSON.parse(window.localStorage.getItem(TRAF_K)||'{}')||{}; }catch(e){ _traf={}; } return _traf; }
+  function _traffic(kind, key, n){ try{ n=+n||0; if(!n) return; var T=_trafLoad(), d=_trafDay(), o=T[d]=T[d]||{l:0,p:0,r:0,f:0,n:0,k:{}};
+      o[kind]=(o[kind]||0)+n; if(kind!=='l'){ o.n++; if(key) o.k[key]=(o.k[key]||0)+n; }
+      var ks=Object.keys(T).sort(); while(ks.length>10){ delete T[ks.shift()]; } origSetItem(TRAF_K, JSON.stringify(T)); }catch(e){} }   /* écrit tout de suite : la page se recharge parfois juste après la synchro */
+  function _len(v){ if(v==null) return 0; return (typeof v==='string')?v.length:JSON.stringify(v).length; }
+  window.achTraffic=function(){ var T=_trafLoad(); return JSON.parse(JSON.stringify(T)); };
   var ECO=window.ACH_SYNC_ECO={pulls:0, listes:0, telecharges:0, directs:0, fusions:0};
   function _seenAll(){ try{ var o=JSON.parse(window.localStorage.getItem(SEEN_K)||'{}'); return (o&&typeof o==='object'&&!Array.isArray(o))?o:{}; }catch(e){ return {}; } }
   function _seenGet(k){ return ''+(_seenAll()[k]||''); }
@@ -14608,7 +14633,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     function fusionPuisEnvoi(){
       /* chemin historique : on lit la version du cloud, on FUSIONNE, puis on renvoie le résultat fusionné */
       db.from('app_data').select('value,updated_at').eq('key',key).maybeSingle().then(function(res){
-        _trace('cloud lu '+key);
+        _trace('cloud lu '+key); try{ _traffic('f', key, _len(res&&res.data&&res.data.value)); }catch(e){}   /* v12.31 */
         var merged, cloudTs=(res&&res.data)?(''+(res.data.updated_at||'')):'';
         try{
           var cloudVal = (res && res.data) ? res.data.value : undefined;
@@ -14798,8 +14823,11 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
         var ts=''+(r.updated_at||'');
         /* à télécharger : rattrapage complet, horodatage absent, horodatage différent de celui
            qu'on a intégré, bloc à réconcilier, ou bloc inconnu en local */
-        if(full || !ts || seen[r.key]!==ts || dirty.indexOf(r.key)>=0 || window.localStorage.getItem(r.key)===null) want.push(r.key);
+        if(isPublicScreen() && PUBLIC_SKIP.indexOf(r.key)>=0) return;   /* v12.31 */
+        var _full=full && NO_FULL.indexOf(r.key)<0;   /* v12.31 */
+        if(_full || !ts || seen[r.key]!==ts || dirty.indexOf(r.key)>=0 || window.localStorage.getItem(r.key)===null) want.push(r.key);
       });
+      _traffic('l','',JSON.stringify(list).length);   /* v12.31 */
       ECO.listes+=Object.keys(cloudKeys).length; ECO.telecharges+=want.length;
       _trace((full?'rattrapage complet':'synchro économe')+' : '+want.length+' bloc(s) téléchargé(s) sur '+Object.keys(cloudKeys).length);
       /* 2) application des blocs reçus — logique de fusion INCHANGÉE */
@@ -14833,6 +14861,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
       if(!want.length){ apply([]); return; }
       db.from('app_data').select('key,value,updated_at').in('key', want).then(function(res){
         if(res.error){ return cb(false); }
+        try{ (res.data||[]).forEach(function(r){ _traffic('p', r.key, _len(r.value)); }); }catch(e){}   /* v12.31 */
         apply(res.data||[]);
       }, function(){ cb(false); });
     }, function(){ cb(false); });
@@ -14844,7 +14873,9 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
       realtimeChan = db.channel('ach_app_data')
         .on('postgres_changes', {event:'*', schema:'public', table:'app_data'}, function(p){
           var row=p.new||p.old; if(!row||!row.key) return;
+          try{ _traffic('r', row.key, _len(row.value)); }catch(e){}   /* v12.31 : en direct, la valeur COMPLÈTE du bloc arrive à chaque modification */
           if(!isSync(row.key)) return;
+          if(isPublicScreen() && PUBLIC_SKIP.indexOf(row.key)>=0) return;   /* v12.31 */
           if(_ach_obsoleteKey(row.key)) return;  /* v8.03 */
           if(row.updated_by===ME.id) return; // mes propres changements
           var t=justPushed[row.key]; if(t && Date.now()-t<3000) return;
@@ -15040,7 +15071,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     startRealtime();
     var ov=document.getElementById('ach-login-overlay'); if(ov) ov.classList.add('ach-hidden');
     var ub=document.getElementById('ach-userbar'); if(ub) ub.style.display='none';
-    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v12.29';
+    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v12.31';
     flag('Synchronis\u00e9');
     // fin de l'init : on autorise la journalisation des actions
     setTimeout(function(){ installInterceptor._init=false; }, 1500);
@@ -21444,7 +21475,23 @@ select.pg-chip{padding:6px 10px;}
     };
     ov.addEventListener('mousedown',function(e){ if(e.target===ov) ov.remove(); });
   };
+  /* v12.31 : tableau de consommation de ce poste */
+  var TRL={ach_pige_v1:'Pige',ach_encours_v1:'Ventes',ach_locations_v1:'Locations',ach_mandats_v1:'Mandats',ach_affaires_v1:'Pipeline',ach_plan_events:'Planning',ach_pi_v4:'Post-its',ach_comm_avenir_v1:'Communication — posts',ach_pret_v1:'Communication — visuels',ach_contacts_import_v1:'Contacts Apimo',ach_bv_extra:'Bons de visite',ach_audit_v1:'Journal',ach_tomb_v2:'Suppressions'};
+  window.trafRender=function(){ var el=document.getElementById('traf-body'); if(!el) return; var T=(window.achTraffic?achTraffic():{}), ds=Object.keys(T).sort().reverse();
+    function mo(n){ n=+n||0; return n>=1048576?(n/1048576).toFixed(1).replace('.',',')+' Mo':(n>=1024?Math.round(n/1024)+' Ko':n+' o'); }
+    function tot(o){ return (o.l||0)+(o.p||0)+(o.r||0)+(o.f||0); }
+    if(!ds.length){ el.innerHTML='<i style="color:var(--gris-2)">Aucune mesure encore — elle commence à cette version.</i>'; return; }
+    var w7=ds.slice(0,7).reduce(function(a,d){ return a+tot(T[d]); },0), k7={};
+    ds.slice(0,7).forEach(function(d){ var k=T[d].k||{}; Object.keys(k).forEach(function(x){ k7[x]=(k7[x]||0)+k[x]; }); });
+    var top=Object.keys(k7).sort(function(a,b){ return k7[b]-k7[a]; }).slice(0,6);
+    var h='<div style="display:flex;gap:18px;flex-wrap:wrap;margin-bottom:8px"><div><b style="font-size:18px">'+mo(tot(T[ds[0]]))+'</b><div style="color:var(--gris-2);font-size:11.5px">'+(ds[0]===new Date().toISOString().slice(0,10)?'aujourd’hui':ds[0])+'</div></div><div><b style="font-size:18px">'+mo(w7)+'</b><div style="color:var(--gris-2);font-size:11.5px">7 derniers jours</div></div></div>';
+    h+='<table class="audit-table" style="max-width:620px"><thead><tr><th>Jour</th><th>Ouvertures (liste)</th><th>Blocs téléchargés</th><th>En direct</th><th>Avant envoi</th><th>Total</th></tr></thead><tbody>'
+      +ds.slice(0,7).map(function(d){ var o=T[d]; return '<tr><td>'+d.split('-').reverse().slice(0,2).join('/')+'</td><td>'+mo(o.l)+'</td><td>'+mo(o.p)+'</td><td>'+mo(o.r)+'</td><td>'+mo(o.f)+'</td><td><b>'+mo(tot(o))+'</b></td></tr>'; }).join('')+'</tbody></table>';
+    if(top.length) h+='<div style="margin-top:8px;color:var(--gris);font-size:12px">Blocs les plus lourds (7 jours) : '+top.map(function(k){ return (TRL[k]||k)+' '+mo(k7[k]); }).join(' · ')+'</div>';
+    el.innerHTML=h; };
+  if(window.navTo){ var _ntr=window.navTo; window.navTo=function(id,el){ var r=_ntr.apply(this,arguments); if(id==='acces'||id==='droits'){ setTimeout(function(){ try{ trafRender(); }catch(e){} },80); } return r; }; }
   window.accesTab=function(t){
+    if(t==='data'){ setTimeout(function(){ try{ trafRender(); }catch(e){} },30); }
     var tabs={comptes:'acces-tab-comptes', droits:'acces-tab-droits', data:'acces-tab-data', evol:'acces-tab-evol'};
     Object.keys(tabs).forEach(function(k){
       var pane=document.getElementById(tabs[k]);
@@ -29237,9 +29284,13 @@ details.cx-more{margin-top:8px;} details.cx-more>summary{font-size:11.5px;color:
   function isAdmin(){ return ((window.ACH_USER||{}).key||'admin')==='admin'; }
   function fold(t){ return (''+(t||'')).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/\s+/g,' ').trim(); }
   /* téléphone → 10 chiffres « 06… » (accepte +33, 0033, points, espaces) */
-  function telKey(t){ var d=(''+(t||'')).replace(/\D/g,''); if(d.indexOf('0033')===0) d='0'+d.slice(4); else if(d.indexOf('33')===0&&d.length===11) d='0'+d.slice(2); return (d.length===10&&d.charAt(0)==='0')?d:''; }
-  function telPretty(d){ return (''+d).replace(/(\d{2})(?=\d)/g,'$1 '); }
-  function tels(sv){ var out=[]; (''+(sv||'')).replace(/(?:\+33|0033|0)\s?[1-9](?:[\s.\-]?\d{2}){4}/g,function(m){ var k=telKey(m); if(k&&out.indexOf(k)<0) out.push(k); return m; }); return out; }
+  /* clé : « 06… » (10 chiffres) pour la France ; « +44… » (indicatif + numéro) pour l'étranger (v12.30 : contacts Apimo britanniques, américains…) */
+  function telKey(t){ var raw=(''+(t||'')).trim(), d=raw.replace(/\D/g,''); if(d.indexOf('0033')===0) d='0'+d.slice(4); else if(d.indexOf('33')===0&&d.length===11&&/^\+|^33/.test(raw.replace(/\s/g,''))) d='0'+d.slice(2);
+    if(d.length===10&&d.charAt(0)==='0') return d; if(/^\+|^00/.test(raw)&&d.length>=8&&d.length<=15){ if(d.indexOf('00')===0) d=d.slice(2); return '+'+d; } return ''; }
+  var CC3=/^(212|213|216|218|230|234|237|243|351|352|353|354|355|356|357|358|359|370|371|372|373|374|375|376|377|378|380|381|382|385|386|387|389|420|421|423|852|853|855|856|880|886|960|961|962|963|964|965|966|967|968|970|971|972|973|974|975|976|977|992|993|994|995|996|998)/;
+  function telPretty(d){ d=''+d; if(d.charAt(0)==='+'){ var n=d.slice(1), cl=(n.charAt(0)==='1'||n.charAt(0)==='7')?1:(CC3.test(n)?3:2); var rest=n.slice(cl); return '+'+n.slice(0,cl)+' '+rest.replace(/(\d{3})(?=\d)/g,'$1 '); } return d.replace(/(\d{2})(?=\d)/g,'$1 '); }
+  function telDigits(k){ k=''+k; return k.charAt(0)==='+'?k.slice(1):'33'+k.slice(1); }
+  function tels(sv){ var out=[]; (''+(sv||'')).replace(/(?:\+\d{1,3}|00\d{1,3}|0)\s?[1-9](?:[\s.\-]?\d{1,4}){2,6}/g,function(m){ var k=telKey(m); if(k&&out.indexOf(k)<0) out.push(k); return m; }); return out; }
   function mails(sv){ var m=(''+(sv||'')).match(/[\w.+\-]+@[\w\-]+\.[\w.\-]+/g)||[]; return m.map(function(x){ return x.toLowerCase(); }); }
   function coord(c){ if(!c) return {t:[],m:[]}; if(typeof c==='object') return {t:tels((c.tel||'')+' '+(c.mail||'')), m:mails((c.mail||'')+' '+(c.tel||''))}; return {t:tels(c), m:mails(c)}; }
   function nomKey(n){ return fold(n).replace(/\b(m|mr|mme|mlle|me|monsieur|madame|maitre|veuve|epouse|et|ou|&)\b\.?/g,' ').replace(/[^a-z0-9 ]/g,' ').replace(/\s+/g,' ').trim(); }
@@ -29275,11 +29326,19 @@ details.cx-more{margin-top:8px;} details.cx-more>summary{font-size:11.5px;color:
     if(can('pipeline')) arr('ach_affaires_v1').forEach(function(a){ if(!a||!a.id) return; var L='Pipeline · '+(a.adresse||a.bien||''), g=function(){ nav('pipeline'); setTimeout(function(){ if(window.affEdit) affEdit(a.id); },250); };
       push(a.client,[],[],'Client (pipeline)',L,g,{buyer:true}); push(a.vendeur,[],[],'Vendeur (pipeline)',L,g,{owner:true,adr:a.adresse||''}); });
     if(can('visites')) visites().forEach(function(v){ push(v.v,[],[],'Visiteur','Visite'+(v.d?' du '+v.d:'')+' · '+(v.a||''),function(){ ouvrirVisite(v); },{buyer:true}); });
+    /* v12.30 : contacts importés d'Apimo (ach_contacts_import_v1) — rôle d'après les cases Apimo, origine « Apimo · suivi par … », note = commentaire Apimo */
+    apimoList().forEach(function(c){ if(!c) return; var roles=[]; if(c.k.indexOf('prop')>=0) roles.push('Propriétaire'); if(c.k.indexOf('dem')>=0) roles.push('Demandeur'); if(c.k.indexOf('four')>=0) roles.push('Fournisseur'); if(c.k.indexOf('pro')>=0) roles.push('Professionnel'); if(!roles.length) roles.push('Contact');
+      push(c.n,c.t||[],c.m||[],roles.join(' · ')+' (Apimo)','Apimo'+(c.u?' · suivi par '+c.u:'')+(c.v?' · '+c.v:''),null,{apimo:true,note:c.o||'',owner:c.k.indexOf('prop')>=0,buyer:c.k.indexOf('dem')>=0}); });
     if(can('planning')) arr('ach_plan_events').filter(function(e){ try{ return e&&e.id&&!(window.planVisib&&planVisib(e)==='masked'); }catch(x){ return !!(e&&e.id); } }).forEach(function(e){
       var L='RDV '+(e.type||'')+(e.date?' du '+e.date.split('-').reverse().join('/'):'')+(e.adresse?' · '+e.adresse:''), g=function(){ nav('planning'); setTimeout(function(){ if(window.planEditEvent) planEditEvent(e.id); },300); };
       push(e.visiteur,[],[],'Visiteur (RDV)',L,g,{buyer:true}); push(e.proprio,[],[],e.type==='notaire'?'Partie (acte)':'Propriétaire (RDV)',L,g,{owner:e.type!=='notaire',adr:e.adresse||''}); });
     return E;
   }
+  /* v12.30 : liste importée d'Apimo — {maj, n, items:[{r:réf, n:nom, t:[tels], m:[mails], k:[prop|dem|four|pro], u:initiales du négociateur, v:ville, o:commentaire court, d:créé le}]} */
+  var AP_K='ach_contacts_import_v1';
+  function apimoStore(){ try{ var o=JSON.parse(localStorage.getItem(AP_K)||'{}'); return (o&&Array.isArray(o.items))?o:{items:[]}; }catch(e){ return {items:[]}; } }
+  function apimoList(){ return apimoStore().items; }
+  window.achApimoList=apimoList;
   /* ── REGROUPEMENT : par numéro de téléphone d'abord, puis par nom pour les mentions sans numéro ── */
   function build(){
     var E=entries(), G=[], byTel={}, byNom={};
@@ -29297,7 +29356,7 @@ details.cx-more{margin-top:8px;} details.cx-more>summary{font-size:11.5px;color:
   window.achContacts=build;
 
   /* ── PAGE ── */
-  function match(g,q){ var qd=q.replace(/[\s.\-()]/g,'').replace(/^\+33/,'0').replace(/^0033/,'0'); if(/^\d{3,}$/.test(qd)) return g.tels.some(function(t){ return t.indexOf(qd)>=0; });
+  function match(g,q){ var qd=q.replace(/[\s.\-()]/g,'').replace(/^\+33/,'0').replace(/^0033/,'0'); if(/^\+?\d{3,}$/.test(qd)){ qd=qd.replace(/^\+/,''); return g.tels.some(function(t){ return t.replace(/^\+/,'').indexOf(qd)>=0; }); }
     var toks=fold(q).split(' ').filter(Boolean); return toks.every(function(t){ return g.key.indexOf(t)>=0; }); }
   var _G=null, _ctN=80;
   window.ctMore=function(){ _ctN+=80; ctRender(true); };
@@ -29307,6 +29366,7 @@ details.cx-more{margin-top:8px;} details.cx-more>summary{font-size:11.5px;color:
     if(!keepN) _ctN=80;
     var box=document.getElementById('ct-list'), hint=document.getElementById('ct-hint'); if(!box) return;
     var q=(document.getElementById('ct-in')||{}).value||''; q=q.trim();
+    try{ impHtml(); }catch(e){}
     _G=build(); var L=q?_G.filter(function(g){ return match(g,q); }):_G;
     if(hint) hint.textContent=_G.length+' contact'+(_G.length>1?'s':'')+' trouvés dans l’app'+(q?' · '+L.length+' correspondant'+(L.length>1?'s':''):'');
     if(!L.length){ box.innerHTML='<div class="ct-empty">'+(q?'Personne ne correspond à « '+esc(q)+' ».<br>Essayez un bout de numéro, un nom de famille ou des initiales.':'Aucun contact pour le moment.')+'</div>'; return; }
@@ -29315,13 +29375,57 @@ details.cx-more{margin-top:8px;} details.cx-more>summary{font-size:11.5px;color:
       var autres=g.autres.length?'<small>aussi noté : '+esc(g.autres.slice(0,3).join(' · '))+'</small>':'';
       var tel=g.tels.length?g.tels.map(function(t){ return '<a href="tel:'+t+'">'+telPretty(t)+'</a>'; }).join('<br>'):'<span style="color:var(--gris-2)">numéro inconnu</span>';
       var mail=g.mails.length?'<span class="ct-mail" title="'+esc(g.mails.join(' · '))+'">'+esc(g.mails[0])+(g.mails.length>1?' +'+(g.mails.length-1):'')+'</span>':'';
-      var src=g.src.slice(0,8).map(function(e,j){ return '<span class="ct-sp" title="Ouvrir : '+esc(e.src)+'" onclick="ctGo('+idx+','+g.src.indexOf(e)+')"><b>'+esc(e.role)+'</b> · '+esc(e.src)+'</span>'; }).join('')+(g.src.length>8?'<span class="ct-sp" title="'+esc(g.src.slice(8).map(function(e){ return e.role+' · '+e.src; }).join('\n'))+'">+'+(g.src.length-8)+'</span>':'');
+      var src=g.src.slice(0,8).map(function(e,j){ return e.apimo?'<span class="ct-sp ap" title="'+esc(e.src+(e.note?' — '+e.note:''))+'"><b>'+esc(e.role)+'</b> · '+esc(e.src)+'</span>':'<span class="ct-sp" title="Ouvrir : '+esc(e.src)+'" onclick="ctGo('+idx+','+g.src.indexOf(e)+')"><b>'+esc(e.role)+'</b> · '+esc(e.src)+'</span>'; }).join('')+(g.src.length>8?'<span class="ct-sp" title="'+esc(g.src.slice(8).map(function(e){ return e.role+' · '+e.src; }).join('\n'))+'">+'+(g.src.length-8)+'</span>':'');
       var t0=g.tels[0]||'';
-      var acts=t0?'<a href="tel:'+t0+'" title="Appeler">📞</a><a href="https://wa.me/33'+t0.slice(1)+'" target="_blank" rel="noopener" title="Écrire sur WhatsApp">💬</a><button onclick="achCopyText(\''+telPretty(t0)+'\',this)" title="Copier le numéro">📋</button>':'';
-      return '<div class="ct-row"><div class="ct-nom">'+nom+autres+'</div><div class="ct-tel">'+tel+mail+'</div><div class="ct-src">'+src+'</div><div class="ct-acts">'+acts+'</div></div>'; }).join('')
+      var acts=t0?'<a href="tel:'+(t0.charAt(0)==='+'?t0:'+'+telDigits(t0))+'" title="Appeler">📞</a><a href="https://wa.me/'+telDigits(t0)+'" target="_blank" rel="noopener" title="Écrire sur WhatsApp">💬</a><button onclick="achCopyText(\''+telPretty(t0)+'\',this)" title="Copier le numéro">📋</button>':'';
+      var note=g.src.filter(function(e){ return e.apimo&&e.note; }).map(function(e){ return e.note; })[0]||'';
+      return '<div class="ct-row"><div class="ct-nom">'+nom+autres+'</div><div class="ct-tel">'+tel+mail+'</div><div class="ct-src">'+src+'</div><div class="ct-acts">'+acts+'</div>'+(note?'<div class="ct-note" title="Commentaire Apimo">📝 '+esc(note)+'</div>':'')+'</div>'; }).join('')
       +(L.length>MAX?'<div class="ct-empty"><button class="ct-more" onclick="ctMore()">Voir '+Math.min(80,L.length-MAX)+' contacts de plus</button><div style="margin-top:6px">'+MAX+' affichés sur '+L.length+' — ou précisez la recherche</div></div>':'');
   };
   window.ctGo=function(gi,si){ try{ var e=_G[gi].src[si]; if(e&&e.go) e.go(); }catch(x){} };
+  /* ── IMPORT APIMO (CSV exporté par Laurent depuis Apimo → Contacts → Exporter) ── */
+  function csvParse(txt){ var rows=[], row=[], f='', q=false, i=0, c; txt=(''+txt).replace(/^\uFEFF/,'');
+    var sep=(function(){ var l=txt.split(/\r?\n/)[0]||''; var best=',', bn=-1; [',',';','\t'].forEach(function(s){ var n=l.split(s).length; if(n>bn){ bn=n; best=s; } }); return best; })();
+    for(;i<txt.length;i++){ c=txt.charAt(i);
+      if(q){ if(c==='"'){ if(txt.charAt(i+1)==='"'){ f+='"'; i++; } else q=false; } else f+=c; }
+      else if(c==='"') q=true; else if(c===sep){ row.push(f); f=''; } else if(c==='\n'){ row.push(f); rows.push(row); row=[]; f=''; } else if(c!=='\r') f+=c; }
+    if(f!==''||row.length){ row.push(f); rows.push(row); } return rows; }
+  function ini(u){ var p=(''+(u||'')).trim().split(/\s+/); return p.length>=2?(p[0].charAt(0)+p[p.length-1].charAt(0)).toUpperCase():(p[0]||'').slice(0,2).toUpperCase(); }
+  function apimoParse(txt){
+    var rows=csvParse(txt); if(rows.length<2) return {err:'Fichier vide'}; var H=rows[0].map(function(h){ return fold(h); });
+    function ix(name,nth){ var n=0; for(var i=0;i<H.length;i++){ if(H[i]===fold(name)){ if(n===(nth||0)) return i; n++; } } return -1; }
+    var iRef=ix('Référence'), iNom=ix('Nom'), iCiv=ix('Civilité'), iNf=ix('Nom de famille'), iPr=ix('Prénom'), iMail=ix('e-mail'), iTel=ix('Téléphone'), iMob=ix('Mobile'),
+        iNf2=ix('Nom de famille',1), iPr2=ix('Prénom',1), iMail2=ix('e-mail',1), iMob2=ix('Mobile',1), iVille=ix('Ville'), iProp=ix('Propriétaires'), iDem=ix('Demandeurs'), iFour=ix('Fournisseur'),
+        iType=ix('Type'), iUser=ix('Utilisateur'), iAct=ix('Activité'), iCom=ix('Commentaire'), iCree=ix('Créé le');
+    if(iRef<0||iMob<0||(iNf<0&&iNom<0)) return {err:'Ce fichier ne ressemble pas à un export de contacts Apimo (colonnes Référence / Nom de famille / Mobile attendues).'};
+    var items=[], seen={};
+    rows.slice(1).forEach(function(r){ if(!r||r.length<5) return; function g(i){ return (i>=0&&i<r.length)?(''+r[i]).trim():''; }
+      var ref=g(iRef); if(!ref||seen[ref]) return; seen[ref]=1;
+      var nom=[g(iCiv).replace(/^(Madame|Monsieur|Mademoiselle|Maître)$/i,function(x){ return {madame:'Mme',monsieur:'M.',mademoiselle:'Mlle',maitre:'Me'}[fold(x)]||x; }), g(iNf).toUpperCase(), g(iPr)].filter(Boolean).join(' ').trim()||g(iNom);
+      var nom2=[g(iNf2).toUpperCase(), g(iPr2)].filter(Boolean).join(' ').trim(); if(nom2&&nom2!==nom) nom=nom?nom+' / '+nom2:nom2;
+      var t=[]; [g(iMob),g(iTel),g(iMob2)].forEach(function(x){ tels(x).forEach(function(k){ if(t.indexOf(k)<0) t.push(k); }); });
+      var m=[]; [g(iMail),g(iMail2)].forEach(function(x){ mails(x).forEach(function(k){ if(m.indexOf(k)<0) m.push(k); }); });
+      if(!nom&&!t.length&&!m.length) return;
+      var k=[]; if(g(iProp)) k.push('prop'); if(g(iDem)) k.push('dem'); if(g(iFour)) k.push('four'); if(/^pro/i.test(g(iType))||g(iAct)) k.push('pro');
+      var it={r:ref,n:nom,t:t,m:m,k:k,u:ini(g(iUser)),v:g(iVille),d:g(iCree).slice(0,10)}; var o=g(iCom).replace(/\s+/g,' ').trim(); if(o) it.o=o.slice(0,160); if(g(iAct)) it.a=g(iAct);
+      items.push(it); });
+    return {items:items};
+  }
+  window.ctImportFile=function(inp){ var f=inp.files&&inp.files[0]; if(!f) return; if(!isAdmin()){ if(window.toast) toast('🔒 Import réservé à Laurent'); return; }
+    var rd=new FileReader(); rd.onload=function(){ var res=apimoParse(rd.result); inp.value='';
+      if(res.err){ if(window.toast) toast('✗ '+res.err); return; }
+      var old=apimoStore(), prev={}; old.items.forEach(function(c){ prev[c.r]=1; }); var nouveaux=res.items.filter(function(c){ return !prev[c.r]; }).length;
+      var store={maj:new Date().toISOString(), n:res.items.length, items:res.items, fichier:(f.name||'').slice(0,60), par:(window.ACH_USER&&ACH_USER.initials)||''};
+      try{ localStorage.setItem(AP_K, JSON.stringify(store)); }catch(e){ if(window.toast) toast('✗ Trop volumineux pour être enregistré'); return; }
+      if(window.toast) toast('📇 '+res.items.length+' contacts Apimo importés ('+nouveaux+' nouveaux par rapport au dernier import) — partagés avec l’équipe');
+      try{ if(window.achLog) achLog('import','Contacts','export Apimo importé : '+res.items.length+' contacts'); }catch(e){}
+      ctRender(); };
+    rd.readAsText(f,'utf-8'); };
+  window.ctImportClear=function(){ if(!isAdmin()) return; if(!confirm('Retirer les contacts importés d’Apimo de l’app ?\n(Les contacts des autres modules restent.)')) return; try{ localStorage.setItem(AP_K, JSON.stringify({maj:new Date().toISOString(), n:0, items:[]})); }catch(e){} ctRender(); };
+  function impHtml(){ var el=document.getElementById('ct-imp'); if(!el) return; var st=apimoStore(); var n=st.items.length;
+    var info=n?'<span class="ct-src-ap">Apimo</span><span>'+n+' contacts importés'+(st.maj?' le '+new Date(st.maj).toLocaleDateString('fr-FR'):'')+(st.par?' par '+esc(st.par):'')+'</span>':'';
+    if(isAdmin()) el.innerHTML=info+'<label class="ct-upl" title="Dans Apimo : Contacts → Exporter → CSV, puis choisissez le fichier ici">⬆ '+(n?'Réimporter':'Importer')+' un export Apimo (CSV)<input type="file" accept=".csv,text/csv" style="display:none" onchange="ctImportFile(this)"></label>'+(n?'<button class="data-btn-sm" onclick="ctImportClear()">retirer</button>':'');
+    else el.innerHTML=info; }
   window.ctOpen=function(q){ nav('contacts'); setTimeout(function(){ var i=document.getElementById('ct-in'); if(i){ i.value=q||''; ctRender(); i.focus(); } },80); };
   if(window.navTo){ var _nc=window.navTo; window.navTo=function(id,el){ var r=_nc.apply(this,arguments); if(id==='contacts'){ try{ ctRender(); }catch(e){} } return r; }; }
   /* recherche globale (Ctrl K) : les contacts en tête des résultats */
