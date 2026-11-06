@@ -1860,7 +1860,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     </div>
   </div>
   </div>
-  <div class="logo-ver app-ver">Achille App — v12.26</div>
+  <div class="logo-ver app-ver">Achille App — v12.27</div>
 </aside>
 <div id="mob-bk" onclick="mobNav(false)"></div>
 <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Réduire la barre latérale">‹</button>
@@ -6319,27 +6319,34 @@ table.es-t td.del button{border:none;background:none;color:var(--gris-2);cursor:
 
   // ── AUTOCOMPLÉTION ──
   var sectACTimer = null;
+  /* v12.27 : les adresses déjà tapées (mémoire ach_adr_recent_v1) qui correspondent à la saisie s'affichent TOUT DE SUITE en tête
+     de la liste (🕘), dès 2 caractères, puis les propositions de l'API adresse viennent dessous (sans doublon). */
+  function acFold(t){ return (''+(t||'')).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/\s+/g,' ').trim(); }
+  function acRecent(val){ var q=acFold(val); if(q.length<2||typeof window.achAdrRecentList!=='function') return []; var toks=q.split(' ').filter(Boolean);
+    return achAdrRecentList().filter(function(a){ var f=acFold(a); return toks.every(function(t){ return f.indexOf(t)>=0; }); }).slice(0,5); }   /* chaque mot tapé doit se retrouver dans l'adresse (« 115 ach » → 115 Avenue Achille Peretti) */
+  function acRow(list, lbl, recent){
+    var div = document.createElement('div');
+    div.style.cssText = 'padding:9px 12px;cursor:pointer;font-size:14px;border-bottom:1px solid #f0ebe3;font-family:Jost,sans-serif;background:#fff;'+(recent?'color:#4c533b;':'');
+    div.textContent = (recent?'🕘 ':'')+lbl; div.setAttribute('data-a', lbl); if(recent) div.setAttribute('data-recent','1');
+    div.addEventListener('mousedown', function(){ sectPickAC(lbl); });
+    div.addEventListener('mouseover', function(){ this.style.background='#f7f3ee'; });
+    div.addEventListener('mouseout', function(){ this.style.background='#fff'; });
+    list.appendChild(div);
+  }
   window.sectAutocomplete = function(val) {
     clearTimeout(sectACTimer);
     var list = document.getElementById('sect-ac-list');
-    if(!val || val.length < 3) { list.style.display='none'; return; }
+    var rec = acRecent(val);
+    list.innerHTML = ''; rec.forEach(function(a){ acRow(list, a, true); });
+    list.style.display = rec.length ? 'block' : 'none';
+    if(!val || val.length < 3) return;
     sectACTimer = setTimeout(async function(){
       try {
         var d = await window.achAddrFetch(val);
-        if(!d.features||!d.features.length){ list.style.display='none'; return; }
-        list.innerHTML = '';
-        d.features.forEach(function(f){
-          var lbl = f.properties.label;
-          var div = document.createElement('div');
-          div.style.cssText = 'padding:9px 12px;cursor:pointer;font-size:14px;border-bottom:1px solid #f0ebe3;font-family:Jost,sans-serif;background:#fff;';
-          div.textContent = lbl;
-          div.addEventListener('mousedown', function(){ sectPickAC(lbl); });
-          div.addEventListener('mouseover', function(){ this.style.background='#f7f3ee'; });
-          div.addEventListener('mouseout', function(){ this.style.background='#fff'; });
-          list.appendChild(div);
-        });
-        list.style.display = 'block';
-      } catch(e){ list.style.display='none'; }
+        var feats=(d&&d.features)||[]; var seen={}; rec.forEach(function(a){ seen[acFold(a)]=1; });
+        feats.forEach(function(f){ var lbl = f.properties.label; if(seen[acFold(lbl)]) return; seen[acFold(lbl)]=1; acRow(list, lbl, false); });
+        list.style.display = list.children.length ? 'block' : 'none';
+      } catch(e){ if(!rec.length) list.style.display='none'; }
     }, 300);
   };
 
@@ -6364,9 +6371,14 @@ table.es-t td.del button{border:none;background:none;color:var(--gris-2);cursor:
   window.achAdrRecentAdd=function(a){ a=adrNorm(a); if(a.length<5) return; var k=a.toLowerCase(); var L=adrLoad().filter(function(x){ return (''+x.a).toLowerCase()!==k; }); L.unshift({a:a, t:new Date().toISOString()}); adrSave(L); achAdrRecentFill(); sectRecentRender(); };
   window.achAdrRecentRemove=function(a){ var k=adrNorm(a).toLowerCase(); adrSave(adrLoad().filter(function(x){ return (''+x.a).toLowerCase()!==k; })); achAdrRecentFill(); sectRecentRender(); };
   window.achAdrRecentClear=function(){ if(!confirm('Effacer la liste des adresses récentes ?')) return; adrSave([]); achAdrRecentFill(); sectRecentRender(); };
+  window.achAdrRecentList=function(){ return adrLoad().map(function(x){ return ''+x.a; }); };   /* v12.27 */
   window.achAdrRecentFill=function(){ var dl=document.getElementById('ach-adr-recent'); if(!dl) return; dl.innerHTML=adrLoad().map(function(x){ return '<option value="'+(''+x.a).replace(/&/g,'&amp;').replace(/"/g,'&quot;')+'">'; }).join(''); };
   window.sectRecentRender=function(){
-    var box=document.getElementById('sect-recent'); if(!box) return; var L=adrLoad();
+    /* v12.27 (Laurent 06/11) : « je voulais juste garder en mémoire les adresses déjà tapées pour aller plus vite dans la saisie
+       semi-automatique, pas besoin de voir les recherches récentes » → le bandeau n'est plus affiché ; la mémoire alimente
+       l'autocomplétion de la Sectorisation (sectAutocomplete) et la liste du Planning (achAdrRecentFill). */
+    var box=document.getElementById('sect-recent'); if(box){ box.style.display='none'; box.innerHTML=''; } return;
+    var L=adrLoad();
     if(!L.length){ box.style.display='none'; box.innerHTML=''; return; }
     var esc=function(t){ return (''+t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); };
     /* v12.26 (Laurent 06/11, mobile) : libellé court « 115 Av. Achille Peretti · Neuilly » — affiché sous 880 px seulement (CSS), le PC garde l'adresse complète */
@@ -14997,7 +15009,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     startRealtime();
     var ov=document.getElementById('ach-login-overlay'); if(ov) ov.classList.add('ach-hidden');
     var ub=document.getElementById('ach-userbar'); if(ub) ub.style.display='none';
-    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v12.26';
+    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v12.27';
     flag('Synchronis\u00e9');
     // fin de l'init : on autorise la journalisation des actions
     setTimeout(function(){ installInterceptor._init=false; }, 1500);
