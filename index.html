@@ -1922,7 +1922,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     </div>
   </div>
   </div>
-  <div class="logo-ver app-ver">Achille App — v12.44</div>
+  <div class="logo-ver app-ver">Achille App — v12.45</div>
 </aside>
 <div id="mob-bk" onclick="mobNav(false)"></div>
 <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Réduire la barre latérale">‹</button>
@@ -13636,7 +13636,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
   // Clés locales (propres à chaque appareil) — JAMAIS synchronisées
   var LOCAL_ONLY = ['achille_curpage','achille_lastbackup',
     'ach_comm_authmig_v1','ach_ec_statut_migr','ach_fin_datereset_v1',
-    'ach_reset_v600','ach_reset_v605','ach_cure_v605','ach_cure_v606','ach_pige_seeded_v1','ach_pige_fipacmig_v1','ach_pige_statutmig_v1'];  /* marqueurs one-shot PROPRES À CHAQUE POSTE */
+    'ach_reset_v600','ach_reset_v605','ach_cure_v605','ach_cure_v606','ach_pige_seeded_v1','ach_pige_fipacmig_v1','ach_pige_statutmig_v1','ach_docaff_fix_v1245'];  /* marqueurs one-shot PROPRES À CHAQUE POSTE */
 
   // Une donnée est "partagée" si sa clé commence par ach_ et n'est pas locale
   function isSync(k){ return k && k.indexOf('ach_')===0 && LOCAL_ONLY.indexOf(k)<0; }
@@ -13698,6 +13698,8 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
   function _dirtyAdd(k){ try{ var a=_dirtyAll(); if(a.indexOf(k)<0){ a.push(k); origSetItem(DIRTY_K, JSON.stringify(a)); } }catch(e){} }
   function _dirtyDel(k){ try{ var a=_dirtyAll(), i=a.indexOf(k); if(i>=0){ a.splice(i,1); origSetItem(DIRTY_K, JSON.stringify(a)); } }catch(e){} }
   function _fullDue(){ try{ var t=parseInt(window.localStorage.getItem(FULL_K)||'0',10)||0; return (Date.now()-t)>FULL_EVERY; }catch(e){ return true; } }
+  /* v12.45 : une fois par poste, les dossiers de vente sont réconciliés avec le cloud (les listes qui avaient divergé se réunissent) */
+  try{ if(!window.localStorage.getItem('ach_docaff_fix_v1245')){ if(window.localStorage.getItem('ach_docaff_v1')!==null) _dirtyAdd('ach_docaff_v1'); origSetItem('ach_docaff_fix_v1245','1'); } }catch(e){}
   window.achSyncForceFull=function(){ try{ origSetItem(FULL_K,'0'); }catch(e){} };   /* diagnostic : forcer un rattrapage complet au prochain chargement */
   function _trace(t){ try{ var a=(window.ACH_SYNC_TRACE=window.ACH_SYNC_TRACE||[]); a.push(new Date().toISOString().slice(11,19)+' '+t); if(a.length>80) a.shift(); }catch(e){window.achErr&&achErr(e)} }
   /* ===== Rafraîchissement SILENCIEUX de la vue (remplace le pop-up "nouvelles données") ===== */
@@ -13792,6 +13794,18 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
   }
   /* v12.10 : horodatage d'une fiche-objet (maj / updated / updated_at / le), '' si absent */
   function _ach_objTs(v){ if(!_ach_isObj(v)) return ''; var t=v.maj||v.updated||v.updated_at||v.le||''; t=''+t; return /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/.test(t)? t : ''; }
+  /* v12.45 : « carte de listes » = objet sans horodatage dont toutes les valeurs sont des listes (ex. les dossiers de vente :
+     ach_docaff_v1.docs = { 'ec-12':[{id,nom…}], 'ec-15':[…] }). Ces listes se fusionnent fiche par fiche (identifiant), avec
+     les certificats de suppression, comme les listes de premier niveau. */
+  function _ach_isArrMap(o){ if(!_ach_isObj(o) || _ach_objTs(o)) return false; var ks=Object.keys(o); for(var i=0;i<ks.length;i++){ if(!Array.isArray(o[ks[i]])) return false; } return true; }
+  function _ach_hasItemArr(o){ return Object.keys(o).some(function(k){ return _ach_isItemArr(o[k]); }); }
+  function _ach_mergeArrMap(L, C, tomb){ var out={}, keys={};
+    Object.keys(L).forEach(function(k){ keys[k]=1; }); Object.keys(C).forEach(function(k){ keys[k]=1; });
+    Object.keys(keys).forEach(function(k){ var lv=L[k], cv=C[k];
+      var li=_ach_isItemArr(lv), ci=_ach_isItemArr(cv), le=(lv===undefined||(Array.isArray(lv)&&!lv.length)), ce=(cv===undefined||(Array.isArray(cv)&&!cv.length));
+      if((li||le) && (ci||ce)) out[k]=(li||ci)? _ach_mergeArrays(lv||[], cv||[], tomb) : [];
+      else out[k]=(lv!==undefined)? lv : cv; });
+    return out; }
   function _ach_mergeAny(L, C, tomb){
     /* v8.03 : valeur SIMPLE horodatée {_ach_scalar:1, v, updated} (ex. solde en banque) :
        la plus récente gagne — avant, une chaîne brute n'était pas comparable et le cloud
@@ -13807,6 +13821,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
       Object.keys(keys).forEach(function(k){ var lv=L[k], cv=C[k];
         if(lv===undefined) out[k]=cv; else if(cv===undefined) out[k]=lv;
         else if(_ach_isItemArr(lv) && _ach_isItemArr(cv)) out[k]=_ach_mergeArrays(lv, cv, tomb);
+        else if(_ach_isArrMap(lv) && _ach_isArrMap(cv) && (_ach_hasItemArr(lv)||_ach_hasItemArr(cv))) out[k]=_ach_mergeArrMap(lv, cv, tomb);   /* v12.45 */
         else if(typeof lv==='number' && typeof cv==='number') out[k]=Math.max(lv, cv);
         else { var lt=_ach_objTs(lv), ct=_ach_objTs(cv); out[k]=(lt&&ct&&ct>lt)? cv : lv; } });   /* v12.10 : fiche horodatée des deux côtés → la plus RÉCENTE gagne (avant : toujours la locale) */
       return out;
@@ -13821,14 +13836,13 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     if(m!==undefined) return JSON.stringify(m);
     return (preferOnConflict==='cloud') ? cloudStr : localStr;
   }
-  function _ach_collectIds(val){ var ids={};
-    if(_ach_isItemArr(val)){ val.forEach(function(it){ ids[it.id]=1; }); }
-    else if(_ach_isObj(val)){ Object.keys(val).forEach(function(k){ if(_ach_isItemArr(val[k])) val[k].forEach(function(it){ ids[it.id]=1; }); }); }
-    return ids; }
-  function _ach_collectItems(val){ var m={};
-    if(_ach_isItemArr(val)){ val.forEach(function(it){ m[it.id]=it; }); }
-    else if(_ach_isObj(val)){ Object.keys(val).forEach(function(k){ if(_ach_isItemArr(val[k])) val[k].forEach(function(it){ m[it.id]=it; }); }); }
-    return m; }
+  /* v12.45 : les fiches des « cartes de listes » imbriquées comptent aussi (suppression → certificat) */
+  function _ach_eachItem(val, fn){
+    function arr(a){ if(_ach_isItemArr(a)) a.forEach(fn); }
+    if(Array.isArray(val)){ arr(val); return; }
+    if(_ach_isObj(val)){ Object.keys(val).forEach(function(k){ var v=val[k]; if(Array.isArray(v)) arr(v); else if(_ach_isArrMap(v)) Object.keys(v).forEach(function(s){ arr(v[s]); }); }); } }
+  function _ach_collectIds(val){ var ids={}; _ach_eachItem(val, function(it){ ids[it.id]=1; }); return ids; }
+  function _ach_collectItems(val){ var m={}; _ach_eachItem(val, function(it){ m[it.id]=it; }); return m; }
   function _ach_tombDate(entry){ var s=''+(entry==null?'':entry); return (s.charAt(1)===':')? s.slice(2) : s; }
   function _ach_mergeTomb(L, C){ var out={}, mods={};
     [L,C].forEach(function(o){ if(o) Object.keys(o).forEach(function(k){ mods[k]=1; }); });
@@ -13844,6 +13858,8 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
       out[mod]=m; });
     return out; }
   function _ach_tombAll(){ return _ach_parse(window.localStorage.getItem(TOMB_KEY)||'{}')||{}; }
+  window.achSyncMergeTest=function(l,c,tomb){ return _ach_mergeVal(l,c,tomb,'cloud'); };   /* v12.45 : diagnostic (aucun effet) */
+  window.achSyncIdsTest=function(v){ return Object.keys(_ach_collectIds(_ach_parse(v)||{})); };
   function _ach_applyTombLocal(){
     var tomb=_ach_tombAll();
     Object.keys(tomb).forEach(function(mod){
@@ -14464,7 +14480,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     startRealtime();
     var ov=document.getElementById('ach-login-overlay'); if(ov) ov.classList.add('ach-hidden');
     var ub=document.getElementById('ach-userbar'); if(ub) ub.style.display='none';
-    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v12.44';
+    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v12.45';
     flag('Synchronis\u00e9');
     // fin de l'init : on autorise la journalisation des actions
     setTimeout(function(){ installInterceptor._init=false; }, 1500);
@@ -14764,6 +14780,7 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
 
   window.docsDownloadCustom=function(key){
     if(!window.achDocsFetchOne) return;
+    if(!isPriv()){ try{ var _o=daLoad(), _no=false; Object.keys(_o.docs).forEach(function(k){ (_o.docs[k]||[]).forEach(function(d){ if(d.dockey===key && !daCanView(d)) _no=true; }); }); if(_no){ if(window.toast) toast('🔒 Document réservé à la direction'); return; } }catch(e){} }   /* v12.45 */
     if(window.toast) toast('T\u00e9l\u00e9chargement\u2026');
     window.achDocsFetchOne(key).then(function(m){   /* v11.60 : le fichier n'est lu qu'au clic */
       if(!m||!m.b64){ alert('Document introuvable.'); return; }
@@ -14907,21 +14924,32 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
   var ST_LBL={ok:'Reçu',att:'En cours',miss:'Manquant'};
 
   /* v8.06 — DOSSIER DE DOCUMENTS PAR VENTE (rapatriement de « Documents par affaire » dans Ventes/En cours) */
-  window.achDaCount=function(key){ try{ var d=(daLoad().docs[key]||[]); return { n:d.length, miss:d.some(function(x){return x.st==='miss';}) }; }catch(e){ return {n:0,miss:false}; } };
+  /* v12.45 (Laurent 10/11) : « il faut qu'elle [Marine A.] et moi y ayons accès ; pour les autres utilisateurs, nous proposer
+     le choix de leur donner ou non la vue au cas par cas ». → l'administrateur et la gérante voient TOUS les documents des
+     dossiers de vente ; chaque document porte vis:[clés] = les autres membres à qui on l'a ouvert (pastilles cliquables).
+     Un document sans « vis » n'est vu que par eux deux. Chaque modification est horodatée (updated) pour la synchro. */
+  function daOthers(){ var R=window.ROLES||{}; return Object.keys(R).filter(function(k){ return k!=='admin'&&k!=='gerant'&&k!=='public'; }).map(function(k){ return {k:k, ini:R[k].initials||k, name:R[k].name||k}; }); }
+  function daCanView(d){ return isPriv() || (!!d && Array.isArray(d.vis) && d.vis.indexOf(myKey())>=0); }
+  function daVisible(key){ return (daLoad().docs[key]||[]).filter(daCanView); }
+  window.achDaCanView=daCanView;
+  window.achDaCount=function(key){ try{ var d=daVisible(key); return { n:d.length, miss:d.some(function(x){return x.st==='miss';}) }; }catch(e){ return {n:0,miss:false}; } };
   window.ecDossRender=function(){
     var key=window._ecDossKey; if(!key) return;
     var body=document.getElementById('ec-doss-body'); if(!body) return;
-    var o=daLoad(), docs=o.docs[key]||[], adm=isPriv();
+    var docs=daVisible(key), adm=isPriv(), oth=daOthers();
     var out='';
-    if(adm){ out+='<div class="ec-doss-tools"><button class="btn btn-terra btn-sm" onclick="docaffAddDoc(\''+key+'\')">＋ Ajouter un document</button></div>'; }
+    if(adm){ out+='<div class="ec-doss-tools"><button class="btn btn-terra btn-sm" onclick="docaffAddDoc(\''+key+'\')">＋ Ajouter un document</button>'
+      +(oth.length?'<span class="da-leg">Vous deux voyez tout. Pastilles <b>'+oth.map(function(u){ return esc(u.ini); }).join('</b>, <b>')+'</b> : un clic donne ou retire la vue du document à '+oth.map(function(u){ return esc(u.name); }).join(' / ')+'.</span>':'')+'</div>'; }
     if(!docs.length){
-      out+='<div class="ec-doss-empty">Aucun document pour cette affaire'+(adm?' — cliquez sur « ＋ Ajouter un document » pour commencer.':'.')+'</div>';
+      out+='<div class="ec-doss-empty">'+(adm?'Aucun document pour cette affaire — cliquez sur « ＋ Ajouter un document » pour commencer.':'Aucun document ne vous est ouvert pour cette affaire.')+'</div>';
     }
     docs.forEach(function(d){
+      var vis=Array.isArray(d.vis)?d.vis:[];
       out+='<div class="doc-item"><span class="doc-icon">📄</span><div style="flex:1;min-width:0;">'
         +'<div class="doc-name">'+esc(d.nom)+'</div>'
         +(d.note?'<div class="doc-meta">'+esc(d.note)+'</div>':'')
         +'</div><div class="doc-actions">'
+        +(adm&&oth.length?'<span class="da-vis" title="Qui d’autre voit ce document">'+oth.map(function(u){ var on=vis.indexOf(u.k)>=0; return '<button type="button" class="da-chip'+(on?' on':'')+'" data-u="'+esc(u.k)+'" onclick="docaffVis(\''+key+'\',\''+d.id+'\',\''+esc(u.k)+'\')" title="'+esc(u.name)+(on?' voit ce document — cliquer pour lui retirer la vue':' ne voit pas ce document — cliquer pour lui donner la vue')+'">'+(on?'👁 ':'')+esc(u.ini)+'</button>'; }).join('')+'</span>':'')
         +(d.dockey? fileTileFor({name:d.fname||d.nom,type:d.ftype||''}, d.dockey) : '')
         +(adm?'<button class="doc-mini-btn" title="Modifier" onclick="docaffEditDoc(\''+key+'\',\''+d.id+'\')">✎</button>'
           +'<button class="doc-mini-btn del" title="Supprimer" onclick="docaffDelDoc(\''+key+'\',\''+d.id+'\')">🗑</button>':'')
@@ -14930,6 +14958,20 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
     });
     body.innerHTML=out;
   };
+  /* donner / retirer la vue d'UN document à UN membre (administrateur et gérante seulement) */
+  window.docaffVis=function(affKey,id,uk){
+    if(!isPriv()) return;
+    var o=daLoad(); var d=(o.docs[affKey]||[]).filter(function(x){return x.id===id;})[0]; if(!d) return;
+    var u=daOthers().filter(function(x){ return x.k===uk; })[0]; if(!u) return;
+    var v=Array.isArray(d.vis)?d.vis.slice():[], i=v.indexOf(uk), on=i<0;
+    if(on) v.push(uk); else v.splice(i,1);
+    d.vis=v; d.updated=new Date().toISOString();
+    daSave(o); docaffRender(); try{ if(window.ecRenderPage) ecRenderPage(); }catch(e){}
+    if(window.toast) toast(on? ('👁 '+u.name+' peut voir « '+d.nom+' »') : (u.name+' ne voit plus « '+d.nom+' »'));
+  };
+  function daVisBoxes(sel){ var box=document.getElementById('dadoc-vis'), row=document.getElementById('dadoc-vis-row'), oth=daOthers(); if(!box) return;
+    if(row) row.style.display=oth.length?'':'none';
+    box.innerHTML=oth.map(function(u){ return '<label class="da-cb"><input type="checkbox" class="dadoc-vis-u" value="'+esc(u.k)+'"'+((sel||[]).indexOf(u.k)>=0?' checked':'')+'> '+esc(u.name)+'</label>'; }).join(''); }
   window.ecOpenDossier=function(id){
     window._ecDossKey='ec-'+id;
     var label='';
@@ -14990,6 +15032,7 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
     document.getElementById('dadoc-st').value='att';
     document.getElementById('dadoc-file').value='';
     document.getElementById('dadoc-title').textContent='Ajouter un document à l\u2019affaire';
+    daVisBoxes([]);
     openModal('modal-docaff');
   };
   window.docaffEditDoc=function(affKey,id){
@@ -15002,10 +15045,14 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
     document.getElementById('dadoc-st').value=d.st||'att';
     document.getElementById('dadoc-file').value='';
     document.getElementById('dadoc-title').textContent='Modifier le document';
+    daVisBoxes(Array.isArray(d.vis)?d.vis:[]);
     openModal('modal-docaff');
   };
   window.docaffSaveDoc=function(){
+    if(!isPriv()) return;
     var affKey=document.getElementById('dadoc-aff').value;
+    var vis=[]; [].forEach.call(document.querySelectorAll('.dadoc-vis-u:checked'), function(cb){ vis.push(cb.value); });
+    var now=new Date().toISOString();
     var id=document.getElementById('dadoc-id').value;
     var nom=(document.getElementById('dadoc-nom').value||'').trim();
     if(!nom){ alert('Donnez un nom au document.'); return; }
@@ -15015,8 +15062,8 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
     function persist(dockey,fname,ftype){
       var o=daLoad(); o.docs[affKey]=o.docs[affKey]||[];
       if(id){ var d=o.docs[affKey].filter(function(x){return x.id===id;})[0];
-        if(d){ d.nom=nom; d.note=note; d.st=st; if(dockey){ d.dockey=dockey; d.fname=fname; d.ftype=ftype; } } }
-      else o.docs[affKey].push({id:'dd-'+Date.now(), nom:nom, note:note, st:st, dockey:dockey||'', fname:fname||'', ftype:ftype||''});
+        if(d){ d.nom=nom; d.note=note; d.st=st; d.vis=vis; d.updated=now; if(dockey){ d.dockey=dockey; d.fname=fname; d.ftype=ftype; } } }
+      else o.docs[affKey].push({id:'dd-'+Date.now(), nom:nom, note:note, st:st, dockey:dockey||'', fname:fname||'', ftype:ftype||'', vis:vis, updated:now, by:myKey()});
       daSave(o); closeModal('modal-docaff'); docaffRender();
       if(window.toast) toast(id?'Document mis à jour ✓':'Document ajouté ✓');
     }
@@ -15042,7 +15089,7 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
   window.docaffCycle=function(affKey,id){
     if(!isPriv()) return;
     var o=daLoad(); var d=(o.docs[affKey]||[]).filter(function(x){return x.id===id;})[0]; if(!d) return;
-    d.st = d.st==='ok'?'att':(d.st==='att'?'miss':'ok');
+    d.st = d.st==='ok'?'att':(d.st==='att'?'miss':'ok'); d.updated=new Date().toISOString();
     daSave(o); docaffRender();
   };
   window.docaffDelDoc=function(affKey,id){
@@ -19552,6 +19599,7 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
     </div>
     <div class="form-group"><label class="form-label">Note (optionnel)</label><input class="form-input" id="dadoc-note" placeholder="Ex. Signé le 12/02/2026 · Relancer le notaire"></div>
     <div class="form-group"><label class="form-label" id="dadoc-file-lbl">Joindre le fichier (optionnel, 4 Mo max)</label><input type="file" id="dadoc-file" class="form-input" style="padding:9px;"></div>
+    <div class="form-group" id="dadoc-vis-row"><label class="form-label">Visible par Laurent et Marine Attias — et aussi par :</label><div id="dadoc-vis" class="da-cbs"></div></div>
     <div class="modal-actions"><button class="btn btn-outline" onclick="closeModal('modal-docaff')">Annuler</button>
       <button class="btn btn-terra" onclick="docaffSaveDoc()">Enregistrer</button></div>
   </div>
@@ -19561,7 +19609,7 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
      <button class="modal-close" onclick="closeModal('ec-doss-modal')">x</button>
      <div class="ec-doss-head"><span class="ec-doss-ico">📁</span><div><div class="ec-doss-h">Dossier de l’affaire</div><div class="ec-doss-sub" id="ec-doss-title"></div></div></div>
      <div id="ec-doss-body" style="margin-top:6px;"></div>
-     <div class="ec-doss-foot">Fichier joint : 4 Mo maximum, déposé sur le cloud de l’agence. Ajout, modification et suppression réservés à l’administrateur et à la direction.</div>
+     <div class="ec-doss-foot">Laurent et Marine Attias voient tous les documents ; les autres membres ne voient que ceux qu’on leur ouvre. Fichier joint : 4 Mo maximum, déposé sur le cloud de l’agence. Ajout, modification et suppression réservés à l’administrateur et à la direction.</div>
    </div>
  </div>
 <div class="modal-overlay" id="modal-doc" onmousedown="this._d=(event.target===this)" onclick="if(event.target===this&&this._d)closeModal('modal-doc');this._d=false;">
@@ -23611,7 +23659,17 @@ window.r3FlashToDetail=function(){
 .ec-doss-ico{font-size:24px;}
 .ec-doss-h{font-family:'Cormorant Garamond',serif;font-size:22px;color:var(--noir);line-height:1.1;}
 .ec-doss-sub{font-size:12px;color:var(--gris);margin-top:2px;}
-.ec-doss-tools{margin:4px 0 12px;}
+.ec-doss-tools{margin:4px 0 12px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+/* v12.45 : qui d'autre voit le document (pastilles cliquables par l'administrateur et la gérante) */
+.da-leg{flex:1;min-width:200px;font-size:11px;color:var(--gris-2);line-height:1.45;} .da-leg b{color:var(--kaki);font-weight:600;}
+.da-vis{display:inline-flex;align-items:center;gap:4px;margin-right:2px;}
+.da-chip{border:1px dashed var(--beige-3);background:transparent;color:var(--gris-2);border-radius:11px;padding:2px 8px;font-family:'Jost',sans-serif;font-size:10px;line-height:1.5;cursor:pointer;white-space:nowrap;}
+.da-chip:hover{border-color:var(--kaki);color:var(--kaki);} .da-chip.on{border:1px solid var(--kaki);background:var(--kaki-p);color:var(--kaki);font-weight:600;}
+.da-cbs{display:flex;gap:6px 18px;flex-wrap:wrap;} .da-cb{font-size:13px;color:var(--noir);display:inline-flex;align-items:center;gap:6px;cursor:pointer;} .da-cb input{accent-color:var(--terra);width:15px;height:15px;}
+#ec-doss-body .doc-item .doc-actions{flex-shrink:1;flex-wrap:wrap;justify-content:flex-end;row-gap:5px;}
+/* v12.45 : la fenêtre « Ajouter / Modifier un document » s'ouvrait DERRIÈRE le dossier dès qu'il contenait 3 documents ou plus (même z-index, dossier placé après dans la page) */
+#modal-docaff{z-index:320;}
+@media (max-width:700px){ #ec-doss-body .doc-item{flex-wrap:wrap;row-gap:8px;} #ec-doss-body .doc-item>div:nth-child(2){flex:1 1 calc(100% - 40px)!important;} #ec-doss-body .doc-item .doc-actions{flex-basis:100%;margin-left:0;justify-content:flex-start;} #ec-doss-body .doc-item .doc-status{margin-left:auto;} .da-chip{padding:5px 10px;font-size:11px;} }
 .ec-doss-empty{font-size:13px;color:var(--gris-2);font-style:italic;padding:14px 4px;}
 .ec-doss-foot{font-size:11px;color:var(--gris-2);font-style:italic;margin-top:12px;line-height:1.5;border-top:1px solid var(--border);padding-top:10px;}
 .pg-com-del:hover{color:#c0392b;border-color:#c0392b;}
