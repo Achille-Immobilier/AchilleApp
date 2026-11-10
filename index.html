@@ -1921,7 +1921,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     </div>
   </div>
   </div>
-  <div class="logo-ver app-ver">Achille App — v12.37</div>
+  <div class="logo-ver app-ver">Achille App — v12.38</div>
 </aside>
 <div id="mob-bk" onclick="mobNav(false)"></div>
 <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Réduire la barre latérale">‹</button>
@@ -15134,7 +15134,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     startRealtime();
     var ov=document.getElementById('ach-login-overlay'); if(ov) ov.classList.add('ach-hidden');
     var ub=document.getElementById('ach-userbar'); if(ub) ub.style.display='none';
-    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v12.37';
+    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v12.38';
     flag('Synchronis\u00e9');
     // fin de l'init : on autorise la journalisation des actions
     setTimeout(function(){ installInterceptor._init=false; }, 1500);
@@ -29417,104 +29417,166 @@ details.cx-more{margin-top:8px;} details.cx-more>summary{font-size:11.5px;color:
 .ts-bar{display:inline-block;height:7px;border-radius:4px;background:var(--vert);opacity:.55;margin-right:8px;vertical-align:middle;} .ts-bar.out{background:var(--terra);}
 .ts-pill{border:1px solid var(--border);background:#fff;border-radius:999px;font-family:'Jost',sans-serif;font-size:11.5px;padding:2px 10px;cursor:pointer;margin-left:4px;color:var(--gris);} .ts-pill.on{border-color:var(--terra);color:var(--terra);font-weight:600;}
 .ts-c{display:grid;grid-template-columns:230px 1fr 120px 120px;gap:12px;align-items:center;padding:7px 4px;border-bottom:1px solid #f3eee6;font-size:13.5px;cursor:pointer;} .ts-c:hover,.ts-c.on{background:#fbf8f3;}
-.ts-cb{height:8px;background:#f3eee6;border-radius:5px;overflow:hidden;} .ts-cb i{display:block;height:100%;background:var(--terra);opacity:.7;} .ts-cb i.pos{background:var(--vert);}
+.ts-cb2{height:8px;background:#f3eee6;border-radius:5px;overflow:hidden;} .ts-cb2 i{display:block;height:100%;background:var(--terra);opacity:.7;} .ts-cb2 i.pos{background:var(--vert);}
+/* v12.38 : refonte — solde saisi, charges à pointer + encours, opérations à venir */
+.ts-kpis{grid-template-columns:1.2fr 1fr 1fr 1fr;} .ts-kpis .ts-ks{margin-bottom:0;}
+.ts-solde{display:flex;align-items:baseline;gap:8px;margin:2px 0 4px;} .ts-solde span{font-size:20px;color:var(--gris-2);}
+.ts-solde input{width:100%;min-width:0;border:none;border-bottom:2px solid var(--beige-3);background:transparent;font-family:'Cormorant Garamond',serif;font-size:38px;font-weight:600;color:var(--noir);padding:0 2px;outline:none;}
+.ts-solde input:hover,.ts-solde input:focus{border-bottom-color:var(--terra);}
+.ts-cols{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(0,1fr);gap:14px;align-items:start;} .ts-colL,.ts-colR{min-width:0;}
+.ts-enc{background:var(--beige);border-radius:9px;padding:9px 12px 8px;margin:14px 0 4px;} .ts-hd+.ts-enc{margin-top:4px;}
+.ts-enc-t{display:flex;justify-content:space-between;align-items:baseline;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#6b6558;font-weight:600;} .ts-enc-t b{font-size:13px;letter-spacing:0;color:var(--terra);}
+.ts-enc-b{height:6px;background:#e6dfd2;border-radius:4px;overflow:hidden;margin:6px 0;} .ts-enc-b i{display:block;height:100%;background:var(--terra);border-radius:4px;transition:width .25s;} .ts-enc-b i.full{background:var(--vert);}
+.ts-enc-l{display:flex;justify-content:space-between;gap:6px 14px;flex-wrap:wrap;font-size:12px;color:var(--gris);} .ts-enc-l b{color:var(--noir);font-weight:600;}
+.ts-cb{width:17px;height:17px;accent-color:var(--terra);cursor:pointer;flex:none;margin:0;}
+.ts-r.done .ts-rl{color:var(--gris-2);text-decoration:line-through;text-decoration-color:rgba(0,0,0,.25);} .ts-r.done .ts-ra{color:var(--gris-2);}
+.ts-st{font-size:12px;color:var(--gris-2);white-space:nowrap;} .ts-st.ok{color:var(--vert);} .ts-st.ok i{color:var(--gris-2);font-style:normal;} .ts-st.late{color:#8a5a1e;font-weight:500;} .ts-st.red{color:var(--rouge);font-weight:500;} .ts-st.off{font-style:italic;}
+.ts-o{display:flex;align-items:center;gap:9px;padding:7px 0;border-bottom:1px solid #f3eee6;font-size:13.5px;}
+.ts-ol{flex:1;min-width:0;} .ts-ol small{display:block;font-size:11.5px;color:var(--gris-2);line-height:1.35;} .ts-ol small.ts-warn{color:#8a5a1e;}
+.ts-om{white-space:nowrap;font-weight:500;} .ts-om.ts-nc{color:var(--gris-2);font-weight:400;}
+.ts-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#c9c2b4;margin-right:7px;vertical-align:middle;} .ts-dot.o{background:#d08a2e;} .ts-dot.r{background:var(--rouge);}
+.ts-tot{display:flex;justify-content:space-between;padding:9px 0 0;font-size:13px;color:var(--gris);} .ts-tot b{color:var(--noir);}
+.ts-fold{cursor:pointer;margin-bottom:0;} .ts-fold:hover .ts-h{color:var(--terra);} .ts-fold+table{margin-top:10px;}
+.ts-note a{color:var(--terra);cursor:pointer;text-decoration:underline;} .ts-tw{overflow-x:auto;}
 .ts-cm{font-size:12px;color:var(--gris-2);text-align:right;white-space:nowrap;} .ts-cv{text-align:right;font-weight:500;white-space:nowrap;} .ts-cops{background:#fbf8f3;padding:6px 14px 10px;border-bottom:1px solid #f3eee6;}
 .ts-vide{text-align:center;padding:36px 20px;} .ts-vide p{font-size:13.5px;color:var(--gris);margin:8px 0 14px;}
 @media (max-width:1100px){ .ts-kpis{grid-template-columns:1fr 1fr;} }
 @media (max-width:880px){ .ts-kpis{grid-template-columns:1fr;} .ts-tab{font-size:12.5px;} .ts-tab td,.ts-tab th{padding:7px 5px;} .ts-hist th:nth-child(4),.ts-hist td:nth-child(4){display:none;} .ts-bar{display:none;}
-  .ts-c{grid-template-columns:1fr auto;} .ts-cb,.ts-cm{display:none;} .ts-r{flex-wrap:wrap;} .ts-rl{flex-basis:calc(100% - 34px);} .ts-rn{margin-left:26px;flex:1;} .ts-btn,.ts-pill{min-height:36px;} .ts-f input,.ts-f select{flex:1 1 140px;} }
+  .ts-c{grid-template-columns:1fr auto;} .ts-cb2,.ts-cm{display:none;} .ts-r{flex-wrap:wrap;gap:4px 10px;} .ts-rl{flex-basis:calc(100% - 34px);} .ts-st{margin-left:27px;flex:1;white-space:normal;} .ts-rn{margin-left:26px;flex:1;}
+  .ts-cols{grid-template-columns:minmax(0,1fr);} .ts-rdm{display:none;} .ts-solde input{font-size:32px;} .ts-cb{width:20px;height:20px;} .ts-x{min-width:32px;min-height:32px;} .ts-btn,.ts-pill{min-height:36px;} .ts-f input,.ts-f select{flex:1 1 140px;} }
 </style>
 <script>
 (function(){
   'use strict';
-  /* ══ v12.36 (Laurent 10/11) : TRÉSORERIE — proposition de nouvelle page Finances (l'ancienne reste intacte).
-     « Connaître ma situation et les projections ; c'est moi qui renseigne le solde. »
-     Aucune donnée bancaire dans le code : tout vient d'un fichier d'analyse des relevés importé une fois
-     (ach_treso_ops_v1 : opérations classées ; ach_treso_v1 : solde saisi, charges récurrentes, prévisions ponctuelles).
-     Ces deux blocs ne sont téléchargés que sur le poste de Laurent (PUBLIC_SKIP). ══ */
-  var K='ach_treso_v1', KO='ach_treso_ops_v1';
+  /* ══ v12.38 (Laurent 10/11) : TRÉSORERIE (essai) — refonte : L'USAGE DE LA PAGE FINANCES, modernisé.
+     Retour de Laurent sur la v12.36 : « ta page est intéressante et avec des stats mais j'ai besoin de l'usage que j'avais
+     avant, avec des projections en temps réel, l'encours, les mouvements dès qu'ils passent et ceux à venir ».
+     Donc, comme sur Finances : 1) le solde en banque saisi  2) les charges que l'on POINTE dès qu'elles passent, avec
+     l'encours (pointé / total / reste à payer)  3) les opérations à venir  4) le solde projeté, recalculé à chaque clic.
+     En plus : échéances datées (jour du mois), ventes en cours, projection sur 6 mois, statistiques des relevés (repliées).
+     - Le SOLDE et les OPÉRATIONS À VENIR sont ceux de la page Finances (mêmes clés ach_fin_solde_v3 / ach_fin_ops_v3) :
+       pas de double saisie pendant l'essai.
+     - Charges et pointages : ach_treso_v1 {rec:[…], pt:{idCharge:{période:{d,t,auto}}}, opt, ptT:[…]} ; relevés : ach_treso_ops_v1.
+       Ces deux blocs ne sont téléchargés que sur le poste de Laurent (PUBLIC_SKIP). Aucune donnée bancaire dans le code. ══ */
+  var K='ach_treso_v1', KO='ach_treso_ops_v1', KS='ach_fin_solde_v3', KP='ach_fin_ops_v3';
   var MC=['janv.','févr.','mars','avr.','mai','juin','juil.','août','sept.','oct.','nov.','déc.'];
   var MOIS=['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
+  var JOUR=864e5;
   function esc(t){ return (''+(t==null?'':t)).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
   function isAdmin(){ return ((window.ACH_USER||{}).key||'admin')==='admin'; }
-  function load(){ try{ var o=JSON.parse(localStorage.getItem(K)||'{}'); o=(o&&typeof o==='object'&&!Array.isArray(o))?o:{}; o.rec=Array.isArray(o.rec)?o.rec:[]; o.prev=Array.isArray(o.prev)?o.prev:[]; o.opt=o.opt||{ventes:1}; return o; }catch(e){ return {rec:[],prev:[],opt:{ventes:1}}; } }
+  function load(){ var o; try{ o=JSON.parse(localStorage.getItem(K)||'{}'); }catch(e){ o={}; } o=(o&&typeof o==='object'&&!Array.isArray(o))?o:{};
+    o.rec=Array.isArray(o.rec)?o.rec:[]; o.prev=Array.isArray(o.prev)?o.prev:[]; o.opt=o.opt||{ventes:1}; o.ptT=Array.isArray(o.ptT)?o.ptT:[]; return o; }
   function save(o){ o.maj=new Date().toISOString(); o.par=(window.ACH_USER&&ACH_USER.initials)||''; try{ localStorage.setItem(K, JSON.stringify(o)); }catch(e){ window.achErr&&achErr(e); } }
   function opsStore(){ try{ var o=JSON.parse(localStorage.getItem(KO)||'{}'); return (o&&Array.isArray(o.ops))?o:{ops:[]}; }catch(e){ return {ops:[]}; } }
   function eur(n){ n=Math.round(+n||0); return (n<0?'−':'')+Math.abs(n).toLocaleString('fr-FR')+' €'; }
   function eur2(n){ n=+n||0; return (n<0?'−':'')+Math.abs(n).toLocaleString('fr-FR',{minimumFractionDigits:2,maximumFractionDigits:2})+' €'; }
-  function num(v){ v=(''+(v==null?'':v)).replace(/[\s  €]/g,'').replace(',','.'); var x=parseFloat(v); return isNaN(x)?null:x; }
-  function iso(d){ return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2); }
+  function sgn(n){ return (n>=0?'+ ':'− ')+eur2(Math.abs(n)).replace('−',''); }
+  function num(v){ v=(''+(v==null?'':v)).replace(/[\s  €]/g,'').replace('−','-').replace(',','.'); var x=parseFloat(v); return isNaN(x)?null:x; }
+  function p2(n){ return ('0'+n).slice(-2); }
+  function iso(d){ return d.getFullYear()+'-'+p2(d.getMonth()+1)+'-'+p2(d.getDate()); }
   function pIso(s){ var p=(''+s).split('-'); return new Date(+p[0],(+p[1]||1)-1,+p[2]||1); }
-  function frD(d){ return ('0'+d.getDate()).slice(-2)+'/'+('0'+(d.getMonth()+1)).slice(-2)+'/'+d.getFullYear(); }
+  function frD(d){ return p2(d.getDate())+'/'+p2(d.getMonth()+1)+'/'+d.getFullYear(); }
+  function frC(d){ return p2(d.getDate())+'/'+p2(d.getMonth()+1); }
   function frJ(d){ return d.getDate()+(d.getDate()===1?'er':'')+' '+MOIS[d.getMonth()]; }
   function today(){ var d=new Date(); d.setHours(0,0,0,0); return d; }
-  function PER(p){ return p==='T'?'chaque trimestre':(p==='A'?'une fois par an':'chaque mois'); }
 
-  /* ── point de départ : le solde saisi par Laurent, sinon le dernier relevé importé ── */
-  function base(S){ if(S.solde&&S.solde.d&&S.solde.v!=null) return {v:+S.solde.v, d:pIso(S.solde.d), saisi:true};
-    var o=opsStore(); if(o.soldeRef) return {v:+o.soldeRef.v, d:pIso(o.soldeRef.d), saisi:false}; return null; }
-  /* occurrences d'une charge récurrente dans ]from ; to] */
+  /* ── SOLDE EN BANQUE : celui de la page Finances (valeur horodatée {_ach_scalar, v, updated}) ── */
+  function soldeGet(){ var raw=localStorage.getItem(KS); if(raw==null||raw==='') return null;
+    try{ var o=JSON.parse(raw); if(o&&typeof o==='object'&&o._ach_scalar===1){ var v=num(o.v); return v==null?null:{v:v, t:(o.updated?new Date(o.updated):null)}; } }catch(e){}
+    var x=num(raw); return x==null?null:{v:x, t:null}; }
+  function soldeSet(v){ localStorage.setItem(KS, JSON.stringify({_ach_scalar:1, v:(+v).toLocaleString('fr-FR',{minimumFractionDigits:2,maximumFractionDigits:2}), updated:new Date().toISOString()})); }
+  function base(){ var s=soldeGet(); if(s) return {v:s.v, t:s.t, saisi:true};
+    var o=opsStore(); if(o.soldeRef) return {v:+o.soldeRef.v, t:pIso(o.soldeRef.d), saisi:false}; return null; }
+
+  /* ── OPÉRATIONS À VENIR : celles de la page Finances ({id, label, montant, date 'jj/mm/aaaa'|'jj/mm'|'', updated}) ── */
+  function opsGet(){ try{ var a=JSON.parse(localStorage.getItem(KP)||'[]'); return Array.isArray(a)?a.filter(function(o){ return o&&o.id!=null; }):[]; }catch(e){ return []; } }
+  function opsSet(a){ try{ localStorage.setItem(KP, JSON.stringify(a)); }catch(e){ window.achErr&&achErr(e); } }
+  /* même règle que Finances : date complète = exacte ; « jj/mm » = l'occurrence la plus proche d'aujourd'hui */
+  function opWhen(op){ var raw=(''+(op&&op.date||'')), f=raw.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+    if(f){ if(!+f[1]||+f[1]>31||!+f[2]||+f[2]>12) return null; return new Date(+f[3], +f[2]-1, +f[1]); }
+    var m=raw.match(/^(\d{2})\/(\d{2})$/); if(!m||!+m[1]||+m[1]>31||!+m[2]||+m[2]>12) return null;
+    var t=today(), best=null, gap=Infinity; [t.getFullYear()-1,t.getFullYear(),t.getFullYear()+1].forEach(function(y){ var d=new Date(y,+m[2]-1,+m[1]), g=Math.abs(d-t); if(g<gap){ gap=g; best=d; } }); return best; }
+  function normDate(s){ s=(''+(s||'')).trim(); if(!s) return ''; var y=new Date().getFullYear();
+    var m=s.match(/^(\d{4})-(\d{2})-(\d{2})$/); if(m) return m[3]+'/'+m[2]+'/'+m[1];
+    m=s.match(/^(\d{1,2})\s*[\/\-. ]\s*(\d{1,2})(?:\s*[\/\-. ]\s*(\d{2}|\d{4}))?$/); if(m) return p2(m[1])+'/'+p2(m[2])+'/'+(m[3]?(m[3].length===2?'20'+m[3]:m[3]):y);
+    return s; }
+
+  /* ── CHARGES RÉCURRENTES : périodes et échéances ── */
+  function amt(r){ return r? Math.abs(+r.amt||0) : 0; }
+  function perKey(r,d){ var y=d.getFullYear(); return r.per==='T'? y+'-T'+(Math.floor(d.getMonth()/3)+1) : (r.per==='A'? ''+y : y+'-'+p2(d.getMonth()+1)); }
+  function perStart(r,t){ return r.per==='T'? new Date(t.getFullYear(), Math.floor(t.getMonth()/3)*3, 1) : (r.per==='A'? new Date(t.getFullYear(),0,1) : new Date(t.getFullYear(),t.getMonth(),1)); }
+  function perEnd(r,t){ return r.per==='T'? new Date(t.getFullYear(), Math.floor(t.getMonth()/3)*3+3, 0) : (r.per==='A'? new Date(t.getFullYear(),11,31) : new Date(t.getFullYear(),t.getMonth()+1,0)); }
+  /* échéances d'une charge dans [from ; to] */
   function occ(r, from, to){ var out=[], y=from.getFullYear(), m=from.getMonth();
-    for(var i=0;i<=14;i++){ var yy=y+Math.floor((m+i)/12), mm=(m+i)%12;
-      if(r.per==='M' || ((r.mois||[]).indexOf(mm+1)>=0)){ var dim=new Date(yy,mm+1,0).getDate(), d=new Date(yy,mm,Math.min(+r.j||1,dim)); if(d>from && d<=to) out.push(d); } }
+    for(var i=0;i<=26;i++){ var yy=y+Math.floor((m+i)/12), mm=(m+i)%12;
+      if(r.per==='M' || ((r.mois||[]).indexOf(mm+1)>=0)){ var dim=new Date(yy,mm+1,0).getDate(), d=new Date(yy,mm,Math.min(+r.j||1,dim)); if(d>=from && d<=to) out.push(d); if(d>to) break; } }
     return out; }
+  function curOcc(r,t){ return occ(r, perStart(r,t), perEnd(r,t))[0]||null; }
+  function pointe(S,r,d){ var p=S.pt&&S.pt[r.id]; return (p&&p[perKey(r,d)])||null; }
+  /* premier affichage : les échéances de la période en cours déjà couvertes par les relevés importés sont pointées d'office */
+  function autoPointe(S){ var o=opsStore(); if(!o.soldeRef) return 0; var lim=pIso(o.soldeRef.d), t=today(), n=0; S.pt=S.pt||{};
+    S.rec.forEach(function(r){ if(!r||!amt(r)) return; occ(r, perStart(r,t), perEnd(r,t)).forEach(function(d){ if(d<=lim && !pointe(S,r,d)){ (S.pt[r.id]=S.pt[r.id]||{})[perKey(r,d)]={d:iso(d), auto:1}; n++; } }); });
+    return n; }
+  /* reprise des données de la v12.36 : solde saisi, dépenses ponctuelles, charges décochées */
+  function migre(S){ var ch=false;
+    if(S.solde){ try{ var a=soldeGet(), d=S.solde.d?pIso(S.solde.d):null; if(S.solde.v!=null && (!a || (a.t&&d&&a.t<d))) soldeSet(+S.solde.v); }catch(e){} delete S.solde; ch=true; }
+    if(S.prev.length){ var ops=opsGet(), now=Date.now(); S.prev.forEach(function(p,i){ if(p&&p.label) ops.push({id:now+i, label:p.label, montant:+p.amt||0, date:(p.d?frD(pIso(p.d)):''), updated:new Date().toISOString()}); }); opsSet(ops); S.prev=[]; ch=true; }
+    S.rec.forEach(function(r){ if(r&&r.on===0){ r.amt0=r.amt; r.amt=0; delete r.on; ch=true; } });   /* « décochée » (v12.36) → montant à 0, comme sur Finances */
+    if(!S.pt){ S.pt={}; if(S.rec.length) autoPointe(S); ch=true; }
+    if(ch) save(S); return S; }
+
   function ventes(){ try{ var h=(window.ecHonoAVenir?ecHonoAVenir():{lignes:[]}); return (h.lignes||[]).map(function(l){ return {id:l.id, lib:l.addr, d:(l.acteMs!=null?new Date(l.acteMs):null), m:+l.ttc||0}; }); }catch(e){ return []; } }
-  /* tous les mouvements prévus dans ]b.d ; fin] — k : 'rec' charge récurrente, 'prev' ponctuel, 'vente' honoraires d'une vente en cours */
-  function mouvements(S, b, fin){ var E=[];
-    S.rec.forEach(function(r){ if(!r||r.on===0||!(+r.amt)) return; occ(r,b.d,fin).forEach(function(d){ E.push({d:d, m:-Math.abs(+r.amt), lib:r.label, k:'rec', v:!!r.var}); }); });
-    S.prev.forEach(function(p){ if(!p||!p.d) return; var d=pIso(p.d); if(d>b.d&&d<=fin) E.push({d:d, m:+p.amt||0, lib:p.label, k:'prev'}); });
-    ventes().forEach(function(v){ if(v.d&&v.d>b.d&&v.d<=fin) E.push({d:v.d, m:v.m, lib:'Honoraires — '+v.lib, k:'vente'}); });
+
+  /* ── tout ce qui reste à passer entre aujourd'hui et « fin » ──
+     k : 'rec' charge non pointée · 'op' opération à venir · 'vente' honoraires d'une vente en cours.
+     Une échéance dépassée et non pointée (« late ») pèse dès aujourd'hui ; une opération sans date aussi. */
+  function mouvements(S, t, fin){ var E=[];
+    S.rec.forEach(function(r){ var a=amt(r); if(!a) return; occ(r, perStart(r,t), fin).forEach(function(d){ if(pointe(S,r,d)) return; var late=d<t; E.push({d:late?t:d, due:d, late:late, m:-a, lib:r.label, k:'rec', v:!!r.var}); }); });
+    opsGet().forEach(function(o){ var m=+o.montant||0; if(!m) return; var d=opWhen(o), late=!!d&&d<t, dd=(!d||late)?t:d; if(dd<=fin) E.push({d:dd, due:d, late:late, nodate:!d, m:m, lib:o.label, k:'op'}); });
+    ventes().forEach(function(v){ if(v.d&&v.d>=t&&v.d<=fin) E.push({d:v.d, due:v.d, m:v.m, lib:'Honoraires — '+v.lib, k:'vente'}); });
     E.sort(function(a,x){ return a.d-x.d || a.m-x.m; }); return E; }
-  function projection(S){ var b=base(S); if(!b) return null; var t=today();
-    var fin=new Date(b.d.getFullYear(), b.d.getMonth()+6, 0);   /* fin du 6e mois (mois du solde compris) */
-    if(t>b.d){ var f2=new Date(t.getFullYear(), t.getMonth()+6, 0); if(f2>fin) fin=f2; }
-    var E=mouvements(S,b,fin), avec=b.v, sans=b.v, min={v:b.v,d:b.d}, minS={v:b.v,d:b.d}, auj=null, mois=[], cur=null, useV=(S.opt.ventes!==0);
-    function M(d){ var k=d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2); if(!cur||cur.k!==k){ cur={k:k, y:d.getFullYear(), m:d.getMonth(), inn:0, out:0, E:[], fin:0, finS:0, deb:(useV?avec:sans)}; mois.push(cur); } return cur; }
-    /* un mois même sans mouvement */
-    var pts=[{d:b.d, a:avec, s:sans}], i, d0=new Date(b.d.getFullYear(), b.d.getMonth(), 1);
-    for(i=0; d0<=fin; i++, d0=new Date(d0.getFullYear(), d0.getMonth()+1, 1)){ var mk=M(d0>b.d?d0:b.d);
+  function projection(S){ var b=base(); if(!b) return null; var t=today(), useV=(S.opt.ventes!==0);
+    var fin=new Date(t.getFullYear(), t.getMonth()+6, 0), E=mouvements(S,t,fin), avec=b.v, sans=b.v, min={v:b.v,d:t}, minS={v:b.v,d:t}, mois=[], pts=[{d:t,a:avec,s:sans}];
+    for(var i=0;i<6;i++){ var d0=new Date(t.getFullYear(), t.getMonth()+i, 1), mk={k:d0.getFullYear()+'-'+p2(d0.getMonth()+1), y:d0.getFullYear(), m:d0.getMonth(), inn:0, out:0, E:[], fin:0, finS:0}; mois.push(mk);
       E.filter(function(e){ return e.d.getFullYear()===mk.y && e.d.getMonth()===mk.m; }).forEach(function(e){
-        if(e.k==='vente'){ avec+=e.m; if(useV) mk.inn+=e.m; } else { avec+=e.m; sans+=e.m; if(e.m>=0) mk.inn+=e.m; else mk.out+=-e.m; }
-        if(e.k!=='vente'||useV) mk.E.push(e);
+        avec+=e.m; if(e.k!=='vente') sans+=e.m;
+        if(e.k!=='vente'||useV){ mk.E.push(e); if(e.m>=0) mk.inn+=e.m; else mk.out+=-e.m; }
         if(avec<min.v) min={v:avec,d:e.d}; if(sans<minS.v) minS={v:sans,d:e.d};
         pts.push({d:e.d, a:avec, s:sans}); });
       mk.fin=avec; mk.finS=sans; }
-    /* le mois du solde de départ, s'il est passé et n'a plus aucun mouvement, n'encombre pas le tableau */
-    while(mois.length>1 && !mois[0].E.length && (mois[0].y<t.getFullYear()||(mois[0].y===t.getFullYear()&&mois[0].m<t.getMonth()))) mois.shift();
-    pts.forEach(function(p){ if(p.d<=t) auj=p; });
+    /* le mois en cours : ce qui reste à payer, ce qui doit rentrer */
+    var m0=mois[0], resteCh=0, resteOp=0, rentre=0, nCh=0, nOp=0, nLate=0;
+    m0.E.forEach(function(e){ if(e.late) nLate++; if(e.m<0){ if(e.k==='rec'){ resteCh+=-e.m; nCh++; } else { resteOp+=-e.m; nOp++; } } else rentre+=e.m; });
     /* autonomie sans les ventes : premier jour sous zéro sur 12 mois */
-    var fin12=new Date(b.d.getFullYear(), b.d.getMonth()+13, 0), run=b.v, zero=null;
-    mouvements(S,b,fin12).some(function(e){ if(e.k==='vente') return false; run+=e.m; if(run<0){ zero=e.d; return true; } return false; });
-    var s30=0, t30=new Date(t.getTime()+30*864e5); E.forEach(function(e){ if(e.m<0&&e.d>t&&e.d<=t30) s30+=-e.m; });
-    var totV=0, vAll=ventes(), vOk=vAll.filter(function(v){ return v.d&&v.d>b.d&&v.d<=fin; }), vKo=vAll.filter(function(v){ return !(v.d&&v.d>b.d); }), vLoin=vAll.filter(function(v){ return v.d&&v.d>fin; });
-    vOk.forEach(function(v){ totV+=v.m; });
-    return {b:b, fin:fin, mois:mois, pts:pts, min:(useV?min:minS), zero:zero, auj:auj, s30:s30, totV:totV, vOk:vOk, vKo:vKo, vLoin:vLoin, useV:useV, t:t}; }
-  window.achTresoProjection=function(){ return projection(load()); };
-
-  /* ── équivalent mensuel des charges récurrentes ── */
-  function mensuel(S){ var fixe=0, vari=0; S.rec.forEach(function(r){ if(!r||r.on===0) return; var m=(+r.amt||0)/(r.per==='T'?3:(r.per==='A'?12:1)); if(r.var) vari+=m; else fixe+=m; }); return {fixe:fixe, vari:vari, tot:fixe+vari}; }
-  function prochaine(r){ var t=today(), o=occ(r, new Date(t.getTime()-864e5), new Date(t.getFullYear(), t.getMonth()+14, 0)); return o[0]||null; }
+    var run=b.v, zero=null; mouvements(S,t,new Date(t.getFullYear(), t.getMonth()+13, 0)).some(function(e){ if(e.k==='vente') return false; run+=e.m; if(run<0){ zero=e.d; return true; } return false; });
+    var vAll=ventes(), vOk=vAll.filter(function(v){ return v.d&&v.d>=t&&v.d<=fin; }), totV=0; vOk.forEach(function(v){ totV+=v.m; });
+    var totOps=0; opsGet().forEach(function(o){ totOps+=+o.montant||0; });
+    return {b:b, t:t, fin:fin, mois:mois, pts:pts, min:(useV?min:minS), zero:zero, useV:useV, finMois:(useV?m0.fin:m0.finS), resteCh:resteCh, resteOp:resteOp, rentre:rentre, nCh:nCh, nOp:nOp, nLate:nLate,
+      totV:totV, vAll:vAll, vOk:vOk, ancien:b.v+totOps, totOps:totOps}; }
+  window.achTresoProjection=function(){ return projection(migre(load())); };
+  /* l'encours d'une section (comme les jauges de Finances) : lignes pointées / lignes, montant pointé / total, reste à payer */
+  function encours(S, per, t){ var n=0, N=0, paye=0, tot=0; S.rec.forEach(function(r){ if(!r||r.per!==per) return; var a=amt(r); if(!a) return; N++; tot+=a; if(pointe(S,r,t)){ n++; paye+=a; } }); return {n:n, N:N, paye:paye, tot:tot, reste:tot-paye}; }
+  window.achTresoEncours=function(per){ return encours(migre(load()), per, today()); };
 
   /* ── courbe ── */
-  function courbe(P){ var W=760,H=190,L=58,R=12,T=14,B=26, x0=P.b.d.getTime(), x1=P.fin.getTime(), vs=[0]; P.pts.forEach(function(p){ vs.push(p.a,p.s); });
+  function courbe(P){ var W=760,H=190,L=58,R=12,T=14,B=26, x0=P.t.getTime(), x1=P.fin.getTime(), vs=[0]; P.pts.forEach(function(p){ vs.push(p.a,p.s); });
     var lo=Math.min.apply(null,vs), hi=Math.max.apply(null,vs); if(hi===lo) hi=lo+1; var pad=(hi-lo)*.08; lo-=pad; hi+=pad;
-    function X(t){ return L+(W-L-R)*(t-x0)/Math.max(1,x1-x0); } function Y(v){ return T+(H-T-B)*(1-(v-lo)/(hi-lo)); }
+    function X(x){ return L+(W-L-R)*(x-x0)/Math.max(1,x1-x0); } function Y(v){ return T+(H-T-B)*(1-(v-lo)/(hi-lo)); }
     function path(key){ var d='', prev=null; P.pts.forEach(function(p,i){ var x=X(p.d.getTime()).toFixed(1), y=Y(p[key]).toFixed(1); if(i===0) d+='M'+x+' '+y; else d+=' L'+x+' '+Y(prev).toFixed(1)+' L'+x+' '+y; prev=p[key]; }); if(prev!=null) d+=' L'+X(x1).toFixed(1)+' '+Y(prev).toFixed(1); return d; }
-    var g='', d=new Date(P.b.d.getFullYear(), P.b.d.getMonth()+1, 1);
+    var g='', d=new Date(P.t.getFullYear(), P.t.getMonth()+1, 1);
     for(; d<=P.fin; d=new Date(d.getFullYear(), d.getMonth()+1, 1)){ var x=X(d.getTime()).toFixed(1); g+='<line x1="'+x+'" y1="'+T+'" x2="'+x+'" y2="'+(H-B)+'" stroke="#eee6da"/><text x="'+(+x+4)+'" y="'+(H-8)+'" class="ts-ax">'+MC[d.getMonth()]+'</text>'; }
     [lo+pad, (lo+hi)/2, hi-pad].forEach(function(v){ g+='<text x="'+(L-6)+'" y="'+(Y(v)+4).toFixed(1)+'" text-anchor="end" class="ts-ax">'+Math.round(v/1000)+' k€</text>'; });
-    var z=Y(0).toFixed(1), tx=X(Math.min(Math.max(P.t.getTime(),x0),x1)).toFixed(1);
+    var z=Y(0).toFixed(1);
     return '<svg viewBox="0 0 '+W+' '+H+'" class="ts-svg" role="img" aria-label="Solde prévu sur six mois">'+g
       +'<line x1="'+L+'" y1="'+z+'" x2="'+(W-R)+'" y2="'+z+'" stroke="#a03222" stroke-width="1" stroke-dasharray="2 3"/>'
-      +(P.t>P.b.d?'<line x1="'+tx+'" y1="'+T+'" x2="'+tx+'" y2="'+(H-B)+'" stroke="#4c533b" stroke-dasharray="3 3"/><text x="'+(+tx+4)+'" y="'+(T+9)+'" class="ts-ax" fill="#4c533b">aujourd’hui</text>':'')
       +(P.useV?'<path d="'+path('s')+'" fill="none" stroke="#b8b0a2" stroke-width="1.6" stroke-dasharray="5 4"/>':'')
       +'<path d="'+path(P.useV?'a':'s')+'" fill="none" stroke="#b47360" stroke-width="2.4"/></svg>'
       +'<div class="ts-leg"><span><i class="l1"></i>solde prévu'+(P.useV?' avec les honoraires des ventes en cours':'')+'</span>'+(P.useV?'<span><i class="l2"></i>sans ces honoraires</span>':'')+'<span><i class="l3"></i>zéro</span></div>'; }
 
-  /* ── historique (relevés importés) ── */
+  /* ── statistiques (relevés importés) ── */
   var FIN_CAT={'Apports et prêts':1};
   function historique(){ var O=opsStore().ops, by={}, order=[], run=0;
-    O.forEach(function(o){ var k=o.d.slice(0,7); if(!by[k]){ by[k]={k:k, inn:0, out:0, fin:0, cats:{}}; order.push(k); } var b=by[k]; run+=o.m; b.fin=run;
+    O.forEach(function(o){ var k=o.d.slice(0,7); if(!by[k]){ by[k]={k:k, inn:0, out:0, fin:0}; order.push(k); } var b=by[k]; run+=o.m; b.fin=run;
       if(FIN_CAT[o.c]){ b.app=(b.app||0)+o.m; } else if(o.m>=0) b.inn+=o.m; else b.out+=-o.m; });
     return order.map(function(k){ return by[k]; }); }
   function parCategorie(n){ var O=opsStore().ops; if(!O.length) return {L:[],mois:0};
@@ -29522,86 +29584,122 @@ details.cx-more{margin-top:8px;} details.cx-more>summary{font-size:11.5px;color:
     O.forEach(function(o){ if(o.d.slice(0,7)<fk) return; tot[o.c]=(tot[o.c]||0)+o.m; (ops[o.c]=ops[o.c]||[]).push(o); });
     return {L:Object.keys(tot).map(function(c){ return {c:c, v:tot[c], ops:ops[c]}; }).sort(function(a,b){ return a.v-b.v; }), mois:n, from:fk, to:last}; }
 
-  /* ── RENDU ── */
-  var _open='', _histN=12, _catOpen='', _form='';
+  /* ══ RENDU ══ */
+  var _open='', _histN=12, _catOpen='', _form='', _edit='', _stats=false;
+  function jauge(e, lib){ var pct=e.N? Math.round(100*e.n/e.N) : 0;
+    return '<div class="ts-enc"><div class="ts-enc-t"><span>'+lib+'</span><b class="'+(pct>=100?'pos':'')+'">'+pct+' %</b></div><div class="ts-enc-b"><i style="width:'+pct+'%"'+(pct>=100?' class="full"':'')+'></i></div>'
+      +'<div class="ts-enc-l"><span>'+e.n+' / '+e.N+' pointée'+(e.n>1?'s':'')+'</span><span><b>'+eur2(e.paye)+'</b> / '+eur2(e.tot)+'</span><span>Reste à payer : <b>'+eur2(e.reste)+'</b></span></div></div>'; }
+  function etat(S,r,t){ var a=amt(r); if(!a) return '<span class="ts-st off">montant à 0 — non comptée</span>';
+    var pk=pointe(S,r,t); if(pk) return '<span class="ts-st ok">✓ pointée'+(pk.d?' le '+frC(pIso(pk.d)):'')+(pk.auto?' <i>(relevé)</i>':'')+'</span>';
+    var o=curOcc(r,t); if(!o) return '<span class="ts-st">—</span>'; var late=Math.round((t-o)/JOUR);
+    if(late>0) return '<span class="ts-st '+(late>30?'red':'late')+'" title="Échéance dépassée de '+late+' jour'+(late>1?'s':'')+' : cochez-la si elle est passée sur le compte">échue le '+frC(o)+' — à pointer</span>';
+    return '<span class="ts-st">prévue '+(late===0?'aujourd’hui':'le '+frC(o))+'</span>'; }
   window.tsRender=function(){
-    var box=document.getElementById('ts-body'); if(!box) return; var S=load(), O=opsStore();
+    var box=document.getElementById('ts-body'); if(!box) return; var S=migre(load()), O=opsStore();
     if(!O.ops.length && !S.rec.length){ box.innerHTML='<div class="ts-card ts-vide"><div class="ts-h">Trésorerie</div><p>Cette page se remplit à partir de l’analyse de vos relevés bancaires, préparée par Claude dans un fichier <b>tresorerie-achille.json</b>.</p>'
       +'<label class="ts-btn ts-main">⬆ Importer le fichier d’analyse<input type="file" accept=".json,application/json" style="display:none" onchange="tsImport(this)"></label><p class="ts-note">Le fichier reste sur votre poste : il n’est partagé avec aucun autre compte.</p></div>'; return; }
-    var P=projection(S), me=mensuel(S), h='';
-    /* 1. situation */
+    var P=projection(S), t=today(), h='', mN=MOIS[t.getMonth()];
+    /* ── 1. la situation : solde saisi · reste à payer · solde projeté ── */
+    var depuis=0; if(P&&P.b.saisi&&P.b.t){ S.ptT.forEach(function(x){ if(new Date(x)>P.b.t) depuis++; }); }
     h+='<div class="ts-kpis">';
-    h+='<div class="ts-card ts-k ts-k1"><div class="ts-kl">Solde du compte</div>';
-    if(_form==='solde'){ h+='<div class="ts-f"><input id="ts-sv" inputmode="decimal" placeholder="Montant" value="'+(P?(''+P.b.v).replace('.',','):'')+'"><input id="ts-sd" type="date" value="'+iso(today())+'"><button class="ts-btn ts-main" onclick="tsSoldeSave()">Enregistrer</button><button class="ts-btn" onclick="tsForm(\'\')">Annuler</button></div>'; }
-    else { h+='<div class="ts-kv'+(P&&P.b.v<0?' neg':'')+'">'+(P?eur(P.b.v):'—')+'</div><div class="ts-ks">'+(P?(P.b.saisi?'saisi le '+frD(P.b.d):'dernier relevé importé, au '+frD(P.b.d)):'')+'</div>'
-      +'<button class="ts-btn ts-main" onclick="tsForm(\'solde\')">Mettre à jour le solde</button>'
-      +(P&&P.auj&&P.t>P.b.d?'<div class="ts-ks" style="margin-top:6px">Estimé aujourd’hui : <b>'+eur(P.useV?P.auj.a:P.auj.s)+'</b> (d’après les charges prévues depuis)</div>':''); }
-    h+='</div>';
+    h+='<div class="ts-card ts-k ts-k1"><div class="ts-kl">Solde en banque</div><div class="ts-solde"><input id="ts-solde" inputmode="decimal" value="'+(P?P.b.v.toLocaleString('fr-FR',{minimumFractionDigits:2,maximumFractionDigits:2}):'')+'" onchange="tsSolde(this.value)" onkeydown="if(event.key===\'Enter\')this.blur()" onfocus="this.select()" title="Tapez le solde affiché par la banque, puis Entrée"><span>€</span></div>'
+      +'<div class="ts-ks">'+(P? (P.b.saisi? 'Mis à jour : '+(P.b.t? P.b.t.toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}) : '—') : '<span class="ts-warn">Solde du dernier relevé importé ('+frD(P.b.t)+') — tapez le solde du jour</span>') : 'Tapez le solde du jour')+'</div>'
+      +(depuis?'<div class="ts-ks ts-warn">⚠ '+depuis+' mouvement'+(depuis>1?'s':'')+' pointé'+(depuis>1?'s':'')+' depuis cette mise à jour : vérifiez que le solde '+(depuis>1?'les inclut':'l’inclut')+'.</div>':'')+'</div>';
     if(P){
-      h+='<div class="ts-card ts-k"><div class="ts-kl">Point le plus bas sur 6 mois</div><div class="ts-kv'+(P.min.v<0?' neg':'')+'">'+eur(P.min.v)+'</div><div class="ts-ks">'+(P.min.d>P.b.d?'vers le '+frJ(P.min.d):'c’est le solde de départ')+'</div></div>';
-      h+='<div class="ts-card ts-k"><div class="ts-kl">Sorties prévues sur 30 jours</div><div class="ts-kv">'+eur(P.s30)+'</div><div class="ts-ks">charges récurrentes : '+eur(me.tot)+' par mois en moyenne<br>dont '+eur(me.vari)+' de montants variables (≈)</div></div>';
-      h+='<div class="ts-card ts-k"><div class="ts-kl">Honoraires attendus (ventes en cours)</div><div class="ts-kv pos">'+eur(P.totV)+'</div><div class="ts-ks">'+P.vOk.length+' vente'+(P.vOk.length>1?'s':'')+' avec un acte prévu d’ici fin '+MOIS[P.fin.getMonth()]+', TTC'+(P.vKo.length?'<br><span class="ts-warn">'+P.vKo.length+' sans date d’acte à venir : non comptée'+(P.vKo.length>1?'s':'')+'</span>':'')+'</div></div>';
+      h+='<div class="ts-card ts-k"><div class="ts-kl">Reste à payer d’ici fin '+mN+'</div><div class="ts-kv">'+eur(P.resteCh+P.resteOp)+'</div><div class="ts-ks">'+P.nCh+' charge'+(P.nCh>1?'s':'')+' à pointer : '+eur(P.resteCh)+'<br>'+P.nOp+' opération'+(P.nOp>1?'s':'')+' à venir : '+eur(P.resteOp)+(P.nLate?'<br><span class="ts-warn">dont '+P.nLate+' échéance'+(P.nLate>1?'s':'')+' dépassée'+(P.nLate>1?'s':'')+', à pointer</span>':'')+'</div></div>';
+      h+='<div class="ts-card ts-k"><div class="ts-kl">Solde projeté fin '+mN+'</div><div class="ts-kv'+(P.finMois<0?' neg':'')+'">'+eur(P.finMois)+'</div><div class="ts-ks">solde − reste à payer'+(P.rentre?' + '+eur(P.rentre)+' de rentrées attendues':'')+'<br>Solde + toutes les opérations à venir : <b>'+eur(P.ancien)+'</b></div></div>';
+      h+='<div class="ts-card ts-k"><div class="ts-kl">Point le plus bas sur 6 mois</div><div class="ts-kv'+(P.min.v<0?' neg':'')+'">'+eur(P.min.v)+'</div><div class="ts-ks">'+(P.min.d>P.t?'vers le '+frJ(P.min.d):'c’est le solde d’aujourd’hui')+'<br>'+(P.zero?'<span class="neg">Sans nouvelle rentrée : sous zéro vers le '+frJ(P.zero)+' '+P.zero.getFullYear()+'</span>':'Sans nouvelle rentrée : positif sur 12 mois')+'</div></div>';
     }
-    h+='</div>';
-    if(P){
-      h+='<div class="ts-card ts-phrase">'+(P.zero?'<b class="neg">Sans nouvel encaissement, le compte passerait sous zéro vers le '+frJ(P.zero)+' '+P.zero.getFullYear()+'.</b>':'<b>Sans nouvel encaissement, le compte reste positif pendant au moins 12 mois.</b>')
-        +(P.useV&&P.totV?' Avec les honoraires des ventes en cours, il serait à <b>'+eur(P.mois[P.mois.length-1].fin)+'</b> fin '+MOIS[P.fin.getMonth()]+'.':'')+'</div>';
-      /* 2. projection */
-      h+='<div class="ts-card"><div class="ts-hd"><div class="ts-h">Projection sur 6 mois</div><label class="ts-chk"><input type="checkbox"'+(P.useV?' checked':'')+' onchange="tsOptVentes(this.checked)"> compter les honoraires des ventes en cours</label></div>'+courbe(P);
-      h+='<table class="ts-tab"><thead><tr><th>Mois</th><th class="r">Rentrées prévues</th><th class="r">Sorties prévues</th><th class="r">Solde en fin de mois</th><th></th></tr></thead><tbody>';
-      P.mois.forEach(function(m){ var op=_open===m.k, f=P.useV?m.fin:m.finS;
-        h+='<tr class="ts-m'+(op?' on':'')+'" onclick="tsOpen(\''+m.k+'\')"><td><b>'+MOIS[m.m]+'</b> '+m.y+'</td><td class="r pos">'+(m.inn?'+ '+eur(m.inn):'—')+'</td><td class="r">'+(m.out?'− '+eur(m.out):'—')+'</td><td class="r"><b class="'+(f<0?'neg':'')+'">'+eur(f)+'</b></td><td class="r ts-car">'+(op?'▴':'▾')+'</td></tr>';
-        if(op){ h+='<tr class="ts-det"><td colspan="5">'+(m.E.length?m.E.map(function(e){ return '<div class="ts-l"><span class="ts-ld">'+('0'+e.d.getDate()).slice(-2)+'/'+('0'+(e.d.getMonth()+1)).slice(-2)+'</span><span class="ts-ll">'+esc(e.lib)+(e.v?' <i>≈ variable</i>':'')+(e.k==='prev'?' <i>ponctuel</i>':'')+'</span><span class="ts-lm '+(e.m>=0?'pos':'')+'">'+(e.m>=0?'+ ':'− ')+eur(Math.abs(e.m))+'</span></div>'; }).join(''):'<div class="ts-note">Aucun mouvement prévu ce mois-ci.</div>')+'</td></tr>'; } });
-      h+='</tbody></table>';
-      /* prévisions ponctuelles */
-      h+='<div class="ts-sub">Rentrées et dépenses ponctuelles à prévoir</div>'+(S.prev.length?S.prev.slice().sort(function(a,b){ return (''+a.d).localeCompare(''+b.d); }).map(function(p){ return '<div class="ts-l"><span class="ts-ld">'+frD(pIso(p.d))+'</span><span class="ts-ll">'+esc(p.label)+'</span><span class="ts-lm '+(p.amt>=0?'pos':'')+'">'+(p.amt>=0?'+ ':'− ')+eur(Math.abs(p.amt))+'</span><button class="ts-x" onclick="tsPrevDel(\''+esc(p.id)+'\')" title="Retirer">✕</button></div>'; }).join(''):'<div class="ts-note">Rien pour l’instant : une facture exceptionnelle, un remboursement, une rentrée hors vente…</div>');
-      if(_form==='prev') h+='<div class="ts-f"><select id="ts-pt"><option value="-1">Dépense</option><option value="1">Rentrée</option></select><input id="ts-pl" placeholder="Libellé (ex. solde bilan comptable)"><input id="ts-pa" inputmode="decimal" placeholder="Montant"><input id="ts-pd" type="date" value="'+iso(today())+'"><button class="ts-btn ts-main" onclick="tsPrevAdd()">Ajouter</button><button class="ts-btn" onclick="tsForm(\'\')">Annuler</button></div>';
-      else h+='<button class="ts-btn" onclick="tsForm(\'prev\')">＋ Ajouter une rentrée ou une dépense prévue</button>';
-      if(P.vKo.length||P.vLoin.length) h+='<div class="ts-note" style="margin-top:10px">'+(P.vKo.length?'Ventes en cours non comptées, faute de date d’acte à venir : '+P.vKo.map(function(v){ return esc(v.lib)+' ('+eur(v.m)+')'; }).join(' · ')+'. ':'')+(P.vLoin.length?'Au-delà de six mois : '+P.vLoin.map(function(v){ return esc(v.lib)+' ('+eur(v.m)+')'; }).join(' · ')+'.':'')+'</div>';
-      h+='</div>';
-    }
-    /* 3. charges récurrentes */
-    h+='<div class="ts-card"><div class="ts-hd"><div class="ts-h">Charges récurrentes</div><span class="ts-note">relevées sur le compte — corrigez un montant en cliquant dessus, décochez une charge arrêtée</span></div>';
-    [['M','Chaque mois'],['T','Chaque trimestre'],['A','Une fois par an']].forEach(function(g){ var L=S.rec.filter(function(r){ return r&&r.per===g[0]; }); if(!L.length) return; var tot=0; L.forEach(function(r){ if(r.on!==0) tot+=+r.amt||0; });
-      h+='<div class="ts-sub">'+g[1]+' <span>'+eur(tot)+'</span></div>'+L.map(function(r){ var nx=prochaine(r);
-        return '<div class="ts-r'+(r.on===0?' off':'')+'"><input type="checkbox"'+(r.on===0?'':' checked')+' onchange="tsRecOn(\''+esc(r.id)+'\',this.checked)" title="Compter cette charge dans la projection"><span class="ts-rl">'+esc(r.label)+(r.var?' <i>≈ variable</i>':'')+(r.note?'<small>'+esc(r.note)+'</small>':'')+'</span>'
-          +'<span class="ts-rn">'+(nx&&r.on!==0?'prochaine le '+('0'+nx.getDate()).slice(-2)+'/'+('0'+(nx.getMonth()+1)).slice(-2):'')+'</span>'
-          +'<input class="ts-ra" inputmode="decimal" value="'+(''+(+r.amt||0).toFixed(2)).replace('.',',')+'" onchange="tsRecAmt(\''+esc(r.id)+'\',this.value)" title="Montant">'
-          +'<button class="ts-x" onclick="tsRecDel(\''+esc(r.id)+'\')" title="Supprimer cette charge">✕</button></div>'; }).join(''); });
-    if(_form==='rec') h+='<div class="ts-f"><input id="ts-rl" placeholder="Libellé"><input id="ts-ra" inputmode="decimal" placeholder="Montant"><select id="ts-rp" onchange="document.getElementById(\'ts-rm\').style.display=this.value===\'M\'?\'none\':\'\'"><option value="M">chaque mois</option><option value="T">chaque trimestre</option><option value="A">une fois par an</option></select><input id="ts-rj" inputmode="numeric" placeholder="Jour (1-31)" style="width:96px"><select id="ts-rm" style="display:none">'+MOIS.map(function(m,i){ return '<option value="'+(i+1)+'">à partir de '+m+'</option>'; }).join('')+'</select><button class="ts-btn ts-main" onclick="tsRecAdd()">Ajouter</button><button class="ts-btn" onclick="tsForm(\'\')">Annuler</button></div>';
+    h+='</div><div class="ts-cols"><div class="ts-colL">';
+    /* ── 2. les charges à pointer, avec l'encours de chaque section ── */
+    h+='<div class="ts-card"><div class="ts-hd"><div class="ts-h">Charges à pointer</div><span class="ts-note">cochez une charge dès qu’elle est passée sur le compte — le reste à payer et les projections se recalculent</span></div>';
+    var q=Math.floor(t.getMonth()/3)+1;
+    [['M','Charges mensuelles — '+mN+' '+t.getFullYear()],['T','Charges trimestrielles — '+q+(q===1?'er':'e')+' trimestre '+t.getFullYear()],['A','Charges annuelles — '+t.getFullYear()]].forEach(function(g){
+      var L=S.rec.filter(function(r){ return r&&r.per===g[0]; }); if(!L.length) return;
+      L.sort(function(a,b){ var x=curOcc(a,t), y=curOcc(b,t); return (x?x.getTime():9e15)-(y?y.getTime():9e15); });
+      h+=jauge(encours(S,g[0],t), g[1]);
+      h+=L.map(function(r){ var a=amt(r), pk=a?pointe(S,r,t):null;
+        return '<div class="ts-r'+(pk?' done':'')+(a?'':' off')+'"><input type="checkbox" class="ts-cb"'+(pk?' checked':'')+(a?'':' disabled')+' onchange="tsPointe(\''+esc(r.id)+'\',this.checked)" title="'+(pk?'Annuler le pointage':'Pointer : la charge est passée sur le compte')+'">'
+          +'<span class="ts-rl" title="'+esc(r.note||'')+'">'+esc(r.label)+(r.var?' <i>≈ variable</i>':'')+'</span>'+etat(S,r,t)
+          +'<input class="ts-ra" inputmode="decimal" value="'+Math.abs(+r.amt||0).toLocaleString('fr-FR',{minimumFractionDigits:2,maximumFractionDigits:2})+'" onchange="tsRecAmt(\''+esc(r.id)+'\',this.value)" title="Montant — cliquez pour le corriger">'
+          +'<button class="ts-x" onclick="tsRecEdit(\''+esc(r.id)+'\')" title="Modifier">✎</button><button class="ts-x" onclick="tsRecDel(\''+esc(r.id)+'\')" title="Supprimer cette charge">✕</button></div>'; }).join(''); });
+    if(_form==='rec'){ var E=_edit? S.rec.filter(function(r){ return r.id===_edit; })[0] : null, pe=E?E.per:'M', m0=E&&E.mois&&E.mois.length?E.mois[0]:(t.getMonth()+1);
+      h+='<div class="ts-f"><input id="ts-rl" placeholder="Libellé" value="'+esc(E?E.label:'')+'"><input id="ts-ra" inputmode="decimal" placeholder="Montant" value="'+(E?(''+Math.abs(+E.amt||0)).replace('.',','):'')+'"><select id="ts-rp" onchange="document.getElementById(\'ts-rm\').style.display=this.value===\'M\'?\'none\':\'\'">'+[['M','chaque mois'],['T','chaque trimestre'],['A','une fois par an']].map(function(o){ return '<option value="'+o[0]+'"'+(pe===o[0]?' selected':'')+'>'+o[1]+'</option>'; }).join('')+'</select><input id="ts-rj" inputmode="numeric" placeholder="Jour (1-31)" style="width:96px" value="'+(E?(+E.j||1):'')+'"><select id="ts-rm"'+(pe==='M'?' style="display:none"':'')+'>'+MOIS.map(function(m,i){ return '<option value="'+(i+1)+'"'+(m0===i+1?' selected':'')+'>à partir de '+m+'</option>'; }).join('')+'</select><button class="ts-btn ts-main" onclick="tsRecAdd()">'+(E?'Enregistrer':'Ajouter')+'</button><button class="ts-btn" onclick="tsForm(\'\')">Annuler</button></div>'; }
     else h+='<button class="ts-btn" style="margin-top:10px" onclick="tsForm(\'rec\')">＋ Ajouter une charge</button>';
+    h+='</div></div><div class="ts-colR">';
+    /* ── 3. les opérations à venir (celles de la page Finances) ── */
+    var ops=opsGet().slice().sort(function(a,b){ var x=opWhen(a), y=opWhen(b); return (x?x.getTime():9e15)-(y?y.getTime():9e15); });
+    h+='<div class="ts-card"><div class="ts-hd"><div class="ts-h">Opérations à venir</div><button class="ts-btn ts-main" onclick="tsForm(\'op\')">+ Ajouter</button></div>';
+    if(_form==='op'){ var eo=_edit? ops.filter(function(o){ return (''+o.id)===(''+_edit); })[0] : null, wd=eo?opWhen(eo):null;
+      h+='<div class="ts-f"><select id="ts-ot"><option value="-1"'+(eo&&eo.montant>0?'':' selected')+'>Dépense</option><option value="1"'+(eo&&eo.montant>0?' selected':'')+'>Rentrée</option></select><input id="ts-ol" placeholder="Intitulé" value="'+esc(eo?eo.label:'')+'"><input id="ts-oa" inputmode="decimal" placeholder="Montant" value="'+(eo?(''+Math.abs(+eo.montant||0)).replace('.',','):'')+'"><input id="ts-od" type="date" value="'+(wd?iso(wd):'')+'" title="Date prévue (facultative)"><button class="ts-btn ts-main" onclick="tsOpSave()">'+(eo?'Enregistrer':'Ajouter')+'</button><button class="ts-btn" onclick="tsForm(\'\')">Annuler</button></div>'; }
+    h+=ops.length? ops.map(function(o){ var d=opWhen(o), late=d?Math.round((t-d)/JOUR):0, m=+o.montant||0;
+        return '<div class="ts-o"><input type="checkbox" class="ts-cb" onchange="tsOpDone(\''+esc(o.id)+'\')" title="Pointer : l’opération est passée sur le compte (elle quitte la liste)">'
+          +'<span class="ts-ol"><span class="ts-dot'+(late>30?' r':(late>=7?' o':''))+'"></span>'+esc(o.label)+'<small class="'+(late>0?'ts-warn':'')+'">'+(d? (late>0?'prévue le '+frD(d)+' — en retard de '+late+' j':frD(d)) : 'sans date')+'</small></span>'
+          +'<span class="ts-om '+(m>=0?'pos':'neg')+'">'+sgn(m)+'</span><button class="ts-x" onclick="tsOpEdit(\''+esc(o.id)+'\')" title="Modifier">✎</button><button class="ts-x" onclick="tsOpDel(\''+esc(o.id)+'\')" title="Supprimer">✕</button></div>'; }).join('')
+      : '<div class="ts-note">Aucune opération à venir : une TVA, une facture exceptionnelle, un remboursement, une rentrée hors vente…</div>';
+    if(ops.length&&P) h+='<div class="ts-tot"><span>Total des opérations</span><b>'+sgn(P.totOps)+'</b></div>';
     h+='</div>';
-    /* 4. historique */
-    if(O.ops.length){ var H=historique(), C=parCategorie(_histN), mx=0; H.slice(-12).forEach(function(m){ mx=Math.max(mx,m.inn,m.out); });
-      h+='<div class="ts-card"><div class="ts-hd"><div class="ts-h">Ce qui s’est passé sur le compte</div><span class="ts-note">relevés du '+frD(pIso(O.periode?O.periode[0]:O.ops[0].d))+' au '+frD(pIso(O.periode?O.periode[1]:O.ops[O.ops.length-1].d))+' · '+O.ops.length+' opérations</span></div>';
-      h+='<table class="ts-tab ts-hist"><thead><tr><th>Mois</th><th class="r">Rentrées</th><th class="r">Dépenses</th><th class="r">Apports / remb.</th><th class="r">Solde fin de mois</th></tr></thead><tbody>'
-        +H.slice(-12).reverse().map(function(m){ var y=+m.k.slice(0,4), mm=+m.k.slice(5,7)-1; return '<tr><td><b>'+MOIS[mm]+'</b> '+y+'</td><td class="r pos"><span class="ts-bar" style="width:'+Math.round(60*m.inn/(mx||1))+'px"></span>'+(m.inn?eur(m.inn):'—')+'</td><td class="r"><span class="ts-bar out" style="width:'+Math.round(60*m.out/(mx||1))+'px"></span>'+(m.out?eur(m.out):'—')+'</td><td class="r">'+(m.app?(m.app>0?'+ ':'− ')+eur(Math.abs(m.app)):'—')+'</td><td class="r"><b class="'+(m.fin<0?'neg':'')+'">'+eur(m.fin)+'</b></td></tr>'; }).join('')+'</tbody></table>';
-      h+='<div class="ts-sub">Par poste, sur les '+_histN+' derniers mois <span><button class="ts-pill'+(_histN===6?' on':'')+'" onclick="tsHistN(6)">6 mois</button><button class="ts-pill'+(_histN===12?' on':'')+'" onclick="tsHistN(12)">12 mois</button><button class="ts-pill'+(_histN===24?' on':'')+'" onclick="tsHistN(24)">tout</button></span></div>';
-      var mxc=0; C.L.forEach(function(c){ mxc=Math.max(mxc,Math.abs(c.v)); });
-      h+=C.L.map(function(c){ var op=_catOpen===c.c; return '<div class="ts-c'+(op?' on':'')+'" onclick="tsCat(\''+encodeURIComponent(c.c).replace(/'/g,'%27')+'\')"><span class="ts-cl">'+esc(c.c)+'</span><span class="ts-cb"><i class="'+(c.v>=0?'pos':'')+'" style="width:'+Math.max(2,Math.round(100*Math.abs(c.v)/(mxc||1)))+'%"></i></span><span class="ts-cm">'+eur(Math.abs(c.v)/_histN)+' / mois</span><span class="ts-cv '+(c.v>=0?'pos':'')+'">'+(c.v>=0?'+ ':'− ')+eur(Math.abs(c.v))+'</span></div>'
-          +(op?'<div class="ts-cops">'+c.ops.slice().reverse().slice(0,60).map(function(o){ return '<div class="ts-l"><span class="ts-ld">'+frD(pIso(o.d))+'</span><span class="ts-ll">'+esc(o.t)+' <i>'+esc(o.l)+'</i></span><span class="ts-lm '+(o.m>=0?'pos':'')+'">'+(o.m>=0?'+ ':'− ')+eur2(Math.abs(o.m))+'</span></div>'; }).join('')+(c.ops.length>60?'<div class="ts-note">… et '+(c.ops.length-60)+' opérations plus anciennes</div>':'')+'</div>':''); }).join('');
+    /* ── 4. les ventes en cours ── */
+    if(P){ h+='<div class="ts-card"><div class="ts-hd"><div class="ts-h">Honoraires attendus</div><label class="ts-chk"><input type="checkbox"'+(P.useV?' checked':'')+' onchange="tsOptVentes(this.checked)"> compter dans les projections</label></div>';
+      h+=P.vAll.length? P.vAll.map(function(v){ var ok=v.d&&v.d>=t; return '<div class="ts-o"><span class="ts-ol">'+esc(v.lib)+'<small class="'+(ok?'':'ts-warn')+'">'+(v.d? (ok?'acte prévu le '+frD(v.d):'acte prévu le '+frD(v.d)+' — date dépassée, non comptée') : 'pas de date d’acte — non comptée')+'</small></span><span class="ts-om '+(ok?'pos':'ts-nc')+'">'+sgn(v.m)+'</span></div>'; }).join('')
+          +'<div class="ts-tot"><span>Comptés d’ici fin '+MOIS[P.fin.getMonth()]+' (TTC)</span><b class="pos">'+sgn(P.totV)+'</b></div>'
+        : '<div class="ts-note">Aucune vente en cours avec un net vendeur renseigné.</div>';
+      h+='<div class="ts-note" style="margin-top:6px">D’après la page <a onclick="navTo(\'encours\')">Ventes / En cours</a> : prix − net vendeur, à la date d’acte.</div></div>'; }
+    h+='</div></div>';
+    /* ── 5. les mois à venir ── */
+    if(P){ h+='<div class="ts-card"><div class="ts-hd"><div class="ts-h">Mouvements à venir, mois par mois</div><span class="ts-note">cliquez sur un mois pour voir le détail</span></div>'+courbe(P);
+      h+='<div class="ts-tw"><table class="ts-tab"><thead><tr><th>Mois</th><th class="r">Rentrées prévues</th><th class="r">Sorties prévues</th><th class="r">Solde en fin de mois</th><th></th></tr></thead><tbody>';
+      P.mois.forEach(function(m,ix){ var op=_open===m.k, f=P.useV?m.fin:m.finS;
+        h+='<tr class="ts-m'+(op?' on':'')+'" onclick="tsOpen(\''+m.k+'\')"><td><b>'+MOIS[m.m]+'</b> '+m.y+(ix===0?' <i class="ts-note ts-rdm">— reste du mois</i>':'')+'</td><td class="r pos">'+(m.inn?'+ '+eur(m.inn):'—')+'</td><td class="r">'+(m.out?'− '+eur(m.out):'—')+'</td><td class="r"><b class="'+(f<0?'neg':'')+'">'+eur(f)+'</b></td><td class="r ts-car">'+(op?'▴':'▾')+'</td></tr>';
+        if(op){ h+='<tr class="ts-det"><td colspan="5">'+(m.E.length?m.E.map(function(e){ return '<div class="ts-l"><span class="ts-ld">'+(e.nodate?'—':frC(e.due||e.d))+'</span><span class="ts-ll">'+esc(e.lib)+(e.v?' <i>≈ variable</i>':'')+(e.k==='op'?' <i>opération</i>':'')+(e.late?' <i class="ts-warn">échéance dépassée, à pointer</i>':'')+(e.nodate?' <i>sans date</i>':'')+'</span><span class="ts-lm '+(e.m>=0?'pos':'')+'">'+(e.m>=0?'+ ':'− ')+eur(Math.abs(e.m))+'</span></div>'; }).join(''):'<div class="ts-note">Aucun mouvement prévu ce mois-ci.</div>')+'</td></tr>'; } });
+      h+='</tbody></table></div></div>'; }
+    /* ── 6. statistiques des relevés (repliées) ── */
+    if(O.ops.length){ h+='<div class="ts-card"><div class="ts-hd ts-fold" onclick="tsStats()"><div class="ts-h">Statistiques des relevés '+(_stats?'▴':'▾')+'</div><span class="ts-note">relevés du '+frD(pIso(O.periode?O.periode[0]:O.ops[0].d))+' au '+frD(pIso(O.periode?O.periode[1]:O.ops[O.ops.length-1].d))+' · '+O.ops.length+' opérations</span></div>';
+      if(_stats){ var H=historique(), C=parCategorie(_histN), mx=0; H.slice(-12).forEach(function(m){ mx=Math.max(mx,m.inn,m.out); });
+        h+='<div class="ts-tw"><table class="ts-tab ts-hist"><thead><tr><th>Mois</th><th class="r">Rentrées</th><th class="r">Dépenses</th><th class="r">Apports / remb.</th><th class="r">Solde fin de mois</th></tr></thead><tbody>'
+          +H.slice(-12).reverse().map(function(m){ var y=+m.k.slice(0,4), mm=+m.k.slice(5,7)-1; return '<tr><td><b>'+MOIS[mm]+'</b> '+y+'</td><td class="r pos"><span class="ts-bar" style="width:'+Math.round(60*m.inn/(mx||1))+'px"></span>'+(m.inn?eur(m.inn):'—')+'</td><td class="r"><span class="ts-bar out" style="width:'+Math.round(60*m.out/(mx||1))+'px"></span>'+(m.out?eur(m.out):'—')+'</td><td class="r">'+(m.app?(m.app>0?'+ ':'− ')+eur(Math.abs(m.app)):'—')+'</td><td class="r"><b class="'+(m.fin<0?'neg':'')+'">'+eur(m.fin)+'</b></td></tr>'; }).join('')+'</tbody></table></div>';
+        h+='<div class="ts-sub">Par poste, sur les '+_histN+' derniers mois <span><button class="ts-pill'+(_histN===6?' on':'')+'" onclick="tsHistN(6)">6 mois</button><button class="ts-pill'+(_histN===12?' on':'')+'" onclick="tsHistN(12)">12 mois</button><button class="ts-pill'+(_histN===24?' on':'')+'" onclick="tsHistN(24)">tout</button></span></div>';
+        var mxc=0; C.L.forEach(function(c){ mxc=Math.max(mxc,Math.abs(c.v)); });
+        h+=C.L.map(function(c){ var op=_catOpen===c.c; return '<div class="ts-c'+(op?' on':'')+'" onclick="tsCat(\''+encodeURIComponent(c.c).replace(/'/g,'%27')+'\')"><span class="ts-cl">'+esc(c.c)+'</span><span class="ts-cb2"><i class="'+(c.v>=0?'pos':'')+'" style="width:'+Math.max(2,Math.round(100*Math.abs(c.v)/(mxc||1)))+'%"></i></span><span class="ts-cm">'+eur(Math.abs(c.v)/_histN)+' / mois</span><span class="ts-cv '+(c.v>=0?'pos':'')+'">'+(c.v>=0?'+ ':'− ')+eur(Math.abs(c.v))+'</span></div>'
+            +(op?'<div class="ts-cops">'+c.ops.slice().reverse().slice(0,60).map(function(o){ return '<div class="ts-l"><span class="ts-ld">'+frD(pIso(o.d))+'</span><span class="ts-ll">'+esc(o.t)+' <i>'+esc(o.l)+'</i></span><span class="ts-lm '+(o.m>=0?'pos':'')+'">'+(o.m>=0?'+ ':'− ')+eur2(Math.abs(o.m))+'</span></div>'; }).join('')+(c.ops.length>60?'<div class="ts-note">… et '+(c.ops.length-60)+' opérations plus anciennes</div>':'')+'</div>':''); }).join(''); }
       h+='</div>'; }
     box.innerHTML=h;
   };
-  /* ── actions ── */
-  function upd(fn){ var S=load(); fn(S); save(S); tsRender(); }
-  window.tsForm=function(f){ _form=f; tsRender(); var e=document.getElementById(f==='solde'?'ts-sv':(f==='prev'?'ts-pl':'ts-rl')); if(e){ try{ e.focus(); e.select&&e.select(); }catch(x){} } };
-  window.tsSoldeSave=function(){ var v=num(document.getElementById('ts-sv').value), d=document.getElementById('ts-sd').value; if(v==null||!d){ if(window.toast) toast('Indiquez le montant et la date'); return; }
-    _form=''; upd(function(S){ S.solde={v:v, d:d}; }); if(window.toast) toast('Solde mis à jour : '+eur2(v)); try{ if(window.achLog) achLog('modification','Trésorerie','solde mis à jour'); }catch(e){} };
+  /* ══ ACTIONS ══ */
+  function upd(fn){ var S=migre(load()); fn(S); save(S); tsRender(); }
+  function marque(S){ S.ptT.push(new Date().toISOString()); if(S.ptT.length>40) S.ptT=S.ptT.slice(-40); }
+  window.tsForm=function(f){ _form=f; if(!f) _edit=''; tsRender(); var e=document.getElementById(f==='op'?'ts-ol':'ts-rl'); if(e&&f){ try{ e.focus(); e.select&&e.select(); }catch(x){} } };
+  /* le solde : même valeur que la page Finances */
+  window.tsSolde=function(val){ var v=num(val); if(v==null){ tsRender(); return; } soldeSet(v); tsRender(); if(window.toast) toast('Solde en banque : '+eur2(v)); try{ if(window.achLog) achLog('modification','Trésorerie','solde mis à jour'); }catch(e){} };
+  /* pointer / dé-pointer une charge pour la période en cours */
+  window.tsPointe=function(id,on){ upd(function(S){ var r=S.rec.filter(function(x){ return x.id===id; })[0]; if(!r) return; var t=today(), k=perKey(r,t); S.pt=S.pt||{}; var p=(S.pt[id]=S.pt[id]||{});
+      if(on){ p[k]={d:iso(t), t:new Date().toISOString()}; marque(S); } else { var was=p[k]; delete p[k]; if(was&&was.t){ var ix=S.ptT.indexOf(was.t); if(ix>=0) S.ptT.splice(ix,1); } } }); };
   window.tsOptVentes=function(on){ upd(function(S){ S.opt.ventes=on?1:0; }); };
   window.tsOpen=function(k){ _open=(_open===k?'':k); tsRender(); };
+  window.tsStats=function(){ _stats=!_stats; tsRender(); };
   window.tsHistN=function(n){ _histN=n; tsRender(); };
   window.tsCat=function(c){ c=decodeURIComponent(c); _catOpen=(_catOpen===c?'':c); tsRender(); };
-  window.tsRecAmt=function(id,v){ var x=num(v); if(x==null){ tsRender(); return; } upd(function(S){ S.rec.forEach(function(r){ if(r.id===id) r.amt=Math.abs(x); }); }); };
-  window.tsRecOn=function(id,on){ upd(function(S){ S.rec.forEach(function(r){ if(r.id===id) r.on=on?1:0; }); }); };
-  window.tsRecDel=function(id){ var S=load(), r=S.rec.filter(function(x){ return x.id===id; })[0]; if(!r) return; if(!confirm('Supprimer la charge « '+r.label+' » ?\n(Pour la suspendre sans la perdre, décochez-la plutôt.)')) return; upd(function(S2){ S2.rec=S2.rec.filter(function(x){ return x.id!==id; }); }); };
+  window.tsRecAmt=function(id,v){ var x=num(v); if(x==null){ tsRender(); return; } upd(function(S){ S.rec.forEach(function(r){ if(r.id===id){ r.amt=Math.abs(x); delete r.on; } }); }); };
+  window.tsRecEdit=function(id){ _edit=id; tsForm('rec'); };
+  window.tsRecDel=function(id){ var S=load(), r=S.rec.filter(function(x){ return x.id===id; })[0]; if(!r) return; if(!confirm('Supprimer la charge « '+r.label+' » ?\n(Pour la suspendre sans la perdre, mettez plutôt son montant à 0.)')) return; upd(function(S2){ S2.rec=S2.rec.filter(function(x){ return x.id!==id; }); if(S2.pt) delete S2.pt[id]; }); };
   window.tsRecAdd=function(){ var l=document.getElementById('ts-rl').value.trim(), a=num(document.getElementById('ts-ra').value), p=document.getElementById('ts-rp').value, j=parseInt(document.getElementById('ts-rj').value,10)||1, m0=+document.getElementById('ts-rm').value;
     if(!l||a==null){ if(window.toast) toast('Indiquez le libellé et le montant'); return; }
     var mois=null; if(p==='T') mois=[0,3,6,9].map(function(k){ return ((m0-1+k)%12)+1; }).sort(function(x,y){ return x-y; }); if(p==='A') mois=[m0];
-    _form=''; upd(function(S){ S.rec.push({id:'u'+Date.now().toString(36), label:l, cat:'Autre', amt:Math.abs(a), per:p, j:Math.min(31,Math.max(1,j)), mois:mois, var:0, on:1, note:''}); }); };
-  window.tsPrevAdd=function(){ var s=+document.getElementById('ts-pt').value, l=document.getElementById('ts-pl').value.trim(), a=num(document.getElementById('ts-pa').value), d=document.getElementById('ts-pd').value;
-    if(!l||a==null||!d){ if(window.toast) toast('Indiquez le libellé, le montant et la date'); return; } _form=''; upd(function(S){ S.prev.push({id:'p'+Date.now().toString(36), label:l, amt:s*Math.abs(a), d:d}); }); };
-  window.tsPrevDel=function(id){ upd(function(S){ S.prev=S.prev.filter(function(x){ return x.id!==id; }); }); };
+    var id=_edit; _form=''; _edit='';
+    upd(function(S){ var E=id? S.rec.filter(function(r){ return r.id===id; })[0] : null;
+      if(E){ var ch=(E.per!==p); E.label=l; E.amt=Math.abs(a); E.per=p; E.j=Math.min(31,Math.max(1,j)); E.mois=mois; delete E.on; if(ch&&S.pt) delete S.pt[id]; }
+      else S.rec.push({id:'u'+Date.now().toString(36), label:l, cat:'Autre', amt:Math.abs(a), per:p, j:Math.min(31,Math.max(1,j)), mois:mois, var:0, note:''}); }); };
+  /* opérations à venir */
+  window.tsOpEdit=function(id){ _edit=''+id; tsForm('op'); };
+  window.tsOpSave=function(){ var s=+document.getElementById('ts-ot').value, l=document.getElementById('ts-ol').value.trim(), a=num(document.getElementById('ts-oa').value), d=normDate(document.getElementById('ts-od').value);
+    if(!l||a==null){ if(window.toast) toast('Indiquez l’intitulé et le montant'); return; }
+    var ops=opsGet(), now=new Date().toISOString(), id=_edit, m=s*Math.abs(a);
+    if(id) ops=ops.map(function(o){ return (''+o.id)===id? {id:o.id, label:l, montant:m, date:d, updated:now} : o; }); else ops.push({id:Date.now(), label:l, montant:m, date:d, updated:now});
+    opsSet(ops); _form=''; _edit=''; tsRender(); };
+  window.tsOpDel=function(id){ var ops=opsGet(), o=ops.filter(function(x){ return (''+x.id)===(''+id); })[0]; if(!o) return; if(!confirm('Supprimer l’opération « '+o.label+' » ?')) return; opsSet(ops.filter(function(x){ return (''+x.id)!==(''+id); })); tsRender(); };
+  /* une opération passée sur le compte quitte la liste (comme une suppression, sans la confirmation) */
+  window.tsOpDone=function(id){ var ops=opsGet(), o=ops.filter(function(x){ return (''+x.id)===(''+id); })[0]; if(!o) return; opsSet(ops.filter(function(x){ return (''+x.id)!==(''+id); }));
+    var S=migre(load()); marque(S); save(S); tsRender(); if(window.toast) toast('✓ « '+o.label+' » pointée — retirée des opérations à venir'); try{ if(window.achLog) achLog('modification','Trésorerie','opération pointée : '+o.label); }catch(e){} };
   /* ── import du fichier d'analyse ── */
   window.tsImport=function(inp){ var f=inp.files&&inp.files[0]; if(!f) return; if(!isAdmin()){ if(window.toast) toast('🔒 Réservé à Laurent'); return; }
     var rd=new FileReader(); rd.onload=function(){ inp.value=''; var J=null; try{ J=JSON.parse(rd.result); }catch(e){}
@@ -29609,14 +29707,15 @@ details.cx-more{margin-top:8px;} details.cx-more>summary{font-size:11.5px;color:
       try{ localStorage.setItem(KO, JSON.stringify({maj:new Date().toISOString(), n:J.ops.length, periode:J.periode||null, soldeRef:J.soldeRef||null, ops:J.ops})); }catch(e){ if(window.toast) toast('✗ Fichier trop volumineux'); return; }
       var S=load(), aRec=Array.isArray(J.rec)&&J.rec.length;
       if(aRec && (!S.rec.length || confirm('Remplacer vos charges récurrentes actuelles par celles du fichier ?\n\nOK : on repart de la liste du fichier.\nAnnuler : vos charges et vos corrections sont conservées.'))) S.rec=J.rec;
-      save(S); if(window.toast) toast('📊 '+J.ops.length+' opérations importées — la projection est à jour'); try{ if(window.achLog) achLog('import','Trésorerie','analyse des relevés importée ('+J.ops.length+' opérations)'); }catch(e){}
+      S.pt=S.pt||{}; autoPointe(S);        /* les échéances de la période en cours couvertes par les relevés sont pointées */
+      save(S); if(window.toast) toast('📊 '+J.ops.length+' opérations importées'); try{ if(window.achLog) achLog('import','Trésorerie','analyse des relevés importée ('+J.ops.length+' opérations)'); }catch(e){}
       tsRender(); try{ tsImpRender(); }catch(e){} };
     rd.readAsText(f,'utf-8'); };
   window.tsImpRender=function(){ var sec=document.getElementById('tsimp-sec'), el=document.getElementById('ts-imp'); if(!sec||!el) return; sec.style.display=isAdmin()?'':'none'; var O=opsStore();
     el.innerHTML=(O.ops.length?'<span>'+O.ops.length+' opérations importées'+(O.maj?' le '+new Date(O.maj).toLocaleDateString('fr-FR'):'')+(O.periode?' (relevés jusqu’au '+frD(pIso(O.periode[1]))+')':'')+'</span>':'')
       +'<label class="ct-upl">⬆ '+(O.ops.length?'Réimporter':'Importer')+' le fichier d’analyse des relevés<input type="file" accept=".json,application/json" style="display:none" onchange="tsImport(this)"></label>'; };
   if(window.navTo){ var _nt=window.navTo; window.navTo=function(id,el){ var r=_nt.apply(this,arguments); if(id==='tresorerie'){ try{ tsRender(); }catch(e){ window.achErr&&achErr(e); } } if(id==='acces'||id==='droits'){ setTimeout(function(){ try{ tsImpRender(); }catch(e){} },90); } return r; }; }
-  window.addEventListener('storage', function(e){ if(e&&(e.key===K||e.key===KO)){ try{ var p=document.getElementById('page-tresorerie'); if(p&&p.classList.contains('active')) tsRender(); }catch(x){} } });
+  window.addEventListener('storage', function(e){ if(e&&(e.key===K||e.key===KO||e.key===KS||e.key===KP)){ try{ var p=document.getElementById('page-tresorerie'); if(p&&p.classList.contains('active')&&!_form) tsRender(); }catch(x){} } });
 })();
 </script>
 <!-- ══ v12.37 (Laurent 10/11) : BONS DE VISITE — remplissage depuis un ou plusieurs PDF ══ -->
