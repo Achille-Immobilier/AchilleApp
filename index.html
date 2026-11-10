@@ -1286,7 +1286,7 @@ body.lex-admin-editing .lex-save-btn{display:block;}
 .fin-page{display:flex;flex-direction:column;height:100%;min-height:0;overflow:hidden;background:var(--beige);}
 
 /* Bandeau encours */
-.fin-enc-bar{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--border);flex-shrink:0;border-bottom:1px solid var(--border);}
+.fin-enc-bar{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--border);flex-shrink:0;border-bottom:1px solid var(--border);}
 .fin-enc-cell.fin-enc-solo{border:1px solid var(--border);border-radius:10px;box-shadow:var(--shadow);padding:16px 18px;}
 .fin-enc-solo .fin-enc-label{font-size:11px;}
 .fin-enc-solo .fin-enc-pct{font-size:25px;}
@@ -1895,7 +1895,6 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     <div class="nav-item" onclick="navTo('documents',this)"><span class="nav-icon">◧</span><span class="nav-item-label">Documents</span></div>
     <div class="nav-item" onclick="navTo('equityliving',this)"><span class="nav-icon">🤝</span><span class="nav-item-label">Equity Living</span></div><!-- v9.19 -->
     <div class="nav-item" onclick="navTo('finances',this)"><span class="nav-icon">💶</span><span class="nav-item-label">Finances</span></div>
-    <div class="nav-item" onclick="navTo('tresorerie',this)"><span class="nav-icon">📊</span><span class="nav-item-label">Trésorerie <small style="opacity:.6">(essai)</small></span></div><!-- v12.36 -->
     <div class="nav-item" onclick="navTo('encours',this)"><span class="nav-icon">◈</span><span class="nav-item-label">Ventes / En cours</span></div>
     <div class="nav-item" onclick="navTo('mandats',this)"><span class="nav-icon">📜</span><span class="nav-item-label">Mandats</span><span class="nav-badge" id="badge-mandats" style="display:none;"></span></div>
     <div class="nav-item" onclick="navTo('contacts',this)"><span class="nav-icon">📇</span><span class="nav-item-label">Contacts</span></div><!-- v12.28 -->
@@ -1923,7 +1922,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     </div>
   </div>
   </div>
-  <div class="logo-ver app-ver">Achille App — v12.43</div>
+  <div class="logo-ver app-ver">Achille App — v12.44</div>
 </aside>
 <div id="mob-bk" onclick="mobNav(false)"></div>
 <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Réduire la barre latérale">‹</button>
@@ -3461,7 +3460,6 @@ table.es-t td.del button{border:none;background:none;color:var(--gris-2);cursor:
   <datalist id="comm-situations"><option>ok</option><option>en attente</option><option>à refaire</option></datalist>
 </div>
 <!-- ══ v12.36 (Laurent 10/11) : TRÉSORERIE — proposition de nouvelle page Finances (la page Finances actuelle est inchangée) ══ -->
-<div class="page" id="page-tresorerie"><div class="ts-wrap"><div id="ts-body"></div></div></div>
 <!-- ══ v12.28 (Laurent 06/11) : CONTACTS — retrouver vite une personne depuis un numéro, ou un numéro depuis un nom.
      Aucune base nouvelle : l'annuaire se reconstruit à chaque affichage à partir de la pige, des ventes, des locations,
      des mandats, du pipeline, des visites et du planning ; chaque ligne dit D'OÙ vient le contact et ouvre la fiche. ══ -->
@@ -4973,110 +4971,8 @@ table.es-t td.del button{border:none;background:none;color:var(--gris-2);cursor:
 </div>
 
 
-<div class="page" id="page-finances">
-    <div class="fin-page" id="fin-main">
-
-      <!-- Écran verrou Collab -->
-      <div id="fin-lock-screen" class="fin-lock" style="display:none;">
-        <div style="font-size:48px;">🔒</div>
-        <div style="font-family:'Cormorant Garamond',serif;font-size:28px;color:var(--noir);">Accès restreint</div>
-        <div style="font-size:13px;color:var(--gris-2);line-height:1.6;">Cette page est réservée à l'Administrateur et à la Gérante.</div>
-      </div>
-
-      <!-- Bandeau encours -->
-      <!-- Corps -->
-      <div class="fin-body">
-
-        <!-- Colonne gauche : charges -->
-        <div class="fin-left">
-          <div class="fin-enc-bar" id="fin-enc-bar">
-        <div class="fin-enc-cell">
-          <div class="fin-enc-top"><span class="fin-enc-label">Charges mensuelles — ce mois</span><span class="fin-enc-pct" id="enc-pct-m">0 %</span></div>
-          <div class="fin-enc-prog-wrap"><div class="fin-enc-prog-bar" id="enc-bar-m" style="width:0%"></div></div>
-          <div class="fin-enc-line">
-            <span class="fin-enc-count"><span id="enc-n-m">0</span> / <span id="enc-tn-m">12</span> lignes</span>
-            <span class="fin-enc-amounts"><strong id="enc-val-m">0 €</strong> / <span id="enc-tot-m">—</span></span>
-            <span class="fin-enc-rest">Restant dû : <strong id="enc-rest-m">—</strong></span>
-          </div>
-        </div>
-        <div class="fin-enc-cell">
-          <div class="fin-enc-top"><span class="fin-enc-label">Charges trimestrielles — ce trimestre</span><span class="fin-enc-pct" id="enc-pct-q">0 %</span></div>
-          <div class="fin-enc-prog-wrap"><div class="fin-enc-prog-bar" id="enc-bar-q" style="width:0%"></div></div>
-          <div class="fin-enc-line">
-            <span class="fin-enc-count"><span id="enc-n-q">0</span> / <span id="enc-tn-q">7</span> lignes</span>
-            <span class="fin-enc-amounts"><strong id="enc-val-q">0 €</strong> / <span id="enc-tot-q">—</span></span>
-            <span class="fin-enc-rest">Restant dû : <strong id="enc-rest-q">—</strong></span>
-          </div>
-        </div>
-        <div class="fin-enc-cell">
-          <div class="fin-enc-top"><span class="fin-enc-label">Charges annuelles — cette année</span><span class="fin-enc-pct" id="enc-pct-a">0 %</span></div>
-          <div class="fin-enc-prog-wrap"><div class="fin-enc-prog-bar" id="enc-bar-a" style="width:0%"></div></div>
-          <div class="fin-enc-line">
-            <span class="fin-enc-count"><span id="enc-n-a">0</span> / <span id="enc-tn-a">25</span> lignes</span>
-            <span class="fin-enc-amounts"><strong id="enc-val-a">0 €</strong> / <span id="enc-tot-a">—</span></span>
-            <span class="fin-enc-rest">Restant dû : <strong id="enc-rest-a">—</strong></span>
-          </div>
-        </div>
-          </div>
-          <div class="fin-left-scroll">
-<div class="fin-sec-hd">Charges mensuelles <small>× 12 = annuel</small></div><div class="fin-col-hd"><span></span><span>Intitulé</span><span style="text-align:right">Mensuel</span><span style="text-align:right">Annuel ×</span><span style="text-align:right">Dernière date ▾</span><span></span></div><div id="fin-lines-m"></div><div class="fin-total-row"><span></span><span style="font-size:12px;font-weight:600;color:var(--noir);">Total mensuel</span><span class="fin-amt" id="fin-total-m" style="color:var(--terra);">—</span><span class="fin-annual" id="fin-total-m-a" style="color:var(--terra);">—</span><span></span><span></span></div><button class="fin-add-line-btn fin-admin-action" onclick="finLineAdd('m')">+ Ajouter une charge mensuelle</button>
-<div class="fin-sec-hd" style="margin-top:0;">Charges trimestrielles <small>× 4 = annuel</small></div><div class="fin-col-hd"><span></span><span>Intitulé</span><span style="text-align:right">Trimestriel</span><span style="text-align:right">Annuel ×</span><span style="text-align:right">Dernière date ▾</span><span></span></div><div id="fin-lines-q"></div><div class="fin-total-row"><span></span><span style="font-size:12px;font-weight:600;color:var(--noir);">Total trimestriel</span><span class="fin-amt" id="fin-total-q" style="color:var(--terra);">—</span><span class="fin-annual" id="fin-total-q-a" style="color:var(--terra);">—</span><span></span><span></span></div><button class="fin-add-line-btn fin-admin-action" onclick="finLineAdd('q')">+ Ajouter une charge trimestrielle</button>
-<div class="fin-sec-hd" style="margin-top:0;">Charges annuelles</div><div class="fin-col-hd"><span></span><span>Intitulé</span><span style="text-align:right">Annuel</span><span style="text-align:right"></span><span style="text-align:right">Dernière date ▾</span><span></span></div><div id="fin-lines-a"></div><div class="fin-total-row"><span></span><span style="font-size:12px;font-weight:600;color:var(--noir);">Total annuel charges</span><span class="fin-amt" id="fin-total-a" style="color:var(--terra);">—</span><span class="fin-annual" id="fin-total-a-a" style="color:var(--terra);"></span><span></span><span></span></div><button class="fin-add-line-btn fin-admin-action" onclick="finLineAdd('a')">+ Ajouter une charge annuelle</button>
-          </div><!-- /fin-left-scroll -->
-
-          <!-- Grand total -->
-          <div class="fin-grand-total">
-            <span style="font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.6);">Total annuel toutes charges</span>
-            <span id="fin-grand-total" style="font-family:'Cormorant Garamond',serif;font-size:22px;color:#fff;font-weight:500;">—</span>
-          </div>
-        </div><!-- /fin-left -->
-
-        <!-- Colonne droite -->
-        <div class="fin-right">
-        <div class="fin-enc-cell fin-enc-solo">
-          <div class="fin-enc-top"><span class="fin-enc-label">Charges annuelles</span><span class="fin-enc-pct" id="enc-pct-g">0 %</span></div>
-          <div class="fin-enc-prog-wrap"><div class="fin-enc-prog-bar" id="enc-bar-g" style="width:0%"></div></div>
-          <div class="fin-enc-line">
-            <span class="fin-enc-count"><span id="enc-n-g">0</span> / <span id="enc-tn-g">0</span> échéances</span>
-            <span class="fin-enc-amounts"><strong id="enc-val-g">0 €</strong> / <span id="enc-tot-g">—</span></span>
-            <span class="fin-enc-rest">Restant dû : <strong id="enc-rest-g">—</strong></span>
-          </div>
-        </div>
-          <!-- Solde en banque -->
-          <div class="fin-card">
-            <div class="fin-card-title">Solde en banque</div>
-            <div class="fin-solde-row">
-              <input type="text" inputmode="decimal" id="fin-solde-input" class="fin-solde-input" value="25129" oninput="finUpdateSolde()" onblur="finSoldeBlur()">
-              <span style="font-size:18px;color:var(--gris-2);">€</span>
-            </div>
-            <div style="font-size:10px;color:var(--gris-2);margin-top:6px;" id="fin-solde-date">Mis à jour : —</div>
-          </div>
-
-          <!-- Opérations -->
-          <div class="fin-card" style="flex:1;display:flex;flex-direction:column;min-height:0;">
-            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
-              <span class="fin-card-title" style="margin-bottom:0;">Opérations à venir</span>
-              <button id="fin-op-add-btn" onclick="finOpAdd()" style="background:var(--terra);color:#fff;border:none;border-radius:4px;padding:5px 12px;font-family:'Jost',sans-serif;font-size:11px;cursor:pointer;">+ Ajouter</button>
-            </div>
-            <div style="flex:1;overflow-y:auto;min-height:0;">
-              <table class="fin-ops-table">
-                <thead><tr><th>Intitulé</th><th style="text-align:right">Montant</th><th></th></tr></thead>
-                <tbody id="fin-ops-tbody"></tbody>
-              </table>
-            </div>
-          </div>
-
-          <!-- Solde projeté -->
-          <div class="fin-card">
-            <div class="fin-card-title">Solde projeté</div>
-            <div class="fin-proj-val" id="fin-solde-proj" style="color:var(--kaki);">—</div>
-            <div style="font-size:10px;color:var(--gris-2);margin-top:4px;">Solde en banque + somme des opérations</div>
-          </div>
-
-        </div><!-- /fin-right -->
-      </div><!-- /fin-body -->
-
-    </div><!-- /fin-main -->
+<div class="page" id="page-finances"><!-- v12.44 : page rendue par le module « Finances » (ex-« Trésorerie (essai) ») -->
+    <div class="ts-wrap"><div id="ts-body"></div></div>
   </div><!-- /page-finances -->
 
   <!-- EN COURS -->
@@ -5392,50 +5288,6 @@ table.es-t td.del button{border:none;background:none;color:var(--gris-2);cursor:
 
   
 
-  <!-- Modal ligne de charge -->
-  <div id="fin-line-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:400;align-items:center;justify-content:center;">
-    <div style="background:var(--blanc);border-radius:12px;padding:28px;width:380px;box-shadow:0 20px 60px rgba(0,0,0,.2);">
-      <div id="fin-line-title" style="font-family:'Cormorant Garamond',serif;font-size:22px;color:var(--noir);margin-bottom:20px;">Nouvelle charge</div>
-      <div style="margin-bottom:14px;">
-        <label style="font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--gris-2);display:block;margin-bottom:5px;">Intitulé</label>
-        <input id="fin-line-label" type="text" style="width:100%;background:var(--beige);border:1px solid var(--border);border-radius:5px;padding:9px 12px;font-family:'Jost',sans-serif;font-size:14px;color:var(--noir);outline:none;box-sizing:border-box;">
-      </div>
-      <div style="margin-bottom:20px;">
-        <label style="font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--gris-2);display:block;margin-bottom:5px;">Montant (négatif pour une aide / recette)</label>
-        <input id="fin-line-amt" type="text" inputmode="decimal" style="width:100%;background:var(--beige);border:1px solid var(--border);border-radius:5px;padding:9px 12px;font-family:'Jost',sans-serif;font-size:14px;color:var(--noir);outline:none;box-sizing:border-box;" class="js-thousands">
-      </div>
-      <div style="display:flex;gap:8px;justify-content:flex-end;">
-        <button onclick="document.getElementById('fin-line-modal').style.display='none'" style="padding:8px 18px;border-radius:5px;border:1px solid var(--border);background:transparent;color:var(--gris);font-family:'Jost',sans-serif;font-size:12px;cursor:pointer;">Annuler</button>
-        <button onclick="finLineSave()" style="padding:8px 18px;border-radius:5px;background:var(--terra);color:#fff;border:none;font-family:'Jost',sans-serif;font-size:12px;cursor:pointer;">Enregistrer</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Modal ajout opération -->
-  <div id="fin-op-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:400;align-items:center;justify-content:center;">
-    <div style="background:var(--blanc);border-radius:12px;padding:28px;width:380px;box-shadow:0 20px 60px rgba(0,0,0,.2);">
-      <div id="fin-op-modal-title" style="font-family:'Cormorant Garamond',serif;font-size:22px;color:var(--noir);margin-bottom:20px;">Nouvelle opération</div>
-      <div style="margin-bottom:14px;">
-        <label style="font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--gris-2);display:block;margin-bottom:5px;">Intitulé</label>
-        <input id="fin-op-label" type="text" style="width:100%;background:var(--beige);border:1px solid var(--border);border-radius:5px;padding:9px 12px;font-family:'Jost',sans-serif;font-size:14px;color:var(--noir);outline:none;box-sizing:border-box;">
-      </div>
-      <div style="display:flex;gap:12px;margin-bottom:20px;">
-        <div style="width:118px;flex:none;">
-          <label style="font-size:10px;letter-spacing:.10em;text-transform:uppercase;color:var(--gris-2);display:block;margin-bottom:5px;white-space:nowrap;">Date (jj/mm)</label>
-          <input id="fin-op-date" type="text" inputmode="numeric" maxlength="10" placeholder="jj/mm/aaaa" style="width:100%;background:var(--beige);border:1px solid var(--border);border-radius:5px;padding:9px 12px;font-family:'Jost',sans-serif;font-size:14px;color:var(--noir);outline:none;box-sizing:border-box;">
-        </div>
-        <div style="flex:1;">
-          <label style="font-size:10px;letter-spacing:.10em;text-transform:uppercase;color:var(--gris-2);display:block;margin-bottom:5px;white-space:nowrap;">Montant (négatif = sortie)</label>
-          <input id="fin-op-amt" type="text" inputmode="decimal" style="width:100%;background:var(--beige);border:1px solid var(--border);border-radius:5px;padding:9px 12px;font-family:'Jost',sans-serif;font-size:14px;color:var(--noir);outline:none;box-sizing:border-box;" class="js-thousands">
-        </div>
-      </div>
-      <div style="display:flex;gap:8px;justify-content:flex-end;">
-        <button onclick="document.getElementById('fin-op-modal').style.display='none'" style="padding:8px 18px;border-radius:5px;border:1px solid var(--border);background:transparent;color:var(--gris);font-family:'Jost',sans-serif;font-size:12px;cursor:pointer;">Annuler</button>
-        <button onclick="finOpSave()" style="padding:8px 18px;border-radius:5px;background:var(--terra);color:#fff;border:none;font-family:'Jost',sans-serif;font-size:12px;cursor:pointer;">Enregistrer</button>
-      </div>
-    </div>
-  </div>
-
 <div class="toast" id="toast"></div>
 
 <script>
@@ -5460,7 +5312,6 @@ table.es-t td.del button{border:none;background:none;color:var(--gris-2);cursor:
     visites:'Suivi des <span>Visites</span>',
     renta:'Calculs de <span>Rentabilité</span>',
     finances:'Suivi des <span>Finances</span>',
-    tresorerie:'Suivi des <span>Finances</span> — essai',   /* v12.36 */
     encours:'Ventes / <span>En Cours</span>',
     honoraires:'Honoraires', communication:'<span>Communication</span>',
     pige:'Pige <span>&amp; Veille</span>',
@@ -5473,7 +5324,7 @@ table.es-t td.del button{border:none;background:none;color:var(--gris-2);cursor:
   var curPage='dashboard';
   var chartsOk=false;
 
-  var FULLSCREEN_PAGES=['postits','visites','planning','finances','tresorerie','encours',
+  var FULLSCREEN_PAGES=['postits','visites','planning','finances','encours',
     'sectorisation','lexique','documents','honoraires','communication','equityliving','mandats'];  /* v9.30 : barre d'onglets collee au titre comme Documents */
     /* v6.16 : 'prospection' retirée — la nouvelle page (v6.15) n'a plus de
        défilement interne, elle défile via .content comme la Pige ou la Renta. */
@@ -5543,7 +5394,6 @@ table.es-t td.del button{border:none;background:none;color:var(--gris-2);cursor:
     if(id==='planning') { if(typeof rapPlanRender==='function') rapPlanRender(); }
     if(typeof rapBadge==='function') rapBadge();
     if(typeof pgReadBadge==='function') pgReadBadge();
-    if(id==='finances') { if(typeof finInit==='function') finInit(); }
     if(id==='encours') { if(typeof encoursInit==='function') encoursInit(); }
     if(id==='honoraires') { if(typeof honoInit==='function') honoInit(); }
     if(id==='communication') { if(typeof commInit==='function') commInit(); }
@@ -10529,100 +10379,14 @@ CABLE|1|Villa Nova|48.73478|2.46475`;
 
   var OPS_SEED = [{"id": 1700000000000, "label": "Laurent / Hello", "montant": -20000.0}, {"id": 1700000001000, "label": "Noa", "montant": -600.0}, {"id": 1700000002000, "label": "GIDE", "montant": -3500.0}, {"id": 1700000003000, "label": "TVA", "montant": -6250.0}, {"id": 1700000004000, "label": "Gabriels", "montant": 21600.0}, {"id": 1700000005000, "label": "TVA", "montant": -3600.0}, {"id": 1700000006000, "label": "ESSET", "montant": -4585.31}];
 
-  var M_AMTS = [915.2,550,-416.66,180,621.22,52.8,70,0,0,23,45,60,72,0,54];
-  var Q_AMTS = [4582.7,820.8,0,391,540,192.65,134.85,50];
-  var A_AMTS = [714,452];
+  /* v12.44 : l'affichage de l'ancienne page Finances (lignes, encours, solde, opérations, fenêtres) est supprimé —
+     la page est rendue par le module « Finances » en fin de fichier. Ne restent ici que les DONNÉES. */
 
   /* ===== Lignes de charges éditables (data-driven) ===== */
   var LINES_KEY = 'ach_fin_lines_v1';
   var FIN_LINES_DEFAULT = {"m": [{"id": "m0", "label": "Salaires", "amt": 915.2}, {"id": "m1", "label": "URSSAF", "amt": 550}, {"id": "m2", "label": "Aide de l'état", "amt": -416.66}, {"id": "m3", "label": "Comptable B&K", "amt": 180}, {"id": "m4", "label": "Parutions annonces", "amt": 621.22}, {"id": "m5", "label": "Orange", "amt": 52.8}, {"id": "m6", "label": "Consommations tél. 2M", "amt": 70}, {"id": "m7", "label": "Réseaux Sociaux", "amt": 0}, {"id": "m8", "label": "Abonnements Vidéo", "amt": 0}, {"id": "m9", "label": "Microsoft / Fnac Darty", "amt": 23}, {"id": "m10", "label": "Frais bancaires", "amt": 45}, {"id": "m11", "label": "EDF", "amt": 60}, {"id": "m12", "label": "Initial", "amt": 72}, {"id": "m13", "label": "Ménage", "amt": 0}, {"id": "m14", "label": "Nettoyage Vitrine", "amt": 54}], "q": [{"id": "q0", "label": "Loyers", "amt": 4582.7}, {"id": "q1", "label": "Logiciel Apimo", "amt": 820.8}, {"id": "q2", "label": "Maintenance Site", "amt": 0}, {"id": "q3", "label": "FIPAC", "amt": 391}, {"id": "q4", "label": "Vitrine", "amt": 540}, {"id": "q5", "label": "Locam – MyIBS / 2M", "amt": 192.65}, {"id": "q6", "label": "Locam – 2M", "amt": 134.85}, {"id": "q7", "label": "Consommations Impressions", "amt": 50}], "a": [{"id": "a0", "label": "Assurance + RC Pro", "amt": 714}, {"id": "a1", "label": "Taxe Foncière", "amt": 452}]};
   function loadLines(){ try{ var d=JSON.parse(localStorage.getItem(LINES_KEY)); if(d&&d.m&&d.q&&d.a) return d; }catch(e){window.achErr&&achErr(e)} return JSON.parse(JSON.stringify(FIN_LINES_DEFAULT)); }
   function saveLines(d){ try{ localStorage.setItem(LINES_KEY, JSON.stringify(d)); }catch(e){window.achErr&&achErr(e)} }
-  function finFmt(n){ return (Number(n)||0).toLocaleString('fr-FR',{minimumFractionDigits:2,maximumFractionDigits:2})+' €'; }
-  function finEsc(s){ return (''+s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-
-  function finRenderLines(){
-    var lines=loadLines(); var mult={m:12,q:4,a:1};
-    ['m','q','a'].forEach(function(cat){
-      var cont=document.getElementById('fin-lines-'+cat); if(!cont) return;
-      cont.innerHTML=lines[cat].map(function(l){
-        var annual=(cat==='a')?'':finFmt(l.amt*mult[cat]);
-        return '<div class="fin-row" id="fcr-'+l.id+'">'
-          +'<input type="checkbox" class="fin-cb" onchange="finCheck(\''+l.id+'\',this)" title="Pointer le paiement du jour — re-cliquez pour annuler">'
-          +'<span class="fin-label">'+finEsc(l.label)+'</span>'
-          +'<span class="fin-amt">'+finFmt(l.amt)+'</span>'
-          +'<span class="fin-annual">'+annual+'</span>'
-          +'<div class="fin-hist-wrap"><span class="fin-hist-btn" id="fhl-'+l.id+'" onclick="finToggleHist(\''+l.id+'\')"><span class="fin-hist-dot"></span>\u2014</span><div class="fin-hist-drop" id="fhd-'+l.id+'"></div></div>'
-          +'<span class="fin-line-actions"><button class="fin-line-edit fin-admin-action" onclick="finLineEdit(\''+cat+'\',\''+l.id+'\')" title="Modifier">\u270E</button><button class="fin-line-del fin-admin-action" onclick="finLineDel(\''+cat+'\',\''+l.id+'\')" title="Supprimer">\u2715</button></span>'
-          +'</div>';
-      }).join('');
-    });
-    var tm=lines.m.reduce(function(s,l){return s+(Number(l.amt)||0);},0);
-    var tq=lines.q.reduce(function(s,l){return s+(Number(l.amt)||0);},0);
-    var ta=lines.a.reduce(function(s,l){return s+(Number(l.amt)||0);},0);
-    var st=function(id,v){var e=document.getElementById(id);if(e)e.textContent=v;};
-    st('fin-total-m',finFmt(tm)); st('fin-total-m-a',finFmt(tm*12));
-    st('fin-total-q',finFmt(tq)); st('fin-total-q-a',finFmt(tq*4));
-    st('fin-total-a',finFmt(ta)); st('fin-total-a-a',finFmt(ta));
-    st('fin-grand-total', finFmt(tm*12 + tq*4 + ta));
-  }
-
-  function finApplyHist(){
-    var hist=loadHist(), L=loadLines();
-    ['m','q','a'].forEach(function(c){ L[c].forEach(function(l){
-      finRenderHist(l.id, hist[l.id]||[]);
-      if(hist[l.id]&&hist[l.id].length){ var r=document.getElementById('fcr-'+l.id); if(r) r.classList.add('fin-checked'); }
-      try{ var _td=new Date().toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit',year:'numeric'}); var _cb=document.querySelector('#fcr-'+l.id+' .fin-cb'); if(_cb) _cb.checked=!!(hist[l.id]&&hist[l.id].indexOf(_td)>=0); }catch(e){}   /* v11.56 : la case reflète le pointage du jour */
-    }); });
-  }
-  function finRefresh(){ finRenderLines(); finApplyHist(); calcEncours(); finCheckRole(); }
-
-  window.finLineAdd = function(cat){
-    if(finRoleNow()!=='admin') return;
-    var m=document.getElementById('fin-line-modal'); if(!m) return;
-    m.dataset.cat=cat; m.dataset.editId='';
-    document.getElementById('fin-line-title').textContent='Nouvelle '+(cat==='m'?'charge mensuelle':cat==='q'?'charge trimestrielle':'charge annuelle');
-    document.getElementById('fin-line-label').value='';
-    document.getElementById('fin-line-amt').value='';
-    m.style.display='flex';
-  };
-  window.finLineEdit = function(cat,id){
-    if(finRoleNow()!=='admin') return;
-    var l=(loadLines()[cat]||[]).filter(function(x){return x.id===id;})[0]; if(!l) return;
-    var m=document.getElementById('fin-line-modal'); if(!m) return;
-    m.dataset.cat=cat; m.dataset.editId=id;
-    document.getElementById('fin-line-title').textContent='Modifier la ligne';
-    document.getElementById('fin-line-label').value=l.label;
-    document.getElementById('fin-line-amt').value=window.numFmtStr(l.amt);
-    m.style.display='flex';
-  };
-  window.finLineSave = function(){
-    if(finRoleNow()!=='admin') return;
-    var m=document.getElementById('fin-line-modal'); if(!m) return;
-    var cat=m.dataset.cat||'m', editId=m.dataset.editId||'';
-    var label=(document.getElementById('fin-line-label').value||'').trim();
-    var amt=window.NUMV(document.getElementById('fin-line-amt').value);
-    if(!label){ alert('Veuillez saisir un intitulé.'); return; }
-    var lines=loadLines();
-    if(editId){ lines[cat]=lines[cat].map(function(l){ return l.id===editId?{id:l.id,label:label,amt:amt}:l; }); }
-    else { lines[cat].push({id:cat+'_'+Date.now(), label:label, amt:amt}); }
-    saveLines(lines);
-    m.dataset.editId=''; m.style.display='none';
-    finRefresh();
-  };
-  window.finLineDel = function(cat,id){
-    if(finRoleNow()!=='admin') return;
-    var lines=loadLines();
-    var l=(lines[cat]||[]).filter(function(x){return x.id===id;})[0];
-    var nom=l?l.label:'cette ligne';
-    if(!confirm('Supprimer la ligne « '+nom+' » ?')) return;
-    if(!confirm('Confirmation définitive : cette suppression est irréversible. Continuer ?')) return;
-    lines[cat]=lines[cat].filter(function(x){return x.id!==id;});
-    saveLines(lines);
-    var hist=loadHist(); if(hist[id]){ delete hist[id]; saveHist(hist); }
-    finRefresh();
-  };
-
   /* ── storage ── */
   function loadHist() { try { return JSON.parse(localStorage.getItem(HIST_KEY) || '{}'); } catch(e) { return {}; } }
   function saveHist(h) { localStorage.setItem(HIST_KEY, JSON.stringify(h)); }
@@ -10634,453 +10398,11 @@ CABLE|1|Villa Nova|48.73478|2.46475`;
     return OPS_SEED.slice();
   }
   function saveOps(ops) { localStorage.setItem(OPS_KEY, JSON.stringify(ops)); }
-  /* v12.39 : accès aux données de Finances pour la page d'essai « Trésorerie » (mêmes lignes, pointages, opérations) */
+  /* accès aux données pour le module « Finances » (lignes, pointages, opérations) */
   window.achFinData={ lines:loadLines, saveLines:saveLines, hist:loadHist, saveHist:saveHist, ops:loadOps, saveOps:saveOps };
 
   /* Réinitialisation unique des « dernière date » (Finances) — pour démarrer à vide */
   (function(){ try{ if(!localStorage.getItem('ach_fin_datereset_v1')){ localStorage.removeItem('ach_fin_hist_v3'); localStorage.setItem('ach_fin_datereset_v1','1'); } }catch(e){window.achErr&&achErr(e)} })();
-
-  /* ── period helpers ── */
-  function curMonth()   { var d = new Date(); return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0'); }
-  function curQuarter() { var d = new Date(); return d.getFullYear() + '-Q' + Math.ceil((d.getMonth()+1)/3); }
-  function curYear()    { return String(new Date().getFullYear()); }
-  function dsToMonth(ds)   { var p = ds.split('/'); return p[2] + '-' + p[1]; }
-  function dsToQuarter(ds) { var p = ds.split('/'); return p[2] + '-Q' + Math.ceil(parseInt(p[1],10)/3); }
-  function dsToYear(ds)    { return ds.split('/')[2]; }
-
-  /* ── format ── */
-  function fmtE(n) { return n.toLocaleString('fr-FR',{minimumFractionDigits:2,maximumFractionDigits:2}) + ' \u20ac'; }
-  function fmtOp(n) {
-    var abs = Math.abs(n).toLocaleString('fr-FR',{minimumFractionDigits:2,maximumFractionDigits:2});
-    return (n < 0 ? '\u2212 ' : '+ ') + abs + ' \u20ac';
-  }
-
-  /* ── encours ── */
-  function calcEncours() {
-    var hist = loadHist();
-    var cm = curMonth(), cq = curQuarter(), ca = curYear();
-    var sumM=0,cntM=0, sumQ=0,cntQ=0, sumA=0,cntA=0;
-
-    var _L = loadLines();
-    // Chaque encadré reflète SA section : mensuel / trimestriel / annuel
-    _L.m.forEach(function(l) {
-      var dates = hist[l.id] || [];
-      if (dates.length && dsToMonth(dates[0]) === cm) { sumM += (Number(l.amt)||0); cntM++; }
-    });
-    _L.q.forEach(function(l) {
-      var dates = hist[l.id] || [];
-      if (dates.length && dsToQuarter(dates[0]) === cq) { sumQ += (Number(l.amt)||0); cntQ++; }
-    });
-    _L.a.forEach(function(l) {
-      var dates = hist[l.id] || [];
-      if (dates.length && dsToYear(dates[0]) === ca) { sumA += (Number(l.amt)||0); cntA++; }
-    });
-
-    var totM = _L.m.reduce(function(s,l){ return s+(Number(l.amt)||0); }, 0);
-    var totQ = _L.q.reduce(function(s,l){ return s+(Number(l.amt)||0); }, 0);
-    var totAannual = _L.a.reduce(function(s,l){ return s+(Number(l.amt)||0); }, 0);
-    var totA = totAannual; // "Cette année" = charges annuelles uniquement
-    var _nz=function(arr){ return arr.filter(function(l){return Number(l.amt)!==0;}).length; };
-    var nzM=_nz(_L.m), nzQ=_nz(_L.q), nzA=_nz(_L.a);
-    var _stn=function(id,v){ var e=document.getElementById(id); if(e) e.textContent=v; };
-    _stn('enc-tn-m',nzM); _stn('enc-tn-q',nzQ); _stn('enc-tn-a',nzA);
-
-    // Encadré 4 « Charges annuelles » : bilan global de l'année (par occurrences)
-    var globalBudget = totM*12 + totQ*4 + totAannual;
-    function occSec(arr, maxOcc){ var oc=0, op=0, paid=0;
-      arr.forEach(function(l){ var amt=Number(l.amt)||0; if(amt===0) return;
-        oc += maxOcc;
-        var ds=hist[l.id]||[]; var k=ds.filter(function(d){return dsToYear(d)===ca;}).length;
-        if(k>maxOcc) k=maxOcc;
-        op += k; paid += k*amt;
-      });
-      return {oc:oc, op:op, paid:paid};
-    }
-    var _sM=occSec(_L.m,12), _sQ=occSec(_L.q,4), _sA=occSec(_L.a,1);
-    var occTotal=_sM.oc+_sQ.oc+_sA.oc, occPaid=_sM.op+_sQ.op+_sA.op, yearPaid=_sM.paid+_sQ.paid+_sA.paid;
-    _stn('enc-tn-g', occTotal);
-
-    /* v11.32 : la jauge et le % reposent désormais sur les LIGNES VALIDÉES, pas sur les
-       montants : une ligne NÉGATIVE (aide, subvention) faisait bondir le pourcentage à
-       100 % alors que 8 charges restaient à régler (constat Laurent 14/10). Les montants
-       restent affichés tels quels, et « Restant dû » détaille charges / aides. */
-    function set(idPct,idBar,idVal,idTot,idN,idRest, val,tot,n, nTot, detail) {
-      var pct = (nTot>0) ? Math.max(0, Math.min(100, Math.round(n/nTot*100)))
-                         : (tot > 0 ? Math.max(0, Math.min(100, Math.round(val/tot*100))) : 0);
-      var full = pct >= 100;
-      var pe = document.getElementById(idPct), be = document.getElementById(idBar);
-      if (pe) { pe.textContent = pct + ' %'; pe.className = 'fin-enc-pct' + (full?' full':''); }
-      if (be) { be.style.width = pct+'%'; be.className = 'fin-enc-prog-bar' + (full?' full':''); }
-      var ve = document.getElementById(idVal); if (ve) ve.textContent = fmtE(val);
-      var te = document.getElementById(idTot); if (te) te.textContent = fmtE(tot);
-      var ne = document.getElementById(idN);   if (ne) ne.textContent = n;
-      var re = document.getElementById(idRest);
-      if (re) {
-        re.textContent = fmtE(tot-val);
-        /* v11.32 : quand des aides (lignes négatives) restent à percevoir, on explique le net */
-        var host = re.parentNode && re.parentNode.parentNode;   /* la ligne .fin-enc-line */
-        if (host) {
-          var old = host.querySelector('.fin-enc-detail'); if (old) old.parentNode.removeChild(old);
-          if (detail && detail.aide > 0) {
-            var sp = document.createElement('span'); sp.className = 'fin-enc-detail';
-            sp.textContent = 'soit ' + fmtE(detail.charges) + ' de charges − ' + fmtE(detail.aide) + ' d\u2019aide à percevoir';
-            host.appendChild(sp);
-          }
-        }
-      }
-    }
-    /* v11.32 : détail « charges restantes / aides à percevoir » par section */
-    function detailOf(arr, estPayee){
-      var ch=0, ai=0;
-      arr.forEach(function(l){ var a=Number(l.amt)||0; if(a===0) return; if(estPayee(l)) return;
-        if(a>0) ch+=a; else ai+=(-a); });
-      return {charges:ch, aide:ai};
-    }
-    var payeeM=function(l){ var d=hist[l.id]||[]; return d.length && dsToMonth(d[0])===cm; };
-    var payeeQ=function(l){ var d=hist[l.id]||[]; return d.length && dsToQuarter(d[0])===cq; };
-    var payeeA=function(l){ var d=hist[l.id]||[]; return d.length && dsToYear(d[0])===ca; };
-    set('enc-pct-m','enc-bar-m','enc-val-m','enc-tot-m','enc-n-m','enc-rest-m', sumM,totM,cntM, nzM, detailOf(_L.m,payeeM));
-    set('enc-pct-q','enc-bar-q','enc-val-q','enc-tot-q','enc-n-q','enc-rest-q', sumQ,totQ,cntQ, nzQ, detailOf(_L.q,payeeQ));
-    set('enc-pct-a','enc-bar-a','enc-val-a','enc-tot-a','enc-n-a','enc-rest-a', sumA,totA,cntA, nzA, detailOf(_L.a,payeeA));
-    set('enc-pct-g','enc-bar-g','enc-val-g','enc-tot-g','enc-n-g','enc-rest-g', yearPaid, globalBudget, occPaid, occTotal, null);
-  }
-
-  /* ── check / hist ── */
-  /* v11.56 : la case POINTE le paiement du jour, et un second clic le DÉ-POINTE (avant : chaque clic
-     ajoutait une date de plus, impossible d'annuler sans être administrateur). L'historique cumulatif
-     des autres dates (modèle v7.18) n'est pas touché. */
-  window.finCheck = function(key, cb) {
-    var hist = loadHist();
-    if (!hist[key]) hist[key] = [];
-    var ds = new Date().toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit',year:'numeric'});
-    var i = hist[key].indexOf(ds), on;
-    if (i >= 0) { hist[key].splice(i, 1); on=false; if(window.toast) toast('Pointage du '+ds+' annulé'); }
-    else { hist[key].unshift(ds); on=true; }
-    saveHist(hist);
-    finRenderHist(key, hist[key]);
-    var row = document.getElementById('fcr-'+key);
-    if (row) row.classList.toggle('fin-checked', hist[key].length>0);
-    if (cb) cb.checked = on;
-    calcEncours();
-  };
-
-  function finDateMs(s){
-    var m=(''+s).match(/(\d{2})\/(\d{2})\/(\d{4})/);
-    return m ? new Date(+m[3],(+m[2])-1,+m[1]).getTime() : 0;
-  }
-
-  window.finEditHistDate = function(key, i) {
-    if (finRoleNow()!=='admin') return;
-    var hist = loadHist();
-    if (!hist[key] || hist[key][i]===undefined) return;
-    var old = hist[key][i];
-    var nv = prompt('Modifier la date de validation (format JJ/MM/AAAA) :', old);
-    if (nv===null) return;
-    nv = nv.trim();
-    if (!/^\d{2}\/\d{2}\/\d{4}$/.test(nv)) { alert('Format invalide. Utilisez JJ/MM/AAAA (ex. 31/12/2026).'); return; }
-    if (nv===old) return;
-    if (!confirm('Remplacer la date « '+old+' » par « '+nv+' » ?')) return;
-    if (!confirm('Confirmation définitive de la modification de cette date de validation ?')) return;
-    hist[key][i] = nv;
-    hist[key].sort(function(a,b){ return finDateMs(b)-finDateMs(a); });
-    saveHist(hist);
-    finRenderHist(key, hist[key]);
-    calcEncours();
-  };
-
-  window.finDeleteHistDate = function(key, i) {
-    if (finRoleNow()!=='admin') return;
-    var hist = loadHist();
-    if (!hist[key] || hist[key][i]===undefined) return;
-    var d = hist[key][i];
-    if (!confirm('Supprimer la date de validation « '+d+' » ?')) return;
-    hist[key].splice(i, 1);
-    if (!hist[key].length) delete hist[key];
-    saveHist(hist);
-    finRenderHist(key, (hist[key] || []));
-    var row = document.getElementById('fcr-'+key);
-    if (row) { if (hist[key] && hist[key].length) row.classList.add('fin-checked'); else row.classList.remove('fin-checked'); }
-    calcEncours();
-  };
-
-  function finRenderHist(key, dates) {
-    var last = document.getElementById('fhl-'+key);
-    var drop = document.getElementById('fhd-'+key);
-    if (!last || !drop) return;
-    if (!dates || !dates.length) {
-      last.innerHTML = '—';
-      last.className = 'fin-hist-last';
-      drop.innerHTML = '<div style="font-size:11px;color:var(--gris-2);padding:7px 14px;font-style:italic;">Pas encore coché</div>';
-      return;
-    }
-    last.innerHTML = '<span class="fin-hist-dot"></span>' + dates[0];
-    last.className = 'fin-hist-last fin-has-date';
-    drop.innerHTML = dates.map(function(d,i) {
-      return '<div class="fin-hist-entry' + (i===0?' fin-hist-first':'') + '">' + (i===0?'✓ ':'') + d + '<button class="fin-date-edit fin-admin-action" onclick="finEditHistDate(\'' + key + '\',' + i + ')" title="Modifier la date">✎</button>' + '<button class="fin-date-del fin-admin-action" onclick="finDeleteHistDate(\'' + key + '\',' + i + ')" title="Supprimer cette date">✕</button></div>';
-    }).join('');
-  }
-
-  window.finToggleHist = function(key) {
-    var drop = document.getElementById('fhd-'+key);
-    if (!drop) return;
-    var opening = !drop.classList.contains('open');
-    document.querySelectorAll('.fin-hist-dropdown.open').forEach(function(d) { d.classList.remove('open'); });
-    if (opening) {
-      drop.classList.add('open');
-      setTimeout(function() {
-        document.addEventListener('click', function handler(e) {
-          if (!e.target.closest('.fin-hist-wrap')) {
-            drop.classList.remove('open');
-            document.removeEventListener('click', handler);
-          }
-        });
-      }, 10);
-    }
-  };
-
-  /* ── solde ── */
-  function parseSolde() {
-    var raw = (document.getElementById('fin-solde-input') || {}).value || '0';
-    return parseFloat(raw.replace(/[\s\u202f\u00a0]/g,'').replace(',','.').replace(/[^0-9.\-]/g,'')) || 0;
-  }
-
-  window.finUpdateSolde = function() {
-    var el = document.getElementById('fin-solde-date');
-    if (el) el.textContent = 'Mis à jour : ' + new Date().toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
-    /* v8.03 : valeur HORODATÉE — la synchro cloud sait désormais que la saisie la plus
-       récente gagne (avant : chaîne brute, le cloud écrasait la saisie → « revient à ,00 »). */
-    localStorage.setItem(SOLDE_KEY, JSON.stringify({_ach_scalar:1, v:((document.getElementById('fin-solde-input')||{}).value||''), updated:new Date().toISOString()}));
-    finCalcProj();
-  };
-  /* lecture : nouveau format {_ach_scalar,v,updated} OU ancienne chaîne brute (rétrocompat) */
-  function finSoldeStored(){
-    var raw=localStorage.getItem(SOLDE_KEY);
-    if(raw==null) return null;
-    try{ var o=JSON.parse(raw); if(o && typeof o==='object' && o._ach_scalar===1) return (o.v!=null?String(o.v):''); }catch(e){window.achErr&&achErr(e)}
-    return String(raw);
-  }
-
-  /* Solde en banque : affichage à la française (espace fine + virgule + centimes),
-     cohérent avec le reste de Finances (fmtE). Formatage au blur et à l'init ;
-     la saisie reste libre (chiffres, virgule) et la lecture passe par parseSolde/NUMV. */
-  window.finSoldeFmtFR = function(raw){
-    var s = (''+(raw==null?'':raw)).trim();
-    if (s==='') return '';
-    return window.NUMV(s).toLocaleString('fr-FR',{minimumFractionDigits:2, maximumFractionDigits:2});
-  };
-  window.finSoldeBlur = function(){
-    var inp = document.getElementById('fin-solde-input');
-    if (!inp || inp.readOnly) return;
-    if ((inp.value||'').trim()==='') return;
-    inp.value = window.finSoldeFmtFR(inp.value);
-    window.finUpdateSolde();
-  };
-
-  /* ── ops ── */
-  /* ══ v8.55 (remplace la clé v8.12 « prochaine occurrence ») — demande Laurent :
-     les opérations s'affichent par ordre CHRONOLOGIQUE de la plus ancienne à la plus
-     récente, une date passée = une opération EN RETARD (et non « l'an prochain »).
-     Une date jj/mm est résolue vers l'OCCURRENCE LA PLUS PROCHE d'aujourd'hui
-     (année dernière / cette année / prochaine) : « 25/07 » début septembre = il y a
-     5 semaines (retard), « 15/01 » = dans 4 mois et demi (à venir), jamais d'ambiguïté
-     à cheval sur le nouvel an. Sans date → en fin de liste. */
-  function finOpWhen(op){
-    var raw=(''+(op&&op.date||''));
-    /* v8.56 : date complète « jj/mm/aaaa » → exacte, aucune devinette */
-    var f=raw.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
-    if(f){ var fd=+f[1], fm=+f[2], fy=+f[3];
-      if(!fd||fd>31||!fm||fm>12) return null;
-      return new Date(fy, fm-1, fd, 12, 0, 0, 0); }
-    var m=raw.match(/^(\d{2})\/(\d{2})$/);
-    if(!m) return null;
-    var dd=+m[1], mm=+m[2];
-    if(!dd||dd>31||!mm||mm>12) return null;
-    var now=new Date(); now.setHours(12,0,0,0);
-    var best=null, bestGap=Infinity;
-    [now.getFullYear()-1, now.getFullYear(), now.getFullYear()+1].forEach(function(y){
-      var d=new Date(y, mm-1, dd, 12, 0, 0, 0);
-      var gap=Math.abs(d.getTime()-now.getTime());
-      if(gap<bestGap){ bestGap=gap; best=d; }
-    });
-    return best;
-  }
-  /* jours de retard (>0 = en retard) */
-  function finOpLateDays(op){
-    var d=finOpWhen(op); if(!d) return 0;
-    var now=new Date(); now.setHours(12,0,0,0);
-    return Math.round((now.getTime()-d.getTime())/86400000);
-  }
-  /* pastille : rouge > 1 mois de retard ; orange entre 1 semaine et 1 mois ; grise sinon */
-  function finOpDot(op){
-    var late=finOpLateDays(op);
-    var cls='fin-dot-g', tt='À venir';
-    if(late>30){ cls='fin-dot-r'; tt='En retard de '+late+' jours'; }
-    else if(late>=7){ cls='fin-dot-o'; tt='En retard de '+late+' jours'; }
-    else if(late>0){ tt='En retard de '+late+' jour'+(late>1?'s':''); }
-    else if(!op.date){ tt='Sans date'; }
-    return '<span class="fin-op-dot '+cls+'" title="'+tt+'"></span>';
-  }
-  function finOpSortKey(op){
-    var d=finOpWhen(op);
-    return d? d.getTime() : Infinity;
-  }
-  function renderOps() {
-    var ops = loadOps().slice().sort(function(a,b){ var ka=finOpSortKey(a), kb=finOpSortKey(b); return ka===kb?0:(ka<kb?-1:1); });   /* v8.55 : chronologique, de la plus ancienne (retards en tête) à la plus récente */
-    var tbody = document.getElementById('fin-ops-tbody');
-    if (!tbody) return;
-    if (!ops.length) {
-      tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;padding:20px;color:var(--gris-2);font-size:12px;">Aucune opération</td></tr>';
-      finCalcProj(); return;
-    }
-    tbody.innerHTML = ops.map(function(op) {
-      var col = op.montant < 0 ? 'var(--rouge)' : op.montant > 0 ? 'var(--vert)' : 'var(--gris)';
-      var _dl = op.date ? '<div class="fin-op-date">'+op.date+'</div>' : '';
-      return '<tr>'
-        + '<td style="font-size:12px;color:var(--noir);">' + finOpDot(op) + op.label + _dl + '</td>'   /* v8.55 : pastille de retard */
-        + '<td class="fin-op-amt" style="color:'+col+';">' + fmtOp(op.montant) + '</td>'
-        + '<td class="fin-op-actions"><button class="fin-op-edit fin-admin-action" onclick="finOpEdit(' + op.id + ')" title="Modifier">✎</button><button class="fin-op-del fin-admin-action" onclick="finOpDel(' + op.id + ')" title="Supprimer">✕</button></td>'
-        + '</tr>';
-    }).join('');
-    finCalcProj();
-  }
-
-  window.finOpAdd = function() {
-    if (finRoleNow()!=='admin') return;
-    var modal = document.getElementById('fin-op-modal');
-    if (modal) {
-      document.getElementById('fin-op-label').value = '';
-      document.getElementById('fin-op-amt').value   = '';
-      var _dn=document.getElementById('fin-op-date'); if(_dn) _dn.value='';
-      modal.dataset.editId = '';
-      var t=document.getElementById('fin-op-modal-title'); if(t) t.textContent='Nouvelle opération';
-      modal.style.display = 'flex';
-    }
-  };
-
-  window.finOpEdit = function(id) {
-    if (finRoleNow()!=='admin') return;
-    var op = loadOps().filter(function(o){ return o.id===id; })[0];
-    if (!op) return;
-    var modal = document.getElementById('fin-op-modal');
-    if (!modal) return;
-    document.getElementById('fin-op-label').value = op.label;
-    document.getElementById('fin-op-amt').value   = window.numFmtStr(op.montant);
-    var _de=document.getElementById('fin-op-date'); if(_de) _de.value=op.date||'';
-    modal.dataset.editId = id;
-    var t=document.getElementById('fin-op-modal-title'); if(t) t.textContent="Modifier l'opération";
-    modal.style.display = 'flex';
-  };
-
-  /* v8.56 (remplace v8.10) : normalise vers « jj/mm/aaaa » — l'ANNÉE EN COURS est mise
-     d'office quand on n'en saisit pas (demande Laurent), et une année tapée (aa ou aaaa)
-     est respectée. Accepte toujours 1508, 15 08, 15/8, 15/08/27, 15-08-2027… */
-  function finOpNormDate(s){
-    s=(''+(s||'')).trim(); if(!s) return '';
-    var yNow=new Date().getFullYear();
-    function yr(y){ if(y==null||y==='') return yNow; y=''+y; if(y.length===2) return +('20'+y); return +y; }
-    var m=s.match(/^(\d{1,2})\s*[\/\-\. ]\s*(\d{1,2})(?:\s*[\/\-\. ]\s*(\d{2}|\d{4}))?\s*$/);
-    if(m){ return ('0'+m[1]).slice(-2)+'/'+('0'+m[2]).slice(-2)+'/'+yr(m[3]); }
-    var d=s.replace(/\D/g,'');
-    if(d.length===8){ return d.slice(0,2)+'/'+d.slice(2,4)+'/'+d.slice(4); }
-    if(d.length===4){ return d.slice(0,2)+'/'+d.slice(2)+'/'+yNow; }
-    if(d.length===3){ return '0'+d.slice(0,1)+'/'+d.slice(1)+'/'+yNow; }
-    return s;
-  }
-  window.finOpSave = function() {
-    if (finRoleNow()!=='admin') return;
-    var label = (document.getElementById('fin-op-label').value || '').trim();
-    var amt   = window.NUMV(document.getElementById('fin-op-amt').value);
-    var dateV = finOpNormDate((document.getElementById('fin-op-date')||{}).value);
-    if (!label) { alert('Veuillez saisir un intitulé.'); return; }
-    var modal = document.getElementById('fin-op-modal');
-    var editId = modal ? (modal.dataset.editId || '') : '';
-    var ops = loadOps();
-    var _now=new Date().toISOString();   /* v8.56 : SANS horodatage, la fusion cloud comparait le champ
-       date (« 03/09 » < « 30/07 » en texte) et l'ANCIENNE version du cloud regagnait silencieusement.
-       Un « updated » ISO complet bat toujours une simple date : la modification est désormais gardée. */
-    if (editId) {
-      ops = ops.map(function(o){ return ((''+o.id)===(''+editId)) ? {id:o.id, label:label, montant:amt, date:dateV, updated:_now} : o; });
-    } else {
-      ops.push({id: Date.now(), label: label, montant: amt, date:dateV, updated:_now});
-    }
-    saveOps(ops);
-    if (modal) { modal.dataset.editId=''; modal.style.display='none'; }
-    renderOps();
-  };
-
-  window.finOpDel = function(id) {
-    if (finRoleNow()!=='admin') return;
-    var ops = loadOps();
-    var op = ops.filter(function(o){ return o.id===id; })[0];
-    var nom = op ? op.label : 'cette opération';
-    if (!confirm('Supprimer l\'opération « '+nom+' » ?')) return;
-    if (!confirm('Confirmation définitive : cette suppression est irréversible. Continuer ?')) return;
-    saveOps(ops.filter(function(o) { return o.id !== id; }));
-    renderOps();
-  };
-
-  function finCalcProj() {
-    var proj = parseSolde() + loadOps().reduce(function(s,o) { return s+o.montant; }, 0);
-    var el = document.getElementById('fin-solde-proj');
-    if (!el) return;
-    el.style.color = proj < 0 ? 'var(--rouge)' : 'var(--kaki)';
-    el.textContent = fmtE(proj);
-  }
-
-  /* ── role guard ── */
-  function finRoleNow(){
-    var r=document.getElementById('s-role');
-    var t=r?r.textContent.trim().toLowerCase():'admin';
-    if(t.indexOf('admin')>=0) return 'admin';
-    if(t.indexOf('gérant')>=0||t.indexOf('gerant')>=0) return 'gerante';
-    return 'collab';
-  }
-
-  function finCheckRole() {
-    var role = finRoleNow();
-    var lock = document.getElementById('fin-lock-screen');
-    var main = document.getElementById('fin-main');
-    if (lock && main) {
-      var _finSee = (window.achCan ? window.achCan('finances','view') : (role !== 'collab'));
-      lock.style.display = _finSee ? 'none' : 'flex';
-      main.style.display = _finSee ? 'flex' : 'none';
-    }
-    var isAdmin = role === 'admin';
-    ['fin-op-add-btn','fin-admin-only'].forEach(function(id) {
-      var e = document.getElementById(id); if (e) e.style.display = isAdmin ? '' : 'none';
-    });
-    document.querySelectorAll('.fin-cb').forEach(function(cb) { cb.disabled = !isAdmin; });
-    var si = document.getElementById('fin-solde-input'); if (si) si.readOnly = !isAdmin;
-    var pg = document.getElementById('page-finances'); if (pg) pg.classList.toggle('fin-readonly', !isAdmin);
-    var nav = document.querySelector('.nav-item[onclick*="navTo(\'finances\'"]'); if (nav) nav.style.display = (role==='collab') ? 'none' : '';
-  }
-
-  /* ── init ── */
-  function finInit() {
-    var saved = finSoldeStored();
-    var inp   = document.getElementById('fin-solde-input');
-    if (inp && document.activeElement!==inp) { var src = (saved!=null && saved!=='') ? saved : inp.value; inp.value = window.finSoldeFmtFR(src); }
-
-    finRenderLines();
-    finApplyHist();
-    renderOps();
-    calcEncours();
-    finCheckRole();
-  }
-
-  /* ── hook navTo safely ── */
-  var _origNav = window.navTo;
-  window.navTo = function(id, el) {
-    if (typeof _origNav === 'function') _origNav(id, el);
-    if (id === 'finances') finInit();
-  };
-
-  /* ── hook role buttons ── */
-  document.addEventListener('DOMContentLoaded', function() {
-    document.querySelectorAll('.role-btn').forEach(function(btn) {
-      btn.addEventListener('click', function() { setTimeout(finCheckRole, 60); });
-    });
-  });
 
 }());
 
@@ -13594,7 +12916,7 @@ CABLE|1|Villa Nova|48.73478|2.46475`;
 <script>
 (function(){
   var AUDIT_KEY='ach_audit_v1';
-  var LABELS={ach_pi_v4:'Post-its',ach_encours_v1:'Ventes (En cours)',ach_locations_v1:'Locations',ach_trash_v1:'Corbeille',ach_trash_log_v1:'Corbeille (mouvements)',ach_pige_dossiers_v1:'Pige (dossiers)',ach_todos_v1:'To-dos',ach_plan_events:'Planning',ach_vt_v4:'Visites',ach_bv_obs:'Bons de visite (observations)',ach_bv_extra:'Bons de visite',ach_bv_pending:'Bons de visite (validation)',ach_bv_notifs:'Notifications',ach_bv_cr_v1:'Comptes rendus de visite',ach_fin_v3:'Finances',ach_prosp_v1:'Prospection',ach_lex_html_v1:'Lexique', ach_cr_crit_v1:'Comptes rendus (critères)',ach_lex_proposals:'Lexique (propositions)',ach_pige_v1:'Pige',ach_mandats_v1:'Mandats', ach_contacts_import_v1:'Contacts (import Apimo)', ach_treso_v1:'Trésorerie', ach_treso_ops_v1:'Trésorerie (relevés)',ach_docaff_v1:'Documents par affaire',ach_docs_cfg_v1:'Documents (réglages)', ach_docgen_assets_v1:'Générateur (charte & polices)', ach_dghist_v1:'Documents (historique des générations)', ach_rappels_v1:'Rappels', ach_redac_v1:'Rédaction quotidienne', ach_routines_v1:'Routines & Objectifs'};
+  var LABELS={ach_pi_v4:'Post-its',ach_encours_v1:'Ventes (En cours)',ach_locations_v1:'Locations',ach_trash_v1:'Corbeille',ach_trash_log_v1:'Corbeille (mouvements)',ach_pige_dossiers_v1:'Pige (dossiers)',ach_todos_v1:'To-dos',ach_plan_events:'Planning',ach_vt_v4:'Visites',ach_bv_obs:'Bons de visite (observations)',ach_bv_extra:'Bons de visite',ach_bv_pending:'Bons de visite (validation)',ach_bv_notifs:'Notifications',ach_bv_cr_v1:'Comptes rendus de visite',ach_fin_v3:'Finances',ach_prosp_v1:'Prospection',ach_lex_html_v1:'Lexique', ach_cr_crit_v1:'Comptes rendus (critères)',ach_lex_proposals:'Lexique (propositions)',ach_pige_v1:'Pige',ach_mandats_v1:'Mandats', ach_contacts_import_v1:'Contacts (import Apimo)', ach_treso_v1:'Finances (échéances)', ach_treso_ops_v1:'Finances (relevés)',ach_docaff_v1:'Documents par affaire',ach_docs_cfg_v1:'Documents (réglages)', ach_docgen_assets_v1:'Générateur (charte & polices)', ach_dghist_v1:'Documents (historique des générations)', ach_rappels_v1:'Rappels', ach_redac_v1:'Rédaction quotidienne', ach_routines_v1:'Routines & Objectifs'};
   var _orig=localStorage.setItem.bind(localStorage);
   function curName(){var e=document.getElementById('s-name');return e?e.textContent:'?';}
   function curRole(){var e=document.getElementById('s-role');return e?e.textContent:'';}
@@ -14327,7 +13649,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     ach_pi_v4:'Post-its', ach_plan_events:'Planning', ach_todos_v1:'To-do',
     ach_prosp_v1:'Prospection', ach_lex_html_v1:'Lexique', ach_lex_proposals:'Lexique (propositions)',
     ach_fin_hist_v3:'Honoraires', ach_fin_ops_v3:'Finances', ach_fin_lines_v1:'Finances',
-    ach_fin_solde_v3:'Finances', ach_encours_v1:'Affaires en cours', ach_audit_v1:'Journal', ach_pige_v1:'Pige', ach_mandats_v1:'Mandats', ach_contacts_import_v1:'Contacts (import Apimo)', ach_treso_v1:'Trésorerie', ach_treso_ops_v1:'Trésorerie (relevés)', ach_docaff_v1:'Documents par affaire', ach_docs_cfg_v1:'Documents (réglages)', ach_docgen_assets_v1:'Générateur (charte & polices)', ach_dghist_v1:'Documents (historique des générations)', ach_rappels_v1:'Rappels', ach_evol_v1:'Évolutions', ach_redac_v1:'Rédaction quotidienne', ach_routines_v1:'Routines & Objectifs', ach_tomb_v2:'(technique) suppressions',
+    ach_fin_solde_v3:'Finances', ach_encours_v1:'Affaires en cours', ach_audit_v1:'Journal', ach_pige_v1:'Pige', ach_mandats_v1:'Mandats', ach_contacts_import_v1:'Contacts (import Apimo)', ach_treso_v1:'Finances (échéances)', ach_treso_ops_v1:'Finances (relevés)', ach_docaff_v1:'Documents par affaire', ach_docs_cfg_v1:'Documents (réglages)', ach_docgen_assets_v1:'Générateur (charte & polices)', ach_dghist_v1:'Documents (historique des générations)', ach_rappels_v1:'Rappels', ach_evol_v1:'Évolutions', ach_redac_v1:'Rédaction quotidienne', ach_routines_v1:'Routines & Objectifs', ach_tomb_v2:'(technique) suppressions',
     ach_affaires_v1:'Pipeline (affaires)', ach_aff_pins_v1:'Pipeline (épingles)', ach_locations_v1:'Locations', ach_trash_v1:'Corbeille', ach_trash_log_v1:'Corbeille (mouvements)', ach_pige_dossiers_v1:'Pige (dossiers)', ach_conc_v1:'Honoraires (concurrence)',
     ach_perms_v1:'Droits & Accès', ach_vsb_v1:'Visites sans bon', ach_bv_accomp:'Bons de visite (accompagnateurs)',
     ach_bv_cr_v1:'Comptes rendus de visite', ach_idj_ecart_v1:'Idées du matin (écartées)'
@@ -14358,7 +13680,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
      rarement modifiés (NO_FULL) ne sont jamais retéléchargés par le rattrapage, seulement quand leur horodatage change ;
      l'écran de l'agence (compte public) ne charge pas les blocs qui ne le concernent pas (PUBLIC_SKIP). */
   var SEEN_K='achille_sync_seen', FULL_K='achille_sync_full_at', DIRTY_K='achille_sync_dirty', FULL_EVERY=7*24*3600*1000;
-  var NO_FULL=['ach_contacts_import_v1','ach_treso_ops_v1'], PUBLIC_SKIP=['ach_contacts_import_v1','ach_treso_v1','ach_treso_ops_v1'];   /* v12.36 : trésorerie = poste de Laurent seul */
+  var NO_FULL=['ach_contacts_import_v1','ach_treso_ops_v1'], PUBLIC_SKIP=['ach_contacts_import_v1','ach_treso_ops_v1'];   /* v12.36 : relevés bancaires = poste de Laurent seul · v12.44 : les échéances (ach_treso_v1) suivent la page Finances */
   /* v12.31 : compteur de trafic de CE poste (clé locale achille_trafic_v1, 10 jours) — octets reçus du cloud par type */
   var TRAF_K='achille_trafic_v1', _traf=null, _trafT=null;
   function _trafDay(){ var d=new Date(); return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2); }
@@ -15142,7 +14464,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     startRealtime();
     var ov=document.getElementById('ach-login-overlay'); if(ov) ov.classList.add('ach-hidden');
     var ub=document.getElementById('ach-userbar'); if(ub) ub.style.display='none';
-    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v12.43';
+    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v12.44';
     flag('Synchronis\u00e9');
     // fin de l'init : on autorise la journalisation des actions
     setTimeout(function(){ installInterceptor._init=false; }, 1500);
@@ -15778,7 +15100,6 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
     uk=uk||curKey();
     if(uk==='public') return !!PUBLIC_ALLOW[sec] && (!action||action==='view');
     if(sec==='droits') return uk==='admin';
-    if(sec==='tresorerie') return uk==='admin';   /* v12.36 : proposition de nouvelle page Finances, visible par Laurent seul tant qu'elle n'est pas validée */
     if(sec==='contacts') return uk==='admin';   /* v12.32 (Laurent 06/11) : répertoire visible par Laurent seul pour l'instant */
     if(sec==='mandats') return uk==='admin'||uk==='gerant';   /* v10.01 : registre réservé à Laurent & Marine */
     if(uk==='admin') return true;
@@ -29447,9 +28768,17 @@ details.cx-more{margin-top:8px;} details.cx-more>summary{font-size:11.5px;color:
 .ts-fold{cursor:pointer;margin-bottom:0;} .ts-fold:hover .ts-h{color:var(--terra);} .ts-fold+table{margin-top:10px;}
 .ts-note a{color:var(--terra);cursor:pointer;text-decoration:underline;} .ts-tw{overflow-x:auto;}
 /* v12.39 : la page d'essai reprend la page Finances (classes .fin-*) ; .tf-* = ce qui s'ajoute */
-#page-tresorerie .ts-wrap{max-width:none;margin:0;height:100%;} #page-tresorerie #ts-body{height:100%;}
-/* v12.40 : bouton « Nouveau rappel » au-dessus (comme Finances), colonnes classables, soldes projetés mois / trimestre / année */
-#page-tresorerie.fullscreen .ts-wrap{flex:1;min-height:0;height:auto;}
+#page-finances .ts-wrap{max-width:none;margin:0;height:100%;} #page-finances #ts-body{height:100%;}
+/* v12.44 : c'est LA page Finances — bandeau des 4 jauges sur toute la largeur (figé), solde en banque sur une ligne */
+.fin-enc-cell.tf-enc-g{background:#f7f2ea;} .tf-enc-g .fin-enc-label{color:var(--kaki);font-weight:600;}
+.fin-card.tf-solde{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 14px 12px 16px;}
+.tf-solde-l{min-width:0;} .tf-solde .fin-card-title{margin-bottom:4px;white-space:nowrap;} .tf-solde-d{font-size:10px;color:var(--gris-2);line-height:1.35;white-space:nowrap;}
+.tf-solde .fin-solde-row{flex:none;} .tf-solde .fin-solde-input{width:142px;text-align:right;font-size:26px;}
+#page-finances .fin-enc-top{gap:8px;} #page-finances .fin-enc-pct{white-space:nowrap;flex:none;} #page-finances .fin-enc-label{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+@media (max-width:1500px){ #page-finances .fin-enc-label{letter-spacing:.05em;} }
+@media (max-width:1100px){ #page-finances .fin-enc-bar{grid-template-columns:repeat(2,1fr);} }
+/* v12.40 : colonnes classables, soldes projetés mois / trimestre / année */
+#page-finances.fullscreen .ts-wrap{flex:1;min-height:0;height:auto;}
 .tf-th{cursor:pointer;user-select:none;} .tf-th:hover{color:var(--terra);} .tf-th.on{color:var(--terra);font-weight:600;}
 .tf-hz{margin-top:12px;padding-top:6px;border-top:1px dashed var(--border);}
 .tf-hz-r{display:flex;align-items:baseline;justify-content:space-between;gap:10px;padding:7px 0 2px;}
@@ -29459,9 +28788,9 @@ details.cx-more{margin-top:8px;} details.cx-more>summary{font-size:11.5px;color:
 .tf-hz-r+.tf-hz-r,.tf-hz-h+.tf-hz-r{border-top:1px solid #f3eee6;}
 .tf-hz-n{font-size:10px;color:var(--gris-2);font-style:italic;margin-top:6px;line-height:1.4;}
 .tf-hv-n{font-size:10.5px;color:var(--gris-2);margin-top:8px;line-height:1.5;} .tf-hv-n a{color:var(--terra);cursor:pointer;text-decoration:underline;} .tf-hv-n b{color:var(--noir);}
-#page-tresorerie .fin-card-title small{letter-spacing:.04em;text-transform:none;font-size:10px;}
-#page-tresorerie .fin-row,#page-tresorerie .fin-col-hd,#page-tresorerie .fin-total-row{grid-template-columns:20px 1fr 132px 88px 88px 112px 44px!important;}
-#page-tresorerie .fin-hist-last{cursor:pointer;} #page-tresorerie .fin-right .fin-ops-table td{padding:6px 5px;} #page-tresorerie .fin-right .fin-ops-table td.fin-op-amt{white-space:nowrap;font-size:17px;} #page-tresorerie .fin-op-actions button{padding:2px 3px;}
+#page-finances .fin-card-title small{letter-spacing:.04em;text-transform:none;font-size:10px;}
+#page-finances .fin-row,#page-finances .fin-col-hd,#page-finances .fin-total-row{grid-template-columns:20px 1fr 132px 88px 88px 112px 44px!important;}
+#page-finances .fin-hist-last{cursor:pointer;} #page-finances .fin-right .fin-ops-table td{padding:6px 5px;} #page-finances .fin-right .fin-ops-table td.fin-op-amt{white-space:nowrap;font-size:17px;} #page-finances .fin-op-actions button{padding:2px 3px;}
 .tf-ech{font-size:11px;color:var(--gris-2);white-space:nowrap;} .tf-ech.tf-late{color:#a8641a;font-weight:600;} .tf-ech.tf-red{color:var(--rouge);font-weight:600;} .tf-ech.tf-ok{opacity:.65;}
 .tf-ech.tf-nd{color:var(--beige-3);cursor:pointer;} .tf-ech.tf-nd:hover{color:var(--terra);} .fin-row .tf-late,.fin-op-date.tf-late{color:#a8641a;}
 .tf-zero{padding:6px 16px 6px 44px;font-size:11.5px;color:var(--gris-2);cursor:pointer;border-bottom:1px solid var(--border);background:#fbf9f5;} .tf-zero:hover{color:var(--terra);}
@@ -29484,12 +28813,12 @@ details.cx-more{margin-top:8px;} details.cx-more>summary{font-size:11.5px;color:
 .tf-fr{display:flex;gap:12px;} .tf-modal-a{display:flex;gap:8px;justify-content:flex-end;margin-top:6px;}
 .tf-modal-a button{padding:8px 18px;border-radius:5px;border:1px solid var(--border);background:transparent;color:var(--gris);font-family:'Jost',sans-serif;font-size:12px;cursor:pointer;} .tf-modal-a button.go{background:var(--terra);border-color:var(--terra);color:#fff;}
 @media (max-width:880px){
-  #page-tresorerie #ts-body{overflow-y:auto;} #page-tresorerie .fin-page{height:auto;min-height:100%;overflow:visible;} #page-tresorerie .fin-body{flex-direction:column;overflow:visible;}
-  #page-tresorerie .fin-left{overflow:visible;border-right:none;flex:none;} #page-tresorerie .fin-left-scroll{overflow:visible;flex:none;} #page-tresorerie .fin-right{width:auto;overflow:visible;}
-  #page-tresorerie .fin-enc-bar{grid-template-columns:1fr;} #page-tresorerie .fin-col-hd{display:none;} #page-tresorerie .fin-sec-hd{position:static;}
-  #page-tresorerie .fin-row,#page-tresorerie .fin-total-row{grid-template-columns:24px 1fr auto 46px!important;row-gap:1px;padding:8px 12px;}
-  #page-tresorerie .fin-row .fin-annual,#page-tresorerie .fin-row .fin-hist-wrap,#page-tresorerie .fin-total-row .fin-annual,#page-tresorerie .fin-total-row span:empty{display:none;}
-  #page-tresorerie .fin-row .tf-ech{grid-column:2;grid-row:2;white-space:normal;} #page-tresorerie .fin-cb{width:18px;height:18px;}
+  #page-finances #ts-body{overflow-y:auto;} #page-finances .fin-page{height:auto;min-height:100%;overflow:visible;} #page-finances .fin-body{flex-direction:column;overflow:visible;}
+  #page-finances .fin-left{overflow:visible;border-right:none;flex:none;} #page-finances .fin-left-scroll{overflow:visible;flex:none;} #page-finances .fin-right{width:auto;overflow:visible;}
+  #page-finances .fin-enc-bar{grid-template-columns:1fr;} #page-finances .fin-col-hd{display:none;} #page-finances .fin-sec-hd{position:static;}
+  #page-finances .fin-row,#page-finances .fin-total-row{grid-template-columns:24px 1fr auto 46px!important;row-gap:1px;padding:8px 12px;}
+  #page-finances .fin-row .fin-annual,#page-finances .fin-row .fin-hist-wrap,#page-finances .fin-total-row .fin-annual,#page-finances .fin-total-row span:empty{display:none;}
+  #page-finances .fin-row .tf-ech{grid-column:2;grid-row:2;white-space:normal;} #page-finances .fin-cb{width:18px;height:18px;}
   .tf-pr{grid-template-columns:1fr 1fr;} .tf-pr-a,.tf-pr-b{grid-column:1 / -1;} .tf-blk-h>span{margin-left:0;flex-basis:100%;} .tf-zero{padding-left:48px;}
 }
 .ts-cm{font-size:12px;color:var(--gris-2);text-align:right;white-space:nowrap;} .ts-cv{text-align:right;font-weight:500;white-space:nowrap;} .ts-cops{background:#fbf8f3;padding:6px 14px 10px;border-bottom:1px solid #f3eee6;}
@@ -29502,20 +28831,20 @@ details.cx-more{margin-top:8px;} details.cx-more>summary{font-size:11.5px;color:
 <script>
 (function(){
   'use strict';
-  /* ══ v12.40 (Laurent 10/11) : « TRÉSORERIE (essai) » = LA PAGE FINANCES, À L'IDENTIQUE, + les améliorations retenues.
-     Historique : v12.36 / v12.38 (autres présentations, refusées : « je préfère mon affichage en pleine page avec mes échéances
-     mensuelles / trimestrielles / annuelles ») → v12.39 (copie de Finances + 6 améliorations + compléments A-D) → v12.40, retour
-     de Laurent : « ne conserve que C et D ; je ne vois pas l'intérêt de la case à cocher dans les opérations à venir ; les
-     honoraires attendus, si c'est en lien avec Ventes / En cours c'est bien ; solde projeté puis fin du mois : ajouter fin du
-     trimestre, fin de l'année ; le bouton nouveau rappel doit revenir ; les échéances c'est très bien, on peut ajouter la
-     possibilité de classer les colonnes ».
-     MÊMES DONNÉES que Finances (lignes ach_fin_lines_v1, pointages ach_fin_hist_v3, opérations ach_fin_ops_v3, solde
-     ach_fin_solde_v3, lues par window.achFinData) : ce qui est fait ici se retrouve dans Finances, et inversement.
-     En plus de Finances : 1) la case reste cochée toute la période  2) colonne Échéance, lignes échues en orange  3) lignes
-     à 0 € repliées  4) solde projeté fin de mois / de trimestre / d'année  5) honoraires des ventes en cours  6) colonnes
-     classables  7) statistiques des relevés en bas (historique 12 mois, postes).
-     Propre à la page d'essai (ach_treso_v1, poste de Laurent seulement) : ech{idLigne:{j,m}}, opt{ventes}. Relevés :
-     ach_treso_ops_v1. Tri des colonnes : préférence du poste (tf_tri_v1). Aucune donnée bancaire dans le code. ══ */
+  /* ══ v12.44 (Laurent 10/11) : LA PAGE « FINANCES ». L'ancienne page Finances est supprimée ; la page d'essai « Trésorerie »
+     (v12.36 → v12.40) prend sa place, son nom et son adresse (navTo('finances'), #page-finances, droit « finances »).
+     Demande : « tu peux conserver le Trésorerie en le renommant Finances et supprimant l'ancien onglet. Il faut juste intégrer
+     les charges annuelles en bout de ligne des charges en haut et donc le maintenir figé à cet endroit. Mettre la case à
+     remplir juste à côté du texte Solde en banque : SOLDE EN BANQUE avec en dessous (Mis à jour le…) et à droite l'encadré. »
+     → le bandeau du haut passe sur toute la largeur, avec 4 jauges : mensuelles, trimestrielles, annuelles, total de l'année ;
+       il ne défile pas. La colonne de droite commence par le solde (libellé + date à gauche, case à droite).
+     Données (inchangées, lues par window.achFinData) : lignes ach_fin_lines_v1, pointages ach_fin_hist_v3, opérations
+     ach_fin_ops_v3, solde ach_fin_solde_v3. Échéances et option « compter les honoraires » : ach_treso_v1 (partagé avec la
+     gérante depuis la v12.44). Relevés bancaires : ach_treso_ops_v1 (poste de Laurent seul, statistiques visibles par lui seul).
+     Tri des colonnes : préférence du poste (tf_tri_v1). Aucune donnée bancaire dans le code.
+     Fonctions : 1) la case reste cochée toute la période  2) colonne Échéance, lignes échues en orange  3) lignes à 0 €
+     repliées  4) solde projeté fin de mois / de trimestre / d'année  5) honoraires des ventes en cours  6) colonnes classables
+     7) statistiques des relevés en bas (Laurent). Lecture seule pour qui n'est pas administrateur. ══ */
   var K='ach_treso_v1', KO='ach_treso_ops_v1', KS='ach_fin_solde_v3';
   var MC=['janv.','févr.','mars','avr.','mai','juin','juil.','août','sept.','oct.','nov.','déc.'];
   var MOIS=['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
@@ -29523,6 +28852,7 @@ details.cx-more{margin-top:8px;} details.cx-more>summary{font-size:11.5px;color:
   var NOM={m:'mensuelle',q:'trimestrielle',a:'annuelle'};
   function esc(t){ return (''+(t==null?'':t)).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
   function isAdmin(){ return ((window.ACH_USER||{}).key||'admin')==='admin'; }
+  function canSee(){ try{ return window.achCan? !!window.achCan('finances','view') : true; }catch(e){ return true; } }
   function F(){ return window.achFinData||null; }
   function load(){ var o; try{ o=JSON.parse(localStorage.getItem(K)||'{}'); }catch(e){ o={}; } o=(o&&typeof o==='object'&&!Array.isArray(o))?o:{};
     o.opt=o.opt||{ventes:1}; o.ech=o.ech||{}; return o; }
@@ -29630,7 +28960,7 @@ details.cx-more{margin-top:8px;} details.cx-more>summary{font-size:11.5px;color:
   /* ══ RENDU : la page Finances, avec les mêmes classes ══ */
   var _zero={}, _histN=12, _catOpen='';
   function cell(id,lib,e,detail){ var pct=(e.N>0)? Math.max(0,Math.min(100,Math.round(e.n/e.N*100))) : 0, full=pct>=100;
-    return '<div class="fin-enc-cell'+(id==='g'?' fin-enc-solo':'')+'"><div class="fin-enc-top"><span class="fin-enc-label">'+lib+'</span><span class="fin-enc-pct'+(full?' full':'')+'" id="tf-pct-'+id+'">'+pct+' %</span></div>'
+    return '<div class="fin-enc-cell'+(id==='g'?' tf-enc-g':'')+'" id="tf-enc-'+id+'"><div class="fin-enc-top"><span class="fin-enc-label">'+lib+'</span><span class="fin-enc-pct'+(full?' full':'')+'" id="tf-pct-'+id+'">'+pct+' %</span></div>'
       +'<div class="fin-enc-prog-wrap"><div class="fin-enc-prog-bar'+(full?' full':'')+'" style="width:'+pct+'%"></div></div>'
       +'<div class="fin-enc-line"><span class="fin-enc-count"><span>'+e.n+'</span> / <span>'+e.N+'</span> '+(id==='g'?'échéances':'lignes')+'</span><span class="fin-enc-amounts"><strong>'+e2(e.val)+'</strong> / <span>'+e2(e.tot)+'</span></span><span class="fin-enc-rest">Restant dû : <strong>'+e2(e.reste)+'</strong></span>'
       +(detail&&e.aide>0?'<span class="fin-enc-detail">soit '+e2(e.charges)+' de charges − '+e2(e.aide)+' d’aide à percevoir</span>':'')+'</div></div>'; }
@@ -29653,17 +28983,18 @@ details.cx-more{margin-top:8px;} details.cx-more>summary{font-size:11.5px;color:
         +(P.useV&&z.hv?'<div class="tf-hz-h">avec les honoraires attendus (+ '+e2(z.hv)+') : <b id="tf-hzv-'+z.k+'" style="color:'+(z.vV<0?'var(--rouge)':'var(--vert)')+'">'+e2(z.vV)+'</b></div>':''); }).join('')
       +(P.flou?'<div class="tf-hz-n">'+P.flou+' ligne'+(P.flou>1?'s':'')+' sans échéance : comptée'+(P.flou>1?'s':'')+' à la fin de '+(P.flou>1?'leur':'sa')+' période (mois, trimestre ou année).</div>':'')+'</div>';
     return h; }
-  /* le bouton « Nouveau rappel », comme sur Finances (le rappel est rattaché à la page Finances) */
-  function rappelBar(){ var pg=document.getElementById('page-tresorerie'); if(!pg||document.getElementById('rap-bar-tresorerie')||!window.rapOpenModal) return;
-    var b=document.createElement('div'); b.className='rap-pagebar'; b.id='rap-bar-tresorerie'; b.innerHTML='<button class="rap-new" onclick="rapOpenModal(\'finances\',\'\',\'\')">🔔 Nouveau rappel</button>'; pg.insertBefore(b,pg.firstChild); }
+  /* « Mis à jour le 10/11 à 07:00 » — l'année n'est écrite que si ce n'est pas l'année en cours (la ligne tient sous le libellé) */
+  function soldeMaj(d){ if(!d||isNaN(d)) return 'Pas encore saisi'; var memeAn=d.getFullYear()===new Date().getFullYear(); return 'Mis à jour le '+(memeAn?frC(d):frD(d))+' à '+p2(d.getHours())+':'+p2(d.getMinutes()); }
   window.tsRender=function(){
-    var box=document.getElementById('ts-body'), f=F(); if(!box) return; try{ rappelBar(); }catch(e){}
-    if(!f){ box.innerHTML='<div class="ts-card ts-vide"><p>La page Finances n’est pas chargée.</p></div>'; return; }
+    var box=document.getElementById('ts-body'), f=F(); if(!box) return;
+    if(!canSee()){ box.innerHTML='<div class="fin-lock"><div style="font-size:48px;">🔒</div><div style="font-family:\'Cormorant Garamond\',serif;font-size:28px;color:var(--noir);">Accès restreint</div><div style="font-size:13px;color:var(--gris-2);line-height:1.6;">Cette page est réservée à l’Administrateur et à la Gérante.</div></div>'; return; }
+    if(!f){ box.innerHTML='<div class="ts-card ts-vide"><p>Les données de Finances ne sont pas chargées.</p></div>'; return; }
     var kl=box.querySelector('.fin-left-scroll'), kr=box.querySelector('.fin-right'), sl=kl?kl.scrollTop:0, sr=kr?kr.scrollTop:0;
     var S=load(), L=f.lines(), H=f.hist(), t=today(), adm=isAdmin(), E=encours(L,H,t), P=projection(S,L,H), O=opsStore(), h='';
-    h+='<div class="fin-page'+(adm?'':' fin-readonly')+'" id="tf-main"><div class="fin-body"><div class="fin-left">';
-    /* bandeau encours */
-    h+='<div class="fin-enc-bar">'+cell('m','Charges mensuelles — ce mois',E.m,1)+cell('q','Charges trimestrielles — ce trimestre',E.q,1)+cell('a','Charges annuelles — cette année',E.a,1)+'</div><div class="fin-left-scroll">';
+    h+='<div class="fin-page'+(adm?'':' fin-readonly')+'" id="tf-main">';
+    /* bandeau des charges : toute la largeur, figé en haut — mensuelles, trimestrielles, annuelles, puis le total de l'année */
+    h+='<div class="fin-enc-bar" id="tf-enc-bar">'+cell('m','Charges mensuelles — ce mois',E.m,1)+cell('q','Charges trimestrielles — ce trimestre',E.q,1)+cell('a','Charges annuelles — cette année',E.a,1)+cell('g','Total de l’année — toutes charges',E.g,0)+'</div>';
+    h+='<div class="fin-body"><div class="fin-left"><div class="fin-left-scroll">';
     /* les trois tableaux */
     [['m','Charges mensuelles','× 12 = annuel','Mensuel','Annuel ×','Total mensuel'],['q','Charges trimestrielles','× 4 = annuel','Trimestriel','Annuel ×','Total trimestriel'],['a','Charges annuelles','','Annuel','','Total annuel']].forEach(function(g){ var c=g[0], tot=0, nz=0;
       L[c].forEach(function(l){ var a=Number(l.amt)||0; tot+=a; if(a===0) nz++; });
@@ -29673,6 +29004,7 @@ details.cx-more{margin-top:8px;} details.cx-more>summary{font-size:11.5px;color:
       h+='<div class="fin-total-row"><span></span><span style="font-size:12px;font-weight:600;color:var(--noir);">'+g[5]+'</span><span></span><span class="fin-amt" style="color:var(--terra);">'+e2(tot)+'</span><span class="fin-annual" style="color:var(--terra);">'+(c==='a'?'':e2(tot*MULT[c]))+'</span><span></span><span></span></div>';
       if(adm) h+='<button class="fin-add-line-btn" onclick="tfLineAdd(\''+c+'\')">+ Ajouter une charge '+NOM[c]+'</button>'; });
     /* ── statistiques des relevés bancaires (retenues par Laurent : historique du compte + postes) ── */
+    if(adm){
     h+='<div class="fin-sec-hd tf-plus">Statistiques des relevés <small>'+(O.ops.length?'relevés du '+frD(pIso(O.periode?O.periode[0]:O.ops[0].d))+' au '+frD(pIso(O.periode?O.periode[1]:O.ops[O.ops.length-1].d))+' · '+O.ops.length+' opérations':'fichier d’analyse non importé')+'</small></div>';
     if(O.ops.length){ var HI=historique(), C=parCategorie(_histN), mx=0; HI.slice(-12).forEach(function(m){ mx=Math.max(mx,m.inn,m.out); });
       h+='<div class="tf-blk"><div class="tf-blk-h tf-static">Ce qui s’est passé sur le compte, mois par mois</div>';
@@ -29683,12 +29015,13 @@ details.cx-more{margin-top:8px;} details.cx-more>summary{font-size:11.5px;color:
       h+=C.L.map(function(c){ var op=_catOpen===c.c; return '<div class="ts-c'+(op?' on':'')+'" onclick="tsCat(\''+encodeURIComponent(c.c).replace(/'/g,'%27')+'\')"><span class="ts-cl">'+esc(c.c)+'</span><span class="ts-cb2"><i class="'+(c.v>=0?'pos':'')+'" style="width:'+Math.max(2,Math.round(100*Math.abs(c.v)/(mxc||1)))+'%"></i></span><span class="ts-cm">'+eur(Math.abs(c.v)/_histN)+' / mois</span><span class="ts-cv '+(c.v>=0?'pos':'')+'">'+(c.v>=0?'+ ':'− ')+eur(Math.abs(c.v))+'</span></div>'
           +(op?'<div class="ts-cops">'+c.ops.slice().reverse().slice(0,60).map(function(o){ return '<div class="ts-l"><span class="ts-ld">'+frD(pIso(o.d))+'</span><span class="ts-ll">'+esc(o.t)+' <i>'+esc(o.l)+'</i></span><span class="ts-lm '+(o.m>=0?'pos':'')+'">'+(o.m>=0?'+ ':'− ')+e2(Math.abs(o.m))+'</span></div>'; }).join('')+(c.ops.length>60?'<div class="ts-note">… et '+(c.ops.length-60)+' opérations plus anciennes</div>':'')+'</div>':''); }).join('')+'</div>'; }
     else h+='<div class="tf-blk"><div class="ts-note">Importez le fichier <b>tresorerie-achille.json</b> pour afficher l’historique du compte et les dépenses par poste. '+(adm?'<label class="ts-btn">⬆ Importer<input type="file" accept=".json,application/json" style="display:none" onchange="tsImport(this)"></label>':'')+'</div></div>';
+    }
     h+='</div>';   /* /fin-left-scroll */
     h+='<div class="fin-grand-total"><span style="font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.6);">Total annuel toutes charges</span><span style="font-family:\'Cormorant Garamond\',serif;font-size:22px;color:#fff;font-weight:500;">'+e2(E.g.tot)+'</span></div></div>';
     /* ── colonne de droite ── */
-    h+='<div class="fin-right">'+cell('g','Charges annuelles',E.g,0);
-    h+='<div class="fin-card"><div class="fin-card-title">Solde en banque</div><div class="fin-solde-row"><input type="text" inputmode="decimal" id="tf-solde" class="fin-solde-input" value="'+(P.s?fmtSolde(P.s.v):'')+'"'+(adm?'':' readonly')+' oninput="tfSolde(this.value,0)" onblur="tfSolde(this.value,1)" onkeydown="if(event.key===\'Enter\')this.blur()"><span style="font-size:18px;color:var(--gris-2);">€</span></div>'
-      +'<div style="font-size:10px;color:var(--gris-2);margin-top:6px;" id="tf-solde-date">Mis à jour : '+(P.s&&P.s.t? P.s.t.toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}) : '—')+'</div></div>';
+    h+='<div class="fin-right">';
+    h+='<div class="fin-card tf-solde"><div class="tf-solde-l"><div class="fin-card-title">Solde en banque</div><div class="tf-solde-d" id="tf-solde-date">('+soldeMaj(P.s&&P.s.t)+')</div></div>'
+      +'<div class="fin-solde-row"><input type="text" inputmode="decimal" id="tf-solde" class="fin-solde-input" value="'+(P.s?fmtSolde(P.s.v):'')+'"'+(adm?'':' readonly')+' oninput="tfSolde(this.value,0)" onblur="tfSolde(this.value,1)" onkeydown="if(event.key===\'Enter\')this.blur()" title="'+(adm?'Tapez le solde du compte':'Solde saisi par l’administrateur')+'"><span style="font-size:18px;color:var(--gris-2);">€</span></div></div>';
     /* opérations à venir */
     var ops=f.ops().slice().sort(function(a,b){ var x=opWhen(a), y=opWhen(b); return (x?x.getTime():Infinity)-(y?y.getTime():Infinity); });
     h+='<div class="fin-card tf-ops"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;"><span class="fin-card-title" style="margin-bottom:0;">Opérations à venir</span>'+(adm?'<button onclick="tfOpAdd()" style="background:var(--terra);color:#fff;border:none;border-radius:4px;padding:5px 12px;font-family:\'Jost\',sans-serif;font-size:11px;cursor:pointer;">+ Ajouter</button>':'')+'</div>'
@@ -29753,7 +29086,7 @@ details.cx-more{margin-top:8px;} details.cx-more>summary{font-size:11.5px;color:
   /* solde : comme Finances (enregistré à la frappe, mis en forme en sortant de la case) */
   window.tfSolde=function(val,blur){ if(!isAdmin()) return; var inp=document.getElementById('tf-solde'); if((''+val).trim()===''){ return; }
     if(blur){ var v=num(val); if(v==null) return; var txt=fmtSolde(v), cur=soldeGet(); if(inp) inp.value=txt; if(!cur||cur.txt!==txt||Math.abs(cur.v-v)>0.004) soldeSet(txt); majProj(); setTimeout(function(){ if(!document.getElementById('tf-modal')) tsRender(); },250); return; }
-    soldeSet(val); var el=document.getElementById('tf-solde-date'); if(el) el.textContent='Mis à jour : '+new Date().toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}); majProj(); };
+    soldeSet(val); var el=document.getElementById('tf-solde-date'); if(el) el.textContent='('+soldeMaj(new Date())+')'; majProj(); };
   /* opérations à venir */
   function opForm(o){ modal('<div class="tf-modal-t">'+(o?'Modifier l’opération':'Nouvelle opération')+'</div>'+fld('Intitulé','<input id="tf-ol" type="text" value="'+esc(o?o.label:'')+'">')
       +'<div class="tf-fr">'+fld('Date (jj/mm)','<input id="tf-od" type="text" inputmode="numeric" maxlength="10" placeholder="jj/mm/aaaa" value="'+esc(o?(o.date||''):'')+'">')+fld('Montant (négatif = sortie)','<input id="tf-oa" type="text" inputmode="decimal" value="'+(o?fmtSolde(o.montant):'')+'">')+'</div>'
@@ -29776,14 +29109,18 @@ details.cx-more{margin-top:8px;} details.cx-more>summary{font-size:11.5px;color:
     var rd=new FileReader(); rd.onload=function(){ inp.value=''; var J=null; try{ J=JSON.parse(rd.result); }catch(e){}
       if(!J||J.type!=='achille-tresorerie'||!Array.isArray(J.ops)){ if(window.toast) toast('✗ Ce fichier n’est pas le fichier d’analyse attendu (tresorerie-achille.json)'); return; }
       try{ localStorage.setItem(KO, JSON.stringify({maj:new Date().toISOString(), n:J.ops.length, periode:J.periode||null, soldeRef:J.soldeRef||null, ops:J.ops})); }catch(e){ if(window.toast) toast('✗ Fichier trop volumineux'); return; }
-      if(window.toast) toast('📊 '+J.ops.length+' opérations importées'); try{ if(window.achLog) achLog('import','Trésorerie','analyse des relevés importée ('+J.ops.length+' opérations)'); }catch(e){}
+      if(window.toast) toast('📊 '+J.ops.length+' opérations importées'); try{ if(window.achLog) achLog('import','Finances','analyse des relevés importée ('+J.ops.length+' opérations)'); }catch(e){}
       tsRender(); try{ tsImpRender(); }catch(e){} };
     rd.readAsText(fl,'utf-8'); };
   window.tsImpRender=function(){ var sec=document.getElementById('tsimp-sec'), el=document.getElementById('ts-imp'); if(!sec||!el) return; sec.style.display=isAdmin()?'':'none'; var O=opsStore();
     el.innerHTML=(O.ops.length?'<span>'+O.ops.length+' opérations importées'+(O.maj?' le '+new Date(O.maj).toLocaleDateString('fr-FR'):'')+(O.periode?' (relevés jusqu’au '+frD(pIso(O.periode[1]))+')':'')+'</span>':'')
       +'<label class="ct-upl">⬆ '+(O.ops.length?'Réimporter':'Importer')+' le fichier d’analyse des relevés<input type="file" accept=".json,application/json" style="display:none" onchange="tsImport(this)"></label>'; };
-  if(window.navTo){ var _nt=window.navTo; window.navTo=function(id,el){ var r=_nt.apply(this,arguments); if(id==='tresorerie'){ try{ tsRender(); }catch(e){ window.achErr&&achErr(e); } } if(id==='acces'||id==='droits'){ setTimeout(function(){ try{ tsImpRender(); }catch(e){} },90); } return r; }; }
-  window.addEventListener('storage', function(e){ if(e&&/^ach_(treso|fin)_/.test(e.key||'')){ try{ var p=document.getElementById('page-tresorerie'); if(p&&p.classList.contains('active')&&!document.getElementById('tf-modal')&&document.activeElement.id!=='tf-solde') tsRender(); }catch(x){} } });
+  try{ if(localStorage.getItem('achille_curpage')==='tresorerie') localStorage.setItem('achille_curpage','finances'); }catch(e){}
+  if(window.navTo){ var _nt=window.navTo; window.navTo=function(id,el){ if(id==='tresorerie'){ id='finances'; el=document.querySelector('.nav-item[onclick*="navTo(\'finances\'"]')||el; }
+    var r=_nt.call(this,id,el); if(id==='finances'){ try{ tsRender(); }catch(e){ window.achErr&&achErr(e); } } if(id==='acces'||id==='droits'){ setTimeout(function(){ try{ tsImpRender(); }catch(e){} },90); } return r; }; }
+  /* changement de rôle pendant que la page est ouverte : la lecture seule suit */
+  if(window.setRole){ var _srF=window.setRole; window.setRole=function(){ var x=_srF.apply(this,arguments); setTimeout(function(){ try{ var p=document.getElementById('page-finances'); if(p&&p.classList.contains('active')) tsRender(); }catch(e){} },90); return x; }; }
+  window.addEventListener('storage', function(e){ if(e&&/^ach_(treso|fin)_/.test(e.key||'')){ try{ var p=document.getElementById('page-finances'); if(p&&p.classList.contains('active')&&!document.getElementById('tf-modal')&&document.activeElement.id!=='tf-solde') tsRender(); }catch(x){} } });
 })();
 </script>
 <!-- ══ v12.37 (Laurent 10/11) : BONS DE VISITE — remplissage depuis un ou plusieurs PDF ══ -->
