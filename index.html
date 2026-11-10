@@ -1921,7 +1921,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     </div>
   </div>
   </div>
-  <div class="logo-ver app-ver">Achille App — v12.36</div>
+  <div class="logo-ver app-ver">Achille App — v12.37</div>
 </aside>
 <div id="mob-bk" onclick="mobNav(false)"></div>
 <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Réduire la barre latérale">‹</button>
@@ -9643,7 +9643,10 @@ CABLE|1|Villa Nova|48.73478|2.46475`;
     overlay.innerHTML=
       '<div style="background:var(--blanc);border-radius:14px;padding:28px 32px;width:480px;max-width:92vw;box-shadow:0 12px 48px rgba(0,0,0,.18);font-family:\'Jost\',sans-serif;">'+
       '<div style="font-family:\'Cormorant Garamond\',serif;font-size:20px;color:var(--noir);margin-bottom:6px;">'+_ttl+'</div>'+
-      '<div style="font-size:14px;color:var(--gris);margin-bottom:18px;">'+_sub+'</div>'+
+      '<div style="font-size:14px;color:var(--gris);margin-bottom:12px;">'+_sub+'</div>'+
+      /* v12.37 (Laurent 10/11) : un ou plusieurs PDF de bons → les cases se remplissent, on valide avant de créer */
+      '<label class="bvp-pdf" id="bvp-pdf-zone" title="Les informations du bon sont lues sur ce poste, rien n\u2019est envoy\u00e9 ; vous v\u00e9rifiez avant d\u2019enregistrer">\ud83d\udcc4 Charger un ou plusieurs PDF de bons <span>\u2014 les cases se remplissent</span><input type="file" id="bvp-pdf-in" accept="application/pdf,.pdf" multiple style="display:none" onchange="bvPdfPick(this.files);this.value=\'\'"></label>'+
+      '<div id="bvp-pdf-st" class="bvp-pdf-st"></div>'+
       '<div style="background:var(--beige);border-radius:10px;padding:14px 16px;margin-bottom:18px;display:grid;grid-template-columns:auto 1fr;gap:8px 14px;align-items:center;font-size:14px;">'+
         '<span style="color:var(--gris);">N° du bon</span><input id="bvp-num" type="number" min="1" value="'+nextN+'" style="border:1px solid var(--border);border-radius:6px;padding:5px 9px;font-family:\'Cormorant Garamond\',serif;font-size:17px;font-weight:600;color:var(--terra);background:var(--blanc);outline:none;width:90px;">'+
         '<span style="color:var(--gris);">Date</span><input id="bvp-date" type="date" value="'+bvpToIso(dateStr)+'" style="border:1px solid var(--border);border-radius:6px;padding:5px 9px;font-family:\'Jost\',sans-serif;font-size:14px;background:var(--blanc);color:var(--noir);outline:none;width:160px;">'+   /* v11.55 : date modifiable (visite d'hier saisie le lendemain) */
@@ -9653,6 +9656,9 @@ CABLE|1|Villa Nova|48.73478|2.46475`;
         '<button type="button" class="bvp-addr-more" onclick="bvpAddrAdd(\'\')" style="align-self:flex-start;border:1px dashed rgba(180,85,45,.55);color:var(--terra);background:transparent;border-radius:999px;padding:3px 12px;font-family:\'Jost\',sans-serif;font-size:12px;cursor:pointer;">+ Ajouter un bien</button>'+
         '</div>'+
         '<span style="color:var(--gris);">Observations</span><input id="bvp-obs" value="" placeholder="—" style="border:1px solid var(--border);border-radius:6px;padding:6px 10px;font-family:\'Jost\',sans-serif;font-size:14px;background:var(--blanc);color:var(--noir);outline:none;width:100%;">'+
+        /* v12.37 : téléphone et e-mail du visiteur — lignes affichées seulement quand un PDF les a fournis */
+        '<span class="bvp-coord" style="color:var(--gris);display:none;">T\u00e9l\u00e9phone</span><input class="bvp-coord" id="bvp-tel" value="" placeholder="—" style="display:none;border:1px solid var(--border);border-radius:6px;padding:6px 10px;font-family:\'Jost\',sans-serif;font-size:14px;background:var(--blanc);color:var(--noir);outline:none;width:100%;">'+
+        '<span class="bvp-coord" style="color:var(--gris);display:none;">E-mail</span><input class="bvp-coord" id="bvp-mail" value="" placeholder="—" style="display:none;border:1px solid var(--border);border-radius:6px;padding:6px 10px;font-family:\'Jost\',sans-serif;font-size:14px;background:var(--blanc);color:var(--noir);outline:none;width:100%;">'+
         '<span style="color:var(--gris);align-self:start;padding-top:7px;">Accompagnateur(s)</span><div id="bvp-acc-field" class="vt-acc-inline">'+bvpInlineHtml()+'</div>'+   /* v11.55 : cases à cocher dans la fenêtre (le menu déroulant recouvrait le bouton d'enregistrement) */
       '</div>'+
       (isAdmin?'':
@@ -9689,6 +9695,35 @@ CABLE|1|Villa Nova|48.73478|2.46475`;
     return out;
   };
 
+  /* v12.37 : l'enregistrement d'un bon, sorti de bvConfirmProp pour servir aussi à la liste de PDF (même logique, à l'identique) */
+  window.bvBonExiste=function(n){ n=+n; if(!(n>0)) return null;
+    /* les bons ajoutés (ach_bv_extra) ne sont fusionnés dans BV_DATA qu'à l'ouverture de la page : on les lit aussi ici ; la dernière entrée d'un n° décide (marqueur del = supprimé) */
+    var ex=null; try{ JSON.parse(localStorage.getItem('ach_bv_extra')||'[]').forEach(function(x){ if(x && x.n===n) ex=x; }); }catch(e){}
+    var b=ex? (ex.del?null:ex) : (BV_DATA.find(function(x){ return x && x.n===n; })||null); if(b) return b;
+    try{ return JSON.parse(localStorage.getItem('ach_bv_pending')||'[]').find(function(x){ return x && x.n===n; })||null; }catch(e){ return null; } };
+  window.bvStoreBon=function(newBon, isAdmin){
+    if(!newBon || !(newBon.n>0) || window.bvBonExiste(newBon.n)) return false;
+    if(isAdmin){
+      BV_DATA.push(newBon);
+      try{
+        var stored=JSON.parse(localStorage.getItem('ach_bv_extra')||'[]');
+        if(!stored.find(function(b){return b.n===newBon.n && !b.del;})) stored.push(newBon);
+        localStorage.setItem('ach_bv_extra',JSON.stringify(stored));
+      }catch(e){window.achErr&&achErr(e)}
+      bvSaveObs(); bvSaveAccomp();
+    } else {
+      try{
+        var pend=JSON.parse(localStorage.getItem('ach_bv_pending')||'[]');
+        pend.push(newBon);
+        localStorage.setItem('ach_bv_pending',JSON.stringify(pend));
+      }catch(e){window.achErr&&achErr(e)}
+      bvAddNotif(newBon.n, newBon.v, ((newBon.aa&&newBon.aa.length)?[newBon.a].concat(newBon.aa).join(' \u00b7 '):newBon.a), newBon.d);
+    }
+    return true; };
+  window.bvAfterStore=function(isAdmin){
+    if(isAdmin){ bvInited=false; if(document.getElementById('page-visites') && document.getElementById('page-visites').classList.contains('active')){ bvInit(); } }
+    else if(bvInited) bvRender(); };
+
   window.bvConfirmProp=function(n, dateStr, isAdmin){
     var _ni=document.getElementById('bvp-num'); if(_ni){ var _nv=parseInt(_ni.value,10); if(!isNaN(_nv)&&_nv>0) n=_nv; }
     var visiteur=document.getElementById('bvp-visiteur').value.trim();
@@ -9700,35 +9735,15 @@ CABLE|1|Villa Nova|48.73478|2.46475`;
     try{ var _dEl=document.getElementById('bvp-date'); if(_dEl && _dEl.value){ var _m=_dEl.value.match(/^(\d{4})-(\d{2})-(\d{2})$/); if(_m) dateStr=_m[3]+'/'+_m[2]+'/'+_m[1]; } }catch(e){}
     var obs=document.getElementById('bvp-obs').value.trim();
     var newBon={n:n, d:dateStr, v:visiteur, a:adresse, aa:_addrs.slice(1), obs:obs, accomp:bvpAccGet()};   /* v10.06 : plusieurs biens possibles */
-    if(isAdmin){
-      // Intégration directe dans BV_DATA si pas déjà présent
-      if(!BV_DATA.find(function(b){return b.n===n;})) BV_DATA.push(newBon);
-      // Persister dans localStorage
-      try{
-        var stored=JSON.parse(localStorage.getItem('ach_bv_extra')||'[]');
-        if(!stored.find(function(b){return b.n===n;})) stored.push(newBon);
-        localStorage.setItem('ach_bv_extra',JSON.stringify(stored));
-      }catch(e){window.achErr&&achErr(e)}
-      bvSaveObs(); bvSaveAccomp();
-      document.getElementById('bv-prop-overlay').style.display='none';
-      toast('Bon n°'+n+' ajouté au suivi ✓');
-      // Forcer le rechargement de l'onglet Visites à la prochaine ouverture
-      bvInited=false;
-      if(document.getElementById('page-visites') && document.getElementById('page-visites').classList.contains('active')){
-        bvInit();
-      }
-    } else {
-      // Mise en attente + notification
-      try{
-        var pend=JSON.parse(localStorage.getItem('ach_bv_pending')||'[]');
-        pend.push(newBon);
-        localStorage.setItem('ach_bv_pending',JSON.stringify(pend));
-      }catch(e){window.achErr&&achErr(e)}
-      bvAddNotif(n, visiteur, (_addrs.length>1?_addrs.join(' \u00b7 '):adresse), dateStr);
-      document.getElementById('bv-prop-overlay').style.display='none';
-      toast('Bon n°'+n+' soumis — en attente de validation');
-      if(bvInited) bvRender();
-    }
+    /* v12.37 : téléphone / e-mail lus sur le PDF du bon (alimentent le répertoire) */
+    try{ var _tl=((document.getElementById('bvp-tel')||{}).value||'').trim(), _ml=((document.getElementById('bvp-mail')||{}).value||'').trim(); if(_tl) newBon.tel=_tl; if(_ml) newBon.mail=_ml; }catch(e){}
+    /* v12.37 : un numéro déjà pris n'est plus accepté en silence (avant : « ajouté » s'affichait sans rien créer) */
+    var _dj=window.bvBonExiste(n);
+    if(_dj){ toast('Le bon n°'+n+' existe déjà'+(_dj.v?' ('+_dj.v+')':'')+' — changez le numéro'); try{ document.getElementById('bvp-num').focus(); }catch(e){} return; }
+    window.bvStoreBon(newBon, isAdmin);
+    document.getElementById('bv-prop-overlay').style.display='none';
+    toast(isAdmin? 'Bon n°'+n+' ajouté au suivi ✓' : 'Bon n°'+n+' soumis — en attente de validation');
+    window.bvAfterStore(isAdmin);
   };
 
   // ── Notifications bons en attente ──
@@ -15119,7 +15134,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     startRealtime();
     var ov=document.getElementById('ach-login-overlay'); if(ov) ov.classList.add('ach-hidden');
     var ub=document.getElementById('ach-userbar'); if(ub) ub.style.display='none';
-    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v12.36';
+    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v12.37';
     flag('Synchronis\u00e9');
     // fin de l'init : on autorise la journalisation des actions
     setTimeout(function(){ installInterceptor._init=false; }, 1500);
@@ -29604,6 +29619,282 @@ details.cx-more{margin-top:8px;} details.cx-more>summary{font-size:11.5px;color:
   window.addEventListener('storage', function(e){ if(e&&(e.key===K||e.key===KO)){ try{ var p=document.getElementById('page-tresorerie'); if(p&&p.classList.contains('active')) tsRender(); }catch(x){} } });
 })();
 </script>
+<!-- ══ v12.37 (Laurent 10/11) : BONS DE VISITE — remplissage depuis un ou plusieurs PDF ══ -->
+<style>
+.bvp-pdf{display:block;border:1.5px dashed rgba(180,115,96,.55);border-radius:10px;padding:9px 14px;margin-bottom:8px;font-family:'Jost',sans-serif;font-size:13.5px;color:var(--terra);font-weight:500;cursor:pointer;background:#fff;text-align:center;transition:background .15s;}
+.bvp-pdf span{color:var(--gris-2);font-weight:400;} .bvp-pdf:hover,.bvp-pdf.bvp-drag{background:rgba(180,115,96,.08);}
+.bvp-pdf-st{font-family:'Jost',sans-serif;font-size:12.5px;color:var(--gris);margin:0 2px 12px;line-height:1.45;min-height:2px;} .bvp-pdf-st:empty{margin-bottom:6px;}
+.bvp-pdf-st.bvp-ok{color:var(--vert);} .bvp-pdf-st.bvp-ko{color:var(--rouge);} .bvp-pdf-w{color:#8a5a1e;margin-top:3px;} .bvp-pdf-st.bvp-ko .bvp-pdf-w{color:var(--rouge);}
+.bvl-ov{position:fixed;inset:0;background:rgba(26,26,24,.55);z-index:9001;display:flex;align-items:center;justify-content:center;padding:16px;}
+.bvl-box{background:var(--blanc);border-radius:14px;width:760px;max-width:100%;max-height:92vh;display:flex;flex-direction:column;box-shadow:0 12px 48px rgba(0,0,0,.2);font-family:'Jost',sans-serif;}
+.bvl-hd{padding:22px 26px 12px;} .bvl-ttl{font-family:'Cormorant Garamond',serif;font-size:21px;color:var(--noir);} .bvl-sub{font-size:13.5px;color:var(--gris);margin-top:4px;line-height:1.45;} .bvl-sub b{color:var(--noir);font-weight:500;}
+.bvl-list{flex:1;overflow-y:auto;padding:4px 26px 8px;display:flex;flex-direction:column;gap:10px;}
+.bvl-c{display:flex;gap:12px;background:var(--beige);border:1px solid transparent;border-left:4px solid var(--vert);border-radius:10px;padding:11px 14px 9px 10px;}
+.bvl-c.bvl-off{opacity:.5;border-left-color:#c9c2b4;} .bvl-c.bvl-pbl{border-left-color:var(--rouge);background:#fbf1ee;} .bvl-c.bvl-wt{border-left-color:#c9c2b4;} .bvl-c.bvl-ko{border-left-color:var(--rouge);}
+.bvl-wait{font-size:13px;color:var(--gris);display:flex;gap:10px;flex-wrap:wrap;align-items:baseline;} .bvl-wait b{color:var(--noir);font-weight:500;word-break:break-word;} .bvl-c.bvl-ko .bvl-wait span{color:var(--rouge);}
+.bvl-on{padding-top:5px;cursor:pointer;} .bvl-on input{width:17px;height:17px;accent-color:var(--terra);cursor:pointer;}
+.bvl-g{flex:1;min-width:0;display:flex;flex-direction:column;gap:6px;}
+.bvl-l{display:flex;gap:8px;align-items:center;} .bvl-k{flex:none;width:52px;font-size:12px;color:var(--gris);} .bvl-l .bvl-k~.bvl-k{width:auto;margin-left:8px;}
+.bvl-l input{border:1px solid var(--border);border-radius:6px;padding:5px 9px;font-family:'Jost',sans-serif;font-size:13.5px;background:var(--blanc);color:var(--noir);outline:none;min-width:0;}
+.bvl-l input:focus{border-color:var(--terra);} .bvl-n{width:78px;font-family:'Cormorant Garamond',serif!important;font-size:16px!important;font-weight:600;color:var(--terra)!important;} .bvl-d{width:150px;}
+.bvl-v,.bvl-a,.bvl-t,.bvl-m{flex:1;} .bvl-t{max-width:150px;}
+.bvl-acc{margin-left:auto;display:flex;gap:4px;} .bvl-ab{cursor:pointer;} .bvl-ab.bvl-aoff{background:#d8d2c6!important;opacity:.75;}
+.bvl-note{display:flex;gap:6px 14px;flex-wrap:wrap;font-size:11.5px;color:var(--gris-2);line-height:1.4;} .bvl-note>span:first-child{word-break:break-word;} .bvl-pb{color:var(--rouge);font-weight:500;} .bvl-w i{color:#8a5a1e;font-style:normal;margin-left:8px;}
+.bvl-pend{margin:4px 26px 0;background:var(--orange-p);border-left:3px solid var(--orange);border-radius:6px;padding:8px 12px;font-size:13px;color:var(--orange);}
+.bvl-ft{display:flex;gap:10px;justify-content:flex-end;padding:14px 26px 20px;}
+.bvl-b{padding:9px 18px;border:1px solid var(--border);border-radius:8px;background:transparent;font-family:'Jost',sans-serif;font-size:14px;cursor:pointer;color:var(--gris);}
+.bvl-b.bvl-go{border:none;background:var(--terra);color:var(--blanc);font-weight:500;} .bvl-b.bvl-go:disabled{background:#cfc8bb;cursor:default;}
+@media (max-width:700px){ .bvl-hd{padding:16px 16px 8px;} .bvl-list{padding:4px 12px 8px;} .bvl-ft{padding:12px 16px 16px;} .bvl-l{flex-wrap:wrap;} .bvl-k,.bvl-l .bvl-k~.bvl-k{width:52px;margin-left:0;} .bvl-l input{flex:1 1 calc(100% - 64px);width:auto;max-width:none;} .bvl-acc{margin-left:60px;} .bvl-c{padding-right:10px;} .bvl-b{min-height:40px;} }
+</style>
+<script>
+/* ══ v12.37 (Laurent 10/11) : BONS DE VISITE — remplissage depuis un ou plusieurs PDF ══════════════════
+   « Quand on clique sur créer une nouvelle visite, rien ne change sauf qu'on peut charger un ou des fichiers ;
+     quand ils sont lus, tu extrais les informations et me demandes validation avant de créer la ligne. »
+   - Le PDF est lu DANS LE NAVIGATEUR (texte du PDF, sinon lecture optique du scan) : rien n'est envoyé ni stocké.
+   - Deux sources se complètent : le NOM DU FICHIER (« Bon de visite 123 du 20261109 - M. Dupont pour le
+     12 rue de Chartres - 92200.pdf ») et le CONTENU du bon (modèle clap.legal).
+   - 1 PDF  → les cases de la fenêtre se remplissent, on enregistre comme d'habitude.
+   - N PDF  → une liste « à valider » : une ligne par fichier, corrigeable, décochable. Rien n'est créé avant. */
+(function(){
+  function esc(s){ return (''+(s==null?'':s)).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+  function fold(s){ return (''+(s||'')).normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim(); }
+  function lev(a,b){ if(a===b) return 0; var m=a.length,n=b.length; if(!m) return n; if(!n) return m; var p=[],i,j; for(j=0;j<=n;j++) p[j]=j;
+    for(i=1;i<=m;i++){ var c=[i]; for(j=1;j<=n;j++) c[j]=Math.min(p[j]+1,c[j-1]+1,p[j-1]+(a.charAt(i-1)===b.charAt(j-1)?0:1)); p=c; } return p[n]; }
+  function proche(a,b){ a=fold(a); b=fold(b); if(!a||!b) return false; return lev(a,b)<=Math.max(1,Math.round(Math.min(a.length,b.length)*0.15)); }
+  function users(){ try{ return BV_USERS||[]; }catch(e){ return []; } }
+  function bons(){ try{ return BV_DATA||[]; }catch(e){ return []; } }
+
+  /* ── mise en forme : « 157 rue jules guesde » → « 157 Rue Jules Guesde » ── */
+  var PETITS={de:1,du:1,des:1,la:1,le:1,les:1,sur:1,sous:1,en:1,et:1,au:1,aux:1,bis:1,ter:1,quater:1};
+  function cap1(x){ if(!x) return x; if(x.length>1 && x===x.toUpperCase() && /[A-ZÀ-Ý]/.test(x)) x=x.toLowerCase(); return x.charAt(0).toUpperCase()+x.slice(1); }
+  function capMot(w){ if(!w || /^\d/.test(w)) return w; var lw=w.toLowerCase(); if(PETITS[lw]) return lw;
+    var m=w.match(/^([dl])(['’])(.+)$/i); if(m) return m[1].toLowerCase()+m[2]+cap1(m[3]);
+    return w.split('-').map(function(p){ return PETITS[p.toLowerCase()]?p.toLowerCase():cap1(p); }).join('-'); }
+  function capRue(s){ return (''+(s||'')).replace(/\s+/g,' ').trim().split(' ').map(capMot).join(' '); }
+  var VILLES={'92200':'Neuilly-sur-Seine','92300':'Levallois-Perret','92400':'Courbevoie','92800':'Puteaux','92100':'Boulogne-Billancourt','92150':'Suresnes','92110':'Clichy','92600':'Asnières-sur-Seine','92250':'La Garenne-Colombes','92270':'Bois-Colombes','92700':'Colombes','92000':'Nanterre','92500':'Rueil-Malmaison','92210':'Saint-Cloud'};
+  function villeDe(cp){ if(VILLES[cp]) return VILLES[cp]; var m=(''+cp).match(/^750(\d\d)$/); if(m){ var a=+m[1]; return a?('Paris '+a+(a===1?'er':'ème')):'Paris'; } return ''; }
+  function parseAdr(s){ s=(''+(s||'')).replace(/\s+/g,' ').replace(/[\s,\-–]+France\s*$/i,'').trim(); if(!s) return {rue:'',cp:'',ville:''};
+    var m=s.match(/^(.*?)[\s,\-–]+(\d{5})(?:[\s,\-–]+(.*))?$/); if(!m) return {rue:s,cp:'',ville:''};
+    return {rue:m[1].trim(), cp:m[2], ville:(m[3]||'').trim()}; }
+  /* adresses déjà connues dans le suivi : on reprend leur écriture exacte (accents, majuscules) */
+  function connues(){ var M={}; bons().forEach(function(b){ if(!b) return; [b.a].concat(b.aa||[]).forEach(function(a){ if(a){ var k=fold(a); if(k && !M[k]) M[k]=a; } }); }); return M; }
+  function adresse(fn, oc, W){
+    var F=parseAdr(fn), O=parseAdr(oc), rue, cp, ville;
+    if(F.rue && O.rue){ if(fold(F.rue)===fold(O.rue) || proche(F.rue,O.rue)) rue=F.rue; else { rue=O.rue; W.push('adresse : le nom du fichier indique « '+F.rue+' »'); } }
+    else rue=F.rue||O.rue;
+    if(!rue) return '';
+    cp=F.cp||O.cp; ville=(O.cp && O.cp===cp && O.ville)? O.ville : villeDe(cp);
+    var out=capRue(rue)+(cp?(' - '+cp+(ville?' '+ville:'')):'');
+    var K=connues(), k=fold(out); if(K[k]) return K[k];
+    return out; }
+
+  /* ── le NOM DU FICHIER ── */
+  function civ(s){ s=fold(s); if(/^(monsieur et madame|m et mme|mr et mme|m mme|mme et m)\b/.test(s)) return 'M. et Mme'; if(/^(madame|mme)\b/.test(s)) return 'Mme'; if(/^(mademoiselle|mlle)\b/.test(s)) return 'Mlle'; if(/^(monsieur|mr|m)\b/.test(s)) return 'M.'; return ''; }
+  function sansCiv(s){ return (''+(s||'')).replace(/^\s*(monsieur et madame|m\.? et mme|mr\.? et mme|madame|mademoiselle|monsieur|mme|mlle|mr|m)\b\.?\s*/i,'').trim(); }
+  function dOk(j,m,a){ j=+j; m=+m; a=+a; if(!(a>=2020&&a<=2100&&m>=1&&m<=12&&j>=1&&j<=31)) return ''; return ('0'+j).slice(-2)+'/'+('0'+m).slice(-2)+'/'+a; }
+  function parseNom(name){
+    var o={n:0,d:'',civ:'',nom:'',adr:''}, s=(''+(name||'')).replace(/\.pdf$/i,'').replace(/_/g,' ').replace(/\s*\(\d+\)\s*$/,'').replace(/\s+/g,' ').trim();
+    var m=s.match(/bon\s+de\s+visite\s+(?:n[°o]?\s*)?(\d{1,5})\b/i); if(m) o.n=+m[1];
+    m=s.match(/\bdu\s+(\d{4})(\d{2})(\d{2})\b/i); if(m) o.d=dOk(m[3],m[2],m[1]);
+    if(!o.d){ m=s.match(/\bdu\s+(\d{1,2})[\-.\/ ](\d{1,2})[\-.\/ ](\d{4})\b/i); if(m) o.d=dOk(m[1],m[2],m[3]); }
+    m=s.match(/\s-\s+(.+?)\s+pour\s+l[ea]s?\s+(.+)$/i);
+    if(m){ o.civ=civ(m[1]); o.nom=sansCiv(m[1]); o.adr=m[2].trim(); }
+    return o; }
+
+  /* ── le CONTENU du bon (texte du PDF, ou lecture optique) — modèle clap.legal ── */
+  function telFmt(x){ var d=x.replace(/\D/g,''); if(/^0033/.test(d)) d='0'+d.slice(4); else if(/^33\d{9}$/.test(d)) d='0'+d.slice(2); if(/^0\d{9}$/.test(d)) return d.replace(/(\d\d)(?=\d)/g,'$1 '); return x.replace(/\s+/g,' ').trim(); }
+  function parseTxt(txt){
+    var o={n:0,d:'',dEd:'',vis:[],civ:'',tel:'',mail:'',adr:[],acc:null,repr:'',bon:false};
+    txt=(''+(txt||'')).replace(/\r/g,''); if(!txt.trim()) return o;
+    var L=txt.split('\n').map(function(l){ return l.replace(/\s+$/,''); });
+    o.bon=/bon\s+de\s+vi/i.test(txt.slice(0,600));
+    var tete=txt.slice(0,500), m=tete.match(/\bn\s*[°ºo]\s*:?\s*(\d{1,5})\b(?!\s*de\s+carte)/i); if(m && !/carte/i.test(tete.slice(Math.max(0,m.index-3),m.index+30))) o.n=+m[1];
+    if(!o.n){ m=tete.match(/^\s*Bon\s+de\s+visite\b[^\n\d]{0,12}(\d{1,5})\s*$/im); if(m) o.n=+m[1]; }
+    /* représentée par → accompagnateur */
+    m=txt.match(/Repr[ée]sent[ée]e?\s+par\s*:?\s*([^\n]+)/i);
+    if(m){ o.repr=m[1].trim(); var fr=' '+fold(o.repr)+' '; var k=users().filter(function(u){ return fold(u.name).split(' ').every(function(t){ return fr.indexOf(' '+t+' ')>=0; }); }); if(k.length===1) o.acc=[k[0].key]; }
+    /* visiteur(s) : la ligne qui suit « [Civilité] Nom : Prénom : » */
+    for(var i=0;i<L.length;i++){
+      var mm=L[i].match(/^(.*?)\bNom\s*:?\s+Pr[ée]nom\s*:?/i); if(!mm) continue;
+      var c=civ(mm[1]), j=i+1; while(j<L.length && j<i+4 && !L[j].trim()) j++;
+      var l=(L[j]||'').trim(); if(!l || /^(Adresse|Code postal|E-?mail)\b/i.test(l)) continue;
+      var nom='', pre='', cols=l.split(/\s{3,}/);
+      if(cols.length>=2){ nom=cols[0]; pre=cols.slice(1).join(' '); }
+      else { var t=l.split(/\s+/), a=[], b=[], fin=false; t.forEach(function(w){ if(!fin && w.length>1 && w===w.toUpperCase() && /[A-ZÀ-Ý]/.test(w)) a.push(w); else { fin=true; b.push(w); } }); if(!a.length){ a=[t[0]]; b=t.slice(1); } nom=a.join(' '); pre=b.join(' '); }
+      nom=nom.replace(/[^A-Za-zÀ-ÿ' \-]/g,'').trim(); pre=pre.replace(/[^A-Za-zÀ-ÿ' \-]/g,'').trim();
+      if(nom && nom.length>=2) o.vis.push({civ:c, nom:nom.toUpperCase(), pre:pre.split(/([ \-])/).map(function(x){ return /[ \-]/.test(x)?x:cap1(x); }).join('')});
+    }
+    /* coordonnées du visiteur : entre « E-mail » et « Reconnaissons… » */
+    var a0=txt.search(/E-?mail\s*:/i), a1=txt.search(/Reconnaissons\s+que/i); var z=a0>=0? txt.slice(a0, a1>a0?a1:a0+500) : '';
+    var em=(z.match(/[A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,}/g)||[]).filter(function(x){ return !/achille-immobilier/i.test(x); }).map(function(x){ return x.toLowerCase(); });
+    o.mail=em.filter(function(x,ix){ return em.indexOf(x)===ix; }).join(' / ');
+    var tl=[]; z.replace(/(^|[^\d+])((?:(?:\+|00)\d{2,3}[\s.]?|0)[1-9](?:[\s.\-]?\d){8,10})(?!\d)/g,function(_,p,x){ var f=telFmt(x); if(tl.indexOf(f)<0) tl.push(f); return _; });
+    o.tel=tl.join(' / ');
+    /* bien(s) visité(s) : les lignes sous « Adresse du bien : » */
+    for(i=0;i<L.length;i++){ if(!/Adresse\s+du\s+bien\s*:?/i.test(L[i])) continue;
+      var reste=L[i].replace(/^.*Adresse\s+du\s+bien\s*:?\s*/i,'').trim(); if(reste && /\d/.test(reste)) o.adr.push(reste);
+      for(j=i+1;j<L.length && j<i+6;j++){ var x=L[j].trim(); if(!x) continue; if(/^(Nous\s+reconnaissons|Le\s+cas|En\s+cas|Type\s+de\s+bien|Fait\b)/i.test(x)) break; if(x.length>6) o.adr.push(x); } break; }
+    /* date de la visite : « Fait à … le 09/11/2026 » ; à défaut la date d'édition */
+    m=txt.match(/Fait\s*[àa]\s?[^\n]{0,60}?\ble\s*(\d{1,2})\s*[\/.]\s*(\d{1,2})\s*[\/.]\s*(\d{4})/i); if(m) o.d=dOk(m[1],m[2],m[3]);
+    m=txt.match(/Date\s+d.{0,3}dition\s*:?\s*(\d{1,2})\s*[\/.]\s*(\d{1,2})\s*[\/.]\s*(\d{4})/i); if(m) o.dEd=dOk(m[1],m[2],m[3]);
+    return o; }
+  window.bvPdfParseTxt=parseTxt; window.bvPdfParseNom=parseNom;
+
+  /* ── fusion des deux sources → la ligne proposée ── */
+  function fusion(F, T, src, err){
+    var W=[], R={n:0,d:'',v:'',a:'',aa:[],tel:T.tel||'',mail:T.mail||'',acc:T.acc||null,src:src,err:err||'',w:W};
+    R.n=F.n||T.n||0; if(F.n && T.n && F.n!==T.n) W.push('n° : le bon indique '+T.n+', le nom du fichier '+F.n);
+    R.d=F.d||T.d||T.dEd||''; if(F.d && T.d && F.d!==T.d) W.push('date : le bon est signé du '+T.d);
+    else if(!F.d && !T.d && T.dEd) W.push('date reprise de la date d’édition');
+    var vis=(T.vis||[]).map(function(x,ix){ var c=x.civ||(ix===0?F.civ:'')||'', nom=x.nom;
+      if(ix===0 && F.nom){ var fn=F.nom.toUpperCase(); if(fold(fn)!==fold(nom) && fold(nom).indexOf(fold(fn))<0){ if(proche(fn,nom)) nom=fn; else W.push('visiteur : le nom du fichier indique « '+F.nom+' »'); } }
+      return [c,nom,x.pre].filter(Boolean).join(' '); });
+    R.v=vis.length? vis.join(' / ') : (F.nom? [F.civ,F.nom.toUpperCase()].filter(Boolean).join(' ') : '');
+    var ads=(T.adr||[]).slice(); R.a=adresse(F.adr, ads[0]||'', W); R.aa=ads.slice(1).map(function(x){ return adresse('',x,[]); }).filter(Boolean);
+    if(!R.n) W.push('n° du bon non lu'); if(!R.v) W.push('visiteur non lu'); if(!R.a) W.push('bien non lu'); if(!R.d) W.push('date non lue');
+    R.vide=!R.n && !R.v && !R.a;
+    return R; }
+  function lireBuf(file){ return new Promise(function(res,rej){ var r=new FileReader(); r.onload=function(){ res(r.result); }; r.onerror=function(){ rej(new Error('fichier illisible')); }; r.readAsArrayBuffer(file); }); }
+  function lire(file, onSt){
+    var F=parseNom(file.name);
+    if(!/\.pdf$/i.test(file.name||'') && file.type!=='application/pdf') return Promise.resolve(fusion(F,{},'', 'ce fichier n’est pas un PDF'));
+    return lireBuf(file).then(function(buf){
+      return (window.achPdfTextAll? achPdfTextAll(buf,3) : Promise.resolve('')).then(function(t){
+        if(t && t.replace(/\s/g,'').length>200) return {t:t, src:'pdf'};
+        if(!window.achPdfOcrAll) return {t:'', src:''};
+        if(onSt) onSt('scan — lecture optique…');
+        /* la date est dans le nom du fichier → la page 1 suffit (deux fois plus rapide) */
+        return achPdfOcrAll(buf, function(p,prog){ if(onSt && prog) onSt('scan — lecture optique… '+Math.round(prog*100)+' %'); }, F.d?1:2).then(function(t2){ return {t:t2, src:'scan'}; });
+      });
+    }).then(function(r){ var T=parseTxt(r.t), R=fusion(F,T,r.src,'');
+        if(r.t && !T.bon && !F.n && R.vide) R.err='ce PDF ne ressemble pas à un bon de visite';
+        else if(!r.t && R.vide) R.err='aucune information lisible';
+        return R; })
+      .catch(function(e){ try{ window.achErr&&achErr(e); }catch(x){} var R=fusion(F,{},'', ''); if(R.vide) R.err='lecture impossible'; else R.w.unshift('lecture optique indisponible — informations tirées du nom du fichier'); return R; });
+  }
+  window.bvPdfLire=lire;
+
+  function isoDe(d){ var m=(''+(d||'')).match(/^(\d{2})\/(\d{2})\/(\d{4})$/); return m? m[3]+'-'+m[2]+'-'+m[1] : ''; }
+  function frDe(i){ var m=(''+(i||'')).match(/^(\d{4})-(\d{2})-(\d{2})$/); return m? m[3]+'/'+m[2]+'/'+m[1] : ''; }
+  function existe(n){ try{ return window.bvBonExiste? bvBonExiste(n) : null; }catch(e){ return null; } }
+  function dejaTxt(b){ return 'Le bon n° '+b.n+' est déjà dans le suivi'+((b.v||b.d)?' ('+[b.v,b.d].filter(Boolean).join(', ')+')':''); }
+  function srcTxt(R){ return R.src==='scan'?'scan lu par lecture optique':(R.src==='pdf'?'PDF lu':'nom du fichier'); }
+
+  /* ════ 1 PDF : les cases de la fenêtre se remplissent ════ */
+  function st(html, cls){ var e=document.getElementById('bvp-pdf-st'); if(e){ e.className='bvp-pdf-st'+(cls?' bvp-'+cls:''); e.innerHTML=html||''; } }
+  function coordShow(){ [].forEach.call(document.querySelectorAll('#bv-prop-overlay .bvp-coord'),function(e){ e.style.display=''; }); }
+  function un(file){
+    st('⏳ Lecture de « '+esc(file.name)+' »…');
+    lire(file, function(t){ st('⏳ '+esc(t)); }).then(function(R){
+      if(!document.getElementById('bvp-pdf-st')) return;
+      if(R.err && R.vide){ st('✗ '+esc(file.name)+' : '+esc(R.err)+' — saisie manuelle.','ko'); return; }
+      function set(id,v){ var e=document.getElementById(id); if(e && v){ e.value=v; } }
+      if(R.n) set('bvp-num', R.n); set('bvp-date', isoDe(R.d)); set('bvp-visiteur', R.v);
+      var ads=[R.a].concat(R.aa||[]).filter(Boolean), ins=document.querySelectorAll('#bvp-addr-wrap .bvp-addr');
+      if(ads[0] && ins[0]) ins[0].value=ads[0];
+      ads.slice(1).forEach(function(a,ix){ if(ins[ix+1]) ins[ix+1].value=a; else if(window.bvpAddrAdd) bvpAddrAdd(a); });
+      if(R.acc && window.bvpAccToggle) users().forEach(function(u){ bvpAccToggle(u.key, R.acc.indexOf(u.key)>=0); });
+      if(R.tel||R.mail){ coordShow(); set('bvp-tel', R.tel); set('bvp-mail', R.mail); }
+      var d=R.n?existe(R.n):null, w=R.w.slice(); if(d) w.unshift(dejaTxt(d)+' — changez le numéro ou annulez');
+      st('✓ Bon lu ('+srcTxt(R)+') — <b>vérifiez les cases puis enregistrez.</b>'+(w.length?'<div class="bvp-pdf-w">⚠ '+w.map(esc).join('<br>⚠ ')+'</div>':''), d?'ko':'ok');
+    });
+  }
+
+  /* ════ plusieurs PDF : la liste à valider ════ */
+  var LOT=[], LOT_BUSY=false;
+  function moi(){ try{ var k=(window.ACH_USER&&ACH_USER.key)||''; return users().some(function(u){ return u.key===k; })?[k]:[]; }catch(e){ return []; } }
+  function accHtml(i){ var a=LOT[i].acc||[]; return users().map(function(u){ var on=a.indexOf(u.key)>=0; return '<span class="vt-acc-b bvl-ab'+(on?'':' bvl-aoff')+'" style="background:'+u.col+'" title="'+esc(u.name)+(on?' — accompagnateur':' — cliquer pour ajouter')+'" onclick="bvLotAcc('+i+',\''+u.key+'\')">'+u.short+'</span>'; }).join(''); }
+  function carte(i){
+    var x=LOT[i], R=x.R;
+    if(!R) return '<div class="bvl-c bvl-wt" id="bvl-c-'+i+'"><div class="bvl-wait">⏳ <b>'+esc(x.file.name)+'</b><span id="bvl-w-'+i+'">'+(x.etat==='lecture'?'lecture en cours…':'en attente')+'</span></div></div>';
+    if(R.err && R.vide) return '<div class="bvl-c bvl-ko" id="bvl-c-'+i+'"><div class="bvl-wait">✗ <b>'+esc(x.file.name)+'</b><span>'+esc(R.err)+' — à saisir à la main</span></div></div>';
+    return '<div class="bvl-c" id="bvl-c-'+i+'">'
+      +'<label class="bvl-on" title="Créer ce bon"><input type="checkbox" id="bvl-on-'+i+'"'+(x.on?' checked':'')+' onchange="bvLotChk()"></label>'
+      +'<div class="bvl-g">'
+        +'<div class="bvl-l"><span class="bvl-k">N°</span><input class="bvl-n" id="bvl-n-'+i+'" type="number" min="1" value="'+(R.n||'')+'" oninput="bvLotChk()">'
+          +'<span class="bvl-k">Date</span><input class="bvl-d" id="bvl-d-'+i+'" type="date" value="'+isoDe(R.d)+'" oninput="bvLotChk()">'
+          +'<span class="bvl-acc" id="bvl-acc-'+i+'">'+accHtml(i)+'</span></div>'
+        +'<div class="bvl-l"><span class="bvl-k">Visiteur</span><input class="bvl-v" id="bvl-v-'+i+'" value="'+esc(R.v)+'" placeholder="Nom du visiteur…" oninput="bvLotChk()"></div>'
+        +'<div class="bvl-l"><span class="bvl-k">Bien</span><input class="bvl-a" id="bvl-a-'+i+'" value="'+esc([R.a].concat(R.aa||[]).filter(Boolean).join(' ; '))+'" placeholder="Adresse du bien…" oninput="bvLotChk()"></div>'
+        +'<div class="bvl-l"><span class="bvl-k">Tél.</span><input class="bvl-t" id="bvl-t-'+i+'" value="'+esc(R.tel)+'" placeholder="—"><span class="bvl-k">E-mail</span><input class="bvl-m" id="bvl-m-'+i+'" value="'+esc(R.mail)+'" placeholder="—"></div>'
+        +'<div class="bvl-note"><span>📄 '+esc(x.file.name)+' · '+srcTxt(R)+'</span><span class="bvl-w" id="bvl-msg-'+i+'"></span></div>'
+      +'</div></div>'; }
+  function val(i,k){ var e=document.getElementById('bvl-'+k+'-'+i); return e? (''+e.value).trim() : ''; }
+  /* contrôle de chaque ligne cochée : n°, visiteur, bien, doublons (dans le suivi ET dans la liste) */
+  window.bvLotChk=function(){
+    var vus={}, nOk=0, nKo=0;
+    LOT.forEach(function(x,i){ var cb=document.getElementById('bvl-on-'+i); if(cb && cb.checked){ var n=parseInt(val(i,'n'),10); if(n>0) vus[n]=(vus[n]||0)+1; } });
+    LOT.forEach(function(x,i){ var c=document.getElementById('bvl-c-'+i), cb=document.getElementById('bvl-on-'+i), msg=document.getElementById('bvl-msg-'+i); if(!c||!cb||!msg) return;
+      var n=parseInt(val(i,'n'),10), pb=[], d=(n>0)?existe(n):null;
+      if(!(n>0)) pb.push('n° du bon à saisir'); else if(d) pb.push(dejaTxt(d)); else if(vus[n]>1) pb.push('n° '+n+' en double dans cette liste');
+      if(!val(i,'v')) pb.push('visiteur à saisir'); if(!val(i,'a')) pb.push('bien à saisir'); if(!val(i,'d')) pb.push('date à saisir');
+      x.pb=pb.length>0;
+      var info=(x.R&&x.R.w||[]).filter(function(w){ return !/non lue?$/.test(w); });
+      msg.innerHTML=(pb.length?'<b class="bvl-pb">⚠ '+pb.map(esc).join(' · ')+'</b>':'')+(info.length?'<i>'+info.map(esc).join(' · ')+'</i>':'');
+      c.classList.toggle('bvl-off', !cb.checked); c.classList.toggle('bvl-pbl', cb.checked && x.pb);
+      if(cb.checked){ if(x.pb) nKo++; else nOk++; } });
+    var b=document.getElementById('bvl-go'), reste=LOT.filter(function(x){ return !x.R; }).length;
+    if(b){ b.disabled=LOT_BUSY||!!reste||!nOk||nKo>0; b.textContent=reste?('Lecture… '+(LOT.length-reste)+' / '+LOT.length):(nKo?'Corrigez ou décochez les lignes en rouge':(nOk?('Créer '+(nOk>1?'les '+nOk+' bons':'le bon')):'Aucun bon coché')); }
+  };
+  window.bvLotAcc=function(i,k){ var x=LOT[i]; if(!x) return; var a=(x.acc||[]).filter(function(y){ return y!==k; }); if(a.length===(x.acc||[]).length) a.push(k); x.acc=a; var e=document.getElementById('bvl-acc-'+i); if(e) e.innerHTML=accHtml(i); };
+  window.bvLotClose=function(){ var o=document.getElementById('bv-lot-overlay'); if(o) o.remove(); LOT=[]; LOT_BUSY=false; };
+  function lot(files){
+    /* dans l'ordre des numéros de bon (lus dans le nom du fichier), les fichiers sans numéro à la fin */
+    files=files.slice().sort(function(a,b){ var x=parseNom(a.name).n||1e9, y=parseNom(b.name).n||1e9; return (x-y) || (''+a.name).localeCompare(''+b.name,'fr',{numeric:true}); });
+    LOT=files.map(function(f){ return {file:f, R:null, etat:'attente', on:true, acc:moi()}; }); LOT_BUSY=true;
+    var p=document.getElementById('bv-prop-overlay'); if(p) p.style.display='none';
+    var o=document.getElementById('bv-lot-overlay'); if(o) o.remove();
+    o=document.createElement('div'); o.id='bv-lot-overlay'; o.className='bvl-ov';
+    var adm=false; try{ var cu=planCurrentUser(); adm=(cu==='admin'||cu==='gerant'); }catch(e){}
+    o.innerHTML='<div class="bvl-box"><div class="bvl-hd"><div class="bvl-ttl">Bons de visite lus — à valider</div><div class="bvl-sub">'+files.length+' fichiers. Vérifiez chaque ligne, corrigez si besoin, décochez celles à ne pas créer. <b>Rien n’est créé avant votre validation.</b></div></div>'
+      +'<div class="bvl-list" id="bvl-list">'+LOT.map(function(_,i){ return carte(i); }).join('')+'</div>'
+      +(adm?'':'<div class="bvl-pend">⏳ Les bons seront soumis à la validation de Laurent Sellem avant publication dans le suivi.</div>')
+      +'<div class="bvl-ft"><button class="bvl-b" onclick="bvLotClose()">Annuler</button><button class="bvl-b bvl-go" id="bvl-go" onclick="bvLotGo()" disabled>Lecture…</button></div></div>';
+    document.body.appendChild(o);
+    var jeton=LOT;
+    (function suivant(i){
+      if(jeton!==LOT) return;                                   /* liste fermée entre-temps */
+      if(i>=LOT.length){ LOT_BUSY=false; bvLotChk(); return; }
+      LOT[i].etat='lecture'; var w=document.getElementById('bvl-w-'+i); if(w) w.textContent='lecture en cours…';
+      bvLotChk();
+      lire(LOT[i].file, function(t){ var e=document.getElementById('bvl-w-'+i); if(e) e.textContent=t; }).then(function(R){
+        if(jeton!==LOT) return;
+        LOT[i].R=R; LOT[i].etat='lu'; if(R.acc) LOT[i].acc=R.acc.slice();
+        var d=R.n?existe(R.n):null; LOT[i].on=!(R.err&&R.vide) && !d;       /* un bon déjà dans le suivi est décoché d'office */
+        var c=document.getElementById('bvl-c-'+i); if(c) c.outerHTML=carte(i);
+        bvLotChk(); suivant(i+1);
+      });
+    })(0);
+  }
+  window.bvLotGo=function(){
+    if(LOT_BUSY) return; bvLotChk();
+    var sel=[]; LOT.forEach(function(x,i){ var cb=document.getElementById('bvl-on-'+i); if(cb && cb.checked) sel.push(i); });
+    if(!sel.length || sel.some(function(i){ return LOT[i].pb; })){ if(window.toast) toast('Corrigez ou décochez les lignes en rouge'); return; }
+    var adm=false; try{ var cu=planCurrentUser(); adm=(cu==='admin'||cu==='gerant'); }catch(e){}
+    var n=0;
+    sel.forEach(function(i){ var ads=val(i,'a').split(/\s*;\s*/).filter(Boolean);
+      var b={n:parseInt(val(i,'n'),10), d:frDe(val(i,'d')), v:val(i,'v'), a:ads[0], aa:ads.slice(1), obs:'', accomp:(LOT[i].acc||[]).slice()};
+      var t=val(i,'t'), m=val(i,'m'); if(t) b.tel=t; if(m) b.mail=m;
+      try{ if(window.bvStoreBon && bvStoreBon(b, adm)) n++; }catch(e){ window.achErr&&achErr(e); } });
+    try{ if(window.bvAfterStore) bvAfterStore(adm); }catch(e){}
+    bvLotClose();
+    if(window.toast) toast(n? (adm? ('✓ '+n+' bon'+(n>1?'s':'')+' ajouté'+(n>1?'s':'')+' au suivi') : (n+' bon'+(n>1?'s':'')+' soumis — en attente de validation')) : 'Aucun bon créé');
+    try{ if(window.achLog && n) achLog('ajout','Visites', n+' bon'+(n>1?'s':'')+' de visite créé'+(n>1?'s':'')+' depuis des PDF'); }catch(e){}
+  };
+
+  /* ── entrée : le bouton (ou un glisser-déposer sur la fenêtre) ── */
+  window.bvPdfPick=function(files){
+    files=[].slice.call(files||[]).filter(Boolean); if(!files.length) return;
+    if(window.achCan && !achCan('visites','create')){ if(window.toast) toast('🔒 Vous n’avez pas le droit de créer un bon'); return; }
+    if(files.length===1) un(files[0]); else lot(files.slice(0,40));
+  };
+  function dansFenetre(e){ var o=document.getElementById('bv-prop-overlay'); return o && o.style.display!=='none' && e.target && e.target.closest && e.target.closest('#bv-prop-overlay'); }
+  document.addEventListener('dragover', function(e){ if(dansFenetre(e)){ e.preventDefault(); var z=document.getElementById('bvp-pdf-zone'); if(z) z.classList.add('bvp-drag'); } });
+  document.addEventListener('dragleave', function(e){ var z=document.getElementById('bvp-pdf-zone'); if(z) z.classList.remove('bvp-drag'); });
+  document.addEventListener('drop', function(e){ if(!dansFenetre(e)) return; e.preventDefault(); var z=document.getElementById('bvp-pdf-zone'); if(z) z.classList.remove('bvp-drag');
+    if(e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length) bvPdfPick(e.dataTransfer.files); });
+})();
+</script>
 <!-- ══ v12.28 (Laurent 06/11) : CONTACTS — annuaire reconstruit à la volée + remplissage automatique du planning ══ -->
 <script>
 (function(){
@@ -29628,7 +29919,7 @@ details.cx-more{margin-top:8px;} details.cx-more>summary{font-size:11.5px;color:
   function openLoc(id){ nav('encours'); setTimeout(function(){ var b=[].slice.call(document.querySelectorAll('#page-encours .comm-tab')).filter(function(x){ return (x.getAttribute('onclick')||'').indexOf("'loc'")>=0; })[0]; if(b) b.click(); setTimeout(function(){ if(window.locEdit) locEdit(id); },120); },220); }
   function visites(){ var out=[], extra=arr('ach_bv_extra'), byN={}, dels={}, vu={};
     extra.forEach(function(b){ if(b&&b.n!=null){ byN[b.n]=b; if(b.del) dels[b.n]=1; } });
-    function bon(b){ if(!b||b.n==null||vu[b.n]||dels[b.n]) return; vu[b.n]=1; var x=Object.assign({},b,byN[b.n]||{}); out.push({n:x.n,d:x.d||'',v:x.v||x.visiteur||'',a:x.a||x.adresse||''}); }
+    function bon(b){ if(!b||b.n==null||vu[b.n]||dels[b.n]) return; vu[b.n]=1; var x=Object.assign({},b,byN[b.n]||{}); out.push({n:x.n,d:x.d||'',v:x.v||x.visiteur||'',a:x.a||x.adresse||'',tel:x.tel||'',mail:x.mail||''}); }   /* v12.37 : coordonnées lues sur le PDF du bon */
     (window.BV_DATA||[]).forEach(bon); extra.forEach(bon); arr('ach_bv_pending').forEach(bon);
     arr('ach_vsb_v1').forEach(function(o){ if(o&&o.id) out.push({vsb:o.id,d:o.d||'',v:o.v||'',a:o.a||''}); });
     return out; }
@@ -29655,7 +29946,7 @@ details.cx-more{margin-top:8px;} details.cx-more>summary{font-size:11.5px;color:
     if(can('mandats')) arr('ach_mandats_v1').forEach(function(m){ if(!m||!m.id||m.del) return; push(m.mdt,tels(m.tels),mails(m.mails),'Mandant','Mandat'+(m.num?' n° '+m.num:'')+' · '+adrOf(m.adresse,m.ville),function(){ nav('mandats'); setTimeout(function(){ if(window.mdEdit) mdEdit(m.id); },250); },{owner:true,adr:adrOf(m.adresse,m.ville)}); });
     if(can('pipeline')) arr('ach_affaires_v1').forEach(function(a){ if(!a||!a.id) return; var L='Pipeline · '+(a.adresse||a.bien||''), g=function(){ nav('pipeline'); setTimeout(function(){ if(window.affEdit) affEdit(a.id); },250); };
       push(a.client,[],[],'Client (pipeline)',L,g,{buyer:true}); push(a.vendeur,[],[],'Vendeur (pipeline)',L,g,{owner:true,adr:a.adresse||''}); });
-    if(can('visites')) visites().forEach(function(v){ push(v.v,[],[],'Visiteur','Visite'+(v.d?' du '+v.d:'')+' · '+(v.a||''),function(){ ouvrirVisite(v); },{buyer:true}); });
+    if(can('visites')) visites().forEach(function(v){ push(v.v,tels(v.tel),mails(v.mail),'Visiteur','Visite'+(v.d?' du '+v.d:'')+' · '+(v.a||''),function(){ ouvrirVisite(v); },{buyer:true}); });
     /* v12.30 : contacts importés d'Apimo (ach_contacts_import_v1) — rôle d'après les cases Apimo, origine « Apimo · suivi par … », note = commentaire Apimo */
     apimoList().forEach(function(c){ if(!c) return; var roles=[]; if(c.k.indexOf('prop')>=0) roles.push('Propriétaire'); if(c.k.indexOf('dem')>=0) roles.push('Demandeur'); if(c.k.indexOf('four')>=0) roles.push('Fournisseur'); if(c.k.indexOf('pro')>=0) roles.push('Professionnel'); if(!roles.length) roles.push('Contact');
       push(c.n,c.t||[],c.m||[],roles.join(' · ')+' (Apimo)','Apimo'+(c.u?' · suivi par '+c.u:'')+(c.v?' · '+c.v:''),null,{apimo:true,note:c.o||'',owner:c.k.indexOf('prop')>=0,buyer:c.k.indexOf('dem')>=0}); });
