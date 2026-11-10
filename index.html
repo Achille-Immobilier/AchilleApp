@@ -1893,6 +1893,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     <div class="nav-item" onclick="navTo('documents',this)"><span class="nav-icon">◧</span><span class="nav-item-label">Documents</span></div>
     <div class="nav-item" onclick="navTo('equityliving',this)"><span class="nav-icon">🤝</span><span class="nav-item-label">Equity Living</span></div><!-- v9.19 -->
     <div class="nav-item" onclick="navTo('finances',this)"><span class="nav-icon">💶</span><span class="nav-item-label">Finances</span></div>
+    <div class="nav-item" onclick="navTo('tresorerie',this)"><span class="nav-icon">📊</span><span class="nav-item-label">Trésorerie <small style="opacity:.6">(essai)</small></span></div><!-- v12.36 -->
     <div class="nav-item" onclick="navTo('encours',this)"><span class="nav-icon">◈</span><span class="nav-item-label">Ventes / En cours</span></div>
     <div class="nav-item" onclick="navTo('mandats',this)"><span class="nav-icon">📜</span><span class="nav-item-label">Mandats</span><span class="nav-badge" id="badge-mandats" style="display:none;"></span></div>
     <div class="nav-item" onclick="navTo('contacts',this)"><span class="nav-icon">📇</span><span class="nav-item-label">Contacts</span></div><!-- v12.28 -->
@@ -1920,7 +1921,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     </div>
   </div>
   </div>
-  <div class="logo-ver app-ver">Achille App — v12.35</div>
+  <div class="logo-ver app-ver">Achille App — v12.36</div>
 </aside>
 <div id="mob-bk" onclick="mobNav(false)"></div>
 <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Réduire la barre latérale">‹</button>
@@ -3457,6 +3458,8 @@ table.es-t td.del button{border:none;background:none;color:var(--gris-2);cursor:
   <datalist id="comm-statuts"><option>disponible</option><option>sous offre</option><option>sous compromis</option><option>vendu</option><option>pause</option><option>peut être pause</option><option>retiré</option></datalist>
   <datalist id="comm-situations"><option>ok</option><option>en attente</option><option>à refaire</option></datalist>
 </div>
+<!-- ══ v12.36 (Laurent 10/11) : TRÉSORERIE — proposition de nouvelle page Finances (la page Finances actuelle est inchangée) ══ -->
+<div class="page" id="page-tresorerie"><div class="ts-wrap"><div id="ts-body"></div></div></div>
 <!-- ══ v12.28 (Laurent 06/11) : CONTACTS — retrouver vite une personne depuis un numéro, ou un numéro depuis un nom.
      Aucune base nouvelle : l'annuaire se reconstruit à chaque affichage à partir de la pige, des ventes, des locations,
      des mandats, du pipeline, des visites et du planning ; chaque ligne dit D'OÙ vient le contact et ouvre la fiche. ══ -->
@@ -4444,6 +4447,11 @@ table.es-t td.del button{border:none;background:none;color:var(--gris-2);cursor:
       <p>Exportez toutes les donn&eacute;es dans un fichier (&agrave; conserver, ou &agrave; d&eacute;poser sur un Drive partag&eacute;), ou restaurez une sauvegarde. Vos donn&eacute;es ne sont plus prisonni&egrave;res d'un seul navigateur.</p>
       <button class="data-btn" onclick="dataExport()">&#11015; Exporter une sauvegarde</button>
       <label class="data-btn" style="background:var(--kaki);">&#11014; Importer une sauvegarde<input type="file" accept="application/json" style="display:none" onchange="dataImport(this.files[0]);this.value='';"></label>
+    </div>
+    <div class="data-section" id="tsimp-sec">
+      <h4>Trésorerie — relevés bancaires</h4>
+      <p>Le fichier d’analyse des relevés (tresorerie-achille.json) préparé par Claude. À réimporter seulement quand de nouveaux relevés ont été analysés. Ces données restent sur le poste de Laurent.</p>
+      <div class="ct-imp" id="ts-imp"></div>
     </div>
     <div class="data-section" id="ctimp-sec">
       <h4>Contacts Apimo</h4>
@@ -5446,6 +5454,7 @@ table.es-t td.del button{border:none;background:none;color:var(--gris-2);cursor:
     visites:'Suivi des <span>Visites</span>',
     renta:'Calculs de <span>Rentabilité</span>',
     finances:'Suivi des <span>Finances</span>',
+    tresorerie:'<span>Trésorerie</span> — situation et projection',   /* v12.36 */
     encours:'Ventes / <span>En Cours</span>',
     honoraires:'Honoraires', communication:'<span>Communication</span>',
     pige:'Pige <span>&amp; Veille</span>',
@@ -13562,7 +13571,7 @@ CABLE|1|Villa Nova|48.73478|2.46475`;
 <script>
 (function(){
   var AUDIT_KEY='ach_audit_v1';
-  var LABELS={ach_pi_v4:'Post-its',ach_encours_v1:'Ventes (En cours)',ach_locations_v1:'Locations',ach_trash_v1:'Corbeille',ach_trash_log_v1:'Corbeille (mouvements)',ach_pige_dossiers_v1:'Pige (dossiers)',ach_todos_v1:'To-dos',ach_plan_events:'Planning',ach_vt_v4:'Visites',ach_bv_obs:'Bons de visite (observations)',ach_bv_extra:'Bons de visite',ach_bv_pending:'Bons de visite (validation)',ach_bv_notifs:'Notifications',ach_bv_cr_v1:'Comptes rendus de visite',ach_fin_v3:'Finances',ach_prosp_v1:'Prospection',ach_lex_html_v1:'Lexique', ach_cr_crit_v1:'Comptes rendus (critères)',ach_lex_proposals:'Lexique (propositions)',ach_pige_v1:'Pige',ach_mandats_v1:'Mandats', ach_contacts_import_v1:'Contacts (import Apimo)',ach_docaff_v1:'Documents par affaire',ach_docs_cfg_v1:'Documents (réglages)', ach_docgen_assets_v1:'Générateur (charte & polices)', ach_dghist_v1:'Documents (historique des générations)', ach_rappels_v1:'Rappels', ach_redac_v1:'Rédaction quotidienne', ach_routines_v1:'Routines & Objectifs'};
+  var LABELS={ach_pi_v4:'Post-its',ach_encours_v1:'Ventes (En cours)',ach_locations_v1:'Locations',ach_trash_v1:'Corbeille',ach_trash_log_v1:'Corbeille (mouvements)',ach_pige_dossiers_v1:'Pige (dossiers)',ach_todos_v1:'To-dos',ach_plan_events:'Planning',ach_vt_v4:'Visites',ach_bv_obs:'Bons de visite (observations)',ach_bv_extra:'Bons de visite',ach_bv_pending:'Bons de visite (validation)',ach_bv_notifs:'Notifications',ach_bv_cr_v1:'Comptes rendus de visite',ach_fin_v3:'Finances',ach_prosp_v1:'Prospection',ach_lex_html_v1:'Lexique', ach_cr_crit_v1:'Comptes rendus (critères)',ach_lex_proposals:'Lexique (propositions)',ach_pige_v1:'Pige',ach_mandats_v1:'Mandats', ach_contacts_import_v1:'Contacts (import Apimo)', ach_treso_v1:'Trésorerie', ach_treso_ops_v1:'Trésorerie (relevés)',ach_docaff_v1:'Documents par affaire',ach_docs_cfg_v1:'Documents (réglages)', ach_docgen_assets_v1:'Générateur (charte & polices)', ach_dghist_v1:'Documents (historique des générations)', ach_rappels_v1:'Rappels', ach_redac_v1:'Rédaction quotidienne', ach_routines_v1:'Routines & Objectifs'};
   var _orig=localStorage.setItem.bind(localStorage);
   function curName(){var e=document.getElementById('s-name');return e?e.textContent:'?';}
   function curRole(){var e=document.getElementById('s-role');return e?e.textContent:'';}
@@ -14295,7 +14304,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     ach_pi_v4:'Post-its', ach_plan_events:'Planning', ach_todos_v1:'To-do',
     ach_prosp_v1:'Prospection', ach_lex_html_v1:'Lexique', ach_lex_proposals:'Lexique (propositions)',
     ach_fin_hist_v3:'Honoraires', ach_fin_ops_v3:'Finances', ach_fin_lines_v1:'Finances',
-    ach_fin_solde_v3:'Finances', ach_encours_v1:'Affaires en cours', ach_audit_v1:'Journal', ach_pige_v1:'Pige', ach_mandats_v1:'Mandats', ach_contacts_import_v1:'Contacts (import Apimo)', ach_docaff_v1:'Documents par affaire', ach_docs_cfg_v1:'Documents (réglages)', ach_docgen_assets_v1:'Générateur (charte & polices)', ach_dghist_v1:'Documents (historique des générations)', ach_rappels_v1:'Rappels', ach_evol_v1:'Évolutions', ach_redac_v1:'Rédaction quotidienne', ach_routines_v1:'Routines & Objectifs', ach_tomb_v2:'(technique) suppressions',
+    ach_fin_solde_v3:'Finances', ach_encours_v1:'Affaires en cours', ach_audit_v1:'Journal', ach_pige_v1:'Pige', ach_mandats_v1:'Mandats', ach_contacts_import_v1:'Contacts (import Apimo)', ach_treso_v1:'Trésorerie', ach_treso_ops_v1:'Trésorerie (relevés)', ach_docaff_v1:'Documents par affaire', ach_docs_cfg_v1:'Documents (réglages)', ach_docgen_assets_v1:'Générateur (charte & polices)', ach_dghist_v1:'Documents (historique des générations)', ach_rappels_v1:'Rappels', ach_evol_v1:'Évolutions', ach_redac_v1:'Rédaction quotidienne', ach_routines_v1:'Routines & Objectifs', ach_tomb_v2:'(technique) suppressions',
     ach_affaires_v1:'Pipeline (affaires)', ach_aff_pins_v1:'Pipeline (épingles)', ach_locations_v1:'Locations', ach_trash_v1:'Corbeille', ach_trash_log_v1:'Corbeille (mouvements)', ach_pige_dossiers_v1:'Pige (dossiers)', ach_conc_v1:'Honoraires (concurrence)',
     ach_perms_v1:'Droits & Accès', ach_vsb_v1:'Visites sans bon', ach_bv_accomp:'Bons de visite (accompagnateurs)',
     ach_bv_cr_v1:'Comptes rendus de visite', ach_idj_ecart_v1:'Idées du matin (écartées)'
@@ -14326,7 +14335,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
      rarement modifiés (NO_FULL) ne sont jamais retéléchargés par le rattrapage, seulement quand leur horodatage change ;
      l'écran de l'agence (compte public) ne charge pas les blocs qui ne le concernent pas (PUBLIC_SKIP). */
   var SEEN_K='achille_sync_seen', FULL_K='achille_sync_full_at', DIRTY_K='achille_sync_dirty', FULL_EVERY=7*24*3600*1000;
-  var NO_FULL=['ach_contacts_import_v1'], PUBLIC_SKIP=['ach_contacts_import_v1'];
+  var NO_FULL=['ach_contacts_import_v1','ach_treso_ops_v1'], PUBLIC_SKIP=['ach_contacts_import_v1','ach_treso_v1','ach_treso_ops_v1'];   /* v12.36 : trésorerie = poste de Laurent seul */
   /* v12.31 : compteur de trafic de CE poste (clé locale achille_trafic_v1, 10 jours) — octets reçus du cloud par type */
   var TRAF_K='achille_trafic_v1', _traf=null, _trafT=null;
   function _trafDay(){ var d=new Date(); return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2); }
@@ -15110,7 +15119,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     startRealtime();
     var ov=document.getElementById('ach-login-overlay'); if(ov) ov.classList.add('ach-hidden');
     var ub=document.getElementById('ach-userbar'); if(ub) ub.style.display='none';
-    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v12.35';
+    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v12.36';
     flag('Synchronis\u00e9');
     // fin de l'init : on autorise la journalisation des actions
     setTimeout(function(){ installInterceptor._init=false; }, 1500);
@@ -15746,6 +15755,7 @@ window.ACH_PDF={edl:"data:application/pdf;base64,JVBERi0xLjcKJcK1wrYKJSBXcml0dGV
     uk=uk||curKey();
     if(uk==='public') return !!PUBLIC_ALLOW[sec] && (!action||action==='view');
     if(sec==='droits') return uk==='admin';
+    if(sec==='tresorerie') return uk==='admin';   /* v12.36 : proposition de nouvelle page Finances, visible par Laurent seul tant qu'elle n'est pas validée */
     if(sec==='contacts') return uk==='admin';   /* v12.32 (Laurent 06/11) : répertoire visible par Laurent seul pour l'instant */
     if(sec==='mandats') return uk==='admin'||uk==='gerant';   /* v10.01 : registre réservé à Laurent & Marine */
     if(uk==='admin') return true;
@@ -29357,6 +29367,241 @@ details.cx-more{margin-top:8px;} details.cx-more>summary{font-size:11.5px;color:
   if(window.commInit){ var _ci=window.commInit; window.commInit=function(){ var keep=PUB.net; var x=_ci.apply(this,arguments); PUB.net=keep; try{ if(window._commTabCur==='pub') pubRender(); }catch(e){} return x; }; }
   window.addEventListener('storage', function(e){ if(!e||!e.key) return; if([CAV_K,ECART_K,PRET_K,AVIS_K,PUBM_K,RSP_K,RSM_K].indexOf(e.key)<0) return; try{ if(window._commTabCur==='pub') pubRender(); if(CX.kind){ cxRefresh(); } cxBadges(); }catch(x){} });
   if(window.setRole){ var _sr=window.setRole; window.setRole=function(r,btn){ var x=_sr.apply(this,arguments); try{ if(CX.kind) cxRefresh(); else { var b=box(); if(b){ parkAsk(); b.innerHTML=emptyHtml(); mountAsk(); } } if(window._commTabCur==='pub') pubRender(); }catch(e){} return x; }; }
+})();
+</script>
+<!-- ══ v12.36 (Laurent 10/11) : TRÉSORERIE ══ -->
+<style>
+.ts-wrap{max-width:1180px;margin:0 auto;font-family:'Jost',sans-serif;color:var(--noir);}
+.ts-card{background:#fff;border:1px solid var(--border);border-radius:12px;padding:16px 18px;margin-bottom:14px;box-shadow:var(--shadow);}
+.ts-h{font-family:'Cormorant Garamond',serif;font-size:21px;font-weight:600;color:var(--noir);}
+.ts-hd{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:10px;}
+.ts-note{font-size:12px;color:var(--gris-2);line-height:1.5;} .ts-warn{color:#8a5a1e;}
+.ts-kpis{display:grid;grid-template-columns:1.25fr 1fr 1fr 1fr;gap:12px;margin-bottom:14px;} .ts-kpis .ts-card{margin-bottom:0;}
+.ts-kl{font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--gris-2);font-weight:600;}
+.ts-kv{font-family:'Cormorant Garamond',serif;font-size:34px;font-weight:600;line-height:1.15;margin:4px 0 2px;color:var(--noir);} .ts-k1 .ts-kv{font-size:42px;}
+.ts-ks{font-size:12px;color:var(--gris-2);line-height:1.45;margin-bottom:8px;} .ts-ks b{color:var(--noir);}
+.neg{color:var(--rouge)!important;} .pos{color:var(--vert);}
+.ts-k1{border-left:4px solid var(--terra);}
+.ts-btn{border:1px solid var(--border);background:#fff;color:var(--gris);border-radius:8px;font-family:'Jost',sans-serif;font-size:12.5px;padding:6px 12px;cursor:pointer;display:inline-block;}
+.ts-btn:hover{border-color:var(--terra);color:var(--terra);} .ts-btn.ts-main{border-color:var(--terra);color:var(--terra);font-weight:600;}
+.ts-f{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin:8px 0;} .ts-f input,.ts-f select{border:1px solid var(--border);border-radius:8px;padding:7px 9px;font-family:'Jost',sans-serif;font-size:13px;background:#fffdf9;min-width:0;} .ts-f input[id$="l"]{flex:1;min-width:180px;} .ts-f input[inputmode="decimal"]{width:120px;}
+.ts-phrase{font-size:14px;line-height:1.5;border-left:4px solid var(--kaki,#4c533b);}
+.ts-chk{font-size:12.5px;color:var(--gris);display:inline-flex;align-items:center;gap:6px;cursor:pointer;}
+.ts-svg{width:100%;height:auto;display:block;} .ts-ax{font-family:'Jost',sans-serif;font-size:10px;fill:#8f8878;}
+.ts-leg{display:flex;gap:16px;flex-wrap:wrap;font-size:11.5px;color:var(--gris-2);margin:2px 0 10px;} .ts-leg i{display:inline-block;width:22px;height:0;border-top:2.4px solid #b47360;vertical-align:middle;margin-right:6px;} .ts-leg i.l2{border-top:1.6px dashed #b8b0a2;} .ts-leg i.l3{border-top:1px dashed #a03222;}
+.ts-tab{width:100%;border-collapse:collapse;font-size:13.5px;} .ts-tab th{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--gris-2);text-align:left;padding:6px 10px;border-bottom:1px solid var(--border);font-weight:600;} .ts-tab td{padding:9px 10px;border-bottom:1px solid #f3eee6;} .ts-tab .r{text-align:right;white-space:nowrap;}
+.ts-m{cursor:pointer;} .ts-m:hover,.ts-m.on{background:#fbf8f3;} .ts-car{color:var(--terra);width:20px;}
+.ts-det td{background:#fbf8f3;padding:6px 10px 10px 26px;}
+.ts-l{display:flex;gap:12px;align-items:baseline;padding:4px 0;font-size:13px;border-bottom:1px dotted #eee6da;} .ts-l:last-child{border-bottom:none;}
+.ts-ld{color:var(--gris-2);font-size:12px;min-width:44px;white-space:nowrap;} .ts-ll{flex:1;min-width:0;} .ts-ll i{color:var(--gris-2);font-size:11.5px;} .ts-lm{white-space:nowrap;font-weight:500;}
+.ts-x{border:none;background:transparent;color:var(--gris-2);cursor:pointer;font-size:12px;padding:2px 6px;} .ts-x:hover{color:var(--rouge);}
+.ts-sub{font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:#8f8878;font-weight:600;margin:16px 0 6px;display:flex;justify-content:space-between;align-items:center;gap:10px;} .ts-sub span{color:var(--noir);letter-spacing:0;text-transform:none;font-size:13px;}
+.ts-r{display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid #f3eee6;font-size:13.5px;} .ts-r.off{opacity:.45;}
+.ts-rl{flex:1;min-width:0;} .ts-rl i{color:#8a5a1e;font-size:11.5px;} .ts-rl small{display:block;color:var(--gris-2);font-size:11.5px;line-height:1.35;}
+.ts-rn{font-size:12px;color:var(--gris-2);white-space:nowrap;} .ts-ra{width:104px;text-align:right;border:1px solid transparent;border-radius:7px;padding:5px 7px;font-family:'Jost',sans-serif;font-size:13.5px;background:transparent;} .ts-ra:hover,.ts-ra:focus{border-color:var(--beige-3);background:#fffdf9;outline:none;}
+.ts-bar{display:inline-block;height:7px;border-radius:4px;background:var(--vert);opacity:.55;margin-right:8px;vertical-align:middle;} .ts-bar.out{background:var(--terra);}
+.ts-pill{border:1px solid var(--border);background:#fff;border-radius:999px;font-family:'Jost',sans-serif;font-size:11.5px;padding:2px 10px;cursor:pointer;margin-left:4px;color:var(--gris);} .ts-pill.on{border-color:var(--terra);color:var(--terra);font-weight:600;}
+.ts-c{display:grid;grid-template-columns:230px 1fr 120px 120px;gap:12px;align-items:center;padding:7px 4px;border-bottom:1px solid #f3eee6;font-size:13.5px;cursor:pointer;} .ts-c:hover,.ts-c.on{background:#fbf8f3;}
+.ts-cb{height:8px;background:#f3eee6;border-radius:5px;overflow:hidden;} .ts-cb i{display:block;height:100%;background:var(--terra);opacity:.7;} .ts-cb i.pos{background:var(--vert);}
+.ts-cm{font-size:12px;color:var(--gris-2);text-align:right;white-space:nowrap;} .ts-cv{text-align:right;font-weight:500;white-space:nowrap;} .ts-cops{background:#fbf8f3;padding:6px 14px 10px;border-bottom:1px solid #f3eee6;}
+.ts-vide{text-align:center;padding:36px 20px;} .ts-vide p{font-size:13.5px;color:var(--gris);margin:8px 0 14px;}
+@media (max-width:1100px){ .ts-kpis{grid-template-columns:1fr 1fr;} }
+@media (max-width:880px){ .ts-kpis{grid-template-columns:1fr;} .ts-tab{font-size:12.5px;} .ts-tab td,.ts-tab th{padding:7px 5px;} .ts-hist th:nth-child(4),.ts-hist td:nth-child(4){display:none;} .ts-bar{display:none;}
+  .ts-c{grid-template-columns:1fr auto;} .ts-cb,.ts-cm{display:none;} .ts-r{flex-wrap:wrap;} .ts-rl{flex-basis:calc(100% - 34px);} .ts-rn{margin-left:26px;flex:1;} .ts-btn,.ts-pill{min-height:36px;} .ts-f input,.ts-f select{flex:1 1 140px;} }
+</style>
+<script>
+(function(){
+  'use strict';
+  /* ══ v12.36 (Laurent 10/11) : TRÉSORERIE — proposition de nouvelle page Finances (l'ancienne reste intacte).
+     « Connaître ma situation et les projections ; c'est moi qui renseigne le solde. »
+     Aucune donnée bancaire dans le code : tout vient d'un fichier d'analyse des relevés importé une fois
+     (ach_treso_ops_v1 : opérations classées ; ach_treso_v1 : solde saisi, charges récurrentes, prévisions ponctuelles).
+     Ces deux blocs ne sont téléchargés que sur le poste de Laurent (PUBLIC_SKIP). ══ */
+  var K='ach_treso_v1', KO='ach_treso_ops_v1';
+  var MC=['janv.','févr.','mars','avr.','mai','juin','juil.','août','sept.','oct.','nov.','déc.'];
+  var MOIS=['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
+  function esc(t){ return (''+(t==null?'':t)).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+  function isAdmin(){ return ((window.ACH_USER||{}).key||'admin')==='admin'; }
+  function load(){ try{ var o=JSON.parse(localStorage.getItem(K)||'{}'); o=(o&&typeof o==='object'&&!Array.isArray(o))?o:{}; o.rec=Array.isArray(o.rec)?o.rec:[]; o.prev=Array.isArray(o.prev)?o.prev:[]; o.opt=o.opt||{ventes:1}; return o; }catch(e){ return {rec:[],prev:[],opt:{ventes:1}}; } }
+  function save(o){ o.maj=new Date().toISOString(); o.par=(window.ACH_USER&&ACH_USER.initials)||''; try{ localStorage.setItem(K, JSON.stringify(o)); }catch(e){ window.achErr&&achErr(e); } }
+  function opsStore(){ try{ var o=JSON.parse(localStorage.getItem(KO)||'{}'); return (o&&Array.isArray(o.ops))?o:{ops:[]}; }catch(e){ return {ops:[]}; } }
+  function eur(n){ n=Math.round(+n||0); return (n<0?'−':'')+Math.abs(n).toLocaleString('fr-FR')+' €'; }
+  function eur2(n){ n=+n||0; return (n<0?'−':'')+Math.abs(n).toLocaleString('fr-FR',{minimumFractionDigits:2,maximumFractionDigits:2})+' €'; }
+  function num(v){ v=(''+(v==null?'':v)).replace(/[\s  €]/g,'').replace(',','.'); var x=parseFloat(v); return isNaN(x)?null:x; }
+  function iso(d){ return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2); }
+  function pIso(s){ var p=(''+s).split('-'); return new Date(+p[0],(+p[1]||1)-1,+p[2]||1); }
+  function frD(d){ return ('0'+d.getDate()).slice(-2)+'/'+('0'+(d.getMonth()+1)).slice(-2)+'/'+d.getFullYear(); }
+  function frJ(d){ return d.getDate()+(d.getDate()===1?'er':'')+' '+MOIS[d.getMonth()]; }
+  function today(){ var d=new Date(); d.setHours(0,0,0,0); return d; }
+  function PER(p){ return p==='T'?'chaque trimestre':(p==='A'?'une fois par an':'chaque mois'); }
+
+  /* ── point de départ : le solde saisi par Laurent, sinon le dernier relevé importé ── */
+  function base(S){ if(S.solde&&S.solde.d&&S.solde.v!=null) return {v:+S.solde.v, d:pIso(S.solde.d), saisi:true};
+    var o=opsStore(); if(o.soldeRef) return {v:+o.soldeRef.v, d:pIso(o.soldeRef.d), saisi:false}; return null; }
+  /* occurrences d'une charge récurrente dans ]from ; to] */
+  function occ(r, from, to){ var out=[], y=from.getFullYear(), m=from.getMonth();
+    for(var i=0;i<=14;i++){ var yy=y+Math.floor((m+i)/12), mm=(m+i)%12;
+      if(r.per==='M' || ((r.mois||[]).indexOf(mm+1)>=0)){ var dim=new Date(yy,mm+1,0).getDate(), d=new Date(yy,mm,Math.min(+r.j||1,dim)); if(d>from && d<=to) out.push(d); } }
+    return out; }
+  function ventes(){ try{ var h=(window.ecHonoAVenir?ecHonoAVenir():{lignes:[]}); return (h.lignes||[]).map(function(l){ return {id:l.id, lib:l.addr, d:(l.acteMs!=null?new Date(l.acteMs):null), m:+l.ttc||0}; }); }catch(e){ return []; } }
+  /* tous les mouvements prévus dans ]b.d ; fin] — k : 'rec' charge récurrente, 'prev' ponctuel, 'vente' honoraires d'une vente en cours */
+  function mouvements(S, b, fin){ var E=[];
+    S.rec.forEach(function(r){ if(!r||r.on===0||!(+r.amt)) return; occ(r,b.d,fin).forEach(function(d){ E.push({d:d, m:-Math.abs(+r.amt), lib:r.label, k:'rec', v:!!r.var}); }); });
+    S.prev.forEach(function(p){ if(!p||!p.d) return; var d=pIso(p.d); if(d>b.d&&d<=fin) E.push({d:d, m:+p.amt||0, lib:p.label, k:'prev'}); });
+    ventes().forEach(function(v){ if(v.d&&v.d>b.d&&v.d<=fin) E.push({d:v.d, m:v.m, lib:'Honoraires — '+v.lib, k:'vente'}); });
+    E.sort(function(a,x){ return a.d-x.d || a.m-x.m; }); return E; }
+  function projection(S){ var b=base(S); if(!b) return null; var t=today();
+    var fin=new Date(b.d.getFullYear(), b.d.getMonth()+6, 0);   /* fin du 6e mois (mois du solde compris) */
+    if(t>b.d){ var f2=new Date(t.getFullYear(), t.getMonth()+6, 0); if(f2>fin) fin=f2; }
+    var E=mouvements(S,b,fin), avec=b.v, sans=b.v, min={v:b.v,d:b.d}, minS={v:b.v,d:b.d}, auj=null, mois=[], cur=null, useV=(S.opt.ventes!==0);
+    function M(d){ var k=d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2); if(!cur||cur.k!==k){ cur={k:k, y:d.getFullYear(), m:d.getMonth(), inn:0, out:0, E:[], fin:0, finS:0, deb:(useV?avec:sans)}; mois.push(cur); } return cur; }
+    /* un mois même sans mouvement */
+    var pts=[{d:b.d, a:avec, s:sans}], i, d0=new Date(b.d.getFullYear(), b.d.getMonth(), 1);
+    for(i=0; d0<=fin; i++, d0=new Date(d0.getFullYear(), d0.getMonth()+1, 1)){ var mk=M(d0>b.d?d0:b.d);
+      E.filter(function(e){ return e.d.getFullYear()===mk.y && e.d.getMonth()===mk.m; }).forEach(function(e){
+        if(e.k==='vente'){ avec+=e.m; if(useV) mk.inn+=e.m; } else { avec+=e.m; sans+=e.m; if(e.m>=0) mk.inn+=e.m; else mk.out+=-e.m; }
+        if(e.k!=='vente'||useV) mk.E.push(e);
+        if(avec<min.v) min={v:avec,d:e.d}; if(sans<minS.v) minS={v:sans,d:e.d};
+        pts.push({d:e.d, a:avec, s:sans}); });
+      mk.fin=avec; mk.finS=sans; }
+    /* le mois du solde de départ, s'il est passé et n'a plus aucun mouvement, n'encombre pas le tableau */
+    while(mois.length>1 && !mois[0].E.length && (mois[0].y<t.getFullYear()||(mois[0].y===t.getFullYear()&&mois[0].m<t.getMonth()))) mois.shift();
+    pts.forEach(function(p){ if(p.d<=t) auj=p; });
+    /* autonomie sans les ventes : premier jour sous zéro sur 12 mois */
+    var fin12=new Date(b.d.getFullYear(), b.d.getMonth()+13, 0), run=b.v, zero=null;
+    mouvements(S,b,fin12).some(function(e){ if(e.k==='vente') return false; run+=e.m; if(run<0){ zero=e.d; return true; } return false; });
+    var s30=0, t30=new Date(t.getTime()+30*864e5); E.forEach(function(e){ if(e.m<0&&e.d>t&&e.d<=t30) s30+=-e.m; });
+    var totV=0, vAll=ventes(), vOk=vAll.filter(function(v){ return v.d&&v.d>b.d&&v.d<=fin; }), vKo=vAll.filter(function(v){ return !(v.d&&v.d>b.d); }), vLoin=vAll.filter(function(v){ return v.d&&v.d>fin; });
+    vOk.forEach(function(v){ totV+=v.m; });
+    return {b:b, fin:fin, mois:mois, pts:pts, min:(useV?min:minS), zero:zero, auj:auj, s30:s30, totV:totV, vOk:vOk, vKo:vKo, vLoin:vLoin, useV:useV, t:t}; }
+  window.achTresoProjection=function(){ return projection(load()); };
+
+  /* ── équivalent mensuel des charges récurrentes ── */
+  function mensuel(S){ var fixe=0, vari=0; S.rec.forEach(function(r){ if(!r||r.on===0) return; var m=(+r.amt||0)/(r.per==='T'?3:(r.per==='A'?12:1)); if(r.var) vari+=m; else fixe+=m; }); return {fixe:fixe, vari:vari, tot:fixe+vari}; }
+  function prochaine(r){ var t=today(), o=occ(r, new Date(t.getTime()-864e5), new Date(t.getFullYear(), t.getMonth()+14, 0)); return o[0]||null; }
+
+  /* ── courbe ── */
+  function courbe(P){ var W=760,H=190,L=58,R=12,T=14,B=26, x0=P.b.d.getTime(), x1=P.fin.getTime(), vs=[0]; P.pts.forEach(function(p){ vs.push(p.a,p.s); });
+    var lo=Math.min.apply(null,vs), hi=Math.max.apply(null,vs); if(hi===lo) hi=lo+1; var pad=(hi-lo)*.08; lo-=pad; hi+=pad;
+    function X(t){ return L+(W-L-R)*(t-x0)/Math.max(1,x1-x0); } function Y(v){ return T+(H-T-B)*(1-(v-lo)/(hi-lo)); }
+    function path(key){ var d='', prev=null; P.pts.forEach(function(p,i){ var x=X(p.d.getTime()).toFixed(1), y=Y(p[key]).toFixed(1); if(i===0) d+='M'+x+' '+y; else d+=' L'+x+' '+Y(prev).toFixed(1)+' L'+x+' '+y; prev=p[key]; }); if(prev!=null) d+=' L'+X(x1).toFixed(1)+' '+Y(prev).toFixed(1); return d; }
+    var g='', d=new Date(P.b.d.getFullYear(), P.b.d.getMonth()+1, 1);
+    for(; d<=P.fin; d=new Date(d.getFullYear(), d.getMonth()+1, 1)){ var x=X(d.getTime()).toFixed(1); g+='<line x1="'+x+'" y1="'+T+'" x2="'+x+'" y2="'+(H-B)+'" stroke="#eee6da"/><text x="'+(+x+4)+'" y="'+(H-8)+'" class="ts-ax">'+MC[d.getMonth()]+'</text>'; }
+    [lo+pad, (lo+hi)/2, hi-pad].forEach(function(v){ g+='<text x="'+(L-6)+'" y="'+(Y(v)+4).toFixed(1)+'" text-anchor="end" class="ts-ax">'+Math.round(v/1000)+' k€</text>'; });
+    var z=Y(0).toFixed(1), tx=X(Math.min(Math.max(P.t.getTime(),x0),x1)).toFixed(1);
+    return '<svg viewBox="0 0 '+W+' '+H+'" class="ts-svg" role="img" aria-label="Solde prévu sur six mois">'+g
+      +'<line x1="'+L+'" y1="'+z+'" x2="'+(W-R)+'" y2="'+z+'" stroke="#a03222" stroke-width="1" stroke-dasharray="2 3"/>'
+      +(P.t>P.b.d?'<line x1="'+tx+'" y1="'+T+'" x2="'+tx+'" y2="'+(H-B)+'" stroke="#4c533b" stroke-dasharray="3 3"/><text x="'+(+tx+4)+'" y="'+(T+9)+'" class="ts-ax" fill="#4c533b">aujourd’hui</text>':'')
+      +(P.useV?'<path d="'+path('s')+'" fill="none" stroke="#b8b0a2" stroke-width="1.6" stroke-dasharray="5 4"/>':'')
+      +'<path d="'+path(P.useV?'a':'s')+'" fill="none" stroke="#b47360" stroke-width="2.4"/></svg>'
+      +'<div class="ts-leg"><span><i class="l1"></i>solde prévu'+(P.useV?' avec les honoraires des ventes en cours':'')+'</span>'+(P.useV?'<span><i class="l2"></i>sans ces honoraires</span>':'')+'<span><i class="l3"></i>zéro</span></div>'; }
+
+  /* ── historique (relevés importés) ── */
+  var FIN_CAT={'Apports et prêts':1};
+  function historique(){ var O=opsStore().ops, by={}, order=[], run=0;
+    O.forEach(function(o){ var k=o.d.slice(0,7); if(!by[k]){ by[k]={k:k, inn:0, out:0, fin:0, cats:{}}; order.push(k); } var b=by[k]; run+=o.m; b.fin=run;
+      if(FIN_CAT[o.c]){ b.app=(b.app||0)+o.m; } else if(o.m>=0) b.inn+=o.m; else b.out+=-o.m; });
+    return order.map(function(k){ return by[k]; }); }
+  function parCategorie(n){ var O=opsStore().ops; if(!O.length) return {L:[],mois:0};
+    var last=O[O.length-1].d.slice(0,7), y=+last.slice(0,4), m=+last.slice(5,7), from=new Date(y, m-n, 1), fk=iso(from).slice(0,7), tot={}, ops={};
+    O.forEach(function(o){ if(o.d.slice(0,7)<fk) return; tot[o.c]=(tot[o.c]||0)+o.m; (ops[o.c]=ops[o.c]||[]).push(o); });
+    return {L:Object.keys(tot).map(function(c){ return {c:c, v:tot[c], ops:ops[c]}; }).sort(function(a,b){ return a.v-b.v; }), mois:n, from:fk, to:last}; }
+
+  /* ── RENDU ── */
+  var _open='', _histN=12, _catOpen='', _form='';
+  window.tsRender=function(){
+    var box=document.getElementById('ts-body'); if(!box) return; var S=load(), O=opsStore();
+    if(!O.ops.length && !S.rec.length){ box.innerHTML='<div class="ts-card ts-vide"><div class="ts-h">Trésorerie</div><p>Cette page se remplit à partir de l’analyse de vos relevés bancaires, préparée par Claude dans un fichier <b>tresorerie-achille.json</b>.</p>'
+      +'<label class="ts-btn ts-main">⬆ Importer le fichier d’analyse<input type="file" accept=".json,application/json" style="display:none" onchange="tsImport(this)"></label><p class="ts-note">Le fichier reste sur votre poste : il n’est partagé avec aucun autre compte.</p></div>'; return; }
+    var P=projection(S), me=mensuel(S), h='';
+    /* 1. situation */
+    h+='<div class="ts-kpis">';
+    h+='<div class="ts-card ts-k ts-k1"><div class="ts-kl">Solde du compte</div>';
+    if(_form==='solde'){ h+='<div class="ts-f"><input id="ts-sv" inputmode="decimal" placeholder="Montant" value="'+(P?(''+P.b.v).replace('.',','):'')+'"><input id="ts-sd" type="date" value="'+iso(today())+'"><button class="ts-btn ts-main" onclick="tsSoldeSave()">Enregistrer</button><button class="ts-btn" onclick="tsForm(\'\')">Annuler</button></div>'; }
+    else { h+='<div class="ts-kv'+(P&&P.b.v<0?' neg':'')+'">'+(P?eur(P.b.v):'—')+'</div><div class="ts-ks">'+(P?(P.b.saisi?'saisi le '+frD(P.b.d):'dernier relevé importé, au '+frD(P.b.d)):'')+'</div>'
+      +'<button class="ts-btn ts-main" onclick="tsForm(\'solde\')">Mettre à jour le solde</button>'
+      +(P&&P.auj&&P.t>P.b.d?'<div class="ts-ks" style="margin-top:6px">Estimé aujourd’hui : <b>'+eur(P.useV?P.auj.a:P.auj.s)+'</b> (d’après les charges prévues depuis)</div>':''); }
+    h+='</div>';
+    if(P){
+      h+='<div class="ts-card ts-k"><div class="ts-kl">Point le plus bas sur 6 mois</div><div class="ts-kv'+(P.min.v<0?' neg':'')+'">'+eur(P.min.v)+'</div><div class="ts-ks">'+(P.min.d>P.b.d?'vers le '+frJ(P.min.d):'c’est le solde de départ')+'</div></div>';
+      h+='<div class="ts-card ts-k"><div class="ts-kl">Sorties prévues sur 30 jours</div><div class="ts-kv">'+eur(P.s30)+'</div><div class="ts-ks">charges récurrentes : '+eur(me.tot)+' par mois en moyenne<br>dont '+eur(me.vari)+' de montants variables (≈)</div></div>';
+      h+='<div class="ts-card ts-k"><div class="ts-kl">Honoraires attendus (ventes en cours)</div><div class="ts-kv pos">'+eur(P.totV)+'</div><div class="ts-ks">'+P.vOk.length+' vente'+(P.vOk.length>1?'s':'')+' avec un acte prévu d’ici fin '+MOIS[P.fin.getMonth()]+', TTC'+(P.vKo.length?'<br><span class="ts-warn">'+P.vKo.length+' sans date d’acte à venir : non comptée'+(P.vKo.length>1?'s':'')+'</span>':'')+'</div></div>';
+    }
+    h+='</div>';
+    if(P){
+      h+='<div class="ts-card ts-phrase">'+(P.zero?'<b class="neg">Sans nouvel encaissement, le compte passerait sous zéro vers le '+frJ(P.zero)+' '+P.zero.getFullYear()+'.</b>':'<b>Sans nouvel encaissement, le compte reste positif pendant au moins 12 mois.</b>')
+        +(P.useV&&P.totV?' Avec les honoraires des ventes en cours, il serait à <b>'+eur(P.mois[P.mois.length-1].fin)+'</b> fin '+MOIS[P.fin.getMonth()]+'.':'')+'</div>';
+      /* 2. projection */
+      h+='<div class="ts-card"><div class="ts-hd"><div class="ts-h">Projection sur 6 mois</div><label class="ts-chk"><input type="checkbox"'+(P.useV?' checked':'')+' onchange="tsOptVentes(this.checked)"> compter les honoraires des ventes en cours</label></div>'+courbe(P);
+      h+='<table class="ts-tab"><thead><tr><th>Mois</th><th class="r">Rentrées prévues</th><th class="r">Sorties prévues</th><th class="r">Solde en fin de mois</th><th></th></tr></thead><tbody>';
+      P.mois.forEach(function(m){ var op=_open===m.k, f=P.useV?m.fin:m.finS;
+        h+='<tr class="ts-m'+(op?' on':'')+'" onclick="tsOpen(\''+m.k+'\')"><td><b>'+MOIS[m.m]+'</b> '+m.y+'</td><td class="r pos">'+(m.inn?'+ '+eur(m.inn):'—')+'</td><td class="r">'+(m.out?'− '+eur(m.out):'—')+'</td><td class="r"><b class="'+(f<0?'neg':'')+'">'+eur(f)+'</b></td><td class="r ts-car">'+(op?'▴':'▾')+'</td></tr>';
+        if(op){ h+='<tr class="ts-det"><td colspan="5">'+(m.E.length?m.E.map(function(e){ return '<div class="ts-l"><span class="ts-ld">'+('0'+e.d.getDate()).slice(-2)+'/'+('0'+(e.d.getMonth()+1)).slice(-2)+'</span><span class="ts-ll">'+esc(e.lib)+(e.v?' <i>≈ variable</i>':'')+(e.k==='prev'?' <i>ponctuel</i>':'')+'</span><span class="ts-lm '+(e.m>=0?'pos':'')+'">'+(e.m>=0?'+ ':'− ')+eur(Math.abs(e.m))+'</span></div>'; }).join(''):'<div class="ts-note">Aucun mouvement prévu ce mois-ci.</div>')+'</td></tr>'; } });
+      h+='</tbody></table>';
+      /* prévisions ponctuelles */
+      h+='<div class="ts-sub">Rentrées et dépenses ponctuelles à prévoir</div>'+(S.prev.length?S.prev.slice().sort(function(a,b){ return (''+a.d).localeCompare(''+b.d); }).map(function(p){ return '<div class="ts-l"><span class="ts-ld">'+frD(pIso(p.d))+'</span><span class="ts-ll">'+esc(p.label)+'</span><span class="ts-lm '+(p.amt>=0?'pos':'')+'">'+(p.amt>=0?'+ ':'− ')+eur(Math.abs(p.amt))+'</span><button class="ts-x" onclick="tsPrevDel(\''+esc(p.id)+'\')" title="Retirer">✕</button></div>'; }).join(''):'<div class="ts-note">Rien pour l’instant : une facture exceptionnelle, un remboursement, une rentrée hors vente…</div>');
+      if(_form==='prev') h+='<div class="ts-f"><select id="ts-pt"><option value="-1">Dépense</option><option value="1">Rentrée</option></select><input id="ts-pl" placeholder="Libellé (ex. solde bilan comptable)"><input id="ts-pa" inputmode="decimal" placeholder="Montant"><input id="ts-pd" type="date" value="'+iso(today())+'"><button class="ts-btn ts-main" onclick="tsPrevAdd()">Ajouter</button><button class="ts-btn" onclick="tsForm(\'\')">Annuler</button></div>';
+      else h+='<button class="ts-btn" onclick="tsForm(\'prev\')">＋ Ajouter une rentrée ou une dépense prévue</button>';
+      if(P.vKo.length||P.vLoin.length) h+='<div class="ts-note" style="margin-top:10px">'+(P.vKo.length?'Ventes en cours non comptées, faute de date d’acte à venir : '+P.vKo.map(function(v){ return esc(v.lib)+' ('+eur(v.m)+')'; }).join(' · ')+'. ':'')+(P.vLoin.length?'Au-delà de six mois : '+P.vLoin.map(function(v){ return esc(v.lib)+' ('+eur(v.m)+')'; }).join(' · ')+'.':'')+'</div>';
+      h+='</div>';
+    }
+    /* 3. charges récurrentes */
+    h+='<div class="ts-card"><div class="ts-hd"><div class="ts-h">Charges récurrentes</div><span class="ts-note">relevées sur le compte — corrigez un montant en cliquant dessus, décochez une charge arrêtée</span></div>';
+    [['M','Chaque mois'],['T','Chaque trimestre'],['A','Une fois par an']].forEach(function(g){ var L=S.rec.filter(function(r){ return r&&r.per===g[0]; }); if(!L.length) return; var tot=0; L.forEach(function(r){ if(r.on!==0) tot+=+r.amt||0; });
+      h+='<div class="ts-sub">'+g[1]+' <span>'+eur(tot)+'</span></div>'+L.map(function(r){ var nx=prochaine(r);
+        return '<div class="ts-r'+(r.on===0?' off':'')+'"><input type="checkbox"'+(r.on===0?'':' checked')+' onchange="tsRecOn(\''+esc(r.id)+'\',this.checked)" title="Compter cette charge dans la projection"><span class="ts-rl">'+esc(r.label)+(r.var?' <i>≈ variable</i>':'')+(r.note?'<small>'+esc(r.note)+'</small>':'')+'</span>'
+          +'<span class="ts-rn">'+(nx&&r.on!==0?'prochaine le '+('0'+nx.getDate()).slice(-2)+'/'+('0'+(nx.getMonth()+1)).slice(-2):'')+'</span>'
+          +'<input class="ts-ra" inputmode="decimal" value="'+(''+(+r.amt||0).toFixed(2)).replace('.',',')+'" onchange="tsRecAmt(\''+esc(r.id)+'\',this.value)" title="Montant">'
+          +'<button class="ts-x" onclick="tsRecDel(\''+esc(r.id)+'\')" title="Supprimer cette charge">✕</button></div>'; }).join(''); });
+    if(_form==='rec') h+='<div class="ts-f"><input id="ts-rl" placeholder="Libellé"><input id="ts-ra" inputmode="decimal" placeholder="Montant"><select id="ts-rp" onchange="document.getElementById(\'ts-rm\').style.display=this.value===\'M\'?\'none\':\'\'"><option value="M">chaque mois</option><option value="T">chaque trimestre</option><option value="A">une fois par an</option></select><input id="ts-rj" inputmode="numeric" placeholder="Jour (1-31)" style="width:96px"><select id="ts-rm" style="display:none">'+MOIS.map(function(m,i){ return '<option value="'+(i+1)+'">à partir de '+m+'</option>'; }).join('')+'</select><button class="ts-btn ts-main" onclick="tsRecAdd()">Ajouter</button><button class="ts-btn" onclick="tsForm(\'\')">Annuler</button></div>';
+    else h+='<button class="ts-btn" style="margin-top:10px" onclick="tsForm(\'rec\')">＋ Ajouter une charge</button>';
+    h+='</div>';
+    /* 4. historique */
+    if(O.ops.length){ var H=historique(), C=parCategorie(_histN), mx=0; H.slice(-12).forEach(function(m){ mx=Math.max(mx,m.inn,m.out); });
+      h+='<div class="ts-card"><div class="ts-hd"><div class="ts-h">Ce qui s’est passé sur le compte</div><span class="ts-note">relevés du '+frD(pIso(O.periode?O.periode[0]:O.ops[0].d))+' au '+frD(pIso(O.periode?O.periode[1]:O.ops[O.ops.length-1].d))+' · '+O.ops.length+' opérations</span></div>';
+      h+='<table class="ts-tab ts-hist"><thead><tr><th>Mois</th><th class="r">Rentrées</th><th class="r">Dépenses</th><th class="r">Apports / remb.</th><th class="r">Solde fin de mois</th></tr></thead><tbody>'
+        +H.slice(-12).reverse().map(function(m){ var y=+m.k.slice(0,4), mm=+m.k.slice(5,7)-1; return '<tr><td><b>'+MOIS[mm]+'</b> '+y+'</td><td class="r pos"><span class="ts-bar" style="width:'+Math.round(60*m.inn/(mx||1))+'px"></span>'+(m.inn?eur(m.inn):'—')+'</td><td class="r"><span class="ts-bar out" style="width:'+Math.round(60*m.out/(mx||1))+'px"></span>'+(m.out?eur(m.out):'—')+'</td><td class="r">'+(m.app?(m.app>0?'+ ':'− ')+eur(Math.abs(m.app)):'—')+'</td><td class="r"><b class="'+(m.fin<0?'neg':'')+'">'+eur(m.fin)+'</b></td></tr>'; }).join('')+'</tbody></table>';
+      h+='<div class="ts-sub">Par poste, sur les '+_histN+' derniers mois <span><button class="ts-pill'+(_histN===6?' on':'')+'" onclick="tsHistN(6)">6 mois</button><button class="ts-pill'+(_histN===12?' on':'')+'" onclick="tsHistN(12)">12 mois</button><button class="ts-pill'+(_histN===24?' on':'')+'" onclick="tsHistN(24)">tout</button></span></div>';
+      var mxc=0; C.L.forEach(function(c){ mxc=Math.max(mxc,Math.abs(c.v)); });
+      h+=C.L.map(function(c){ var op=_catOpen===c.c; return '<div class="ts-c'+(op?' on':'')+'" onclick="tsCat(\''+encodeURIComponent(c.c).replace(/'/g,'%27')+'\')"><span class="ts-cl">'+esc(c.c)+'</span><span class="ts-cb"><i class="'+(c.v>=0?'pos':'')+'" style="width:'+Math.max(2,Math.round(100*Math.abs(c.v)/(mxc||1)))+'%"></i></span><span class="ts-cm">'+eur(Math.abs(c.v)/_histN)+' / mois</span><span class="ts-cv '+(c.v>=0?'pos':'')+'">'+(c.v>=0?'+ ':'− ')+eur(Math.abs(c.v))+'</span></div>'
+          +(op?'<div class="ts-cops">'+c.ops.slice().reverse().slice(0,60).map(function(o){ return '<div class="ts-l"><span class="ts-ld">'+frD(pIso(o.d))+'</span><span class="ts-ll">'+esc(o.t)+' <i>'+esc(o.l)+'</i></span><span class="ts-lm '+(o.m>=0?'pos':'')+'">'+(o.m>=0?'+ ':'− ')+eur2(Math.abs(o.m))+'</span></div>'; }).join('')+(c.ops.length>60?'<div class="ts-note">… et '+(c.ops.length-60)+' opérations plus anciennes</div>':'')+'</div>':''); }).join('');
+      h+='</div>'; }
+    box.innerHTML=h;
+  };
+  /* ── actions ── */
+  function upd(fn){ var S=load(); fn(S); save(S); tsRender(); }
+  window.tsForm=function(f){ _form=f; tsRender(); var e=document.getElementById(f==='solde'?'ts-sv':(f==='prev'?'ts-pl':'ts-rl')); if(e){ try{ e.focus(); e.select&&e.select(); }catch(x){} } };
+  window.tsSoldeSave=function(){ var v=num(document.getElementById('ts-sv').value), d=document.getElementById('ts-sd').value; if(v==null||!d){ if(window.toast) toast('Indiquez le montant et la date'); return; }
+    _form=''; upd(function(S){ S.solde={v:v, d:d}; }); if(window.toast) toast('Solde mis à jour : '+eur2(v)); try{ if(window.achLog) achLog('modification','Trésorerie','solde mis à jour'); }catch(e){} };
+  window.tsOptVentes=function(on){ upd(function(S){ S.opt.ventes=on?1:0; }); };
+  window.tsOpen=function(k){ _open=(_open===k?'':k); tsRender(); };
+  window.tsHistN=function(n){ _histN=n; tsRender(); };
+  window.tsCat=function(c){ c=decodeURIComponent(c); _catOpen=(_catOpen===c?'':c); tsRender(); };
+  window.tsRecAmt=function(id,v){ var x=num(v); if(x==null){ tsRender(); return; } upd(function(S){ S.rec.forEach(function(r){ if(r.id===id) r.amt=Math.abs(x); }); }); };
+  window.tsRecOn=function(id,on){ upd(function(S){ S.rec.forEach(function(r){ if(r.id===id) r.on=on?1:0; }); }); };
+  window.tsRecDel=function(id){ var S=load(), r=S.rec.filter(function(x){ return x.id===id; })[0]; if(!r) return; if(!confirm('Supprimer la charge « '+r.label+' » ?\n(Pour la suspendre sans la perdre, décochez-la plutôt.)')) return; upd(function(S2){ S2.rec=S2.rec.filter(function(x){ return x.id!==id; }); }); };
+  window.tsRecAdd=function(){ var l=document.getElementById('ts-rl').value.trim(), a=num(document.getElementById('ts-ra').value), p=document.getElementById('ts-rp').value, j=parseInt(document.getElementById('ts-rj').value,10)||1, m0=+document.getElementById('ts-rm').value;
+    if(!l||a==null){ if(window.toast) toast('Indiquez le libellé et le montant'); return; }
+    var mois=null; if(p==='T') mois=[0,3,6,9].map(function(k){ return ((m0-1+k)%12)+1; }).sort(function(x,y){ return x-y; }); if(p==='A') mois=[m0];
+    _form=''; upd(function(S){ S.rec.push({id:'u'+Date.now().toString(36), label:l, cat:'Autre', amt:Math.abs(a), per:p, j:Math.min(31,Math.max(1,j)), mois:mois, var:0, on:1, note:''}); }); };
+  window.tsPrevAdd=function(){ var s=+document.getElementById('ts-pt').value, l=document.getElementById('ts-pl').value.trim(), a=num(document.getElementById('ts-pa').value), d=document.getElementById('ts-pd').value;
+    if(!l||a==null||!d){ if(window.toast) toast('Indiquez le libellé, le montant et la date'); return; } _form=''; upd(function(S){ S.prev.push({id:'p'+Date.now().toString(36), label:l, amt:s*Math.abs(a), d:d}); }); };
+  window.tsPrevDel=function(id){ upd(function(S){ S.prev=S.prev.filter(function(x){ return x.id!==id; }); }); };
+  /* ── import du fichier d'analyse ── */
+  window.tsImport=function(inp){ var f=inp.files&&inp.files[0]; if(!f) return; if(!isAdmin()){ if(window.toast) toast('🔒 Réservé à Laurent'); return; }
+    var rd=new FileReader(); rd.onload=function(){ inp.value=''; var J=null; try{ J=JSON.parse(rd.result); }catch(e){}
+      if(!J||J.type!=='achille-tresorerie'||!Array.isArray(J.ops)){ if(window.toast) toast('✗ Ce fichier n’est pas le fichier d’analyse attendu (tresorerie-achille.json)'); return; }
+      try{ localStorage.setItem(KO, JSON.stringify({maj:new Date().toISOString(), n:J.ops.length, periode:J.periode||null, soldeRef:J.soldeRef||null, ops:J.ops})); }catch(e){ if(window.toast) toast('✗ Fichier trop volumineux'); return; }
+      var S=load(), aRec=Array.isArray(J.rec)&&J.rec.length;
+      if(aRec && (!S.rec.length || confirm('Remplacer vos charges récurrentes actuelles par celles du fichier ?\n\nOK : on repart de la liste du fichier.\nAnnuler : vos charges et vos corrections sont conservées.'))) S.rec=J.rec;
+      save(S); if(window.toast) toast('📊 '+J.ops.length+' opérations importées — la projection est à jour'); try{ if(window.achLog) achLog('import','Trésorerie','analyse des relevés importée ('+J.ops.length+' opérations)'); }catch(e){}
+      tsRender(); try{ tsImpRender(); }catch(e){} };
+    rd.readAsText(f,'utf-8'); };
+  window.tsImpRender=function(){ var sec=document.getElementById('tsimp-sec'), el=document.getElementById('ts-imp'); if(!sec||!el) return; sec.style.display=isAdmin()?'':'none'; var O=opsStore();
+    el.innerHTML=(O.ops.length?'<span>'+O.ops.length+' opérations importées'+(O.maj?' le '+new Date(O.maj).toLocaleDateString('fr-FR'):'')+(O.periode?' (relevés jusqu’au '+frD(pIso(O.periode[1]))+')':'')+'</span>':'')
+      +'<label class="ct-upl">⬆ '+(O.ops.length?'Réimporter':'Importer')+' le fichier d’analyse des relevés<input type="file" accept=".json,application/json" style="display:none" onchange="tsImport(this)"></label>'; };
+  if(window.navTo){ var _nt=window.navTo; window.navTo=function(id,el){ var r=_nt.apply(this,arguments); if(id==='tresorerie'){ try{ tsRender(); }catch(e){ window.achErr&&achErr(e); } } if(id==='acces'||id==='droits'){ setTimeout(function(){ try{ tsImpRender(); }catch(e){} },90); } return r; }; }
+  window.addEventListener('storage', function(e){ if(e&&(e.key===K||e.key===KO)){ try{ var p=document.getElementById('page-tresorerie'); if(p&&p.classList.contains('active')) tsRender(); }catch(x){} } });
 })();
 </script>
 <!-- ══ v12.28 (Laurent 06/11) : CONTACTS — annuaire reconstruit à la volée + remplissage automatique du planning ══ -->
