@@ -792,16 +792,16 @@ body:not(.rs-is-gerant) .rs-gerant{display:none;}
 
 /* ── WEEK VIEW ── */
 .week-grid{display:flex;flex-direction:column;min-width:700px;}
-.week-header{display:grid;grid-template-columns:52px repeat(7,1fr);background:var(--blanc);border-bottom:2px solid var(--border);position:sticky;top:0;z-index:10;}
+.week-header{display:grid;grid-template-columns:52px repeat(7,minmax(0,1fr));background:var(--blanc);border-bottom:2px solid var(--border);position:sticky;top:0;z-index:10;height:64px;box-sizing:border-box;}
 .week-header-time{border-right:1px solid var(--border);}
-.week-header-day{padding:8px 6px;text-align:center;border-right:1px solid var(--border);}
+.week-header-day{padding:8px 6px 0;text-align:center;border-right:1px solid var(--border);min-width:0;overflow:hidden;}
 .week-day-name{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--gris-2);font-family:'Jost',sans-serif;}
 .week-day-num{font-family:'Cormorant Garamond',serif;font-size:22px;color:var(--noir);line-height:1.1;}
 .week-day-num.today{background:var(--terra);color:#fff;width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto;font-size:16px;}
-.week-allday-row{display:grid;grid-template-columns:52px repeat(7,1fr);border-bottom:1px solid var(--border);background:var(--blanc);min-height:28px;}
+.week-allday-row{display:grid;grid-template-columns:52px repeat(7,minmax(0,1fr));border-bottom:1px solid var(--border);background:var(--blanc);min-height:30px;box-sizing:border-box;}
 .week-allday-time{border-right:1px solid var(--border);font-size:9px;color:var(--gris-2);padding:6px 4px;text-align:right;font-family:'Jost',sans-serif;}
-.week-allday-cell{border-right:1px solid var(--border);padding:3px 4px;cursor:pointer;} .week-allday-cell:hover{background:rgba(180,115,96,.05);}
-.week-time-grid{display:grid;grid-template-columns:52px repeat(7,1fr);}
+.week-allday-cell{border-right:1px solid var(--border);padding:3px 4px;cursor:pointer;min-width:0;overflow:hidden;} .week-allday-cell:hover{background:rgba(180,115,96,.05);}
+.week-time-grid{display:grid;grid-template-columns:52px repeat(7,minmax(0,1fr));}
 .week-time-col{border-right:1px solid var(--border);}
 .week-time-label{height:48px;display:flex;align-items:flex-start;justify-content:flex-end;padding:2px 6px 0;font-size:10px;color:var(--gris-2);font-family:'Jost',sans-serif;border-bottom:1px solid rgba(76,83,59,.16);}
 .week-day-col{border-right:1px solid var(--border);position:relative;}
@@ -880,17 +880,42 @@ body.ach-agence .plan-ro-btn{display:none!important;}
 .plan-todo-add:hover{background:var(--terra-l);}
 .plan-todo-body{flex:1;overflow-y:auto;padding:10px 12px;}
 .plan-todo-body::-webkit-scrollbar{width:3px;}
+/* v12.47 : onglets To-Do / Routines / Objectifs du panneau du planning */
+.pt-tabs{display:flex;flex-shrink:0;height:64px;box-sizing:border-box;border-bottom:2px solid var(--border);background:var(--blanc);}
+.pt-tab{flex:1;min-width:0;border:none;border-right:1px solid var(--border);background:transparent;padding:6px 4px 4px;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-family:'Jost',sans-serif;box-shadow:inset 0 -2px 0 transparent;transition:box-shadow .15s,background .15s;}
+.pt-tab:last-child{border-right:none;} .pt-tab:hover{background:var(--beige);}
+.pt-l{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--gris-2);white-space:nowrap;}
+.pt-tab b{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:500;line-height:1.1;color:var(--gris-2);}
+.pt-tab.on{background:var(--blanc);box-shadow:inset 0 -3px 0 var(--terra);} .pt-tab.on .pt-l{color:var(--terra);font-weight:600;} .pt-tab.on b{color:var(--noir);}
+/* le « + » du To-Do rejoint la ligne des filtres (le titre « To-Do » est devenu un onglet) */
+.plan-todo .plan-todo-hd{display:none;} .todo-filters-bar{align-items:center;} .plan-todo-add.pt-add{margin-left:auto;width:24px;height:24px;font-size:15px;flex:none;}
+.pt-pane{display:none;flex:1;min-height:0;flex-direction:column;}
+.plan-todo[data-tab="ro"]>*:not(.pt-tabs):not(#pt-pane-ro),.plan-todo[data-tab="ob"]>*:not(.pt-tabs):not(#pt-pane-ob){display:none!important;}
+.plan-todo[data-tab="ro"]>#pt-pane-ro,.plan-todo[data-tab="ob"]>#pt-pane-ob{display:flex!important;}
+.pt-bar{display:flex;align-items:flex-start;gap:8px;padding:10px 12px 8px;border-bottom:1px solid var(--border);flex-shrink:0;}
+.pt-bar .ro-who-bar{display:flex;gap:5px;flex-wrap:wrap;flex:1;min-width:0;} .pt-bar .ro-who{font-size:11px;padding:4px 10px;} .pt-bar .ro-add{margin-left:0;padding:6px 11px;font-size:12px;white-space:nowrap;flex:none;}
+.pt-scroll{flex:1;min-height:0;overflow-y:auto;padding:10px 12px 16px;} .pt-scroll::-webkit-scrollbar{width:3px;} .pt-scroll::-webkit-scrollbar-thumb{background:var(--beige-3);}
+/* dans le panneau (étroit) : une routine = case · intitulé · personnes · ✎ 🗑, la dernière validation dessous */
+.plan-todo .ro-cols-hd,.plan-todo .ro-greset{display:none;} .plan-todo .ro-gtt{flex:1;}
+.plan-todo .ro-row{grid-template-columns:24px minmax(0,1fr) auto auto;gap:5px 7px;padding:8px 9px;}
+.plan-todo .ro-row .ro-check{grid-row:1 / span 2;align-self:start;margin-top:1px;} .plan-todo .ro-row .ro-tt{grid-column:2;grid-row:1;}
+.plan-todo .ro-row .ro-who-cell{grid-column:3;grid-row:1;} .plan-todo .ro-row .ro-acts{grid-column:4;grid-row:1;}
+.plan-todo .ro-row .ro-pill{grid-column:2 / -1;grid-row:2;justify-self:start;min-width:0;}
+.plan-todo .ro-bell{display:block;margin-left:0;white-space:normal;} .plan-todo .ro-mini{display:inline-flex;}
+.plan-todo .ro-obtop{flex-wrap:wrap;} .plan-todo .ro-obtt{flex-basis:60%;} .plan-todo .ro-obbot{flex-wrap:wrap;} .plan-todo .ro-obbar{min-width:90px;}
+body.ach-agence .pt-tabs{display:none;}
+@media (max-width:880px){ .pt-scroll{overflow:visible;} .plan-todo{overflow:visible;} }
 .plan-todo-body::-webkit-scrollbar-thumb{background:var(--beige-3);}
 .todo-section{margin-bottom:14px;}
 /* ── TODO stats + filtres ── */
-.todo-stats-bar{display:flex;border-bottom:1px solid var(--border);flex-shrink:0;}
-.todo-stat-cell{flex:1;padding:7px 4px;text-align:center;border-right:1px solid var(--border);cursor:pointer;transition:background .15s;user-select:none;}
+.todo-stats-bar{display:flex;border-bottom:1px solid var(--border);flex-shrink:0;height:30px;box-sizing:border-box;}
+.todo-stat-cell{flex:1;padding:0 4px;display:flex;align-items:baseline;justify-content:center;gap:5px;line-height:28px;border-right:1px solid var(--border);cursor:pointer;transition:background .15s;user-select:none;}
 .todo-stat-cell:last-child{border-right:none;}
 .todo-stat-cell:hover{background:var(--beige);}
 .todo-stat-cell.active{background:var(--noir);}
 .todo-stat-cell.active .todo-stat-n,.todo-stat-cell.active .todo-stat-l{color:rgba(255,255,255,.9)!important;}
-.todo-stat-n{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:600;line-height:1;}
-.todo-stat-l{font-size:9px;letter-spacing:.07em;text-transform:uppercase;color:var(--gris-2);margin-top:1px;}
+.todo-stat-n{font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:600;line-height:28px;}
+.todo-stat-l{font-size:9px;letter-spacing:.07em;text-transform:uppercase;color:var(--gris-2);line-height:28px;}
 .todo-stat-n.red{color:var(--rouge);}.todo-stat-n.terra{color:var(--terra);}.todo-stat-n.kaki{color:var(--kaki);}
 .todo-filters-bar{display:flex;gap:4px;padding:6px 10px;border-bottom:1px solid var(--border);flex-wrap:wrap;flex-shrink:0;}
 .tdf-btn{padding:2px 8px;border-radius:20px;border:1px solid var(--border);background:var(--beige);font-size:10px;cursor:pointer;color:var(--gris);font-family:'Jost',sans-serif;transition:all .15s;}
@@ -1880,7 +1905,6 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     <!-- v10.42 : le lien « Tableau de bord » est retiré — le LOGO (haut gauche) ramène à l'accueil -->
     <div class="nav-item" onclick="navTo('pipeline',this)"><span class="nav-icon">⟶</span><span class="nav-item-label">Pipeline</span></div>
     <div class="nav-item" onclick="navTo('reporting',this)"><span class="nav-icon">◉</span><span class="nav-item-label">Reporting</span></div>
-    <div class="nav-item" onclick="navTo('routines',this)"><span class="nav-icon">🔁</span><span class="nav-item-label">Routines &amp; Objectifs</span></div>
   </div>
   <div class="nav-section" style="margin-top:8px;">
     <div class="nav-lbl">Équipe</div>
@@ -1928,7 +1952,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     </div>
   </div>
   </div>
-  <div class="logo-ver app-ver">Achille App — v12.46</div>
+  <div class="logo-ver app-ver">Achille App — v12.47</div>
 </aside>
 <div id="mob-bk" onclick="mobNav(false)"></div>
 <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Réduire la barre latérale">‹</button>
@@ -2166,22 +2190,6 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     <!-- v8.22 : titre de page retiré (déjà dans le bandeau du haut) -->
     <div class="sec-hd"><div><div class="sec-sub">Performances de l'agence</div></div><button class="btn btn-outline btn-sm">Exporter</button></div>
     <div id="rep-body"></div>
-  </div>
-
-<div class="page" id="page-routines">
-    <!-- v8.22 : titre de page retiré (déjà dans le bandeau du haut) -->
-    <div class="sec-hd"><div><div class="sec-sub">Tâches récurrentes de chacun &amp; objectifs de période — les routines se réinitialisent automatiquement</div></div></div>
-    <div class="ro-hd-bar"><div id="ro-who-bar" style="display:flex;gap:6px;flex-wrap:wrap;"></div><button class="ro-add" onclick="roAddOpen()">＋ Ajouter</button></div>
-    <div class="ro-halves">
-      <div class="ro-half">
-        <div class="ro-half-hd rt"><div class="ro-half-title">🔁 Routines</div><div class="ro-half-sub">tâches récurrentes</div><div class="ro-half-cnt" id="ro-cnt-rt"></div></div>
-        <div class="ro-half-body" id="ro-routines"></div>
-      </div>
-      <div class="ro-half">
-        <div class="ro-half-hd ob"><div class="ro-half-title">🎯 Objectifs</div><div class="ro-half-sub">une cible, une échéance</div><div class="ro-half-cnt" id="ro-cnt-ob"></div></div>
-        <div class="ro-half-body" id="ro-objectifs"></div>
-      </div>
-    </div>
   </div>
 
   <div class="page" id="page-documents">
@@ -3542,7 +3550,13 @@ table.es-t td.del button{border:none;background:none;color:var(--gris-2);cursor:
         <div id="plan-list" style="display:none;flex:1;min-width:0;overflow-y:auto;padding:16px 20px;background:var(--beige);"></div>
 
         <!-- ToDo sidebar — version unifiée -->
-        <div class="plan-todo">
+        <div class="plan-todo" id="plan-todo" data-tab="todo">
+          <!-- v12.47 : trois onglets — ce qui est à faire une fois (To-Do), ce qui revient (Routines), ce qu'on vise (Objectifs) -->
+          <div class="pt-tabs" id="pt-tabs">
+            <button class="pt-tab on" data-t="todo" onclick="ptTab('todo')" title="Les tâches à faire une fois"><span class="pt-l">To-Do</span><b id="pt-n-todo">0</b></button>
+            <button class="pt-tab" data-t="ro" onclick="ptTab('ro')" title="Les tâches qui reviennent — validées / à faire"><span class="pt-l">Routines</span><b id="ro-cnt-rt">—</b></button>
+            <button class="pt-tab" data-t="ob" onclick="ptTab('ob')" title="Les objectifs en cours"><span class="pt-l">Objectifs</span><b id="ro-cnt-ob">—</b></button>
+          </div>
           <div class="plan-todo-hd">
             <div class="plan-todo-title">To-Do</div>
             <button class="plan-todo-add" onclick="todoOpenAdd()" title="Ajouter">+</button>
@@ -3565,6 +3579,7 @@ table.es-t td.del button{border:none;background:none;color:var(--gris-2);cursor:
             <button class="tdf-btn" id="tdf-perso" onclick="todoFilt('perso',this)">Perso</button>
             <button class="tdf-btn" id="tdf-corp" onclick="todoFilt('corp',this)">Équipe</button>
             <button class="tdf-btn" id="tdf-done" onclick="todoFilt('done',this)">Faites</button>
+            <button class="plan-todo-add pt-add" onclick="todoOpenAdd()" title="Ajouter une tâche">+</button>
           </div>
           <!-- Formulaire ajout -->
           <div class="todo-add-input" id="todo-add-form">
@@ -3614,6 +3629,14 @@ table.es-t td.del button{border:none;background:none;color:var(--gris-2);cursor:
               <div class="todo-section-label"><div class="todo-section-dot dot-low"></div>FAIBLE</div>
               <div id="todo-list-low" ondragover="event.preventDefault()" ondrop="todoDrop(event,'low')"></div>
             </div>
+          </div>
+          <div class="pt-pane" id="pt-pane-ro">
+            <div class="pt-bar"><div class="ro-who-bar"></div><button class="ro-add" onclick="roAddPlan()" title="Créer une tâche qui revient régulièrement">＋ Routine</button></div>
+            <div class="pt-scroll"><div id="ro-routines"></div></div>
+          </div>
+          <div class="pt-pane" id="pt-pane-ob">
+            <div class="pt-bar"><div class="ro-who-bar"></div><button class="ro-add" onclick="roAddObj()" title="Fixer une cible à atteindre, avec une échéance">＋ Objectif</button></div>
+            <div class="pt-scroll"><div id="ro-objectifs"></div></div>
           </div>
         </div>
       </div>
@@ -5324,7 +5347,6 @@ table.es-t td.del button{border:none;background:none;color:var(--gris-2);cursor:
     pige:'Pige <span>&amp; Veille</span>',
     mandats:'Registre des <span>Mandats</span>',
     contacts:'<span>Contacts</span> — qui est-ce ?',   /* v12.28 */
-    routines:'Routines <span>&amp; Objectifs</span>',
     acces:'Gestion des <span>Accès</span>'
   };
   var CTA_MODALS={}; // boutons déplacés dans les sous-barres
@@ -14504,7 +14526,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     startRealtime();
     var ov=document.getElementById('ach-login-overlay'); if(ov) ov.classList.add('ach-hidden');
     var ub=document.getElementById('ach-userbar'); if(ub) ub.style.display='none';
-    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v12.46';
+    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v12.47';
     flag('Synchronis\u00e9');
     // fin de l'init : on autorise la journalisation des actions
     setTimeout(function(){ installInterceptor._init=false; }, 1500);
@@ -24470,7 +24492,7 @@ textarea.rd-inp{resize:vertical;line-height:1.45;}
   function daysLeft(dl){ if(!dl) return null; try{ var p=dl.split('-'); var end=new Date(+p[0],+p[1]-1,+p[2]); var n=new Date(); n.setHours(0,0,0,0); return Math.round((end-n)/86400000); }catch(e){ return null; } }
 
   var _roFilt='me';
-  window.roFilt=function(f,btn){ _roFilt=f; document.querySelectorAll('.ro-who').forEach(function(b){ b.classList.remove('on'); }); if(btn) btn.classList.add('on'); roRenderBody(); };
+  window.roFilt=function(f,btn){ _roFilt=f; window.routinesRender(); };
   function visible(it){
     var us=itUsers(it);
     if(_roFilt==='me') return us.indexOf(meKey())>=0;
@@ -24489,12 +24511,12 @@ textarea.rd-inp{resize:vertical;line-height:1.45;}
   }
 
   window.routinesRender=function(){
-    var head=document.getElementById('ro-who-bar'); if(!head) return;
+    var heads=document.querySelectorAll('.ro-who-bar'); if(!heads.length) return;
     var chips='<button class="ro-who'+(_roFilt==='me'?' on':'')+'" onclick="roFilt(\'me\',this)">Moi</button>';
     if(canAssign()){
       RO_USERS.forEach(function(u){ if(u.key===meKey()) return; chips+='<button class="ro-who'+(_roFilt===u.key?' on':'')+'" onclick="roFilt(\''+u.key+'\',this)">'+esc(u.name)+'</button>'; });
     } else if(_roFilt!=='me'){ _roFilt='me'; chips='<button class="ro-who on" onclick="roFilt(\'me\',this)">Moi</button>'; }
-    head.innerHTML=chips;
+    [].forEach.call(heads, function(h){ h.innerHTML=chips; });
     roRenderBody();
   };
   function roRenderBody(){
@@ -24530,9 +24552,9 @@ textarea.rd-inp{resize:vertical;line-height:1.45;}
       });
       rh+='</div>';
     });
-    if(!any) rh+='<div class="ro-empty">Aucune routine pour cette vue. Cliquez sur « ＋ Ajouter » pour créer la première.</div>';
+    if(!any) rh+='<div class="ro-empty">Aucune routine pour cette vue. Cliquez sur « ＋ Routine » pour créer la première.</div>';
     document.getElementById('ro-routines').innerHTML=rh;
-    var cr=document.getElementById('ro-cnt-rt'); if(cr) cr.textContent=okAll+'/'+totAll+' validée'+(okAll>1?'s':'');
+    var cr=document.getElementById('ro-cnt-rt'); if(cr){ cr.textContent=totAll?(okAll+'/'+totAll):'—'; cr.title=okAll+' routine'+(okAll>1?'s':'')+' validée'+(okAll>1?'s':'')+' sur '+totAll; }
     /* ── moitié droite : objectifs En cours / Atteints ── */
     var obs=list.filter(function(x){ return x.kind==='objectif' && visible(x); })
       .sort(function(a,b){ return (a.deadline||'9999')<(b.deadline||'9999')?-1:1; });
@@ -24571,7 +24593,7 @@ textarea.rd-inp{resize:vertical;line-height:1.45;}
       oh+='</div>';
     }
     document.getElementById('ro-objectifs').innerHTML=oh;
-    var co=document.getElementById('ro-cnt-ob'); if(co) co.textContent=run.length+' en cours';
+    var co=document.getElementById('ro-cnt-ob'); if(co){ co.textContent=run.length?(''+run.length):'—'; co.title=run.length+' objectif'+(run.length>1?'s':'')+' en cours'; }
   }
 
   window.roTick=function(id){
@@ -24738,7 +24760,7 @@ textarea.rd-inp{resize:vertical;line-height:1.45;}
       o.remind=(kind==='routine')? roPlanRemind(o.freq,o.plan) : roRemRead(kind, o.freq);
       a.push(o);
     }
-    save(a); roEditClose(); try{ var _pr=document.getElementById('page-routines'); if(_pr&&_pr.classList.contains('active')) roRenderBody(); }catch(e){}
+    save(a); roEditClose(); try{ roRenderBody(); }catch(e){}
     try{ window.roSyncRappels(); }catch(e){window.achErr&&achErr(e)}
     planRefresh();
     try{ if(window.achLog) achLog(id?'modification':'ajout','Routines & Objectifs',titre); }catch(e){window.achErr&&achErr(e)}
@@ -24781,7 +24803,7 @@ textarea.rd-inp{resize:vertical;line-height:1.45;}
         if(raps===null){ try{ raps=JSON.parse(localStorage.getItem('ach_rappels_v1')||'[]')||[]; }catch(e){ raps=[]; } if(!Array.isArray(raps)) raps=[]; }
         var ex=null; for(var i=0;i<raps.length;i++){ if(raps[i].id===rapId){ ex=raps[i]; break; } }
         if(!isDone && today>=rd){
-          if(!ex){ raps.push({id:rapId, mod:'routines', refId:it.id, label:'🔁 '+(it.titre||'')+' — à faire', date:rd, note:(it.details||''), done:0, created:new Date().toISOString(), by:it.createdBy||''}); changed=true; }
+          if(!ex){ raps.push({id:rapId, mod:'routines', refId:it.id, label:(it.kind==='objectif'?'🎯 ':'🔁 ')+(it.titre||'')+(it.kind==='objectif'?' — objectif à suivre':' — à faire'), date:rd, note:(it.details||''), done:0, created:new Date().toISOString(), by:it.createdBy||''}); changed=true; }
         } else if(ex && !ex.done && isDone){ ex.done=1; ex.doneAt=new Date().toISOString(); changed=true; }
       });
       if(changed && raps){ localStorage.setItem('ach_rappels_v1', JSON.stringify(raps));
@@ -24934,7 +24956,7 @@ textarea.rd-inp{resize:vertical;line-height:1.45;}
     if(it.checks[c.k]){ delete it.checks[c.k]; }
     else { var ts=new Date().toISOString(), hb=roHistArr(it).slice(); it.checks[c.k]={by:meKey(), t:ts}; hb.push({t:ts, by:meKey()}); it.hist=hb; }
     it.updated=new Date().toISOString(); save(a);
-    try{ var pr=document.getElementById('page-routines'); if(pr&&pr.classList.contains('active')) roRenderBody(); }catch(e){}
+    try{ roRenderBody(); }catch(e){}
     try{ window.roSyncRappels(); }catch(e){} planRefresh(); return true;
   };
 
@@ -24972,8 +24994,29 @@ textarea.rd-inp{resize:vertical;line-height:1.45;}
     }
     return _pt.apply(this,arguments); }; }
   window.roAddPlan=function(){ var ds=isoOf(new Date()); try{ if(window.planToday) ds=planToday(); }catch(e){} roOpen(null,{date:ds, time:'12:00', dur:30, users:[meKey()]}); };
-  if(window.navTo){ var _nv=window.navTo; window.navTo=function(id,el){ _nv(id,el); if(id==='routines'){ try{ window.routinesRender(); window.roSyncRappels(); }catch(e){window.achErr&&achErr(e)} } }; }
-  if(window.setRole){ var _sr2=window.setRole; window.setRole=function(r,btn){ if(typeof _sr2==='function') _sr2(r,btn); try{ var p=document.querySelector('.page.active'); if(p&&p.id==='page-routines'){ _roFilt='me'; window.routinesRender(); } }catch(e){window.achErr&&achErr(e)} }; }
+  /* ══ v12.47 (Laurent 10/11) : « on peut supprimer l'onglet Routines et Objectifs ; remettre les objectifs quelque part… fais ce
+     qui te semble le plus cohérent ». → le panneau de droite du Planning a trois onglets : To-Do (à faire une fois), Routines (ce
+     qui revient : liste, coche, journal, ✎ 🗑), Objectifs (une cible, une échéance, +1). L'ancienne adresse « routines » (liens,
+     rappels 🔔) mène au Planning, sur le bon onglet. L'onglet ouvert est retenu sur le poste (achille_plan_tab, non synchronisé). */
+  var PT=['todo','ro','ob'];
+  window.ptTab=function(t,silent){
+    if(PT.indexOf(t)<0) t='todo'; if(meKey()==='public') t='todo';
+    var p=document.getElementById('plan-todo'); if(!p) return; p.setAttribute('data-tab',t);
+    [].forEach.call(document.querySelectorAll('#pt-tabs .pt-tab'), function(b){ b.classList.toggle('on', b.getAttribute('data-t')===t); });
+    if(!silent){ try{ localStorage.setItem('achille_plan_tab',t); }catch(e){} }
+    if(t!=='todo'){ try{ window.routinesRender(); }catch(e){ window.achErr&&achErr(e); } }
+  };
+  window.roAddObj=function(){ roOpen(null); try{ document.getElementById('ro-e-kind').value='objectif'; window.roKindToggle(); document.getElementById('ro-edit-title').textContent='Nouvel objectif'; }catch(e){} };
+  try{ var _tsT=document.getElementById('ts-todo'), _ptN=document.getElementById('pt-n-todo'); if(_tsT&&_ptN&&window.MutationObserver){ _ptN.textContent=_tsT.textContent; new MutationObserver(function(){ _ptN.textContent=_tsT.textContent; }).observe(_tsT,{childList:true,characterData:true,subtree:true}); } }catch(e){}
+  function ptInit(){ var t='todo'; try{ t=localStorage.getItem('achille_plan_tab')||'todo'; }catch(e){} window.ptTab(t,1); try{ window.routinesRender(); }catch(e){ window.achErr&&achErr(e); } }
+  try{ if(localStorage.getItem('achille_curpage')==='routines'){ localStorage.setItem('achille_curpage','planning'); localStorage.setItem('achille_plan_tab','ro'); } }catch(e){}
+  if(window.navTo){ var _nv=window.navTo; window.navTo=function(id,el){
+    if(id==='routines'){ window.navTo('planning', document.querySelector('.nav-item[onclick*="navTo(\'planning\'"]')||el); window.ptTab('ro'); return; }   /* ancienne adresse */
+    _nv(id,el);
+    if(id==='planning'){ try{ ptInit(); window.roSyncRappels(); }catch(e){window.achErr&&achErr(e)} } }; }
+  /* un rappel 🔔 de routine ou d'objectif ouvre le Planning sur le bon onglet */
+  if(window.rapGo){ var _rg=window.rapGo; window.rapGo=function(mod,refId){ if(mod==='routines'){ var it=refId?find(load(),refId):null; navTo('planning'); window.ptTab(it&&it.kind==='objectif'?'ob':'ro'); return; } return _rg.apply(this,arguments); }; }
+  if(window.setRole){ var _sr2=window.setRole; window.setRole=function(r,btn){ if(typeof _sr2==='function') _sr2(r,btn); try{ _roFilt='me'; var p=document.querySelector('.page.active'); if(p&&p.id==='page-planning'){ if(meKey()==='public') window.ptTab('todo',1); window.routinesRender(); } }catch(e){window.achErr&&achErr(e)} }; }
   document.addEventListener('keydown',function(e){ if(e.key==='Escape'){ window.roEditClose(); window.roHistClose(); try{ window.roOccClose(); }catch(x){} } });
 })();
 </script>
@@ -26862,7 +26905,7 @@ body.pi-grabbing *{user-select:none!important;}
 #mob-bk{display:none;}
 /* v11.55 : vue Jour du planning + accompagnateurs en ligne + bandeau du matin */
 .week-grid.day-mode{min-width:0;}
-.week-grid.day-mode .week-header,.week-grid.day-mode .week-allday-row,.week-grid.day-mode .week-time-grid{grid-template-columns:52px 1fr;}
+.week-grid.day-mode .week-header,.week-grid.day-mode .week-allday-row,.week-grid.day-mode .week-time-grid{grid-template-columns:52px minmax(0,1fr);}
 .vt-acc-inline{display:flex;flex-wrap:wrap;gap:6px 10px;}
 .vt-acc-opt{display:inline-flex;align-items:center;gap:6px;font-size:13px;border:1px solid var(--border);border-radius:8px;padding:4px 9px;background:#fff;cursor:pointer;font-family:'Jost',sans-serif;}
 .vt-acc-opt.on{border-color:var(--kaki);background:#f3f1ea;}
@@ -26891,8 +26934,7 @@ body.pi-grabbing *{user-select:none!important;}
   #modal-pige .modal-actions{flex-wrap:wrap;gap:6px;}
   #modal-pige .modal-actions .btn{flex:1 1 auto;min-width:0;white-space:nowrap;margin-right:0!important;}
   #modal-pige .modal-actions .btn-terra{flex:1 1 100%;order:9;}
-  .plan-todo.todo-vide .plan-todo-hd ~ *{display:none;}
-  .plan-todo.todo-vide{max-height:52px;overflow:hidden;}
+  .plan-todo.todo-vide[data-tab="todo"] .plan-todo-body{display:none;}
   .dash-matin{gap:6px 10px;padding:8px 10px;}
   .dm-go{flex:1 0 100%;margin-left:0;}
   /* ── navigation : menu latéral escamotable ── */
