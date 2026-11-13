@@ -1805,7 +1805,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     </div>
   </div>
   </div>
-  <div class="logo-ver app-ver">Achille App — v12.51</div>
+  <div class="logo-ver app-ver">Achille App — v12.52</div>
 </aside>
 <div id="mob-bk" onclick="mobNav(false)"></div>
 <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Réduire la barre latérale">‹</button>
@@ -13767,7 +13767,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
       var localVal=window.localStorage.getItem(mod); if(localVal===null||localVal===undefined) return;
       var L=_ach_parse(localVal); if(L===undefined) return;
       var m=_ach_mergeAny(L, L, tomb[mod]);
-      if(m!==undefined){ var s=JSON.stringify(m); if(s!==localVal){ try{ origSetItem(mod, s); }catch(e){window.achErr&&achErr(e)} } }
+      if(m!==undefined){ var s=JSON.stringify(m); if(s!==localVal){ try{ origSetItem(mod, s); }catch(e){window.achErr&&achErr(e)} try{ _it_kick(mod); }catch(e){} } }
     });
   }
 
@@ -13931,7 +13931,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
      postes, la fusion gardait pourtant la copie LOCALE (les valeurs sans date ne se départagent pas) : un changement de droits ou un
      montant modifié n'arrivait jamais sur un poste qui avait déjà une copie, et ce poste renvoyait sa vieille copie au cloud.
      Désormais, hors compte administrateur : la version du cloud est prise telle quelle, et rien n'est renvoyé. */
-  var ADMIN_KEYS=['ach_perms_v1','ach_fin_lines_v1','ach_fin_hist_v3','ach_fin_ops_v3','ach_fin_solde_v3','ach_treso_v1'];
+  var ADMIN_KEYS=['ach_perms_v1','ach_fin_lines_v1','ach_fin_hist_v3','ach_fin_ops_v3','ach_fin_solde_v3','ach_treso_v1','ach_sync_cfg_v1'];   /* v12.52 : + réglage de la synchro fiche par fiche */
   /* v12.49 : FINANCES = Laurent (modification) + Marine Attias (lecture). Sur les autres comptes (collaboratrices, écran de
      l'agence), les blocs Finances ne sont plus téléchargés, et la copie restée sur le poste est effacée DU POSTE seulement
      (effacement local direct : rien n'est supprimé ni modifié dans le cloud). */
@@ -13941,7 +13941,284 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
   window.achSyncFinKeys=function(){ return FIN_KEYS.slice(); };
   function _ach_adminOwned(key){ return ADMIN_KEYS.indexOf(key)>=0 && !!ME && ME.role!=='admin'; }
   window.achSyncAdminKeys=function(){ return ADMIN_KEYS.slice(); };
-  function _ach_apresRecu(key){ if(key==='ach_perms_v1'){ try{ if(window.achPermsReload) window.achPermsReload(); }catch(e){ window.achErr&&achErr(e); } } }
+  function _ach_apresRecu(key){ if(key==='ach_perms_v1'){ try{ if(window.achPermsReload) window.achPermsReload(); }catch(e){ window.achErr&&achErr(e); } }
+    try{ if(key===IT_CFG) _it_cfg(); else if(_it_managed(key)) _it_kick(key); }catch(e){} }   /* v12.52 */
+  /* ══════════ v12.52 (Laurent 13/11) : SYNCHRONISATION « FICHE PAR FICHE » (pige) ══════════
+     Avant : la pige est UN bloc (319 fiches, 766 Ko). À chaque modification d'une seule fiche, le bloc entier repart vers
+     tous les postes ouverts — c'est l'essentiel du trafic compté par Supabase (quota gratuit de 5 Go).
+     Maintenant : chaque fiche a sa ligne dans la table app_items ; seule la fiche modifiée voyage (1 à 5 Ko).
+     CE QUI NE CHANGE PAS : chaque poste garde sa pige complète dans la mémoire du navigateur, au même format (ach_pige_v1).
+     Recherche, filtres, dossiers, rappels, pipeline, contacts lisent cette copie comme avant. Seul le TRANSPORT change.
+     Les règles de fusion sont LES MÊMES fonctions qu'avant (_ach_mergeArrays : la plus récente gagne, archivage protégé,
+     certificats de suppression ach_tomb_v2, qui restent transportés comme aujourd'hui).
+     TROIS MODES (réglage partagé ach_sync_cfg_v1, modifiable par Laurent seul) :
+       · « shadow » (par défaut) = EN DOUBLE : l'ancienne synchro reste seule maître des données ; la nouvelle recopie chaque
+         fiche dans app_items et se contrôle, SANS JAMAIS écrire dans la pige du poste. Sert à vérifier en conditions réelles.
+       · « on » = fiche par fiche : le bloc de pige n'est plus envoyé ; les fiches reçues sont fusionnées dans la pige du poste.
+       · « off » = ancien mode seul. C'est aussi le repli AUTOMATIQUE si la table n'existe pas ou ne répond pas.
+     GARDE-FOUS : une fiche n'est supprimée du cloud que si son certificat de suppression existe sur ce poste ; un envoi ne
+     remplace une ligne que si personne ne l'a modifiée entre-temps (sinon : fusion, puis renvoi) ; toute erreur de ce module
+     est contenue ici et ne bloque jamais l'ancienne synchro. */
+  var IT_KEYS=['ach_pige_v1'], IT_CFG='ach_sync_cfg_v1', IT_T='app_items', IT_PRE='achille_items_';
+  var _itOk=null, _itRun={}, _itRunAt={}, _itAgain={}, _itKickT={}, _itChan=null, _itSt={rt:0, rtLe:'', envois:0, recus:0, conflits:0, erreurs:0, err:''};
+  function _it_managed(key){ return IT_KEYS.indexOf(key)>=0; }
+  function _it_mode(){
+    if(_itOk===false) return 'off';
+    try{ var o=JSON.parse(window.localStorage.getItem(IT_CFG)||'{}'); if(o && (o.pige==='on'||o.pige==='off'||o.pige==='shadow')) return o.pige; }catch(e){}
+    return 'shadow';
+  }
+  function _it_can(){ return !!(db && ME) && _itOk!==false; }
+  /* texte « canonique » d'une fiche : clés triées, caractères que la base refuse retirés → deux fiches identiques donnent le
+     même texte, quel que soit l'ordre des champs (la base range les champs à sa façon) */
+  function _it_txt(s){ if(/[\u0000\uD800-\uDFFF]/.test(s)){ s=s.replace(/\u0000/g,''); var o='', n=s.length; for(var i=0;i<n;i++){ var c=s.charCodeAt(i);
+        if(c>=0xD800&&c<=0xDBFF){ var d=i+1<n?s.charCodeAt(i+1):0; if(d>=0xDC00&&d<=0xDFFF){ o+=s.charAt(i)+s.charAt(i+1); i++; } else o+='\uFFFD'; }
+        else if(c>=0xDC00&&c<=0xDFFF) o+='\uFFFD'; else o+=s.charAt(i); } s=o; } return JSON.stringify(s); }
+  function _it_canon(v){
+    if(v===null||v===undefined) return 'null';
+    if(typeof v==='string') return _it_txt(v);
+    if(typeof v!=='object'){ var j=JSON.stringify(v); return j===undefined?'null':j; }
+    if(Array.isArray(v)){ var a=[]; for(var i=0;i<v.length;i++) a.push(_it_canon(v[i])); return '['+a.join(',')+']'; }
+    var ks=Object.keys(v).sort(), out=[]; for(var k=0;k<ks.length;k++){ var x=v[ks[k]]; if(x===undefined||typeof x==='function') continue; out.push(_it_txt(ks[k])+':'+_it_canon(x)); }
+    return '{'+out.join(',')+'}';
+  }
+  function _it_hash(s){ var h1=0x811c9dc5, h2=5381; for(var i=0;i<s.length;i++){ var c=s.charCodeAt(i); h1^=c; h1=(h1+((h1<<1)+(h1<<4)+(h1<<7)+(h1<<8)+(h1<<24)))>>>0; h2=(((h2<<5)+h2)^c)>>>0; } return h1.toString(36)+'.'+h2.toString(36)+'.'+s.length.toString(36); }
+  function _it_h(rec){ return _it_hash(_it_canon(rec)); }
+  /* témoin de version (date du serveur) ramené à une seule écriture : AAAA-MM-JJTHH:MM:SS.ffffffZ */
+  function _it_ts(s){ s=''+(s||''); var m=/^(\d{4}-\d\d-\d\d)[T ](\d\d:\d\d:\d\d)(?:\.(\d+))?\s*(Z|[+-]\d\d(?::?\d\d)?)?$/.exec(s); if(!m) return s;
+    if(m[4] && m[4]!=='Z' && !/^[+-]00(:?00)?$/.test(m[4])){ var d=new Date(s); if(!isNaN(d)) return d.toISOString().replace('Z','000Z'); return s; }
+    return m[1]+'T'+m[2]+'.'+((m[3]||'')+'000000').slice(0,6)+'Z'; }
+  function _it_S(key){ try{ var o=JSON.parse(window.localStorage.getItem(IT_PRE+key)||'{}'); if(o && typeof o==='object' && o.m && typeof o.m==='object' && !Array.isArray(o.m)){ o.wm=''+(o.wm||''); return o; } }catch(e){} return {m:{}, wm:'', init:0, on:0, full:0}; }
+  function _it_Ssave(key,S){ try{ origSetItem(IT_PRE+key, JSON.stringify(S)); }catch(e){ _trace('fiches : témoins non enregistrés ('+((e&&e.message)||e)+')'); } }
+  function _it_arr(key){ var a=_ach_parse(window.localStorage.getItem(key)); return Array.isArray(a)?a:null; }
+  function _it_pos(L,id){ for(var i=0;i<L.length;i++){ if(L[i] && L[i].id!==undefined && L[i].id!==null && (''+L[i].id)===id) return i; } return -1; }
+  function _it_err(ou, er){ var m=((er&&(er.message||er.code))||er||'')+''; _itSt.erreurs++; _itSt.err=new Date().toISOString().slice(0,19)+' '+ou+' : '+m.slice(0,160);
+    _trace('fiches : ERREUR '+ou+' : '+m.slice(0,120));
+    /* table ou fonction absente (script Supabase pas encore passé) → ancien mode pour cette session, sans rien casser */
+    if(/does not exist|schema cache|PGRST20[25]|42P01|42883|Could not find/i.test(m+' '+((er&&er.code)||''))){ if(_itOk!==false){ _itOk=false; _trace('fiches : table absente → ancien mode'); } } }
+  /* fusion d'UNE fiche reçue du cloud avec la fiche du poste — mêmes règles que la fusion des blocs (plus récente, archivage, certificat) */
+  function _it_gagnant(key, loc, cv){ var tomb=(_ach_tombAll()[key])||null; var r=_ach_mergeArrays(loc?[loc]:[], [cv], tomb); return r.length?r[0]:null; }
+  /* mode « on » : applique la fiche du cloud à la liste du poste. Rend true si la liste a changé. */
+  function _it_fusion(key, S, L, id, cv, ts){
+    var hc=_it_h(cv), i=_it_pos(L,id), loc=i>=0?L[i]:null, w=_it_gagnant(key, loc, cv), ch=false;
+    if(!w){ if(loc){ L.splice(i,1); ch=true; } }                      /* supprimée (certificat plus récent) : la ligne du cloud partira au prochain envoi */
+    else { var hw=_it_h(w); if(!loc){ L.push(w); ch=true; } else if(hw!==_it_h(loc)){ L[i]=w; ch=true; } }
+    S.m[id]=[ts,hc];                                                    /* si la fiche du poste diffère encore, le prochain envoi la renverra */
+    return ch;
+  }
+  /* mode « en double » : AUCUNE écriture dans la pige du poste — on note seulement qui l'emporte */
+  function _it_miroir(key, S, L, id, cv, ts){
+    var hc=_it_h(cv), i=_it_pos(L,id), loc=i>=0?L[i]:null;
+    if(!loc){ S.m[id]=[ts,hc]; return; }                                /* pas (encore) ici : l'ancienne synchro l'apportera, ou son certificat la retirera du cloud */
+    var hl=_it_h(loc); if(hl===hc){ S.m[id]=[ts,hc]; return; }
+    var w=_it_gagnant(key, loc, cv), hw=w?_it_h(w):'';
+    if(w && hw===hl) S.m[id]=[ts,hc];                                   /* la fiche du poste l'emporte → renvoyée avec le bon témoin */
+    else S.m[id]=[ts,hc,hl];                                            /* le cloud l'emporte : on attend que l'ancienne synchro mette ce poste à jour */
+  }
+  /* réception de lignes (en direct ou au chargement) */
+  function _it_recv(key, rows, src){
+    if(!rows || !rows.length) return false;
+    var mode=_it_mode(); if(mode==='off') return false;
+    var S=_it_S(key), L=_it_arr(key), ch=false, n=0; if(!L){ if(mode!=='on') return false; L=[]; }
+    rows.forEach(function(row){ try{
+      if(!row || row.id===undefined || row.id===null || !row.v || typeof row.v!=='object') return;
+      var id=''+row.id, ts=_it_ts(row.updated_at), e=S.m[id]; if(ts>S.wm) S.wm=ts;
+      if(e && e[0] && e[0]>=ts && !(mode==='on' && e[2]!==undefined)) return;   /* déjà intégrée (ou mon propre envoi qui revient) — sauf fiche restée en retard pendant le mode « en double » */
+      if(mode==='on'){ if(_it_fusion(key,S,L,id,row.v,ts)) ch=true; } else _it_miroir(key,S,L,id,row.v,ts);
+      n++;
+    }catch(e){ _it_err('réception', e); } });
+    if(ch){ try{ origSetItem(key, JSON.stringify(L)); }catch(e){ _it_err('écriture locale', e); return false; } }
+    _it_Ssave(key,S);
+    if(n){ _itSt.recus+=n; _trace('fiches : '+n+' reçue'+(n>1?'s':'')+' ('+src+(ch?', pige mise à jour':'')+')'); }
+    if(ch){ try{ _ach_scheduleSoftRefresh(); }catch(e){} }
+    return ch;
+  }
+  function _it_fetch(key, ids, cb){
+    if(!ids.length) return cb();
+    var lot=ids.slice(0,60), reste=ids.slice(60);
+    db.from(IT_T).select('id,v,h,updated_at').eq('k',key).in('id',lot).then(function(r){
+      if(r && r.error){ _it_err('lecture', r.error); return cb(); }
+      try{ (r.data||[]).forEach(function(x){ _traffic('p', key, _len(x.v)); }); }catch(e){}
+      try{ _it_recv(key, r.data||[], 'chargement'); }catch(e){ _it_err('lecture', e); }
+      _it_fetch(key, reste, cb);
+    }, function(e){ _it_err('lecture', e||'réseau'); cb(); });
+  }
+  /* ENVOI : seules les fiches dont le contenu a changé depuis le dernier échange partent */
+  function _it_push(key, _tour){
+    if(!_it_managed(key) || !_it_can() || isPublicScreen()) return;
+    var mode=_it_mode(); if(mode==='off') return;
+    if(_itRun[key] && (Date.now()-(_itRunAt[key]||0))<60000){ _itAgain[key]=1; return; }   /* un envoi à la fois ; un envoi bloqué plus d'une minute est abandonné */
+    var L=_it_arr(key); if(!L) return;                                  /* pige illisible ou absente sur ce poste : on n'envoie RIEN */
+    var S=_it_S(key), tomb=(_ach_tombAll()[key])||{}, rows=[], dels=[], orph=[], ici={}, tour=_tour||0;
+    L.forEach(function(r){ if(!r || r.id===undefined || r.id===null) return; var id=''+r.id; if(ici[id]) return; ici[id]=1;
+      var c=_it_canon(r), h=_it_hash(c), e=S.m[id]; if(e && (e[1]===h || e[2]===h)) return;
+      rows.push({id:id, c:c, h:h, base:(e&&e[0])||''}); });
+    Object.keys(S.m).forEach(function(id){ if(ici[id]) return;
+      if(_ach_tombDel(tomb[id])!==null) dels.push({id:id, base:S.m[id][0]||''}); else orph.push(id); });
+    /* GARDE-FOU : beaucoup de fiches « disparues » d'un coup = anomalie du poste, jamais un ordre de suppression */
+    if(dels.length>25 && dels.length>Object.keys(S.m).length*0.3){ _it_err('envoi', 'suppression en masse refusée ('+dels.length+' fiches)'); dels=[]; }
+    if(orph.length){ if(mode==='on'){ orph.forEach(function(id){ S.m[id]=['', '']; }); } else orph.forEach(function(id){ delete S.m[id]; }); _it_Ssave(key,S); }
+    function fin(){ _itRun[key]=0;
+      if(mode==='on' && orph.length){ var o2=orph; orph=[]; _itRun[key]=1; _itRunAt[key]=Date.now();
+        _it_fetch(key, o2, function(){ try{ var S3=_it_S(key), n3=0; o2.forEach(function(id){ var e=S3.m[id]; if(e && !e[0]){ delete S3.m[id]; n3++; } }); if(n3) _it_Ssave(key,S3); }catch(e){} _itRun[key]=0; suite(); }); return; }   /* fiches absentes du poste sans certificat : on les reprend au cloud */
+      suite(); }
+    function suite(){ if(_itAgain[key]){ _itAgain[key]=0; _it_push(key); return; }
+      var encore=false; try{ var S2=_it_S(key), L2=_it_arr(key)||[]; for(var i=0;i<L2.length && !encore;i++){ var r=L2[i]; if(!r||r.id==null) continue; var e=S2.m[''+r.id], h=_it_h(r); if(!e || (e[1]!==h && e[2]!==h)) encore=true; } }catch(e){}
+      if(encore && tour<3){ _it_push(key, tour+1); return; }
+      if(mode==='on'){ try{ if(encore){ flag('Erreur de synchro', true); } else { _lastSyncErr=''; flag('Synchronisé'); } }catch(e){} } }
+    if(!rows.length && !dels.length){ fin(); return; }
+    _itRun[key]=1; _itRunAt[key]=Date.now(); _itAgain[key]=0;
+    var lots=[], cur=[], poids=0; rows.forEach(function(x){ if(cur.length>=40 || poids+x.c.length>150000){ lots.push(cur); cur=[]; poids=0; } cur.push(x); poids+=x.c.length; }); if(cur.length) lots.push(cur); if(!lots.length) lots.push([]);
+    _trace('fiches : envoi '+key+' — '+rows.length+' modifiée'+(rows.length>1?'s':'')+(dels.length?', '+dels.length+' supprimée'+(dels.length>1?'s':''):'')+(tour?' (tour '+(tour+1)+')':''));
+    (function envoi(n){
+      if(n>=lots.length){ fin(); return; }
+      var lot=lots[n], sent={}, pr=[]; lot.forEach(function(x){ sent[x.id]=x; var v; try{ v=JSON.parse(x.c); }catch(e){ return; } pr.push({id:x.id, v:v, h:x.h, base:x.base}); });
+      var pd=(n===0)?dels:[];
+      db.rpc('app_items_push', {p_k:key, p_rows:pr, p_del:pd}).then(function(res){
+        if(!res || res.error || !res.data){ _it_err('envoi', (res&&res.error)||'réponse vide'); _itRun[key]=0; if(_it_mode()==='on'){ try{ flag('Erreur de synchro', true); }catch(e){} } return; }
+        _itOk=true;
+        try{ _it_apres(key, mode, sent, res.data); }catch(e){ _it_err('envoi', e); }
+        _itSt.envois+=pr.length;
+        envoi(n+1);
+      }, function(e){ _it_err('envoi', e||'réseau'); _itRun[key]=0; if(_it_mode()==='on'){ try{ flag('Erreur de synchro', true); }catch(e2){} } });
+    })(0);
+  }
+  function _it_apres(key, mode, sent, d){
+    var S=_it_S(key), L=_it_arr(key)||[], tomb=(_ach_tombAll()[key])||{}, ch=false;
+    (d.ok||[]).forEach(function(o){ var id=''+o.id, ts=_it_ts(o.ts), x=sent[id], e=S.m[id]; if(ts>S.wm) S.wm=ts; if(x && (!e || !e[0] || e[0]<=ts)) S.m[id]=[ts, x.h]; });
+    (d.gone||[]).forEach(function(id){ delete S.m[''+id]; });
+    /* fiche refusée par la base (anormalement grosse ou mal formée) : notée, non renvoyée tant qu'elle ne change pas — les autres passent */
+    (d.refused||[]).forEach(function(o){ var id=''+(o&&o.id), x=sent[id]; _itSt.refus=(_itSt.refus||0)+1; _itSt.err=new Date().toISOString().slice(0,19)+' fiche refusée '+id+' : '+(''+((o&&o.pourquoi)||'')).slice(0,120);
+      _trace('fiches : REFUSÉE par la base '+id+' — '+(''+((o&&o.pourquoi)||'')).slice(0,100)); if(x) S.m[id]=[(S.m[id]&&S.m[id][0])||'', x.h]; });
+    (d.missing||[]).forEach(function(id){ id=''+id; var i=_it_pos(L,id), loc=i>=0?L[i]:null, del=_ach_tombDel(tomb[id]), t=loc?_ach_ts(loc):'';
+      if(loc && del!==null && !(_ach_isoTs(t) && t>del)){ if(mode==='on'){ L.splice(i,1); ch=true; } delete S.m[id]; }   /* supprimée ailleurs (certificat) */
+      else delete S.m[id]; });                                          /* sans certificat : elle sera recréée au tour suivant (on ne perd jamais une fiche) */
+    (d.conflicts||[]).forEach(function(c){ var id=''+c.id, ts=_it_ts(c.ts); if(ts>S.wm) S.wm=ts; _itSt.conflits++;
+      if(!c.v || typeof c.v!=='object') return;
+      if(mode==='on'){ if(_it_fusion(key,S,L,id,c.v,ts)) ch=true; } else _it_miroir(key,S,L,id,c.v,ts); });
+    if(ch){ origSetItem(key, JSON.stringify(L)); try{ _ach_scheduleSoftRefresh(); }catch(e){} }
+    _it_Ssave(key,S);
+  }
+  /* envoi différé après une modification de la pige faite par l'ancienne synchro (fusion d'un bloc, certificats) */
+  function _it_kick(key){ if(!_it_managed(key) || _it_mode()==='off') return; clearTimeout(_itKickT[key]); _itKickT[key]=setTimeout(function(){ try{ _it_push(key); }catch(e){ _it_err('envoi', e); } }, 1500); }
+  /* CHARGEMENT : l'index (identifiant + empreinte, ~25 Ko) la première fois et une fois par semaine, sinon seulement
+     les lignes modifiées depuis la dernière visite */
+  function _it_pull(key, cb, leger){
+    cb=cb||function(){};
+    if(!_it_managed(key) || !_it_can()) return cb();
+    var mode=_it_mode(); if(mode==='off') return cb();
+    var S=_it_S(key), index=(!S.init) || (mode==='on' && !S.on) || (!leger && (Date.now()-(+S.full||0))>FULL_EVERY);   /* l'index hebdomadaire se fait au démarrage, juste après la synchro générale (certificats de suppression à jour) */
+    if(index){
+      db.from(IT_T).select('id,h,updated_at').eq('k',key).then(function(r){
+        if(!r || r.error){ _it_err('index', (r&&r.error)||'réponse vide'); return cb(); }
+        _itOk=true; var idx=r.data||[]; try{ _traffic('l','',JSON.stringify(idx).length); }catch(e){}
+        var S=_it_S(key), L=_it_arr(key)||[], hl={}, need=[], cloud={};
+        L.forEach(function(x){ if(x && x.id!==undefined && x.id!==null && hl[''+x.id]===undefined) hl[''+x.id]=_it_h(x); });
+        idx.forEach(function(x){ var id=''+x.id, ts=_it_ts(x.updated_at), e=S.m[id]; cloud[id]=1; if(ts>S.wm) S.wm=ts;
+          if(hl[id]!==undefined && x.h && hl[id]===x.h){ S.m[id]=[ts,x.h]; return; }          /* identique : rien à télécharger */
+          if(e && e[0]===ts && !(mode==='on' && e[2]!==undefined && e[2]===hl[id])) return;    /* version du cloud déjà connue — sauf fiche du poste restée en retard pendant le mode « en double » : on la reprend */
+          need.push(id); });
+        Object.keys(S.m).forEach(function(id){ if(!cloud[id]) delete S.m[id]; });               /* ligne absente du cloud : l'envoi tranchera (certificat → rien, sinon recréée) */
+        S.init=1; S.full=Date.now(); if(mode==='on') S.on=1; _it_Ssave(key,S);
+        _trace('fiches : index '+key+' — '+idx.length+' dans le cloud, '+L.length+' ici, '+need.length+' à comparer');
+        if(mode!=='on'){ return cb(); }                                                        /* en double : on ne télécharge pas, on ne touche pas à la pige */
+        _it_fetch(key, need, function(){
+          /* mode fiche par fiche : sauvegarde hebdomadaire du bloc complet par le poste de Laurent (repli possible à tout moment) */
+          try{ if(ME && ME.role==='admin' && S.on && idx.length){ var lv=window.localStorage.getItem(key); if(lv){ _trace('fiches : sauvegarde hebdomadaire du bloc '+key); _doUpsert(key, lv); } } }catch(e){}
+          cb(); });
+      }, function(e){ _it_err('index', e||'réseau'); cb(); });
+      return;
+    }
+    if(mode!=='on') return cb();
+    var depuis=''; try{ var t=Date.parse(S.wm); if(!isNaN(t)) depuis=new Date(t-90000).toISOString(); }catch(e){}
+    var q=db.from(IT_T).select('id,v,h,updated_at').eq('k',key); if(depuis) q=q.gt('updated_at', depuis);
+    q.order('updated_at',{ascending:true}).limit(1000).then(function(r){
+      if(!r || r.error){ _it_err('lecture', (r&&r.error)||'réponse vide'); return cb(); }
+      _itOk=true; try{ (r.data||[]).forEach(function(x){ _traffic('p', key, _len(x.v)); }); }catch(e){}
+      try{ _it_recv(key, r.data||[], 'chargement'); }catch(e){ _it_err('lecture', e); }
+      cb();
+    }, function(e){ _it_err('lecture', e||'réseau'); cb(); });
+  }
+  function _it_direct(){
+    if(_itChan || !_it_can()) return;
+    try{
+      _itChan=db.channel('ach_app_items').on('postgres_changes', {event:'*', schema:'public', table:IT_T}, function(p){
+        try{ var row=p && p.new; if(!row || !row.k || !_it_managed(row.k)) return; _itSt.rt++; _itSt.rtLe=new Date().toISOString();
+          if(p.eventType==='DELETE' || !row.v) return;                   /* les suppressions suivent les certificats (ach_tomb_v2), comme avant */
+          try{ _traffic('r', row.k, _len(row.v)); }catch(e){}
+          _it_recv(row.k, [row], 'en direct');
+        }catch(e){ _it_err('direct', e); }
+      }).subscribe(function(st){ if(st==='SUBSCRIBED'){ _trace('fiches : réception en direct active'); if(_itSub) _it_rattrape('reconnexion'); _itSub=1; } });
+    }catch(e){ _it_err('direct', e); }
+  }
+  /* RATTRAPAGE en cours de session : la réception en direct ne rejoue pas ce qui est passé pendant une coupure (veille de
+     l'ordinateur, wifi). Au retour de la connexion, au retour sur l'onglet et toutes les 10 minutes, on redemande les seules
+     fiches modifiées depuis la dernière reçue (réponse vide la plupart du temps) et on renvoie ce qui n'est pas parti. */
+  var _itSub=0, _itRatLe=0, _itTimers=0;
+  function _it_rattrape(raison){
+    try{ if(!_it_can() || _itOk!==true || isPublicScreen()) return; var mode=_it_mode(); if(mode==='off') return;
+      var n=Date.now(); if(n-_itRatLe<30000) return; _itRatLe=n;
+      IT_KEYS.forEach(function(key){ _it_pull(key, function(){ try{ _it_push(key); }catch(e){ _it_err('rattrapage', e); } }, true); });
+    }catch(e){ _it_err('rattrapage', e); }
+  }
+  function _it_veille(){ if(_itTimers) return; _itTimers=1;
+    try{ window.addEventListener('online', function(){ setTimeout(function(){ _it_rattrape('connexion'); }, 1500); }); }catch(e){}
+    try{ document.addEventListener('visibilitychange', function(){ if(!document.hidden && Date.now()-_itRatLe>120000) _it_rattrape('retour'); }); }catch(e){}
+    try{ setInterval(function(){ if(!document.hidden) _it_rattrape('minuterie'); }, 600000); }catch(e){}
+  }
+  function _it_boot(){
+    _itBoot=1; if(isPublicScreen()) return;                             /* l'écran de l'agence n'a pas la pige : rien à faire */
+    try{ IT_KEYS.forEach(function(key){ if(_it_mode()==='off') return; _itRatLe=Date.now(); _it_pull(key, function(){ try{ if(_itOk){ _it_direct(); _it_veille(); _it_push(key); if(!_itDiagT) _itDiagT=setTimeout(function(){ try{ _it_rapport(); }catch(e){} }, window.ACH_IT_DIAG_MS||90000); } }catch(e){ _it_err('démarrage', e); } }); }); }catch(e){ _it_err('démarrage', e); }
+  }
+  var _itDiagT=0, _itBoot=0;
+  /* le réglage vient de changer (reçu du cloud, ou modifié par Laurent) */
+  function _it_cfg(){ try{ if(_itOk===false && db && ME){ _itOk=null; }
+      /* retour à l'ancien mode : au prochain passage en fiche par fiche, on recomparera tout (index complet) */
+      if(_it_mode()==='off'){ IT_KEYS.forEach(function(k){ var S=_it_S(k); if(S.on||S.init){ S.on=0; S.init=0; _it_Ssave(k,S); } }); }
+      if(_itBoot) setTimeout(_it_boot, 300); }catch(e){} }   /* avant le démarrage de la synchro : rien à lancer, le démarrage lira le réglage */
+  /* ── contrôle et réglage (compte de Laurent) ── */
+  window.achItemsEtat=function(){ var o={ok:_itOk, mode:_it_mode(), stat:_itSt, blocs:{}}; IT_KEYS.forEach(function(k){ var S=_it_S(k), L=_it_arr(k)||[]; o.blocs[k]={ici:L.length, temoins:Object.keys(S.m).length, init:S.init, on:S.on||0, wm:S.wm}; }); return o; };
+  window.achItemsVerif=function(key){ key=key||IT_KEYS[0];
+    return new Promise(function(res){ if(!_it_can()){ res({err:'non connecté ou table absente'}); return; }
+      db.from(IT_T).select('id,h,updated_at').eq('k',key).then(function(r){ if(!r||r.error){ _it_err('contrôle', (r&&r.error)||''); res({err:''+((r&&r.error&&r.error.message)||'lecture impossible')}); return; }
+        var L=_it_arr(key)||[], hl={}, cloud={}, o={le:new Date().toISOString(), mode:_it_mode(), ici:0, cloud:(r.data||[]).length, identiques:0, differentes:[], seulementIci:[], seulementCloud:[]};
+        L.forEach(function(x){ if(x && x.id!=null && hl[''+x.id]===undefined){ hl[''+x.id]=_it_h(x); o.ici++; } });
+        (r.data||[]).forEach(function(x){ var id=''+x.id; cloud[id]=1; if(hl[id]===undefined) o.seulementCloud.push(id); else if(hl[id]===x.h) o.identiques++; else o.differentes.push(id); });
+        Object.keys(hl).forEach(function(id){ if(!cloud[id]) o.seulementIci.push(id); });
+        o.ecarts=o.differentes.length+o.seulementIci.length+o.seulementCloud.length;
+        try{ origSetItem('achille_items_diag', JSON.stringify({le:o.le, mode:o.mode, ici:o.ici, cloud:o.cloud, identiques:o.identiques, ecarts:o.ecarts})); }catch(e){}
+        /* détail (au plus 20 fiches) : laquelle des deux versions est la plus récente — « poste en retard » = l'ancienne synchro n'a pas encore mis ce poste à jour */
+        var dif=o.differentes.slice(0,20); if(!dif.length){ res(o); return; }
+        db.from(IT_T).select('id,v').eq('k',key).in('id',dif).then(function(r2){ try{ o.detail=(r2&&r2.data||[]).map(function(x){ var i=_it_pos(L,''+x.id), a=i>=0?_ach_ts(L[i]):'', b=_ach_ts(x.v);
+              return {id:''+x.id, ici:a, cloud:b, sens:(a>b?'poste en avance (envoi en attente)':(a<b?'poste en retard':'même date, contenu différent'))}; }); }catch(e){} res(o); }, function(){ res(o); });
+      }, function(e){ res({err:'réseau'}); }); }); };
+  /* COMPTE RENDU DE CHAQUE POSTE : une fois par session (1 min 30 après l'ouverture), le poste compare sa pige à la table et
+     dépose le résultat (des nombres, aucune donnée de fiche) dans une petite ligne à son nom. Laurent voit ainsi d'un coup
+     d'œil si TOUS les postes sont d'accord avant de passer en « fiche par fiche » — puis que tout reste d'accord ensuite. */
+  var IT_DIAG='ach_diag_v1', _itDiagFait=0;
+  function _it_rapport(){
+    if(_itDiagFait || !_it_can() || _itOk!==true || isPublicScreen() || _it_mode()==='off') return; _itDiagFait=1;
+    window.achItemsVerif().then(function(o){ try{
+      if(!o || o.err) return; var ver=''; try{ var el=document.querySelector('.logo-ver'); ver=el?(''+el.textContent).trim():''; }catch(e){}
+      var sens={retard:0, avance:0, autre:0}; (o.detail||[]).forEach(function(d){ if(/retard/.test(d.sens)) sens.retard++; else if(/avance/.test(d.sens)) sens.avance++; else sens.autre++; });
+      var v={qui:(ME.initials||''), le:o.le, version:ver, mode:o.mode, ici:o.ici, lignes:(_it_arr(IT_KEYS[0])||[]).length, cloud:o.cloud, identiques:o.identiques, ecarts:o.ecarts,
+             differentes:o.differentes.length, seulementIci:o.seulementIci.length, seulementCloud:o.seulementCloud.length, sens:sens,
+             envois:_itSt.envois, recus:_itSt.recus, direct:_itSt.rt, conflits:_itSt.conflits, erreurs:_itSt.erreurs, refus:(_itSt.refus||0), err:_itSt.err};
+      var id=(ME.initials||ME.id||'?')+'', h=_it_h(v), base=''; try{ base=window.localStorage.getItem('achille_items_diagts')||''; }catch(e){}
+      (function envoi(b, encore){ db.rpc('app_items_push', {p_k:IT_DIAG, p_rows:[{id:id, v:v, h:h, base:b}], p_del:[]}).then(function(r){ try{ var d=r&&r.data; if(!d) return;
+          if(d.ok && d.ok[0]){ origSetItem('achille_items_diagts', _it_ts(d.ok[0].ts)); _trace('fiches : compte rendu du poste déposé ('+o.ecarts+' écart'+(o.ecarts>1?'s':'')+')'); }
+          else if(encore && d.conflicts && d.conflicts[0]) envoi(_it_ts(d.conflicts[0].ts), 0);
+          else if(encore && d.missing && d.missing[0]) envoi('', 0);
+        }catch(e){} }, function(){}); })(base, 1);
+    }catch(e){} }, function(){});
+  }
+  /* lecture des comptes rendus de tous les postes (Laurent) */
+  window.achItemsPostes=function(){ return new Promise(function(res){ if(!_it_can()){ res([]); return; }
+    db.from(IT_T).select('id,v,updated_at').eq('k',IT_DIAG).then(function(r){ res(((r&&r.data)||[]).map(function(x){ return x.v; })); }, function(){ res([]); }); }); };
+  window.achItemsMode=function(m){ if(!ME || ME.role!=='admin') return false; if(m!=='on' && m!=='off' && m!=='shadow') return false;
+    var o={}; try{ o=JSON.parse(window.localStorage.getItem(IT_CFG)||'{}')||{}; }catch(e){ o={}; } o.pige=m; o.maj=new Date().toISOString(); o.par=ME.initials||'';
+    window.localStorage.setItem(IT_CFG, JSON.stringify(o)); _trace('fiches : mode « '+m+' » choisi'); _it_cfg(); return true; };
+  window.achItemsSync=function(){ _itRatLe=0; _it_boot(); };
+
   function pushKey(key, _essai){
     if(_ach_adminOwned(key)){ _dirtyDel(key); _trace('non envoyé (bloc de l’administrateur) '+key); return; }
     if(!db||!ME||!isSync(key)){ if(isSync(key)) _dirtyAdd(key); _trace('abandon '+key+' (connexion:'+(!!db)+' identité:'+(!!ME)+')'); return; }
@@ -13952,6 +14229,8 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
       clearTimeout(pushTimers[TOMB_KEY]); pushTimers[TOMB_KEY]=null;
       try{ pushKey(TOMB_KEY); }catch(e){window.achErr&&achErr(e)}
     }
+    if(_it_managed(key)){ var _im='off'; try{ _im=_it_mode(); if(_im!=='off') _it_push(key); }catch(e){ try{ _it_err('envoi', e); }catch(e2){} }
+      if(_im==='on' && _itOk!==false){ _dirtyDel(key); return; } }   /* v12.52 : fiche par fiche — le bloc entier ne part plus */
     var essai=_essai||0;
     var localVal = window.localStorage.getItem(key);
     _trace('envoi '+key+(essai?' (essai '+(essai+1)+')':''));
@@ -13967,7 +14246,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
           if(key===TOMB_KEY){ merged=JSON.stringify(_ach_mergeTomb(_ach_parse(localVal)||{}, _ach_parse(cloudVal)||{})); }
           else if(cloudVal!==undefined && cloudVal!==null){ merged=_ach_mergeVal(localVal, cloudVal, _ach_tombAll()[key], 'local'); }
           else { merged=localVal; }
-          if(merged!==localVal){ try{ origSetItem(key, merged); }catch(e2){} _ach_scheduleSoftRefresh(); }
+          if(merged!==localVal){ try{ origSetItem(key, merged); }catch(e2){} _ach_scheduleSoftRefresh(); try{ _it_kick(key); }catch(e3){} }
         }catch(e){
           /* FILET DE SECOURS : si la fusion plante, on envoie quand même la valeur locale */
           _lastSyncErr='fusion ('+key+') : '+((e&&e.message)||e);
@@ -14406,9 +14685,10 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     try{ _ach_cureV606(); }catch(e){ _trace('cure v606 erreur : '+((e&&e.message)||e)); }
     setupRoleArea();
     startRealtime();
+    try{ _it_boot(); }catch(e){}   /* v12.52 */
     var ov=document.getElementById('ach-login-overlay'); if(ov) ov.classList.add('ach-hidden');
     var ub=document.getElementById('ach-userbar'); if(ub) ub.style.display='none';
-    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v12.51';
+    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v12.52';
     flag('Synchronis\u00e9');
     // fin de l'init : on autorise la journalisation des actions
     setTimeout(function(){ installInterceptor._init=false; }, 1500);
