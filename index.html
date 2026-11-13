@@ -591,15 +591,15 @@ body:not(.rs-is-gerant) .rs-gerant{display:none;}
 .isw-co{display:flex;align-items:center;gap:8px 20px;flex-wrap:wrap;margin-top:8px;font-size:14.5px;}
 .isw-tel{display:inline-flex;align-items:center;gap:6px;min-width:0;} .isw-tel a{color:var(--noir);text-decoration:none;font-weight:500;overflow-wrap:anywhere;} .isw-tel a:hover{text-decoration:underline;}
 .isw-ic{font-size:15px;text-decoration:none!important;} .isw-pref{font-size:12.5px;color:var(--gris);} .isw-pref b{color:var(--noir);font-weight:500;} .isw-gristxt{color:var(--gris-2);font-size:13px;}
-.isw-crit{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:4px 18px;margin-top:10px;padding-top:9px;border-top:1px solid #f1ece4;}
-.isw-l{display:flex;gap:8px;justify-content:space-between;align-items:baseline;font-size:12.5px;min-width:0;border-bottom:1px dotted #ebe5da;padding-bottom:2px;}
+.isw-crit{column-width:210px;column-gap:18px;margin-top:10px;padding-top:9px;border-top:1px solid #f1ece4;}   /* v12.55 : remplissage colonne par colonne */
+.isw-l{display:flex;gap:8px;justify-content:space-between;align-items:baseline;font-size:12.5px;min-width:0;border-bottom:1px dotted #ebe5da;padding-bottom:2px;margin-bottom:4px;break-inside:avoid;-webkit-column-break-inside:avoid;page-break-inside:avoid;}
 .isw-l span{color:var(--gris-2);flex:none;} .isw-l b{font-weight:500;color:var(--noir);text-align:right;overflow-wrap:anywhere;}
 .isw-note{margin-top:9px;font-size:13.5px;font-style:italic;color:var(--noir);line-height:1.45;}
 .isw-suivi{margin-top:8px;font-size:12.5px;color:var(--gris);background:#f6f2ea;border-radius:8px;padding:6px 10px;line-height:1.45;} .isw-suivi b{color:var(--noir);font-weight:500;}
 .isw-noteform{margin-top:9px;} .isw-noteform textarea{width:100%;box-sizing:border-box;border:1px solid var(--border);border-radius:8px;padding:8px 10px;font-family:'Jost',sans-serif;font-size:13.5px;resize:vertical;} .isw-noteform div{display:flex;gap:8px;margin-top:6px;}
 .isw-preuve{margin-top:9px;font-size:12.5px;line-height:1.5;color:var(--noir);background:#eef1e6;border-radius:8px;padding:8px 12px;} .isw-preuve span{color:var(--gris);}
 .isw-acts{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:11px;}
-@media (max-width:700px){ .isw-dl{margin-left:0;width:100%;} .isw-btn.isw-suppr{margin-left:0;} .isw-crit{grid-template-columns:1fr;} .isw-bar .isw-btn{flex:1;justify-content:center;} }
+@media (max-width:700px){ .isw-dl{margin-left:0;width:100%;} .isw-btn.isw-suppr{margin-left:0;} .isw-crit{column-width:auto;column-count:1;} .isw-bar .isw-btn{flex:1;justify-content:center;} }
 .ct-bar{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:14px;}
 .ct-in{flex:1;min-width:240px;font-family:'Jost',sans-serif;font-size:15px;padding:11px 14px;border:1px solid var(--border);border-radius:10px;background:#fff;color:var(--noir);}
 .ct-in:focus{outline:none;border-color:var(--terra);}
@@ -1763,7 +1763,6 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     <div class="nav-item" onclick="navTo('planning',this)"><span class="nav-icon">📅</span><span class="nav-item-label">Planning</span><span class="nav-badge" id="badge-tasks" style="display:none;"></span><span class="nav-badge-rap" id="badge-rappels" style="display:none;"></span></div>
     <div class="nav-item" onclick="navTo('postits',this)"><span class="nav-icon">📌</span><span class="nav-item-label">Post-its</span></div>
     <div class="nav-item" onclick="pigeGoHome(this)"><span class="nav-icon">🔎</span><span class="nav-item-label">Pige</span><span class="nav-badge-rap" id="badge-pige" style="display:none;"></span></div>
-    <div class="nav-item" onclick="navTo('immoswipe',this)"><span class="nav-icon">📲</span><span class="nav-item-label">ImmoSwipe</span><span class="nav-badge-rap" id="badge-immoswipe" style="display:none;"></span></div><!-- v12.50 : recherches reçues du site -->
     <div class="nav-item" onclick="navTo('communication',this)"><span class="nav-icon">📣</span><span class="nav-item-label">Communication</span></div>
     <div class="nav-item" onclick="navTo('sectorisation',this)"><span class="nav-icon">🗺</span><span class="nav-item-label">Sectorisation</span></div>
     <div class="nav-item" onclick="navTo('honoraires',this)"><span class="nav-icon">€</span><span class="nav-item-label">Honoraires</span></div>
@@ -1776,10 +1775,11 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     <div class="nav-item" onclick="navTo('visites',this)"><span class="nav-icon">🏠</span><span class="nav-item-label">Visites</span></div>
     <div class="nav-item" onclick="navTo('estimation',this)"><span class="nav-icon">🏛</span><span class="nav-item-label">Estimations</span></div>
     <div class="nav-item" onclick="navTo('documents',this)"><span class="nav-icon">◧</span><span class="nav-item-label">Documents</span></div>
-    <div class="nav-item" onclick="navTo('equityliving',this)"><span class="nav-icon">🤝</span><span class="nav-item-label">Equity Living</span></div><!-- v9.19 -->
+    <div class="nav-item" onclick="navTo('immoswipe',this)"><span class="nav-icon">📲</span><span class="nav-item-label">ImmoSwipe</span><span class="nav-badge-rap" id="badge-immoswipe" style="display:none;"></span></div><!-- v12.50 : recherches reçues du site · v12.55 : dans « Gestion », avec la pastille des nouvelles fiches -->
     <div class="nav-item" onclick="navTo('finances',this)"><span class="nav-icon">💶</span><span class="nav-item-label">Finances</span></div>
     <div class="nav-item" onclick="navTo('encours',this)"><span class="nav-icon">◈</span><span class="nav-item-label">Ventes / En cours</span></div>
     <div class="nav-item" onclick="navTo('mandats',this)"><span class="nav-icon">📜</span><span class="nav-item-label">Mandats</span><span class="nav-badge" id="badge-mandats" style="display:none;"></span></div>
+    <div class="nav-item" onclick="navTo('equityliving',this)"><span class="nav-icon">🤝</span><span class="nav-item-label">Equity Living</span></div><!-- v9.19 -->
     <div class="nav-item" onclick="navTo('contacts',this)"><span class="nav-icon">📇</span><span class="nav-item-label">Contacts</span></div><!-- v12.28 -->
   </div>
   <div class="nav-section" id="nav-admin-section">
@@ -1805,7 +1805,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     </div>
   </div>
   </div>
-  <div class="logo-ver app-ver">Achille App — v12.54</div>
+  <div class="logo-ver app-ver">Achille App — v12.55</div>
 </aside>
 <div id="mob-bk" onclick="mobNav(false)"></div>
 <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Réduire la barre latérale">‹</button>
@@ -14688,7 +14688,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     try{ _it_boot(); }catch(e){}   /* v12.52 */
     var ov=document.getElementById('ach-login-overlay'); if(ov) ov.classList.add('ach-hidden');
     var ub=document.getElementById('ach-userbar'); if(ub) ub.style.display='none';
-    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v12.54';
+    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v12.55';
     flag('Synchronis\u00e9');
     // fin de l'init : on autorise la journalisation des actions
     setTimeout(function(){ installInterceptor._init=false; }, 1500);
@@ -30480,12 +30480,12 @@ details.cx-more{margin-top:8px;} details.cx-more>summary{font-size:11.5px;color:
         try{ if(window.achLog) achLog('suppression','ImmoSwipe','recherche supprimée'+(g.r.prenom?' — '+g.r.prenom:'')); }catch(e){} }, function(){ if(window.toast) toast('✗ Suppression impossible — réessayez'); }); }catch(e){ window.achErr&&achErr(e); }
   };
 
-  if(window.navTo){ var _ni=window.navTo; window.navTo=function(id,el){ var r=_ni.apply(this,arguments); if(id==='immoswipe'){ try{ charger(); }catch(e){ window.achErr&&achErr(e); } } return r; }; }
+  if(window.navTo){ var _ni=window.navTo; window.navTo=function(id,el){ var r=_ni.apply(this,arguments); if(id==='immoswipe'){ try{ charger(); }catch(e){ window.achErr&&achErr(e); } } else { try{ if(Date.now()-_dernierCompte>30000) compter(); }catch(e){} }   /* v12.55 */ return r; }; }
   if(window.setRole){ var _sri=window.setRole; window.setRole=function(){ var x=_sri.apply(this,arguments); setTimeout(function(){ try{ _n=null; ROWS=[]; E.ok=false; compter(); var p=document.getElementById('page-immoswipe'); if(p&&p.classList.contains('active')) charger(); }catch(e){} },120); return x; }; }
   /* la pastille : dès que la base est disponible, puis toutes les 5 minutes tant que l'appli est affichée, et au retour sur l'onglet */
   (function attendre(n){ if(db()&&window.ACH_USER){ compter(); return; } if(n<60) setTimeout(function(){ attendre(n+1); },2500); })(0);
   setInterval(function(){ try{ if(!document.hidden) compter(); }catch(e){} }, 300000);
-  document.addEventListener('visibilitychange', function(){ try{ if(!document.hidden && Date.now()-_dernierCompte>60000) compter(); }catch(e){} });
+  document.addEventListener('visibilitychange', function(){ try{ if(!document.hidden && Date.now()-_dernierCompte>15000) compter(); }catch(e){} });
 })();
 </script>
 
