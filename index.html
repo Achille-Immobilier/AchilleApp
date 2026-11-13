@@ -1805,7 +1805,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     </div>
   </div>
   </div>
-  <div class="logo-ver app-ver">Achille App — v12.52</div>
+  <div class="logo-ver app-ver">Achille App — v12.53</div>
 </aside>
 <div id="mob-bk" onclick="mobNav(false)"></div>
 <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Réduire la barre latérale">‹</button>
@@ -14688,7 +14688,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     try{ _it_boot(); }catch(e){}   /* v12.52 */
     var ov=document.getElementById('ach-login-overlay'); if(ov) ov.classList.add('ach-hidden');
     var ub=document.getElementById('ach-userbar'); if(ub) ub.style.display='none';
-    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v12.52';
+    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v12.53';
     flag('Synchronis\u00e9');
     // fin de l'init : on autorise la journalisation des actions
     setTimeout(function(){ installInterceptor._init=false; }, 1500);
@@ -27923,6 +27923,30 @@ a.pp-btn{text-decoration:none;display:inline-block;}
 .st-btn{border:1px solid var(--border);background:#fff;border-radius:8px;font-size:12.5px;padding:7px 12px;cursor:pointer;font-family:'Jost',sans-serif;}
 .st-btn.st-main{background:var(--terra);color:#fff;border-color:var(--terra);font-weight:600;}
 .st-btn:disabled{opacity:.5;cursor:wait;}
+/* v12.53 : refaire la vidéo */
+.st-vidhint{font-size:11.5px;line-height:1.45;color:#5d4a2a;background:#f6efe2;border:1px solid #e6d9c2;border-radius:8px;padding:7px 10px;margin-top:6px;}
+#stv-ov{position:fixed;inset:0;z-index:99992;background:rgba(26,26,24,.55);display:flex;align-items:center;justify-content:center;padding:14px;}
+.stv-win{width:min(760px,100%);}
+.stv-body{padding:14px 16px;overflow:auto;display:flex;flex-direction:column;gap:12px;font-size:12.5px;color:var(--gris);}
+.stv-info{line-height:1.5;}
+.stv-th{display:flex;gap:10px;flex-wrap:wrap;}
+.stv-t{display:flex;flex-direction:column;align-items:center;gap:4px;}
+.stv-ti{position:relative;border-radius:6px;overflow:hidden;border:1px solid var(--border);}
+.stv-ti .n{position:absolute;left:4px;top:3px;font-size:10px;font-weight:700;background:rgba(26,26,24,.65);color:#fff;border-radius:9px;padding:1px 6px;}
+.stv-dl{display:flex;align-items:center;gap:3px;font-size:11px;color:var(--gris-2);}
+.stv-d{width:56px;border:1px solid var(--border);border-radius:6px;padding:3px 5px;font-size:12px;font-family:'Jost',sans-serif;text-align:center;}
+.stv-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.stv-row input{width:66px;border:1px solid var(--border);border-radius:6px;padding:4px 6px;font-size:12.5px;font-family:'Jost',sans-serif;text-align:center;}
+.stv-row b{color:var(--terra);margin-left:6px;}
+.stv-prog{align-items:center;gap:10px;}
+.stv-bar{flex:1;height:8px;border-radius:5px;background:#ece5d8;overflow:hidden;}
+.stv-bar i{display:block;height:100%;width:0;background:var(--terra);transition:width .2s linear;}
+.stv-res{gap:14px;align-items:flex-start;flex-wrap:wrap;border-top:1px solid var(--border);padding-top:12px;}
+.stv-res video{width:150px;border-radius:8px;background:#000;display:block;}
+.stv-ra{flex:1;min-width:220px;display:flex;flex-direction:column;gap:8px;align-items:flex-start;line-height:1.5;}
+.stv-ra a.st-btn{text-decoration:none;display:inline-block;}
+.stv-warn{font-size:11.5px;color:#8a5a1e;background:#fbf3e4;border-radius:8px;padding:6px 9px;}
+.stv-note{font-size:11px;color:var(--gris-2);max-width:440px;line-height:1.4;}
 .st-mod{font-size:11px;color:#8a5a1e;font-style:italic;}
 @media (max-width:880px){ .st-body{grid-template-columns:1fr;} }
 /* v12.15 : l'aperçu reste visible pendant qu'on descend dans les réglages (photos, banque d'images) */
@@ -28102,10 +28126,10 @@ a.pp-btn{text-decoration:none;display:inline-block;}
     /* v12.15 : PHOTO PLEINE PAGE — une photo (agence, banque d'images, appareil ou lien) sur toute la slide, voile + titre */
     photo:{ nom:'Photo pleine page', champs:[['photo','Photo','photo'],['kicker','Surtitre','t'],['titre','Titre','ta'],['sous','Sous-titre','ta'],['fx','Effet sur la photo','fxph'],['voile','Voile sur la photo','voile'],['fmt','Format','fmt']],
       def:{bg:'noir',logo:'center',photo:'photo-interieur.jpg',voile:'moyen',wm:'non'},
-      html:function(p){ p.bg='noir'; var W=p.fmt==='sq'?1200:1080, H=p.fmt==='story'?1920:(p.fmt==='sq'?1200:1350), op={leger:.42,moyen:.66,fort:.84}[p.voile]||.66;
+      html:function(p){ p.bg='noir'; var W=p.fmt==='sq'?1200:1080, H=p.fmt==='story'?1920:(p.fmt==='sq'?1200:1350), op=(p.voile==='aucun')?0:({leger:.42,moyen:.66,fort:.84}[p.voile]||.66);   /* v12.53 : « aucun » = image telle quelle */
         var _fx=(FX[p.fx]&&p.fx!=='deg')?FX[p.fx][1]:'';   /* v12.24 */
         p.__under=(p.photo?'<img class="st-abs" src="'+photoUrl(p.photo)+'" style="left:0;top:0;width:'+W+'px;height:'+H+'px;object-fit:cover;'+phStyle(p)+(_fx?';filter:'+_fx:'')+'">':'')
-          +'<div class="st-abs" style="inset:0;background:linear-gradient(180deg,rgba(26,26,24,'+(op*.6).toFixed(2)+') 0%,rgba(26,26,24,'+(op*.12).toFixed(2)+') 36%,rgba(26,26,24,'+op+') 100%)"></div>';
+          +(op?'<div class="st-abs" style="inset:0;background:linear-gradient(180deg,rgba(26,26,24,'+(op*.6).toFixed(2)+') 0%,rgba(26,26,24,'+(op*.12).toFixed(2)+') 36%,rgba(26,26,24,'+op+') 100%)"></div>':'');
         return wrap(p, Z(Math.round(H*.45), p.fmt==='story'?300:160, 80, 'flex-end', 'center',
           (p.kicker?'<div class="st-lbl" style="color:#e2d8cb;'+fs(24)+'">'+esc(p.kicker)+'</div>':'')
           +'<div class="st-k" style="'+fs(100)+';'+mt(p.kicker?24:0)+'">'+kt(p.titre||'')+'</div>'
@@ -28155,7 +28179,7 @@ a.pp-btn{text-decoration:none;display:inline-block;}
     return S;
   }
   window.stAutoSlides=autoSlides;
-  window.stSlidesAny=function(p){ var o=stSlides(p); if(o&&o.slides&&o.slides.length) return o; return {slides:autoSlides(p), mod:false, auto:true}; };
+  window.stSlidesAny=function(p){ var o=stSlides(p); if(o&&o.slides&&o.slides.length) return o; var v=vidSlides(p); if(v) return {slides:v, mod:false, auto:true, vid:true}; return {slides:autoSlides(p), mod:false, auto:true}; };   /* v12.53 */
   window.stLiveThumbs=function(p, w){ var o=stSlidesAny(p); if(!o) return ''; return o.slides.map(function(sl,i){ return '<div class="pp-live" onclick="stZoom(\''+encodeURIComponent(''+p.id)+'\','+i+')" title="Agrandir">'+scaled(sl,w)+(o.slides.length>1?'<span class="n" style="position:absolute;left:5px;top:4px;font-size:10px;font-weight:700;background:rgba(26,26,24,.65);color:#fff;border-radius:9px;padding:1px 6px">'+(i+1)+'</span>':'')+'</div>'; }).join(''); };
   window.stZoom=function(eid,i){ var p=stFind(decodeURIComponent(eid)); if(!p) return; var o=stSlidesAny(p); var w=document.createElement('div'); w.id='pp-zoom'; w.style.cursor='zoom-out'; var ww=Math.min(window.innerWidth*.92,620); w.innerHTML='<div style="border-radius:8px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.5)">'+scaled(o.slides[i],ww)+'</div>'; w.onclick=function(){ w.remove(); }; document.body.appendChild(w); };
   function stFind(id){ var p=null; try{ p=(window.ppById&&ppById(id))||null; }catch(e){} if(!p){ try{ p=(window.idjById&&idjById(id))||null; }catch(e){} } if(!p){ try{ p=(window.cxPseudo&&cxPseudo(id))||null; }catch(e){} } return p; }
@@ -28185,7 +28209,7 @@ a.pp-btn{text-decoration:none;display:inline-block;}
     var w=document.createElement('div'); w.id='st-ov';
     w.innerHTML='<div class="st-win"><div class="st-head"><h3>🎨 '+esc(p.titre||'')+'</h3><span class="st-mod" id="st-mod"></span><button class="st-btn" onclick="stClose()">✕ Fermer</button></div>'
       +'<div class="st-body"><div class="st-prev"><div class="st-stage" id="st-stage"></div><div class="st-thumbs" id="st-thumbs"></div></div><div class="st-form" id="st-form"></div></div>'
-      +'<div class="st-bar"><button class="st-btn" onclick="stReset()">↺ Revenir à la version de Claude</button><span style="flex:1"></span><button class="st-btn" onclick="stFinal(this)" title="Affiche le PNG exact qui sera publié">👁 Rendu final</button><button class="st-btn" id="st-exp" onclick="stExportCur(this)">⬇ Exporter les PNG</button><button class="st-btn st-main" onclick="stSave()">💾 Enregistrer</button></div></div>';
+      +'<div class="st-bar"><button class="st-btn" onclick="stReset()">↺ Revenir à la version de Claude</button><span style="flex:1"></span><button class="st-btn" onclick="stFinal(this)" title="Affiche le PNG exact qui sera publié">👁 Rendu final</button><button class="st-btn" id="st-exp" onclick="stExportCur(this)">⬇ Exporter les PNG</button>'+(isVid(p)?'<button class="st-btn" onclick="stSaveVideo()" title="Enregistre les écrans puis ouvre le montage de la vidéo">🎬 Enregistrer et refaire la vidéo</button>':'')+'<button class="st-btn st-main" onclick="stSave()">💾 Enregistrer</button></div></div>';
     w.addEventListener('click', function(e){ if(e.target===w) stClose(); });
     document.body.appendChild(w); stPaint();
   };
@@ -28197,7 +28221,9 @@ a.pp-btn{text-decoration:none;display:inline-block;}
     var w=stW(sl,stage); stage.innerHTML=scaled(sl,w);
     document.getElementById('st-thumbs').innerHTML=ST.slides.map(function(s,i){ return '<div class="st-th'+(i===ST.cur?' on':'')+'" onclick="stGo('+i+')">'+scaled(s,72)+'<span class="n">'+(i+1)+'</span></div>'; }).join('');
     var m=document.getElementById('st-mod'); if(m) m.textContent=(lsObj(PRET_K)[''+ST.p.id]||{}).slides?'version modifiée':'';
-    var f='<div style="font-size:12px;color:var(--gris-2)">Slide '+(ST.cur+1)+' / '+ST.slides.length+' · '+esc(T.nom)+'</div>';
+    var _vd=isVid(ST.p);   /* v12.53 */
+    var f='<div style="font-size:12px;color:var(--gris-2)">Slide '+(ST.cur+1)+' / '+ST.slides.length+' · '+esc(T.nom)+'</div>'
+      +(_vd?'<div class="st-vidhint">🎬 Chaque slide est un écran de la vidéo. Remplacez l’image (champ Photo), changez l’ordre, supprimez ou ajoutez un écran, puis 💾 Enregistrer et « 🎬 Refaire la vidéo » dans la fiche du post.</div>':'');
     /* v12.00 : la main sur la structure — ordre, duplication, suppression, ajout d'une slide, changement de gabarit */
     f+='<div class="st-slacts">'
       +'<button class="st-btn" onclick="stMove(-1)" title="Déplacer vers la gauche"'+(ST.cur===0?' disabled':'')+'>◀</button>'
@@ -28213,13 +28239,14 @@ a.pp-btn{text-decoration:none;display:inline-block;}
       +'<div class="st-mf-row"><label>Pied de page</label><select class="st-sel" onchange="stSet(\'foot\',this.value)">'+[['full','Adresse + téléphone + e-mail'],['telmail','Téléphone · e-mail'],['tel','Téléphone'],['mail','E-mail'],['adr','Adresse'],['non','Sans']].map(function(o){ var cur=footKey(sl.foot); return '<option value="'+o[0]+'"'+(cur===o[0]?' selected':'')+'>'+o[1]+'</option>'; }).join('')+'</select></div>'
       +'<div class="st-mf-row"><label>Filigrane</label><select class="st-sel" onchange="stSet(\'wm\',this.value)">'+[['oui','Submark en filigrane'],['non','Sans filigrane']].map(function(o){ var cur=(sl.wm==='oui'||(sl.wm!=='non'&&WM_TPL.indexOf(sl.tpl)>=0))?'oui':'non'; return '<option value="'+o[0]+'"'+(cur===o[0]?' selected':'')+'>'+o[1]+'</option>'; }).join('')+'</select></div>'
       +'<div class="st-mf-row"><label>Couleur du texte</label><select class="st-sel" onchange="stSet(\'fg\',this.value)">'+[['','Automatique (selon le fond)'],['creme','Crème'],['olive','Olive'],['terra','Terra'],['noir','Noir'],['gris','Gris']].map(function(o){ return '<option value="'+o[0]+'"'+((sl.fg||'')===o[0]?' selected':'')+'>'+o[1]+'</option>'; }).join('')+'</select></div>'
+      +(_vd?'<div class="st-mf-row"><label>Durée à l’écran</label><input type="number" min="0.5" max="15" step="0.1" value="'+(+sl.dur>0?+sl.dur:'')+'" placeholder="auto" style="width:74px" oninput="stSet(\'dur\',this.value?+this.value:\'\')"><span class="st-kv" style="min-width:0;white-space:nowrap">s (vide = auto)</span></div>':'')
       +'</div>';
     (T.champs||[]).forEach(function(c){ var k=c[0], lab=c[1], ty=c[2], v=sl[k]==null?'':sl[k];
       if(ty==='bg'){ f+=bgPicker(sl, T); }
       else if(ty==='photo'){ f+=photoField(k,lab,v,sl); }
       else if(ty==='fmt'){ f+='<div><label>'+esc(lab)+'</label><select class="st-sel" onchange="stSet(\''+k+'\',this.value)">'+[['','Portrait 4:5 (Instagram / Facebook)'],['sq','Carré (LinkedIn)'],['story','Story 9:16']].map(function(o){ return '<option value="'+o[0]+'"'+((v||'')===o[0]?' selected':'')+'>'+o[1]+'</option>'; }).join('')+'</select></div>'; }
       else if(ty==='fxph'){ f+='<div><label>'+esc(lab)+'</label><select class="st-sel" onchange="stSet(\''+k+'\',this.value)">'+['net','flou2','flou','nb','sepia'].map(function(o){ return '<option value="'+o+'"'+((v||'net')===o?' selected':'')+'>'+FX[o][0]+'</option>'; }).join('')+'</select></div>'; }
-      else if(ty==='voile'){ f+='<div><label>'+esc(lab)+'</label><select class="st-sel" onchange="stSet(\''+k+'\',this.value)">'+[['leger','Léger'],['moyen','Moyen'],['fort','Fort']].map(function(o){ return '<option value="'+o[0]+'"'+((v||'moyen')===o[0]?' selected':'')+'>'+o[1]+'</option>'; }).join('')+'</select></div>'; }
+      else if(ty==='voile'){ f+='<div><label>'+esc(lab)+'</label><select class="st-sel" onchange="stSet(\''+k+'\',this.value)">'+[['aucun','Aucun (image telle quelle)'],['leger','Léger'],['moyen','Moyen'],['fort','Fort']].map(function(o){ return '<option value="'+o[0]+'"'+((v||'moyen')===o[0]?' selected':'')+'>'+o[1]+'</option>'; }).join('')+'</select></div>'; }
       else if(ty==='ta'){ f+='<div><label>'+esc(lab)+'</label><textarea oninput="stSet(\''+k+'\',this.value)">'+esc(v)+'</textarea></div>'; }
       else { f+='<div><label>'+esc(lab)+'</label><input type="text" value="'+esc(v)+'" oninput="stSet(\''+k+'\',this.value)"></div>'; } });
     document.getElementById('st-form').innerHTML=f;
@@ -28321,7 +28348,8 @@ a.pp-btn{text-decoration:none;display:inline-block;}
   window.stAdd=function(tpl){ var T=TPL[tpl]; if(!T) return; var cur=ST.slides[ST.cur]||{}; var n=Object.assign({},T.def,{tpl:tpl}); if(cur.bg) n.bg=cur.bg; if(T.def.fmt) n.fmt=T.def.fmt; else if(cur.fmt&&cur.fmt!=='story'&&cur.fmt!=='sq') n.fmt=cur.fmt; ST.slides.splice(ST.cur+1,0,n); ST.cur++; stPaint(); if(window.toast) toast('＋ Slide « '+T.nom+' » ajoutée — remplissez ses champs'); };
   window.stTpl=function(tpl){ var T=TPL[tpl]; if(!T) return; var sl=ST.slides[ST.cur]; sl.tpl=tpl; if(T.def.fmt) sl.fmt=T.def.fmt; else delete sl.fmt; if(!sl.bg) sl.bg=T.def.bg; stPaint(); };
   window.stSet=function(k,v){ ST.slides[ST.cur][k]=v; var stage=document.getElementById('st-stage'); if(stage){ stage.innerHTML=scaled(ST.slides[ST.cur],stW(ST.slides[ST.cur],stage)); } if(k==='photo'||k==='bg'||k==='fmt'||k==='fx'||k==='vo') stPaint(); };
-  window.stPhoto=function(inp,k){ var f=inp.files&&inp.files[0]; if(!f) return; var r=new FileReader(); r.onload=function(){ var im=new Image(); im.onload=function(){ var mx=1400, s=Math.min(1,mx/Math.max(im.width,im.height)); var c=document.createElement('canvas'); c.width=Math.round(im.width*s); c.height=Math.round(im.height*s); c.getContext('2d').drawImage(im,0,0,c.width,c.height); var d=c.toDataURL('image/jpeg',.86); stSet(k, d); stCoffre(d).then(function(url){ if(url) stCoffreSwap(d,url); }); }; im.src=r.result; }; r.readAsDataURL(f); };
+  window.stPhoto=function(inp,k){ var f=inp.files&&inp.files[0]; if(!f) return; var r=new FileReader(); r.onload=function(){ var im=new Image(); im.onload=function(){ var mx=1400; try{ if(fmtOf(ST.slides[ST.cur])==='story') mx=1920; }catch(e){}   /* v12.53 : écran vertical en pleine définition */
+      var s=Math.min(1,mx/Math.max(im.width,im.height)); var c=document.createElement('canvas'); c.width=Math.round(im.width*s); c.height=Math.round(im.height*s); c.getContext('2d').drawImage(im,0,0,c.width,c.height); var d=c.toDataURL('image/jpeg',.86); stSet(k, d); stCoffre(d).then(function(url){ if(url) stCoffreSwap(d,url); }); }; im.src=r.result; }; r.readAsDataURL(f); };
   /* ── v12.49 (Laurent 10/11 : « alléger les visuels si ça n'enlève rien au plaisir d'usage ») : LE COFFRE DES VISUELS.
      Une photo importée depuis l'appareil était gardée EN ENTIER dans le bloc partagé des posts (≈ 250 Ko par photo, dans la
      mémoire du navigateur de chaque poste et renvoyée à chaque synchro). Elle est maintenant déposée dans le coffre des visuels
@@ -28365,8 +28393,132 @@ a.pp-btn{text-decoration:none;display:inline-block;}
     }catch(e){ window.achErr&&achErr(e); return Promise.resolve(0); } }
   window.stCoffreMigrate=stCoffreMigrate;
   setTimeout(function w(n){ n=n||0; if(window.ACH_PULLED){ stCoffreMigrate(); return; } if(n<24) setTimeout(function(){ w(n+1); },5000); }, 20000);
-  window.stReset=function(){ var o=lsObj(PRET_K), id=''+ST.p.id; if(o[id]&&o[id].slides){ delete o[id].slides; o[id].maj=new Date().toISOString(); try{ localStorage.setItem(PRET_K,JSON.stringify(o)); }catch(e){} } ST.slides=JSON.parse(JSON.stringify((ST.p.slides&&ST.p.slides.length)?ST.p.slides:autoSlides(ST.p))); ST.cur=0; stPaint(); try{ ppRender(); }catch(e){} if(window.toast) toast('↺ Version de Claude rétablie'); };
+  window.stReset=function(){ var o=lsObj(PRET_K), id=''+ST.p.id; if(o[id]&&o[id].slides){ delete o[id].slides; o[id].maj=new Date().toISOString(); try{ localStorage.setItem(PRET_K,JSON.stringify(o)); }catch(e){} } ST.slides=JSON.parse(JSON.stringify(baseSlides(ST.p))); ST.cur=0; stPaint(); try{ ppRender(); }catch(e){} if(window.toast) toast('↺ Version de Claude rétablie'); };
   window.stSave=function(){ if(!stAdm(ST.p&&ST.p.id)) return; var o=lsObj(PRET_K), id=''+ST.p.id; o[id]=Object.assign({},o[id]||{},{slides:ST.slides, maj:new Date().toISOString(), par:(window.ACH_USER&&ACH_USER.initials)||''}); try{ localStorage.setItem(PRET_K,JSON.stringify(o)); }catch(e){ if(window.toast) toast('✗ Trop lourd pour être enregistré — réduisez la photo'); return; } try{ ppRender(); }catch(e){} var m=document.getElementById('st-mod'); if(m) m.textContent='version modifiée'; if(window.toast) toast('💾 Visuel enregistré — partagé avec l’équipe'); try{ if(window.achLog) achLog('modification','Posts prêts','visuel modifié : '+(ST.p.titre||'')); }catch(e){} };
+  /* ══════════ v12.53 (Laurent 13/11 : « avoir la main sur les images d'une vidéo faite d'images qui se succèdent ») ══════════
+     Les vidéos TikTok de la veille du matin sont un montage de PNG finis (champ visuels) + un MP4 (video_url), sans slides.
+     « Modifier dans le studio » ouvrait deux slides génériques tirées du texte, sans rapport avec la vidéo, et la vidéo n'était
+     pas modifiable. Désormais, SANS rien changer à la façon dont les posts sont fabriqués :
+       · le studio s'ouvre sur LES VRAIES IMAGES de la vidéo (une slide « Photo pleine page » verticale par écran, image telle
+         quelle : ni voile, ni logo, ni pied de page) → remplacer une image, changer l'ordre, supprimer, dupliquer, ajouter un
+         écran (n'importe quel gabarit), régler la durée de chaque écran ;
+       · « 🎬 Refaire la vidéo » remonte la vidéo dans le navigateur à partir de ces écrans (canvas + MediaRecorder), à
+         télécharger et, si on veut, à mettre à la place de la vidéo du post (coffre des visuels, clé ach_pret_v1[id].video). */
+  function isVid(p){ try{ return !!(p && (p.video_url || (lsObj(PRET_K)[''+p.id]||{}).video)); }catch(e){ return !!(p&&p.video_url); } }
+  function vidSlides(p){ if(!p || !p.video_url) return null; var V=Array.isArray(p.visuels)?p.visuels.filter(function(v){ return v&&v.url; }):[]; if(!V.length) return null;
+    return V.map(function(v){ return {tpl:'photo', fmt:'story', photo:v.url, voile:'aucun', logo:'none', foot:'non', wm:'non', kicker:'', titre:'', sous:''}; }); }
+  function baseSlides(p){ return (p && Array.isArray(p.slides) && p.slides.length) ? p.slides : (vidSlides(p)||autoSlides(p)); }
+  var VID_DUR=2.5, VID_MAX=20*1024*1024;   /* le coffre des visuels accepte les MP4 jusqu'à 20 Mo */
+  function vidMime(){ var L=['video/mp4;codecs=avc1.640028','video/mp4;codecs=avc1.42E01E','video/mp4','video/webm;codecs=vp9','video/webm;codecs=vp8','video/webm'];
+    try{ if(window.MediaRecorder && MediaRecorder.isTypeSupported){ for(var i=0;i<L.length;i++){ if(MediaRecorder.isTypeSupported(L[i])) return L[i]; } } }catch(e){} return ''; }
+  function vidImg(url){ return new Promise(function(res,rej){ var im=new Image(); im.onload=function(){ res(im); }; im.onerror=function(){ rej(new Error('image illisible')); }; im.src=url; }); }
+  /* montage : chaque écran est d'abord rendu en PNG (le même rendu que l'export), puis affiché à son tour sur une toile 1080×1920 enregistrée en temps réel */
+  function vidMontage(slides, durs, prog, ctl){
+    var W=1080, H=1920, mime=vidMime(); ctl=ctl||{};
+    if(!mime || !HTMLCanvasElement.prototype.captureStream) return Promise.reject(new Error('ce navigateur ne sait pas enregistrer une vidéo — utilisez Chrome ou Edge sur ordinateur'));
+    var imgs=[];
+    function rendu(i){ if(ctl.stop) return Promise.reject(new Error('arrêté')); if(i>=slides.length) return Promise.resolve();
+      if(prog) prog('Préparation de l’écran '+(i+1)+' / '+slides.length+'…', 0);
+      return renderPng(slides[i]).then(vidImg).then(function(im){ imgs.push(im); return rendu(i+1); }); }
+    return rendu(0).then(function(){ return new Promise(function(res,rej){
+      var c=document.createElement('canvas'); c.width=W; c.height=H; var x=c.getContext('2d');
+      function fond(im){ if(im._bg) return im._bg; try{ var t=document.createElement('canvas'); t.width=t.height=4; var tx=t.getContext('2d'); tx.drawImage(im,0,0,8,8,0,0,4,4); var d=tx.getImageData(1,1,1,1).data; im._bg='rgb('+d[0]+','+d[1]+','+d[2]+')'; }catch(e){ im._bg='#1a1a18'; } return im._bg; }
+      function dessine(im){ var r=Math.min(W/im.width,H/im.height), w=Math.round(im.width*r), h=Math.round(im.height*r);
+        if(w<W||h<H){ x.fillStyle=fond(im); x.fillRect(0,0,W,H); }      /* image non verticale : centrée sur un fond uni de sa couleur */
+        x.drawImage(im, Math.round((W-w)/2), Math.round((H-h)/2), w, h); }
+      var total=0, fins=durs.map(function(d){ total+=d; return total; });
+      dessine(imgs[0]);
+      var stream=c.captureStream(30), rec, chunks=[], tm=0, fini=false;
+      try{ rec=new MediaRecorder(stream,{mimeType:mime, videoBitsPerSecond:5000000}); }catch(e){ rej(e); return; }
+      function coupe(){ try{ stream.getTracks().forEach(function(t){ t.stop(); }); }catch(e){} }
+      rec.ondataavailable=function(e){ if(e.data && e.data.size) chunks.push(e.data); };
+      rec.onerror=function(){ clearInterval(tm); coupe(); rej(new Error('enregistrement interrompu')); };
+      rec.onstop=function(){ coupe(); if(ctl.stop){ rej(new Error('arrêté')); return; } var type=mime.split(';')[0]; res({blob:new Blob(chunks,{type:type}), mime:type, ext:(type==='video/mp4'?'mp4':'webm'), secs:total, n:imgs.length}); };
+      var t0=performance.now();
+      tm=setInterval(function(){ var t=(performance.now()-t0)/1000;
+        if(ctl.stop || t>=total+0.12){ if(!fini){ fini=true; clearInterval(tm); try{ rec.stop(); }catch(e){ rej(e); } } return; }
+        var i=0; while(i<fins.length-1 && t>=fins[i]) i++;
+        dessine(imgs[i]);                                               /* redessiné en continu : l'enregistreur reçoit un flux régulier */
+        if(prog) prog('Montage : écran '+(i+1)+' / '+imgs.length, Math.min(1,t/total)); }, 33);
+      rec.start();
+    }); });
+  }
+  window.stVideoTest=function(slides, durs){ return vidMontage(slides, durs); };   /* diagnostic */
+  /* dépôt de la vidéo refaite dans le coffre des visuels (même endroit que les photos du studio) */
+  function vidDepot(r){ return new Promise(function(res){ try{
+      if(!navigator.onLine || !window.fetch){ res(null); return; }
+      var path='_studio/'+Date.now().toString(36)+'-'+Math.floor(Math.random()*1e9).toString(36)+'.'+r.ext;
+      fetch(STO+'/object/posts-visuels/'+path,{method:'POST',headers:{apikey:SK,Authorization:'Bearer '+SK,'Content-Type':r.mime,'cache-control':'max-age=31536000','x-upsert':'false'},body:r.blob}).then(function(q){
+        if(!q.ok){ res(null); return; }
+        var url=STO+'/object/public/posts-visuels/'+path;
+        return fetch(url,{method:'HEAD',cache:'no-store'}).then(function(g){ res(g.ok?url:null); });
+      }).catch(function(){ res(null); });
+    }catch(e){ res(null); } }); }
+  function vidSec(t){ return (Math.round(t*10)/10).toString().replace('.',','); }
+  window.stVideo=function(eid){
+    var id=decodeURIComponent(eid); if(!stAdm(id)) return; var p=stFind(id); if(!p) return; var o=stSlidesAny(p); if(!o || !o.slides || !o.slides.length) return;
+    var old=document.getElementById('stv-ov'); if(old) old.remove();
+    var S=JSON.parse(JSON.stringify(o.slides)), n=S.length, ctl={stop:false}, R=null, burl='';
+    var nonV=S.some(function(s){ return fmtOf(s)!=='story'; });
+    var w=document.createElement('div'); w.id='stv-ov';
+    w.innerHTML='<div class="st-win stv-win"><div class="st-head"><h3>🎬 Refaire la vidéo — '+esc(p.titre||'')+'</h3><button class="st-btn" id="stv-x">✕ Fermer</button></div>'
+      +'<div class="stv-body"><div class="stv-info">La vidéo est refaite à partir de'+(n>1?'s <b>'+n+' écrans</b>':' l’<b>écran</b>')+' ci-dessous, dans cet ordre'+(o.mod?' (version modifiée dans le studio)':'')+'. Pour remplacer une image, changer l’ordre ou le nombre d’écrans : fermez, « 🎨 Modifier dans le studio », enregistrez, puis revenez ici.'
+        +(nonV?'<br>⚠ Certaines images ne sont pas au format vertical : elles seront centrées sur un fond uni.':'')+'</div>'
+      +'<div class="stv-th">'+S.map(function(s,i){ return '<div class="stv-t"><div class="stv-ti">'+scaled(s,78)+'<span class="n">'+(i+1)+'</span></div><div class="stv-dl"><input type="number" class="stv-d" min="0.5" max="15" step="0.1" value="'+(+s.dur>0?+s.dur:'')+'" placeholder="auto" title="Durée de l’écran '+(i+1)+', en secondes (vide = durée automatique)"><span>s</span></div></div>'; }).join('')+'</div>'
+      +'<div class="stv-row"><label for="stv-def">Durée des écrans « auto »</label><input type="number" id="stv-def" min="0.5" max="15" step="0.1" value="'+VID_DUR+'"><span>secondes</span><b id="stv-tot"></b></div>'
+      +'<div id="stv-prog" class="stv-prog" style="display:none"><div class="stv-bar"><i id="stv-bari"></i></div><span id="stv-msg"></span></div>'
+      +'<div id="stv-res" class="stv-res" style="display:none"></div></div>'
+      +'<div class="st-bar"><span class="stv-note">Le montage se fait dans votre navigateur, en temps réel : gardez cet onglet affiché. Vidéo sans son (ajoutez un son tendance dans TikTok).</span><span style="flex:1"></span><button class="st-btn st-main" id="stv-go">▶ Monter la vidéo</button></div></div>';
+    document.body.appendChild(w);
+    function q(s){ return w.querySelector(s); }
+    function durs(){ var def=+q('#stv-def').value||VID_DUR; def=Math.min(15,Math.max(.5,def)); return [].map.call(w.querySelectorAll('.stv-d'), function(i){ var v=+i.value; return (v>0)?Math.min(15,Math.max(.5,v)):def; }); }
+    function tot(){ var t=durs().reduce(function(a,b){ return a+b; },0); q('#stv-tot').textContent='→ vidéo de '+vidSec(t)+' s'; }
+    function ferme(){ ctl.stop=true; try{ if(burl) URL.revokeObjectURL(burl); }catch(e){} w.remove(); }
+    q('#stv-x').onclick=ferme; w.addEventListener('click', function(e){ if(e.target===w && !q('#stv-go').disabled) ferme(); });
+    w.addEventListener('input', function(e){ if(e.target && (e.target.id==='stv-def' || e.target.classList.contains('stv-d'))){ if(e.target.id==='stv-def') defTouche=true; tot(); } });
+    var defTouche=false; tot();
+    /* durée « auto » proposée = le rythme de la vidéo d'origine (sa durée ÷ son nombre d'images) */
+    try{ var nv=(Array.isArray(p.visuels)?p.visuels.filter(function(v){ return v&&v.url; }).length:0)||n; if(p.video_url){ var pv=document.createElement('video'); pv.preload='metadata'; pv.muted=true;
+        pv.onloadedmetadata=function(){ var d=pv.duration; if(isFinite(d) && d>0 && !defTouche && document.body.contains(w)){ var v=Math.min(15,Math.max(.5,Math.round(d/nv*10)/10)); q('#stv-def').value=v; tot(); } pv.removeAttribute('src'); };
+        pv.src=p.video_url; } }catch(e){}
+    q('#stv-go').onclick=function(){ var go=this, D=durs(); go.disabled=true; go.textContent='⏳ Montage en cours…'; ctl.stop=false; R=null;
+      q('#stv-res').style.display='none'; q('#stv-prog').style.display='flex';
+      vidMontage(S, D, function(msg, f){ q('#stv-msg').textContent=msg; q('#stv-bari').style.width=Math.round((f||0)*100)+'%'; }, ctl).then(function(r){
+        R=r; go.disabled=false; go.textContent='▶ Remonter la vidéo'; q('#stv-prog').style.display='none';
+        try{ if(burl) URL.revokeObjectURL(burl); }catch(e){} burl=URL.createObjectURL(r.blob);
+        var nom=(''+(p.id||'video')).replace(/[^\w.-]+/g,'_')+'-tiktok.'+r.ext, ko=Math.round(r.blob.size/1024);
+        var box=q('#stv-res'); box.style.display='flex';
+        box.innerHTML='<video src="'+burl+'" controls loop playsinline muted></video><div class="stv-ra"><div><b>Vidéo prête</b> — '+r.n+' écran'+(r.n>1?'s':'')+', '+vidSec(r.secs)+' s, '+(ko>=1024?vidSec(ko/1024)+' Mo':ko+' Ko')+', format '+(r.ext==='mp4'?'MP4':'WebM')+'.</div>'
+          +(r.ext!=='mp4'?'<div class="stv-warn">Format WebM : accepté par TikTok sur ordinateur, mais il ne peut pas être enregistré dans le post. Pour un fichier MP4 (publication depuis un téléphone, enregistrement dans le post), faites le montage depuis Chrome ou Edge à jour.</div>':'')
+          +(r.ext==='mp4' && r.blob.size>VID_MAX?'<div class="stv-warn">Vidéo trop lourde pour être enregistrée dans le post (20 Mo au plus) : téléchargez-la, ou raccourcissez les écrans.</div>':'')
+          +'<a class="st-btn st-main" id="stv-dl" href="'+burl+'" download="'+esc(nom)+'">⬇ Télécharger la vidéo</a>'
+          +((r.ext==='mp4' && r.blob.size<=VID_MAX)?'<button class="st-btn" id="stv-save" title="La vidéo refaite s’affichera dans le post, pour toute l’équipe. La vidéo d’origine reste récupérable.">💾 Mettre cette vidéo dans le post</button>':'')+'</div>';
+        if(q('#stv-save')) q('#stv-save').onclick=function(){ var b=this; b.disabled=true; b.textContent='⏳ Dépôt…';
+          vidDepot(R).then(function(url){ if(!url){ b.disabled=false; b.textContent='💾 Mettre cette vidéo dans le post'; if(window.toast) toast('✗ Dépôt impossible pour le moment — téléchargez la vidéo, elle est prête'); return; }
+            var all=lsObj(PRET_K), now=new Date().toISOString(); all[id]=Object.assign({},all[id]||{},{video:url, video_s:R.secs, video_le:now, maj:now, par:(window.ACH_USER&&ACH_USER.initials)||''});
+            try{ localStorage.setItem(PRET_K, JSON.stringify(all)); }catch(e){ if(window.toast) toast('✗ Enregistrement impossible'); b.disabled=false; return; }
+            b.textContent='✓ Vidéo du post remplacée'; if(window.toast) toast('🎬 Vidéo refaite enregistrée — partagée avec l’équipe');
+            try{ if(window.achLog) achLog('modification','Posts prêts','vidéo refaite : '+(p.titre||'')); }catch(e){} try{ ppRender(); }catch(e){} }); };
+      }, function(e){ go.disabled=false; go.textContent='▶ Monter la vidéo'; q('#stv-prog').style.display='none'; if(document.body.contains(w) && window.toast) toast('✗ Montage impossible : '+((e&&e.message)||e)); });
+    };
+  };
+  window.stSaveVideo=function(){ if(!ST.p) return; var id=''+ST.p.id; stSave();
+    var e=lsObj(PRET_K)[id]; if(!e || JSON.stringify(e.slides)!==JSON.stringify(ST.slides)) return;   /* enregistrement refusé : on reste dans le studio */
+    stClose(); window.stVideo(encodeURIComponent(id)); };
+  window.stVideoOrig=function(eid){ var id=decodeURIComponent(eid); if(!stAdm(id)) return; if(!confirm('Revenir à la vidéo d’origine ? La vidéo refaite ne sera plus affichée dans le post.')) return;
+    var all=lsObj(PRET_K); if(all[id] && all[id].video){ delete all[id].video; delete all[id].video_s; delete all[id].video_le; all[id].maj=new Date().toISOString(); try{ localStorage.setItem(PRET_K, JSON.stringify(all)); }catch(e){} }
+    try{ ppRender(); }catch(e){} if(window.toast) toast('↺ Vidéo d’origine rétablie'); };
+  /* bloc « Vidéo » de la fiche d'un post (appelé par la page Communication) */
+  window.stVideoHtml=function(p, G){
+    if(!p) return ''; var ov={}; try{ ov=lsObj(PRET_K)[''+p.id]||{}; }catch(e){}
+    var url=ov.video||p.video_url; if(!url) return '';
+    var eid=encodeURIComponent(''+p.id), peut=false; try{ var o=stSlidesAny(p); peut=!!(G && o && o.slides && o.slides.length && vidMime()); }catch(e){}
+    return '<div class="cx-sec">Vidéo'+(p.tiktok?' TikTok':'')+(ov.video?' <span class="cx-mod">(refaite'+(ov.video_le?' le '+(''+ov.video_le).slice(8,10)+'/'+(''+ov.video_le).slice(5,7):'')+(ov.par?' par '+esc(ov.par):'')+')</span>':'')+'</div>'
+      +'<div class="cx-vid"><video src="'+esc(url)+'" controls preload="metadata" playsinline></video></div>'
+      +'<div class="cx-vis-acts"><a class="cx-btn" href="'+esc(url)+'" download target="_blank" rel="noopener">⬇ Télécharger la vidéo</a>'
+      +(peut?'<button class="cx-btn" onclick="stVideo(\''+eid+'\')" title="Remonte la vidéo à partir des images du post (celles du studio si vous les avez modifiées)">🎬 Refaire la vidéo avec les images</button>':'')
+      +((G && ov.video && p.video_url)?'<button class="cx-btn" onclick="stVideoOrig(\''+eid+'\')">↺ Vidéo d’origine</button>':'')+'</div>';
+  };
   window.stExportCur=function(btn){ var t=btn.textContent, i=0, L=ST.slides; btn.disabled=true; (function one(){ if(i>=L.length){ btn.textContent=t; btn.disabled=false; return; } btn.textContent='⬇ '+(i+1)+'/'+L.length+'…'; renderPng(L[i]).then(function(url){ var a=document.createElement('a'); a.href=url; a.download=(ST.p.id||'visuel')+'-'+(i+1)+'.png'; document.body.appendChild(a); a.click(); a.remove(); i++; setTimeout(one,500); }).catch(function(e){ if(window.toast) toast('✗ Export impossible : '+(e&&e.message||e)); btn.textContent=t; btn.disabled=false; }); })(); };
 })();
 </script>
@@ -28779,7 +28931,7 @@ details.cx-more{margin-top:8px;} details.cx-more>summary{font-size:11.5px;color:
         +(p.source_url?'<a class="cx-btn" href="'+esc(p.source_url)+'" download title="Version PowerPoint / Canva">✏️ PowerPoint</a>':'')+'</div>';
     } else if(vis.length){
       h+='<div class="cx-sec">Visuel'+(vis.length>1?'s · '+vis.length:'')+'</div><div class="cx-vis">'+vis.map(function(v,i){ return '<div class="pp-thumb" onclick="ppZoom(\''+esc(v.url)+'\')"><img src="'+esc(v.url)+'" alt="" loading="lazy">'+(vis.length>1?'<span class="n">'+(i+1)+'</span>':'')+'</div>'; }).join('')+'</div>'
-        +'<div class="cx-vis-acts">'+(G?'<button class="cx-btn cx-main" onclick="stOpen(\''+eid+'\')" title="Recrée ce visuel dans le studio, où tout est modifiable">🎨 Modifier dans le studio</button>':'')
+        +'<div class="cx-vis-acts">'+(G?'<button class="cx-btn cx-main" onclick="stOpen(\''+eid+'\')" title="'+(p.video_url?'Ouvre les écrans de la vidéo dans le studio : remplacer une image, changer l’ordre, supprimer ou ajouter un écran':'Recrée ce visuel dans le studio, où tout est modifiable')+'">🎨 Modifier dans le studio</button>':'')
         +'<button class="cx-btn" onclick="ppDl(\''+eid+'\',this)">⬇ Télécharger '+(vis.length>1?'les '+vis.length+' images':'le visuel')+'</button>'
         +(p.source_url?'<a class="cx-btn" href="'+esc(p.source_url)+'" download>✏️ PowerPoint</a>':'')+'</div>';
     } else {
@@ -28791,7 +28943,9 @@ details.cx-more{margin-top:8px;} details.cx-more>summary{font-size:11.5px;color:
       }
       if(p.format==='video'&&!p.video_url) h+='<div class="pp-novis" style="margin-top:6px">🎬 Vidéo à tourner : le script est dans le texte ci-dessous.</div>';
     }
-    if(p.video_url) h+='<div class="cx-sec">Vidéo'+(p.tiktok?' TikTok':'')+'</div><div class="cx-vid"><video src="'+esc(p.video_url)+'" controls preload="metadata" playsinline></video></div>'
+    var _vh=null; try{ if(window.stVideoHtml) _vh=stVideoHtml(p,G); }catch(e){ _vh=null; window.achErr&&achErr(e); }   /* v12.53 : vidéo refaite + « Refaire la vidéo » */
+    if(_vh!==null) h+=_vh;
+    else if(p.video_url) h+='<div class="cx-sec">Vidéo'+(p.tiktok?' TikTok':'')+'</div><div class="cx-vid"><video src="'+esc(p.video_url)+'" controls preload="metadata" playsinline></video></div>'
       +'<div class="cx-vis-acts"><a class="cx-btn" href="'+esc(p.video_url)+'" download target="_blank" rel="noopener">⬇ Télécharger la vidéo</a></div>';
     return h;
   }
