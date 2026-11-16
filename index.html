@@ -1805,7 +1805,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     </div>
   </div>
   </div>
-  <div class="logo-ver app-ver">Achille App — v12.56</div>
+  <div class="logo-ver app-ver">Achille App — v12.57</div>
 </aside>
 <div id="mob-bk" onclick="mobNav(false)"></div>
 <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Réduire la barre latérale">‹</button>
@@ -6341,18 +6341,105 @@ table.es-t td.del button{border:none;background:none;color:var(--gris-2);cursor:
   /* v7.06 : UN SEUL appel à l'annuaire Éducation nationale, mis en cache et PARTAGÉ par la carte de secteur
      (lycée/école) et la liste des établissements. Avant : 2 appels 3 km/300 → lourdeur ressentie côté transports. */
   var _sectAnn={key:'',p:null};
+  /* v12.57 : DEUX sources pour l'annuaire. Le portail du ministère (data.education.gouv.fr) exige une connexion
+     depuis le 16/11/2026 (HTTP 401). Secours = la même base officielle, republiée par data.gouv.fr (API tabulaire).
+     Le ministère reste interrogé en premier : s'il rouvre, rien ne change. */
+  var SECT_ANN_TAB='https://tabular-api.data.gouv.fr/api/resources/b22f04bf-64a8-495d-b8bb-d84dbc4c7983/data/';
+  function sectJSONok(url, ms){   /* comme sectFetchJSON, mais une réponse en erreur (401, 500…) est un ÉCHEC */
+    var c=new AbortController(); var tm=setTimeout(function(){c.abort();}, ms||10000);
+    return fetch(url,{signal:c.signal}).then(function(r){ if(!r.ok) throw new Error('HTTP '+r.status); return r.json(); })
+      .then(function(j){ clearTimeout(tm); return j; }, function(e){ clearTimeout(tm); throw e; });
+  }
+  function sectAnnFiche(f, elat, elon, lat, lon){
+    return {name:f.nom_etablissement||f.appellation_officielle||'Établissement', type:(f.type_etablissement||'').toLowerCase(), statut:(f.statut_public_prive||''), commune:(f.nom_commune||f.libelle_commune||''), cp:(''+(f.code_postal||'')), lat:elat||'', lon:elon||'', dist:(elat&&elon)?sectM(lat,lon,elat,elon):99999};
+  }
+  function sectAnnMen(lat, lon){
+    var u='https://data.education.gouv.fr/api/records/1.0/search/?dataset=fr-en-annuaire-education&geofilter.distance='+lat+','+lon+',3000&rows=300';
+    return sectJSONok(u,12000).then(function(d){
+      if(!d || !Array.isArray(d.records)) throw new Error('annuaire : réponse inattendue');
+      return d.records.map(function(rec){ var f=rec.fields||{}; var g=(rec.geometry&&rec.geometry.coordinates)||null;
+        return sectAnnFiche(f, g?g[1]:f.latitude, g?g[0]:f.longitude, lat, lon); })
+        .sort(function(a,b){return a.dist-b.dist;});
+    });
+  }
+  function sectAnnTab(lat, lon){
+    var R=3000, dLa=R/111320, dLo=R/(111320*Math.cos(lat*Math.PI/180));
+    var base=SECT_ANN_TAB+'?latitude__greater='+(lat-dLa).toFixed(5)+'&latitude__less='+(lat+dLa).toFixed(5)
+      +'&longitude__greater='+(lon-dLo).toFixed(5)+'&longitude__less='+(lon+dLo).toFixed(5)
+      +'&columns=Nom_etablissement,Type_etablissement,Statut_public_prive,Code_postal,Nom_commune,latitude,longitude&page_size=200&page=';
+    return sectJSONok(base+1,12000).then(function(d){
+      if(!d || !Array.isArray(d.data)) throw new Error('annuaire : réponse inattendue');
+      var tot=(d.meta&&d.meta.total)||d.data.length, nb=Math.min(Math.ceil(tot/200),6), ps=[];
+      for(var i=2;i<=nb;i++) ps.push(sectJSONok(base+i,12000).then(function(x){ if(!x || !Array.isArray(x.data)) throw new Error('annuaire : page incomplète'); return x.data; }));
+      return Promise.all(ps).then(function(suite){
+        var rows=d.data; suite.forEach(function(x){ rows=rows.concat(x); });
+        return rows.map(function(r){ return sectAnnFiche({nom_etablissement:r.Nom_etablissement, type_etablissement:r.Type_etablissement, statut_public_prive:r.Statut_public_prive, nom_commune:r.Nom_commune, code_postal:r.Code_postal}, +r.latitude, +r.longitude, lat, lon); })
+          .filter(function(e){ return e.dist<=R; })
+          .sort(function(a,b){return a.dist-b.dist;});
+      });
+    });
+  }
+  /* Secours rapide : base de l'IGN (BD TOPO, Géoplateforme). Noms, types et positions officiels — mais PAS la mention
+     public/privé : la liste est marquée « partielle » et les cartes lycée/école public restent prudentes. */
+  function sectAnnIgn(lat, lon){
+    var u='https://data.geopf.fr/wfs/ows?SERVICE=WFS&VERSION=2.0.0&REQUEST=GetFeature&TYPENAMES=BDTOPO_V3:zone_d_activite_ou_d_interet&OUTPUTFORMAT=application/json&COUNT=1000'
+      +'&PROPERTYNAME=nature,nature_detaillee,toponyme,commune,insee_commune,geometrie&CQL_FILTER='
+      +encodeURIComponent("nature IN ('Collège','Lycée','Enseignement primaire') AND DWITHIN(geometrie,Point("+lat+" "+lon+"),3000,meters)");
+    return sectJSONok(u,10000).then(function(d){
+      if(!d || !Array.isArray(d.features)) throw new Error('IGN : réponse inattendue');
+      var T={'Collège':'collège','Lycée':'lycée','Enseignement primaire':'ecole'};
+      var rows=d.features.map(function(ft){
+        var p=ft.properties||{}, g=ft.geometry||{}, c=g.coordinates, ring=null;
+        if(g.type==='Point') ring=[c]; else if(g.type==='Polygon') ring=c&&c[0]; else if(g.type==='MultiPolygon') ring=c&&c[0]&&c[0][0];
+        var sx=0, sy=0, n=0; (ring||[]).forEach(function(pt){ if(pt && isFinite(pt[0]) && isFinite(pt[1])){ sx+=+pt[0]; sy+=+pt[1]; n++; } });
+        var elon=n?sx/n:0, elat=n?sy/n:0;
+        var nom=p.toponyme||p.nature_detaillee||p.nature||'';
+        if(/professionnel/i.test(p.nature_detaillee||'') && !/professionnel/i.test(nom)) nom+=' (lycée professionnel)';
+        return sectAnnFiche({nom_etablissement:nom, type_etablissement:T[p.nature]||'', statut_public_prive:'', nom_commune:p.commune||'', code_postal:p.insee_commune||''}, elat, elon, lat, lon);
+      }).filter(function(e){ return e.type && e.name && e.dist<=3300; })
+        .sort(function(a,b){return a.dist-b.dist;});
+      rows.partiel=true;
+      return rows;
+    });
+  }
   function sectAnnuaireNear(lat, lon){
     var key=(+lat).toFixed(5)+','+(+lon).toFixed(5);
     if(_sectAnn.key===key && _sectAnn.p) return _sectAnn.p;
-    var u='https://data.education.gouv.fr/api/records/1.0/search/?dataset=fr-en-annuaire-education&geofilter.distance='+lat+','+lon+',3000&rows=300';
-    var p=sectFetchJSON(u,12000).then(function(d){
-      return (d.records||[]).map(function(rec){ var f=rec.fields||{}; var g=(rec.geometry&&rec.geometry.coordinates)||null;
-        var elat=g?g[1]:f.latitude, elon=g?g[0]:f.longitude;
-        return {name:f.nom_etablissement||f.appellation_officielle||'Établissement', type:(f.type_etablissement||'').toLowerCase(), statut:(f.statut_public_prive||''), commune:(f.nom_commune||f.libelle_commune||''), cp:(''+(f.code_postal||'')), lat:elat||'', lon:elon||'', dist:(elat&&elon)?sectM(lat,lon,elat,elon):99999}; })
-        .sort(function(a,b){return a.dist-b.dist;});
+    var p=new Promise(function(resolve, reject){
+      /* 0 = en attente, 1 = réponse, -1 = échec */
+      var fini=false, men=0, tab=0, ign=0, parti=false, patience=false, ignRows=null, tm=null, tm2=null;
+      function ok(v){ if(fini) return; fini=true; clearTimeout(tm); clearTimeout(tm2); resolve(v); }
+      function bilan(e){
+        if(fini) return;
+        /* liste partielle (IGN) seulement si les sources complètes ont échoué, ou tardent trop */
+        if(ignRows && (patience || (men<0 && tab<0))) return ok(ignRows);
+        if(men<0 && tab<0 && ign<0){ fini=true; clearTimeout(tm); clearTimeout(tm2); reject(e||new Error('annuaire indisponible')); }
+      }
+      function lanceSecours(){
+        if(parti || fini) return; parti=true;
+        sectAnnTab(lat,lon).then(ok, function(e){ tab=-1; bilan(e); });
+        sectAnnIgn(lat,lon).then(function(r){ ign=1; ignRows=r; bilan(); }, function(e){ ign=-1; bilan(e); });
+        tm2=setTimeout(function(){ patience=true; bilan(); }, 4000);
+      }
+      tm=setTimeout(lanceSecours, 3000);   /* ministère lent : les secours partent en parallèle */
+      sectAnnMen(lat,lon).then(ok, function(e){ men=-1; lanceSecours(); bilan(e); });
     });
+    /* ni un échec ni une liste partielle ne sont gardés en mémoire : la recherche suivante (ou « Réessayer ») retente tout */
+    p.then(function(v){ if(v && v.partiel && _sectAnn.p===p) _sectAnn={key:'',p:null}; }, function(){ if(_sectAnn.p===p) _sectAnn={key:'',p:null}; });
     _sectAnn={key:key,p:p};
     return p;
+  }
+  /* Nom d'un établissement à partir de son code (collège de secteur du 92) : ministère, puis IGN, puis data.gouv.fr. '' si introuvable. */
+  function sectAnnNom(code, lat, lon){
+    return sectJSONok('https://data.education.gouv.fr/api/records/1.0/search/?dataset=fr-en-annuaire-education&rows=1&refine.identifiant_de_l_etablissement='+encodeURIComponent(code),6000)
+      .then(function(da){ var fa=da&&da.records&&da.records[0]&&da.records[0].fields; if(fa&&fa.nom_etablissement) return fa.nom_etablissement; throw new Error('vide'); })
+      .catch(function(){ if(!/^\d{6,7}[A-Z]$/.test(code) || !lat || !lon) throw new Error('code');
+        return sectJSONok('https://data.geopf.fr/wfs/ows?SERVICE=WFS&VERSION=2.0.0&REQUEST=GetFeature&TYPENAMES=BDTOPO_V3:zone_d_activite_ou_d_interet&OUTPUTFORMAT=application/json&COUNT=1&PROPERTYNAME=toponyme&CQL_FILTER='
+          +encodeURIComponent("identifiants_sources LIKE '%"+code+"%' AND DWITHIN(geometrie,Point("+lat+" "+lon+"),8000,meters)"),6000)
+          .then(function(d){ var t=d&&d.features&&d.features[0]&&d.features[0].properties&&d.features[0].properties.toponyme; if(t) return t; throw new Error('vide'); }); })
+      .catch(function(){ return sectJSONok(SECT_ANN_TAB+'?Identifiant_de_l_etablissement__exact='+encodeURIComponent(code)+'&columns=Nom_etablissement&page_size=1',8000)
+        .then(function(d){ var r=d&&d.data&&d.data[0]; return (r&&r.Nom_etablissement)||''; }); })
+      .catch(function(){ return ''; });
   }
   function sectTcase(s){ return (''+s).toLowerCase().replace(/(^|[\s\-'\u2019])([a-z\u00e0-\u00ff])/g, function(m,a,c){return a+c.toUpperCase();}); }
   function sectSmartCase(s){ s=''+s; return (s && s===s.toUpperCase())? sectTcase(s): s; }
@@ -6437,12 +6524,8 @@ table.es-t td.del button{border:none;background:none;color:var(--gris-2);cursor:
             if(!code && /^\d{6,7}[A-Za-z]$/.test(nom)) code=nom.toUpperCase();
             var looksCode=/^\d{6,7}[A-Za-z]$/.test(nom);
             if(code){
-              try{
-                var ua='https://data.education.gouv.fr/api/records/1.0/search/?dataset=fr-en-annuaire-education&rows=1&refine.identifiant_de_l_etablissement='+encodeURIComponent(code);
-                var da=await sectFetchJSON(ua,10000);
-                var fa=da.records&&da.records[0]&&da.records[0].fields;
-                if(fa&&fa.nom_etablissement){ nom=fa.nom_etablissement; looksCode=false; }
-              }catch(eAnn){}
+              var nomAnn=await sectAnnNom(code.toUpperCase(), lat, lon);   /* v12.57 : ministère, puis IGN, puis data.gouv.fr */
+              if(nomAnn){ nom=nomAnn; looksCode=false; }
             }
             if(looksCode) window.__sectCard.college={val:'Coll\u00e8ge de secteur d\u00e9termin\u00e9', sub:'Code RNE : '+(code||nom.toUpperCase())+' \u2014 nom indisponible, voir la carte ci-dessous'};
             else window.__sectCard.college={val:(/^coll/i.test(nom)?sectSmartCase(nom):('Coll\u00e8ge '+sectSmartCase(nom))), sub:code?('Code RNE : '+code):''};
@@ -6475,6 +6558,12 @@ table.es-t td.del button{border:none;background:none;color:var(--gris-2);cursor:
     (async function(){
       try{
         var recs=await sectAnnuaireNear(lat, lon);
+        if(recs.partiel){   /* v12.57 : sans la mention public/privé, on n'affirme pas « lycée public » ni « école publique » */
+          var notePart="Annuaire du ministère momentanément inaccessible : public/privé non vérifiable. Voir la liste des établissements ci-dessous.";
+          window.__sectCard.lycee={none:'Indisponible', note:notePart};
+          if(!isParis) window.__sectCard.ecole={none:'Indisponible', note:notePart};
+          sectCardRender(); return;
+        }
         var isPub=function(s){ return /public/i.test(s); };
         var wantCP = isParis ? '75' : '92';
         var sameDept=function(r){ return r.cp.indexOf(wantCP)===0; };
@@ -6547,7 +6636,8 @@ table.es-t td.del button{border:none;background:none;color:var(--gris-2);cursor:
     panel.innerHTML = '<div class="sect-loading">Chargement des \u00e9tablissements\u2026</div>';
     try {
       var recs=await sectAnnuaireNear(lat, lon);
-      panel.innerHTML = sectSchoolsHtml(recs);
+      panel.innerHTML = sectSchoolsHtml(recs)
+        + (recs.partiel ? '<div class="sect-annpart" style="margin:8px 0 0;background:var(--beige);border:1px solid var(--beige-3);border-radius:8px;padding:7px 12px;font-size:11.5px;color:var(--gris);line-height:1.5;">Public / privé non précisé : l\u2019annuaire du ministère est momentanément inaccessible (liste de secours : IGN) · <a href="javascript:void(0)" onclick="sectLoadSchools('+lat+','+lon+')" style="color:var(--terra);font-weight:600;">\u21bb réessayer</a></div>' : '');
     } catch(e){
       panel.innerHTML = '<div class="sect-section"><div class="sect-sec-title"><span>\uD83C\uDFEB</span> \u00c9tablissements scolaires</div>'
         + '<div style="padding:12px;font-size:12px;color:var(--gris-2);line-height:1.6;">Donn\u00e9es indisponibles pour le moment (annuaire \u00c9ducation nationale).<br>'
@@ -6574,7 +6664,7 @@ table.es-t td.del button{border:none;background:none;color:var(--gris-2);cursor:
         +' <span style="font-size:10px;color:var(--gris-2);font-weight:400;">'+meta[k].radius+'</span></div>';
       arr.slice(0,meta[k].max).forEach(function(s){
         var pr=/pr/i.test(s.statut);
-        var badge='<span class="sect-badge '+(pr?'sb-prive':'sb-public')+'">'+(pr?'Privé':'Public')+'</span>';
+        var badge=s.statut ? '<span class="sect-badge '+(pr?'sb-prive':'sb-public')+'">'+(pr?'Privé':'Public')+'</span>' : '';   /* v12.57 : statut inconnu → pas de pastille (avant : « Public » par défaut) */
         var comm=s.commune?(' <span style="color:var(--gris-2);font-size:10px;">· '+sectEsc(sectTcase(s.commune))+'</span>'):'';
         h+='<div class="sect-item"'+((s.lat&&s.lon)?' data-lat="'+s.lat+'" data-lon="'+s.lon+'" data-tip="'+meta[k].ico+' '+sectEsc(s.name).replace(/"/g,'&quot;')+'" style="cursor:pointer;" title="Cliquez : punaise sur le plan"':'')+'><span class="sect-item-icon">'+meta[k].ico+'</span>'
           +'<div style="flex:1;min-width:0;"><div class="sect-item-name" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+sectEsc(s.name)+'</div>'
@@ -7941,9 +8031,34 @@ CABLE|1|Villa Nova|48.73478|2.46475`;
     function buildQuery(lat, lon, Rb) {
       return '[out:json][timeout:15];(node["highway"="bus_stop"]["name"](around:'+Rb+','+lat+','+lon+'););out body;';
     }
+    /* v12.57 : secours OFFICIEL des bus — Île-de-France Mobilités (jeu « arrets-lignes » : un enregistrement par
+       ligne et par arrêt). Converti au format des arrêts OpenStreetMap pour que l'affichage ne change pas. */
+    function idfmBus(){
+      var u='https://data.iledefrance-mobilites.fr/api/explore/v2.1/catalog/datasets/arrets-lignes/exports/json?select=stop_id,stop_name,stop_lat,stop_lon,shortname,mode&where='
+        +encodeURIComponent("within_distance(pointgeo, geom'POINT("+lon+" "+lat+")', "+Rb+"m)");
+      return sectJSONok(u,12000).then(function(rows){
+        if(!Array.isArray(rows)) throw new Error('IDFM : réponse inattendue');
+        var par={}, out=[];
+        rows.forEach(function(r){
+          if(!r || !r.stop_name || !/bus/i.test(r.mode||'')) return;
+          var la=+r.stop_lat, lo=+r.stop_lon; if(!la || !lo) return;
+          var k=''+(r.stop_id||(r.stop_name+'@'+la+','+lo)), n=par[k];
+          if(!n){ n=par[k]={type:'node', id:'idfmbus-'+k, lat:la, lon:lo, tags:{highway:'bus_stop', name:r.stop_name, route_ref:'', source:'IDFM'}}; out.push(n); }
+          var l=(''+(r.shortname||'')).trim();
+          if(l && (';'+n.tags.route_ref+';').indexOf(';'+l+';')<0) n.tags.route_ref+=(n.tags.route_ref?';':'')+l;
+        });
+        if(!out.length) throw new Error('IDFM : aucun arrêt');
+        return out;
+      });
+    }
     function hedgedFetch(query){
       return new Promise(function(resolve, reject){
-        var done=false, failed=0, ctrls=[];
+        var done=false, failed=0, ctrls=[], NB=SERVERS.length+1, idfm=false;
+        function echec(e){ if(done) return; failed++; if(failed>=NB){ done=true; reject(e); } }
+        function gagne(els, ctrl){ if(done) return; done=true; ctrls.forEach(function(c){ if(c!==ctrl){ try{c.abort();}catch(e){window.achErr&&achErr(e)} } }); resolve(els); }
+        /* le secours part dès qu'un serveur Overpass échoue, ou au bout de 2,5 s sans réponse */
+        function lanceIdfm(){ if(idfm || done) return; idfm=true; idfmBus().then(function(els){ gagne(els,null); }, echec); }
+        setTimeout(lanceIdfm, 2500);
         SERVERS.forEach(function(srv, i){
           setTimeout(function(){
             if(done) return;
@@ -7954,11 +8069,9 @@ CABLE|1|Villa Nova|48.73478|2.46475`;
               .then(function(data){
                 if(done) return;
                 if(!data || !Array.isArray(data.elements)) throw new Error('Invalid response');
-                done=true;
-                ctrls.forEach(function(c){ if(c!==ctrl){ try{c.abort();}catch(e){window.achErr&&achErr(e)} } });
-                resolve(data.elements);
+                gagne(data.elements, ctrl);
               })
-              .catch(function(e){ clearTimeout(timer); if(done) return; failed++; if(failed>=SERVERS.length){ done=true; reject(e); } });
+              .catch(function(e){ clearTimeout(timer); if(done) return; lanceIdfm(); echec(e); });
           }, i*2500);
         });
       });
@@ -14717,7 +14830,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     try{ _it_boot(); }catch(e){}   /* v12.52 */
     var ov=document.getElementById('ach-login-overlay'); if(ov) ov.classList.add('ach-hidden');
     var ub=document.getElementById('ach-userbar'); if(ub) ub.style.display='none';
-    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v12.56';
+    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v12.57';
     flag('Synchronis\u00e9');
     // fin de l'init : on autorise la journalisation des actions
     setTimeout(function(){ installInterceptor._init=false; }, 1500);
