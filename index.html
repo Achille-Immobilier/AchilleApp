@@ -1805,7 +1805,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     </div>
   </div>
   </div>
-  <div class="logo-ver app-ver">Achille App — v12.59</div>
+  <div class="logo-ver app-ver">Achille App — v12.60</div>
 </aside>
 <div id="mob-bk" onclick="mobNav(false)"></div>
 <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Réduire la barre latérale">‹</button>
@@ -5175,7 +5175,7 @@ table.es-t td.del button{border:none;background:none;color:var(--gris-2);cursor:
 
 <div class="modal-overlay" id="modal-vt-det"><div class="modal" style="width:520px;"><button class="modal-close" onclick="closeModal('modal-vt-det')">x</button><div id="vt-det-content"></div><div class="modal-actions"><button class="btn btn-outline" onclick="closeModal('modal-vt-det')">Fermer</button><button class="btn btn-terra" onclick="closeModal('modal-vt-det');vtAccReset();openModal('modal-visite')">+ Nouvelle visite</button></div></div></div>
 
-<div class="modal-overlay" id="modal-bv-edit"><div class="modal" style="width:480px;"><button class="modal-close" onclick="closeModal('modal-bv-edit')">x</button><div class="modal-title">Modifier le bon de visite</div><input type="hidden" id="bve-n-orig"><div class="form-row"><div class="form-group"><label class="form-label">N°</label><input class="form-input" id="bve-n" type="number" min="1" style="width:90px;"></div><div class="form-group"><label class="form-label">Date <span style="font-size:11px;color:var(--gris-2);">(JJ/MM/AAAA)</span></label><input class="form-input" id="bve-d" type="text" placeholder="Ex : 14/06/2025"></div></div><div class="form-group"><label class="form-label">Visiteur</label><input class="form-input" id="bve-v" type="text" placeholder="NOM Prénom"></div><div class="form-group"><label class="form-label">Bien(s) visité(s)</label><div id="bve-a-wrap" style="display:flex;flex-direction:column;gap:6px;"></div><button type="button" onclick="bveAddrAdd('')" style="margin-top:6px;border:1px dashed rgba(180,85,45,.55);color:var(--terra);background:transparent;border-radius:999px;padding:3px 12px;font-family:'Jost',sans-serif;font-size:12px;cursor:pointer;">+ Ajouter un bien</button></div><div class="form-group"><label class="form-label">Observations</label><input class="form-input" id="bve-obs" type="text" placeholder="—"></div><div class="modal-actions"><button class="btn btn-outline" onclick="closeModal('modal-bv-edit')">Annuler</button><button class="btn btn-rouge" id="bve-del-btn" onclick="bvEditDel()" style="margin-right:auto;">🗑 Supprimer</button><button class="btn btn-terra" onclick="bvEditSave()">Enregistrer</button></div></div></div>
+<div class="modal-overlay" id="modal-bv-edit"><div class="modal" style="width:480px;"><button class="modal-close" onclick="closeModal('modal-bv-edit')">x</button><div class="modal-title">Modifier le bon de visite</div><input type="hidden" id="bve-n-orig"><div class="form-row"><div class="form-group"><label class="form-label">N°</label><input class="form-input" id="bve-n" type="number" min="1" style="width:90px;"></div><div class="form-group"><label class="form-label">Date <span style="font-size:11px;color:var(--gris-2);">(JJ/MM/AAAA)</span></label><input class="form-input" id="bve-d" type="text" placeholder="Ex : 14/06/2025"></div></div><div class="form-group"><label class="form-label">Visiteur</label><input class="form-input" id="bve-v" type="text" placeholder="NOM Prénom"></div><div class="form-group"><label class="form-label">Bien(s) visité(s)</label><div id="bve-a-wrap" style="display:flex;flex-direction:column;gap:6px;"></div><button type="button" onclick="bveAddrAdd('')" style="margin-top:6px;border:1px dashed rgba(180,85,45,.55);color:var(--terra);background:transparent;border-radius:999px;padding:3px 12px;font-family:'Jost',sans-serif;font-size:12px;cursor:pointer;">+ Ajouter un bien</button></div><div class="form-group"><label class="form-label">Observations</label><input class="form-input" id="bve-obs" type="text" placeholder="—"></div><div id="bve-vsb-row" style="margin:-2px 0 14px;padding:9px 12px;background:var(--beige);border:1px solid var(--beige-3);border-radius:8px;font-size:12px;color:var(--gris);line-height:1.5;"><a href="javascript:void(0)" id="bve-vsb-btn" onclick="bvEditToVsb()" style="color:var(--terra);font-weight:600;text-decoration:none;">↪ Transférer en « Visite sans bon »</a><br>Bon rempli trop vite ? La visite est conservée, le bon disparaît et son numéro redevient disponible.</div><div class="modal-actions"><button class="btn btn-outline" onclick="closeModal('modal-bv-edit')">Annuler</button><button class="btn btn-rouge" id="bve-del-btn" onclick="bvEditDel()" style="margin-right:auto;">🗑 Supprimer</button><button class="btn btn-terra" onclick="bvEditSave()">Enregistrer</button></div></div></div>
 
   
 
@@ -9481,7 +9481,7 @@ CABLE|1|Villa Nova|48.73478|2.46475`;
         BV_DATA.forEach(function(b){ if(b.n>maxN) maxN=b.n; });
         try{
           var extra=JSON.parse(localStorage.getItem('ach_bv_extra')||'[]');
-          extra.forEach(function(b){ if(b.n>maxN) maxN=b.n; });
+          extra.forEach(function(b){ if(b && !(b.del && b.libre) && b.n>maxN) maxN=b.n; });   /* v12.60 : numéro libéré par un transfert */
           var pend=JSON.parse(localStorage.getItem('ach_bv_pending')||'[]');
           pend.forEach(function(b){ if(b.n>maxN) maxN=b.n; });
         }catch(e){window.achErr&&achErr(e)}
@@ -9536,7 +9536,7 @@ CABLE|1|Villa Nova|48.73478|2.46475`;
     var maxN=0;
     if(typeof BV_DATA!=='undefined') BV_DATA.forEach(function(b){ if(b.n>maxN) maxN=b.n; });
     try{
-      JSON.parse(localStorage.getItem('ach_bv_extra')||'[]').forEach(function(b){ if(b.n>maxN) maxN=b.n; });
+      JSON.parse(localStorage.getItem('ach_bv_extra')||'[]').forEach(function(b){ if(b && !(b.del && b.libre) && b.n>maxN) maxN=b.n; });   /* v12.60 : numéro libéré par un transfert */
       JSON.parse(localStorage.getItem('ach_bv_pending')||'[]').forEach(function(b){ if(b.n>maxN) maxN=b.n; });
     }catch(e){window.achErr&&achErr(e)}
     var d=new Date();
@@ -9624,6 +9624,7 @@ CABLE|1|Villa Nova|48.73478|2.46475`;
       BV_DATA.push(newBon);
       try{
         var stored=JSON.parse(localStorage.getItem('ach_bv_extra')||'[]');
+        stored=stored.filter(function(b){ return !(b && b.n===newBon.n && b.del); });   /* v12.60 */
         if(!stored.find(function(b){return b.n===newBon.n && !b.del;})) stored.push(newBon);
         localStorage.setItem('ach_bv_extra',JSON.stringify(stored));
       }catch(e){window.achErr&&achErr(e)}
@@ -9819,6 +9820,7 @@ CABLE|1|Villa Nova|48.73478|2.46475`;
       // Intégrer dans BV_DATA et extras
       BV_DATA.push(bon);
       var extra=JSON.parse(localStorage.getItem('ach_bv_extra')||'[]');
+      extra=extra.filter(function(b){ return !(b && b.n===bon.n && b.del); });   /* v12.60 */
       extra.push(bon);
       localStorage.setItem('ach_bv_extra',JSON.stringify(extra));
       // Retirer du pending et notifs
@@ -11951,6 +11953,51 @@ CABLE|1|Villa Nova|48.73478|2.46475`;
     closeModal('modal-bv-edit');
     bvRender();
     toast('Bon n°'+nOrig+' supprimé — récupérable 30 jours dans la Corbeille');
+  };
+  /* v12.60 : TRANSFERT d'un bon en « visite sans bon » (bon rempli trop vite). Rien n'est supprimé : la visite change de liste.
+     Le bon est retiré par un marqueur {n, del:1, libre:1} : « libre » = le numéro n'est pas brûlé (voir le calcul du prochain numéro). */
+  window.bvEditToVsb=function(){
+    if(window.achCan && !window.achCan('visites','modify')) return;
+    var nOrig=parseInt(document.getElementById('bve-n-orig').value);
+    var idx=BV_DATA.findIndex(function(x){return x.n===nOrig;});
+    if(idx<0){ toast('Bon introuvable.'); return; }
+    var bon=BV_DATA[idx];
+    /* ce qui est affiché dans la fenêtre fait foi : une correction en cours de saisie n'est pas perdue */
+    var g=function(id){ var e=document.getElementById(id); return e?(''+e.value).trim():''; };
+    var v=g('bve-v')||bon.v||'', obs=g('bve-obs');
+    var as=[]; document.querySelectorAll('#bve-a-wrap .bve-addr').forEach(function(i){ var x=(i.value||'').trim(); if(x) as.push(x); });
+    if(!as.length) as=(window.bvAddrs?bvAddrs(bon):[bon.a||'']).filter(Boolean);
+    var iso=function(x){ var m=/^\s*(\d{1,2})\/(\d{1,2})\/(\d{4})\s*$/.exec(''+(x||'')); if(!m) return ''; var j=+m[1], mo=+m[2]; if(j<1||j>31||mo<1||mo>12) return ''; return m[3]+'-'+(mo<10?'0':'')+mo+'-'+(j<10?'0':'')+j; };
+    var d=iso(g('bve-d'))||iso(bon.d)||vsbToday();
+    var aCr=false; try{ aCr=JSON.parse(localStorage.getItem('ach_bv_cr_v1')||'[]').some(function(c){ return c && c.id==='cr:bv'+nOrig; }); }catch(e){}
+    if(!confirm('Transférer le bon de visite n°'+nOrig+(v?' ('+v+')':'')+' dans les « Visites sans bon » ?\n\n• La visite est conservée : date, visiteur, bien, accompagnateurs, observations'+(aCr?', compte rendu':'')+'.\n• Le bon disparaît de la liste des bons.\n• Son numéro redevient disponible.')) return;
+    var id='v'+Date.now()+Math.floor(Math.random()*1000);
+    /* 1. la visite sans bon (liste relue d'abord : une mise à jour reçue entre-temps n'est pas écrasée) */
+    vsbLoad();
+    VSB.unshift({id:id, d:d, v:v, a:as.join(' · '), accomp:(bon.accomp||[]).slice(), formalisation:'', obs:obs, exBon:nOrig});
+    vsbSave();
+    /* 2. le compte rendu de visite suit la visite (sinon le prochain bon portant ce numéro en hériterait) */
+    try{
+      var crs=JSON.parse(localStorage.getItem('ach_bv_cr_v1')||'[]'), vu=false;
+      if(Array.isArray(crs)){
+        crs.forEach(function(c){ if(c && c.id==='cr:bv'+nOrig){ c.id='cr:vsb:'+id; c.ref='vsb:'+id; c.visite=Object.assign({}, c.visite||{}, {n:'', v:v, a:as.join(' · '), d:d}); c.updated=new Date().toISOString(); vu=true; } });
+        if(vu) localStorage.setItem('ach_bv_cr_v1', JSON.stringify(crs));
+      }
+    }catch(e){window.achErr&&achErr(e)}
+    /* 3. le bon quitte la liste, numéro libéré */
+    BV_DATA.splice(idx,1);
+    try{
+      var extra=JSON.parse(localStorage.getItem('ach_bv_extra')||'[]');
+      extra=extra.filter(function(x){return !x || x.n!==nOrig;});
+      extra.push({n:nOrig, del:1, libre:1, updated:new Date().toISOString()});
+      localStorage.setItem('ach_bv_extra',JSON.stringify(extra));
+    }catch(e){window.achErr&&achErr(e)}
+    bvSaveObs(); bvSaveAccomp();
+    try{ if(window.achLog) achLog('modification','Visites','bon n° '+nOrig+' transféré en visite sans bon'+(v?' : '+v:'')); }catch(e){window.achErr&&achErr(e)}
+    closeModal('modal-bv-edit');
+    bvRender();
+    try{ window.bvShowView('vsb'); }catch(e){window.achErr&&achErr(e)}
+    toast('Bon n°'+nOrig+' transféré dans les visites sans bon ✓');
   };
   /* v11.56 : (re)fusion de ach_bv_extra dans la liste en mémoire — appelée au démarrage et après une
      restauration depuis la Corbeille. Un marqueur del retire le bon ; une entrée plus loin le remet. */
@@ -14874,7 +14921,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     try{ _it_boot(); }catch(e){}   /* v12.52 */
     var ov=document.getElementById('ach-login-overlay'); if(ov) ov.classList.add('ach-hidden');
     var ub=document.getElementById('ach-userbar'); if(ub) ub.style.display='none';
-    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v12.59';
+    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v12.60';
     flag('Synchronis\u00e9');
     // fin de l'init : on autorise la journalisation des actions
     setTimeout(function(){ installInterceptor._init=false; }, 1500);
