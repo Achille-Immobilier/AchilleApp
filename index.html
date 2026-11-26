@@ -1805,7 +1805,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     </div>
   </div>
   </div>
-  <div class="logo-ver app-ver">Achille App — v12.61</div>
+  <div class="logo-ver app-ver">Achille App — v12.62</div>
 </aside>
 <div id="mob-bk" onclick="mobNav(false)"></div>
 <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Réduire la barre latérale">‹</button>
@@ -14921,7 +14921,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     try{ _it_boot(); }catch(e){}   /* v12.52 */
     var ov=document.getElementById('ach-login-overlay'); if(ov) ov.classList.add('ach-hidden');
     var ub=document.getElementById('ach-userbar'); if(ub) ub.style.display='none';
-    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v12.61';
+    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v12.62';
     flag('Synchronis\u00e9');
     // fin de l'init : on autorise la journalisation des actions
     setTimeout(function(){ installInterceptor._init=false; }, 1500);
@@ -28892,6 +28892,17 @@ details.cx-more{margin-top:8px;} details.cx-more>summary{font-size:11.5px;color:
 .cx-kpi{background:#fff;border:1px solid var(--border);border-radius:10px;padding:8px 14px;min-width:120px;}
 .cx-kpi .l{font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--gris-2);} .cx-kpi .v{font-size:19px;font-family:'Cormorant Garamond',serif;font-weight:600;color:var(--noir);} .cx-kpi .s{font-size:11px;color:var(--gris);}
 .cx-addf{background:#fff;border:1px solid var(--border);border-radius:12px;padding:12px 14px;margin-bottom:12px;display:flex;gap:8px;flex-wrap:wrap;align-items:flex-start;}
+/* v12.62 : fenêtre « Ajouter / Modifier une publication » */
+.cx-pe-nets{display:flex;flex-wrap:wrap;gap:8px;align-items:center;}
+.cx-pe-net{position:relative;display:inline-flex;align-items:center;gap:7px;border:1px solid var(--border);border-radius:999px;padding:6px 13px;font-size:13px;font-family:'Jost',sans-serif;cursor:pointer;background:#fff;color:var(--gris);user-select:none;-webkit-user-select:none;}
+.cx-pe-net input{position:absolute;opacity:0;width:0;height:0;pointer-events:none;}
+.cx-pe-net .dot{width:9px;height:9px;border-radius:50%;background:var(--c);opacity:.3;flex:none;}
+.cx-pe-net.on{border-color:var(--c);color:var(--noir);font-weight:600;box-shadow:inset 0 0 0 1px var(--c);} .cx-pe-net.on .dot{opacity:1;}
+.cx-pe-all{font-size:12px;color:var(--terra);font-weight:600;text-decoration:none;margin-left:4px;white-space:nowrap;}
+.cx-pe-lk{display:flex;align-items:center;gap:8px;margin-bottom:6px;} .cx-pe-lk span{flex:none;width:92px;font-size:12.5px;color:var(--gris);display:inline-flex;align-items:center;gap:6px;} .cx-pe-lk span i{width:8px;height:8px;border-radius:50%;flex:none;} .cx-pe-lk .form-input{flex:1;min-width:0;}
+.cx-pe-ro{background:var(--beige);border:1px solid var(--beige-3);border-radius:8px;padding:9px 12px;font-size:13px;color:var(--gris);line-height:1.45;} .cx-pe-ro b{color:var(--noir);font-weight:600;}
+.cx-pe-hint{font-size:11.5px;color:var(--gris-2);margin-top:5px;line-height:1.4;}
+@media (max-width:880px){ .cx-pe-net{padding:10px 15px;font-size:14px;} .cx-pe-all{padding:8px 4px;font-size:13px;} .cx-pe-lk{flex-wrap:wrap;gap:4px;} .cx-pe-lk span{width:100%;} }
 .cx-addf input,.cx-addf textarea{border:1px solid var(--border);border-radius:8px;padding:7px 10px;font-family:'Jost',sans-serif;font-size:12.5px;background:#fffdf9;}
 .cx-addf textarea{flex:1 1 100%;min-height:60px;resize:vertical;}
 .cx-pc-img{height:150px;background:var(--beige) center/cover no-repeat;position:relative;overflow:hidden;}
@@ -29464,7 +29475,7 @@ details.cx-more{margin-top:8px;} details.cx-more>summary{font-size:11.5px;color:
       if(tw){ ns.forEach(function(k){ if(tw.nets.indexOf(k)<0&&(metaTx[txKey(tw.txt||tw.titre)]||[]).indexOf(k)<0) tw.nets.push(k); }); tw.nets=ORDER.filter(function(k){ return tw.nets.indexOf(k)>=0; }); tw.reg=o.id; if(!tw.url&&o.lien) tw.url=o.lien; if(o.lien&&tw.urls){ var _kn=netOfUrl(o.lien); if(_kn&&!tw.urls[_kn]) tw.urls[_kn]=o.lien; } return; }
       push({id:'reg:'+o.id, reg:o.id, src:'registre', d:o.date||'', txt:o.texte||o.ref||'', titre:o.ref||'', type:'post', url:o.lien||'', img:'', likes:0, com:0, par:o.auteur||''}, ns);
     });
-    lsArr(PUBM_K).forEach(function(m){ if(m&&!m.del&&NETS[m.net]) push({id:'man:'+m.id, man:m.id, src:'manuel', d:m.d||'', txt:m.txt||'', titre:m.titre||'', type:'post', url:m.url||'', img:'', likes:0, com:0, par:m.par||''}, [m.net]); });
+    lsArr(PUBM_K).forEach(function(m){ var mn=(m&&!m.del)?manNets(m):[]; if(mn.length) push({id:'man:'+m.id, man:m.id, src:'manuel', d:m.d||'', txt:m.txt||'', titre:m.titre||'', type:'post', url:m.url||'', urls:manLinks(m), img:'', likes:0, com:0, par:m.par||''}, mn); });   /* v12.62 : plusieurs réseaux */
     var byTx={}; out.forEach(function(x){ var t=txKey(x.txt||x.titre); if(t) byTx[t]=(byTx[t]||[]).concat(x.nets); });
     out.forEach(function(x){ var t=txKey(x.txt||x.titre), all=t?(byTx[t]||[]):[]; x.also=ORDER.filter(function(k){ return x.nets.indexOf(k)<0&&all.indexOf(k)>=0; }); });
     return out;
@@ -29480,7 +29491,7 @@ details.cx-more{margin-top:8px;} details.cx-more>summary{font-size:11.5px;color:
   function pubCount(k){ return pubItems(k).length; }
   window.cxPubGo=function(k){ PUB.net=k; PUB.add=false; try{ commSwitch('pub'); }catch(e){ pubRender(); } };
   window.cxPubTri=function(v){ PUB.tri=v; pubRender(); };
-  window.cxPubAddToggle=function(){ PUB.add=!PUB.add; pubRender(); };
+  window.cxPubAddToggle=function(){ PUB.add=false; cxPubNew(); };   /* v12.62 : l'ajout passe par la fenêtre commune (plusieurs réseaux) */
   window.cxPubAdd=function(){
     var d=(document.getElementById('cx-pa-d')||{}).value||'', t=(document.getElementById('cx-pa-t')||{}).value||'', u=(document.getElementById('cx-pa-u')||{}).value||'';
     var net=PUB.net; if(net==='tous'){ net=(document.getElementById('cx-pa-n')||{}).value||'instagram'; }
@@ -29488,6 +29499,105 @@ details.cx-more{margin-top:8px;} details.cx-more>summary{font-size:11.5px;color:
     var a=lsArr(PUBM_K); a.push({id:'pm-'+Date.now().toString(36)+Math.floor(Math.random()*1000), net:net, d:d?(d+'T12:00:00'):now(), txt:t.slice(0,3000), url:u.slice(0,500), par:ini(), le:now()});
     lsSet(PUBM_K,a); PUB.add=false; pubRender(); if(window.toast) toast('📣 Publication ajoutée');
     try{ if(window.achLog) achLog('ajout','Communication','publication '+NETS[net][0]+' ajoutée à la main'); }catch(e){}
+  };
+  /* ═══ v12.62 : AJOUTER ou CORRIGER une publication dans une seule fenêtre — date, PLUSIEURS réseaux, titre, texte, un lien par réseau.
+     Demandes de Laurent (26/11/2026) : « pouvoir apporter des corrections aux posts passés (ex. celui du 16/11 : fait sur tous
+     les réseaux) » et « pouvoir attribuer plusieurs réseaux à la création d'un post ».
+     Trois origines de ligne, trois endroits où écrire :
+       man = ajoutée à la main (ach_cx_pub_v1)        → tout est modifiable
+       cav = post « 📣 marqué publié » (ach_comm_avenir_v1) → date, réseaux, liens (le texte et le visuel restent dans « Voir le post »)
+       reg = post éditorial du registre (ach_comm_posts_v1)  → date, réseaux, titre, texte, lien
+     Les publications importées de Meta (chiffres officiels) et les lignes du tableau Appartements ne passent pas par ici. */
+  var PE=null;
+  function manNets(m){ var a=validNets(m&&m.nets); if(!a.length&&m&&NETS[m.net]) a=[m.net]; return a; }
+  function manLinks(m){ var r={}; if(!m) return r; var L=m.liens, ns=manNets(m);
+    if(L&&typeof L==='object') Object.keys(L).forEach(function(k){ if(NETS[k]&&L[k]) r[k]=''+L[k]; });
+    var u=(''+(m.url||'')).trim(); if(u&&Object.keys(r).map(function(k){ return r[k]; }).indexOf(u)<0){ var k=netOfUrl(u); if(!k||ns.indexOf(k)<0) k=ns[0]; if(k&&!r[k]) r[k]=u; }
+    return r; }
+  function peModal(){ var m=document.getElementById('modal-cxpub-edit'); if(m) return m;
+    m=document.createElement('div'); m.className='modal-overlay'; m.id='modal-cxpub-edit';
+    m.innerHTML='<div class="modal cx-pe" style="width:580px;"><button class="modal-close" onclick="closeModal(\'modal-cxpub-edit\')">x</button><div class="modal-title" id="cx-pe-title">Modifier la publication</div><div id="cx-pe-body"></div>'
+      +'<div class="modal-actions"><button class="btn btn-outline" onclick="closeModal(\'modal-cxpub-edit\')">Annuler</button><button class="btn btn-terra" id="cx-pe-ok" onclick="cxPubEdSave()">Enregistrer</button></div></div>';
+    document.body.appendChild(m); return m; }
+  function peOpen(st){
+    PE=st; peModal();
+    var nets=validNets(st.nets), L=st.liens||{}, h='';
+    h+='<div class="form-group"><label class="form-label">Date de publication</label><input class="form-input" type="date" id="cx-pe-d" style="max-width:190px;" value="'+esc((''+(st.d||'')).slice(0,10))+'"></div>';
+    h+='<div class="form-group"><label class="form-label">Réseaux où le post a été publié</label><div class="cx-pe-nets">'
+      +ORDER.map(function(k){ var on=nets.indexOf(k)>=0; return '<label class="cx-pe-net'+(on?' on':'')+'" style="--c:'+NETS[k][1]+'"><input type="checkbox" value="'+k+'"'+(on?' checked':'')+' onchange="cxPubEdNet(this)"><span class="dot"></span>'+esc(NETS[k][0])+'</label>'; }).join('')
+      +'<a href="javascript:void(0)" class="cx-pe-all" onclick="cxPubEdAll()">Tous les réseaux</a></div></div>';
+    if(st.mode==='cav'){
+      h+='<div class="form-group"><label class="form-label">Post</label><div class="cx-pe-ro"><b>'+esc(st.titre||'(sans titre)')+'</b>'+(st.txt&&st.txt!==st.titre?'<br>'+esc((''+st.txt).slice(0,220))+((''+st.txt).length>220?'…':''):'')+'</div>'
+        +'<div class="cx-pe-hint">Le texte et le visuel de ce post se modifient avec le bouton « Voir le post ».</div></div>';
+    } else {
+      h+='<div class="form-group"><label class="form-label">Titre <span style="text-transform:none;letter-spacing:0;color:var(--gris-2);">(facultatif)</span></label><input class="form-input" type="text" id="cx-pe-ti" maxlength="200" value="'+esc(st.titre||'')+'" placeholder="Ex. : ImmoSwipe, trouvez votre bien en swipant"></div>';
+      h+='<div class="form-group"><label class="form-label">Texte du post</label><textarea class="form-input" id="cx-pe-tx" rows="5" maxlength="3000" style="resize:vertical;min-height:96px;line-height:1.45;" placeholder="Texte publié…">'+esc(st.txt||'')+'</textarea></div>';
+    }
+    if(st.mode==='reg'){
+      h+='<div class="form-group"><label class="form-label">Lien de la publication</label><input class="form-input" type="url" id="cx-pe-l" value="'+esc(st.lien||'')+'" placeholder="https://…"></div>';
+    } else {
+      h+='<div class="form-group"><label class="form-label">Liens <span style="text-transform:none;letter-spacing:0;color:var(--gris-2);">(facultatif — un par réseau coché)</span></label><div id="cx-pe-lks">'
+        +ORDER.map(function(k){ return '<div class="cx-pe-lk" data-net="'+k+'"'+(nets.indexOf(k)>=0?'':' style="display:none"')+'><span><i style="background:'+NETS[k][1]+'"></i>'+esc(NETS[k][0])+'</span><input class="form-input" type="url" id="cx-pe-l-'+k+'" value="'+esc(L[k]||'')+'" placeholder="https://…"></div>'; }).join('')
+        +'<div class="cx-pe-hint" id="cx-pe-lk0"'+(nets.length?' style="display:none"':'')+'>Cochez d’abord un réseau.</div></div></div>';
+    }
+    document.getElementById('cx-pe-body').innerHTML=h;
+    document.getElementById('cx-pe-title').textContent=(st.mode==='new')?'Ajouter une publication':'Modifier la publication';
+    document.getElementById('cx-pe-ok').textContent=(st.mode==='new')?'Ajouter':'Enregistrer';
+    openModal('modal-cxpub-edit');
+    try{ if(st.mode==='new'){ var t=document.getElementById('cx-pe-tx'); if(t&&window.innerWidth>880) t.focus(); } }catch(e){}
+  }
+  function peNets(){ return validNets([].slice.call(document.querySelectorAll('#cx-pe-body .cx-pe-net input:checked')).map(function(i){ return i.value; })); }
+  window.cxPubEdNet=function(cb){ if(cb&&cb.parentNode) cb.parentNode.classList.toggle('on', cb.checked);
+    var ns=peNets(); [].forEach.call(document.querySelectorAll('#cx-pe-body .cx-pe-lk'), function(r){ r.style.display=ns.indexOf(r.getAttribute('data-net'))>=0?'':'none'; });
+    var z=document.getElementById('cx-pe-lk0'); if(z) z.style.display=ns.length?'none':''; };
+  window.cxPubEdAll=function(){ [].forEach.call(document.querySelectorAll('#cx-pe-body .cx-pe-net input'), function(i){ i.checked=true; i.parentNode.classList.add('on'); }); cxPubEdNet(null); };
+  /* « ＋ Ajouter une publication » : le réseau de l'onglet ouvert est pré-coché ; sous « Tous », à vous de cocher */
+  window.cxPubNew=function(){ if(!isGerant()){ if(window.toast) toast('Réservé aux gérants'); return; }
+    peOpen({mode:'new', d:new Date().toISOString().slice(0,10), nets:NETS[PUB.net]?[PUB.net]:[], titre:'', txt:'', liens:{}}); };
+  window.cxPubEdit=function(rowId){ if(!isGerant()) return; rowId=''+rowId;
+    var kind=rowId.slice(0,3), id=rowId.slice(4), o;
+    if(kind==='man'){ o=lsArr(PUBM_K).filter(function(m){ return m&&m.id===id&&!m.del; })[0]; if(!o) return;
+      return peOpen({mode:'man', id:id, d:o.d||'', nets:manNets(o), titre:o.titre||'', txt:o.txt||'', liens:manLinks(o)}); }
+    if(kind==='cav'){ o=cavById(id); if(!o) return;
+      var it=allSocial().filter(function(x){ return x.id===rowId; })[0]||{}, ns=pubNetsOf(o); if(!ns.length) ns=[netOf(prop(o.src||o.id),o)];
+      if(it.reg){ var rr=regRows().filter(function(x){ return x&&x.id===it.reg; })[0]; rowNets(rr).forEach(function(k){ if(ns.indexOf(k)<0) ns.push(k); }); }   /* la ligne jumelle du registre porte parfois un réseau de plus */
+      return peOpen({mode:'cav', id:id, reg:it.reg||'', d:(o.pub&&o.pub.d)||o.updated||o.created||'', d0:((''+((o.pub&&o.pub.d)||o.updated||o.created||'')).slice(0,10)), nets:ns, titre:o.titre||'', txt:o.texte||'', liens:pubLinks(o)}); }
+    if(kind==='reg'){ o=regRows().filter(function(x){ return x&&x.id===id; })[0]; if(!o) return;
+      var nr=rowNets(o); if(!nr.length) nr=['instagram','facebook'];
+      return peOpen({mode:'reg', id:id, d:o.date||'', nets:nr, titre:o.ref||'', txt:o.texte||'', lien:o.lien||''}); }
+  };
+  window.cxPubEdSave=function(){
+    var st=PE; if(!st||!isGerant()) return;
+    function val(i){ var e=document.getElementById(i); return e?(''+e.value).trim():''; }
+    function non(m){ if(window.toast) toast(m); }
+    var d=val('cx-pe-d'), nets=peNets();
+    if(!/^\d{4}-\d{2}-\d{2}$/.test(d)) return non('Indiquez la date de publication');
+    if(!nets.length) return non('Cochez au moins un réseau');
+    var ti=val('cx-pe-ti').slice(0,200), tx=val('cx-pe-tx').slice(0,3000), L={}, bad='';
+    if(st.mode==='reg'){ var u0=val('cx-pe-l').slice(0,500); if(u0&&!/^https?:\/\//i.test(u0)) bad='le lien'; L._=u0; }
+    else nets.forEach(function(k){ var u=val('cx-pe-l-'+k).slice(0,500); if(!u) return; if(!/^https?:\/\//i.test(u)) bad='le lien '+NETS[k][0]; else L[k]=u; });
+    if(bad) return non('Vérifiez '+bad+' : il doit commencer par https://');
+    var first=ORDER.filter(function(k){ return L[k]; })[0], url=first?L[first]:'', noms=nets.map(function(k){ return NETS[k][0]; });
+    if(st.mode==='new'||st.mode==='man'){
+      if(!tx&&!ti&&!url) return non('Écrivez le texte du post ou collez son lien');
+      var a=lsArr(PUBM_K), m;
+      if(st.mode==='new'){ m={id:'pm-'+Date.now().toString(36)+Math.floor(Math.random()*1000), par:ini(), le:now()}; a.push(m); }
+      else { m=a.filter(function(x){ return x&&x.id===st.id; })[0]; if(!m) return non('Publication introuvable'); m.majPar=ini(); }
+      m.nets=nets; m.net=nets[0]; m.titre=ti; m.txt=tx; m.liens=L; m.url=url; m.updated=now();
+      if(st.mode==='new'||(''+(m.d||'')).slice(0,10)!==d) m.d=d+'T12:00:00';
+      lsSet(PUBM_K,a);
+    } else if(st.mode==='cav'){
+      var c=cavList(), o=c.filter(function(x){ return x&&x.id===st.id; })[0]; if(!o) return non('Post introuvable');
+      o.pub=o.pub||{}; o.pub.nets=nets; o.pub.net=nets[0]; o.pub.liens=L; o.pub.lien=url; if(d!==st.d0) o.pub.d=d+'T12:00:00'; o.updated=now(); lsSet(CAV_K,c);
+      try{ pset(o.src||o.id,{pubnets:nets, pubnet:nets[0]}); }catch(e){}
+      if(st.reg&&window.commPostsSet){ try{ commPostsSet(st.reg, d!==st.d0?{reseaux:noms, date:d}:{reseaux:noms}); }catch(e){ window.achErr&&achErr(e); } }
+    } else if(st.mode==='reg'){
+      if(!window.commPostsSet||!commPostsSet(st.id,{date:d, reseaux:noms, ref:ti, texte:tx, lien:L._||''})) return non('Ligne introuvable');
+    }
+    closeModal('modal-cxpub-edit'); PE=null; PUB.add=false; pubRender();
+    try{ if(st.mode==='cav'){ cxRefresh(); } }catch(e){}
+    if(window.toast) toast(st.mode==='new'?'📣 Publication ajoutée — '+noms.join(', '):'✓ Publication modifiée — '+noms.join(', '));
+    try{ if(window.achLog) achLog(st.mode==='new'?'ajout':'modification','Communication','publication du '+d.split('-').reverse().join('/')+' '+(st.mode==='new'?'ajoutée':'corrigée')+' ('+noms.join(', ')+')'); }catch(e){}
   };
   window.cxPubDel=function(mid){ if(!confirm('Retirer cette publication ?')) return; var a=lsArr(PUBM_K); a.forEach(function(m){ if(m&&m.id===mid) m.del=1; }); lsSet(PUBM_K,a); pubRender(); };
   window.cxPubLink=function(cid,net){ var o=cavById(cid); if(!o) return; var k=(net&&NETS[net])?net:(pubNetsOf(o)[0]||netOf(prop(o.src||o.id),o)); var v=prompt('Lien de la publication sur '+NETS[k][0]+' :', pubLinks(o)[k]||''); if(v===null) return; cxPubLien(cid, v, k); pubRender(); };
@@ -29552,15 +29662,16 @@ details.cx-more{margin-top:8px;} details.cx-more>summary{font-size:11.5px;color:
         :((x.titre&&txKey(x.txt).indexOf(txKey(x.titre).slice(0,30))!==0)?'<div class="cx-ptt">'+esc(x.titre)+'</div>':'')+'<div class="cx-pt" onclick="cxPubTxt(this)" title="Déplier / replier">'+esc(x.txt||'(sans texte)')+'</div>'+(x.type&&x.type!=='post'?'<div class="cx-ps">'+esc(x.type)+'</div>':'');
       function num(v){ return (isM&&v!=null)?'<b>'+n(v)+'</b>':'<span class="cx-na">—</span>'; }
       /* v12.17 : post publié sur plusieurs réseaux → un lien par réseau (« Instagram ↗ », « Facebook ↗ ») ; un réseau sans lien → « 🔗 Lien Facebook » (Laurent) */
-      var _multi=!!(x.cav&&x.urls&&(x.nets||[]).length>1);
+      var _multi=!!((x.cav||x.man)&&x.urls&&(x.nets||[]).length>1);   /* v12.62 : aussi pour les publications ajoutées à la main */
       var _vis=_multi?((!isAll&&x.nets.indexOf(k)>=0)?[k].concat(x.nets.filter(function(n){ return n!==k; })):x.nets):[];
-      var acts=(_multi?_vis.map(function(n){ return x.urls[n]?'<a href="'+esc(x.urls[n])+'" target="_blank" rel="noopener" title="Ouvrir la publication sur '+esc(NETS[n][0])+'">'+esc(NETS[n][0])+' ↗</a>':(isGerant()?'<button onclick="cxPubLink(\''+esc(x.cav)+'\',\''+n+'\')" title="Ajouter le lien de la publication sur '+esc(NETS[n][0])+'">🔗 Lien '+esc(NETS[n][0])+'</button>':''); }).join('')
+      var acts=(_multi?_vis.map(function(n){ return x.urls[n]?'<a href="'+esc(x.urls[n])+'" target="_blank" rel="noopener" title="Ouvrir la publication sur '+esc(NETS[n][0])+'">'+esc(NETS[n][0])+' ↗</a>':((x.cav&&isGerant())?'<button onclick="cxPubLink(\''+esc(x.cav)+'\',\''+n+'\')" title="Ajouter le lien de la publication sur '+esc(NETS[n][0])+'">🔗 Lien '+esc(NETS[n][0])+'</button>':''); }).join('')
         :(x.url?'<a href="'+esc(x.url)+'" target="_blank" rel="noopener">Ouvrir ↗</a>':(x.cav&&isGerant()?'<button onclick="cxPubLink(\''+esc(x.cav)+'\')">🔗 Lien</button>':(x.reg&&isGerant()?'<button onclick="cxPubRegLink(\''+esc(x.reg)+'\')">🔗 Lien</button>':''))))
         +(x.cav?'<button onclick="cxOpen(\'cav\',\''+esc(x.cav)+'\');commSwitch(\'mix\')">Voir le post</button>':'')
         +(x.app?'<button onclick="cxPubGo(\'appart\')">Tableau</button>':'')
         +(x.app&&isGerant()?'<button onclick="cxPubEdito(\''+esc(x.app)+'\',1)" title="Ce n’est pas un appartement : le classer comme post réseaux">📣 C’est un post</button>':'')
         +(x.reg&&!x.cav&&isGerant()?'<button onclick="cxPubEdito(\''+esc(x.reg)+'\',0)" title="Le remettre dans le tableau Appartements">🏠</button>':'')
         /* v12.14 : bouton « 💡 Idée » retiré (jugé inutile par Laurent, 30/10) — cxPubIdee reste disponible */
+        +((x.man||x.cav||x.reg)&&isGerant()?'<button class="cx-edit" onclick="cxPubEdit(\''+esc(x.id)+'\')" title="Corriger cette publication : date, réseaux, texte, liens">✏️ Modifier</button>':'')   /* v12.62 */
         +(x.man&&isGerant()?'<button onclick="cxPubDel(\''+esc(x.man)+'\')" title="Retirer">✕</button>':'');
       return '<tr class="cx-row'+(isA?' app':'')+'"><td class="cx-td-th">'+thumb+'</td><td class="cx-td-d">'+esc(frD(x.d))+'</td><td class="cx-td-n">'+tagsHtml(x,k)+'</td><td class="cx-td-p">'+cell+'</td><td class="cx-td-k">'+num(x.likes)+'</td><td class="cx-td-k">'+num(x.com)+'</td><td class="cx-td-k">'+num(x.reach)+'</td><td class="cx-td-s">'+srcLbl(x)+'</td><td class="cx-td-a"><div class="cx-acts">'+acts+'</div></td></tr>';
     }
@@ -29650,7 +29761,7 @@ details.cx-more{margin-top:8px;} details.cx-more>summary{font-size:11.5px;color:
   window.cxRole=cxRole; cxRole();
   if(window.cavRender){ var _crR=window.cavRender; window.cavRender=function(){ cxRole(); return _crR.apply(this,arguments); }; }
   if(window.setRole){ var _srR=window.setRole; window.setRole=function(){ var x=_srR.apply(this,arguments); cxRole(); try{ if(window.cavRender) cavRender(); }catch(e){} return x; }; }
-  if(window.commAdd){ var _ca=window.commAdd; window.commAdd=function(){ if(window._commTabCur==='pub'&&PUB.net!=='appart'){ if(!isGerant()){ if(window.toast) toast('Réservé aux gérants'); return; } PUB.add=true; pubRender(); try{ document.getElementById('cx-pa-t').focus(); }catch(e){} return; } return _ca.apply(this,arguments); }; }
+  if(window.commAdd){ var _ca=window.commAdd; window.commAdd=function(){ if(window._commTabCur==='pub'&&PUB.net!=='appart'){ if(!isGerant()){ if(window.toast) toast('Réservé aux gérants'); return; } cxPubNew(); return; }   /* v12.62 */ return _ca.apply(this,arguments); }; }
   if(window.commInit){ var _ci=window.commInit; window.commInit=function(){ var keep=PUB.net; var x=_ci.apply(this,arguments); PUB.net=keep; try{ if(window._commTabCur==='pub') pubRender(); }catch(e){} return x; }; }
   window.addEventListener('storage', function(e){ if(!e||!e.key) return; if([CAV_K,ECART_K,PRET_K,AVIS_K,PUBM_K,RSP_K,RSM_K,REF_K].indexOf(e.key)<0) return; try{ if(window._commTabCur==='pub') pubRender(); if(CX.kind){ cxRefresh(); } cxBadges(); }catch(x){} });
   if(window.setRole){ var _sr=window.setRole; window.setRole=function(r,btn){ var x=_sr.apply(this,arguments); try{ if(CX.kind) cxRefresh(); else { var b=box(); if(b){ parkAsk(); b.innerHTML=emptyHtml(); mountAsk(); } } if(window._commTabCur==='pub') pubRender(); }catch(e){} return x; }; }
