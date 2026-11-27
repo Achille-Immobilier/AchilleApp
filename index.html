@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<meta name="ach-version" content="v12.65">
+<meta name="ach-version" content="v12.66">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <!-- v12.65 : l'application s'installe sur l'écran d'accueil (icône + plein écran). Pas de service worker : aucune copie en cache. -->
 <script>/* le fichier « manifest » (Android) n'est déclaré que sur téléphone ou tablette : sur ordinateur, strictement rien ne change, pas même l'icône « installer » du navigateur */
@@ -1861,7 +1861,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     </div>
   </div>
   </div>
-  <div class="logo-ver app-ver">Achille App — v12.65</div>
+  <div class="logo-ver app-ver">Achille App — v12.66</div>
 </aside>
 <div id="mob-bk" onclick="mobNav(false)"></div>
 <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Réduire la barre latérale">‹</button>
@@ -9186,6 +9186,7 @@ CABLE|1|Villa Nova|48.73478|2.46475`;
     var ws=planWeekStart(planDate);
     var days=[]; for(var i=0;i<7;i++) days.push(planAddDays(ws,i));
     var _dayMode=(planView==='day');   /* v11.55 : vue Jour = la grille de la semaine réduite à un jour */
+    var _mobJ=_dayMode && planMob(), HH=_mobJ?64:48;   /* v12.66 : sur téléphone, en vue Jour, une heure fait 64 px (texte plus gros, rien de coupé) */
     if(_dayMode) days=[new Date(planDate.getFullYear(),planDate.getMonth(),planDate.getDate())];
     try{ var _pc=document.getElementById('plan-cal'); if(_pc) _pc.classList.toggle('day-mode', _dayMode); }catch(e){}
     var events=planViewEvents();
@@ -9193,7 +9194,7 @@ CABLE|1|Villa Nova|48.73478|2.46475`;
     var HOURS=[];
     for(var h=8;h<21;h++) HOURS.push(h);
 
-    var hdr='<div class="week-grid'+(_dayMode?' day-mode':'')+'"><div class="week-header"><div class="week-header-time"></div>';
+    var hdr='<div class="week-grid'+(_dayMode?' day-mode':'')+(_mobJ?' mob-j':'')+'"><div class="week-header"><div class="week-header-time"></div>';
     days.forEach(function(d){
       var num='<div class="week-day-num'+(planIsToday(d)?' today':'')+'">'+d.getDate()+'</div>';
       hdr+='<div class="week-header-day"><div class="week-day-name">'+['Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi','Dimanche'][d.getDay()===0?6:d.getDay()-1]+'</div>'+num+'</div>';  /* v7.44 : jours en entier */
@@ -9250,8 +9251,8 @@ CABLE|1|Villa Nova|48.73478|2.46475`;
         var sm=parseInt((e.timeStart||'08:00').split(':')[1]||0);
         var eh=parseInt((e.timeEnd||'09:00').split(':')[0]);
         var em=parseInt((e.timeEnd||'09:00').split(':')[1]||0);
-        var top=((sh-8)*48)+(sm/60*48);
-        var dur=Math.max(24,((eh-sh)*60+(em-sm))/60*48);
+        var top=((sh-8)*HH)+(sm/60*HH);
+        var dur=Math.max(HH/2,((eh-sh)*60+(em-sm))/60*HH);
         var t=PLAN_TYPES[e.type]||PLAN_TYPES.visite;
         var col=e.users.length===1?(PLAN_USERS.find(function(u){return u.id===e.users[0];})||{}).color||t.cls.replace('et-','#'):'';
         var _w=100/p.n, _lx=p.lane*_w;
@@ -9260,11 +9261,12 @@ CABLE|1|Villa Nova|48.73478|2.46475`;
         hdr+='<div class="cal-event '+t.cls+(e._cls||'')+(masked?' et-maskblock':'')+'" style="'+style+'"'+(!masked&&(e.adresse||e.visiteur||e.proprio||e.objet)?' title="'+escH([e.visiteur,e.proprio,e.adresse,e.objet].filter(Boolean).join(' · '))+'"':'')+' onclick="'+(masked?'planPrivateInfo(event)':'planEditEvent(\''+e.id+'\')')+'">';
         /* v12.20 : créneau court (30 min) → l'heure sur la même ligne que le titre, sinon elle serait coupée */
         var _tm=(e.timeStart||'')+(e.timeEnd?' – '+e.timeEnd:'');
-        if(dur<40){ hdr+='<div class="cal-event-title">'+(masked?'🔒 Privé':(t.icon+' '+escH(e.title)))+' <span style="font-weight:400;opacity:.75;font-size:10px">'+_tm+'</span></div>'; }
+        if(dur<40 && _mobJ){ hdr+='<div class="cal-event-title"><span class="mj-h">'+escH(e.timeStart||'')+'</span>'+(masked?'🔒 Privé':(t.icon+' '+escH(e.title)))+'</div>'; }   /* v12.66 : téléphone — l'heure devant, elle n'est plus coupée */
+        else if(dur<40){ hdr+='<div class="cal-event-title">'+(masked?'🔒 Privé':(t.icon+' '+escH(e.title)))+' <span style="font-weight:400;opacity:.75;font-size:10px">'+_tm+'</span></div>'; }
         else { hdr+='<div class="cal-event-title">'+(masked?'🔒 Privé':(t.icon+' '+escH(e.title)))+'</div>';
         hdr+='<div class="cal-event-time">'+_tm+'</div>'; }
         var _sub=[e.visiteur,e.proprio].filter(Boolean).join(' · ')||(e.type==='notaire'||e.type==='relance'?(e.objet||''):'');
-        if(!masked&&_sub&&dur>=46) hdr+='<div class="cal-event-adr">👤 '+escH(_sub)+'</div>';   /* v12.20 */
+        if(!masked&&_sub&&dur>=(_mobJ?60:46)) hdr+='<div class="cal-event-adr">👤 '+escH(_sub)+'</div>';   /* v12.20 */
         hdr+='</div>';
       });
       hdr+='</div>';
@@ -9312,6 +9314,45 @@ CABLE|1|Villa Nova|48.73478|2.46475`;
     cal.innerHTML=h;
   }
 
+  /* ══ v12.66 (Laurent 27/11) : « un planning très clair » sur téléphone — même visuel, tout à l'écran.
+     planMob() est faux sur ordinateur : aucune de ces lignes n'y change quoi que ce soit. ══ */
+  function planMob(){ try{ return !!(window.matchMedia && window.matchMedia('(max-width:880px)').matches); }catch(e){ return false; } }
+  window.planMob=planMob;
+  var _planCalSig='';
+  /* À l'arrivée sur une vue ou une période : on montre ce qui compte (l'heure qu'il est, la colonne d'aujourd'hui,
+     le jour d'aujourd'hui dans la Liste). Jamais lors d'un simple ré-affichage : l'écran ne saute pas pendant qu'on lit. */
+  function planMobCaler(){
+    try{
+      if(!planMob()) return;
+      var pg=document.getElementById('page-planning'); if(!pg || !pg.classList.contains('active')) return;
+      var sig=planView+'|'+planFmt(planDate); if(sig===_planCalSig) return; _planCalSig=sig;
+      var auj=planFmt(new Date());
+      if(planView==='list'){
+        var li=document.getElementById('plan-list'); if(!li) return;
+        var hs=li.querySelectorAll('[data-pd]'), cible=null;
+        for(var i=0;i<hs.length;i++){ if(hs[i].getAttribute('data-pd')>=auj){ cible=hs[i]; break; } }
+        li.scrollTop = cible ? Math.max(0, cible.getBoundingClientRect().top - li.getBoundingClientRect().top + li.scrollTop - 4) : 0;
+        return;
+      }
+      var cal=document.getElementById('plan-cal'); if(!cal) return;
+      var cr=cal.getBoundingClientRect();
+      if(planView==='month'){
+        var mc=cal.querySelector('.month-cell.today');
+        if(mc){ var mr=mc.getBoundingClientRect(); cal.scrollLeft=Math.max(0, mr.left-cr.left+cal.scrollLeft-8); cal.scrollTop=Math.max(0, mr.top-cr.top+cal.scrollTop-44); }
+        else { cal.scrollLeft=0; cal.scrollTop=0; }
+        return;
+      }
+      var grid=cal.querySelector('.week-time-grid'); if(!grid) return;
+      var jour=(planView==='day'), HH=jour?64:48, col=cal.querySelector('.week-day-col[data-date="'+auj+'"]'), min=null;
+      if(col){ var n=new Date(); min=n.getHours()*60+n.getMinutes()-60; }
+      else { cal.querySelectorAll('.cal-event').forEach(function(e){ var t=parseFloat(e.style.top); if(!isNaN(t)){ var m=480+t/HH*60-30; if(min===null || m<min) min=m; } }); }
+      if(min===null || min<=480){ cal.scrollTop=0; }
+      else { min=Math.min(min, 17*60); var entete=jour?0:64;
+        cal.scrollTop=Math.max(0, grid.getBoundingClientRect().top-cr.top+cal.scrollTop + (min-480)/60*HH - entete); }
+      cal.scrollLeft = (!jour && col) ? Math.max(0, col.getBoundingClientRect().left-cr.left+cal.scrollLeft-52) : 0;
+    }catch(e){ window.achErr&&achErr(e); }
+  }
+  window.planMobCaler=planMobCaler;
   function planRender(){
     planPrivMigrate();
     planFetesBtn();   /* v8.52 */
@@ -9324,6 +9365,7 @@ CABLE|1|Villa Nova|48.73478|2.46475`;
     else if(planView==='month') planRenderMonth();
     else planRenderList();
     planRenderTodos();
+    planMobCaler();   /* v12.66 : téléphone seulement */
   }
   window.planRender=planRender;
 
@@ -9331,7 +9373,9 @@ CABLE|1|Villa Nova|48.73478|2.46475`;
     var el = document.getElementById('plan-list');
     if(!el) return;
     var allEvs = planViewEvents();
+    var _mobL=planMob(), _aujL=planFmt(new Date());   /* v12.66 : sur téléphone, la Liste affiche l'heure, classe par heure et dit qui y va */
     var evs = allEvs.slice().sort(function(a,b){
+      if(_mobL) return (a.date+' '+(a.allDay?'00:00':(a.heure||a.timeStart||'00:00'))).localeCompare(b.date+' '+(b.allDay?'00:00':(b.heure||b.timeStart||'00:00')));   /* v12.66 */
       return (a.date+' '+(a.heure||'00:00')).localeCompare(b.date+' '+(b.heure||'00:00'));
     });
     if(!evs.length){ el.innerHTML='<div style="text-align:center;padding:40px;color:var(--gris-2);font-family:Jost,sans-serif;font-size:14px;">Aucun événement</div>'; return; }
@@ -9349,7 +9393,7 @@ CABLE|1|Villa Nova|48.73478|2.46475`;
       var d = new Date(ev.date+'T12:00:00');
       var dateStr = d.toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
       if(ev.date !== lastDate){
-        html += '<div style="font-family:Cormorant Garamond,serif;font-size:15px;font-weight:600;color:var(--terra);margin:18px 0 8px;border-bottom:1px solid var(--beige-3);padding-bottom:4px;text-transform:capitalize;">'+dateStr+planFetesListMark(ev.date)+'</div>';   /* v8.52 */
+        html += '<div'+(_mobL?' data-pd="'+ev.date+'"':'')+' style="font-family:Cormorant Garamond,serif;font-size:'+(_mobL?17:15)+'px;font-weight:600;color:var(--terra);margin:18px 0 8px;border-bottom:1px solid var(--beige-3);padding-bottom:4px;text-transform:capitalize;">'+dateStr+((_mobL&&ev.date===_aujL)?'<span class="pl-auj">Aujourd’hui</span>':'')+planFetesListMark(ev.date)+'</div>';   /* v8.52 */
         lastDate = ev.date;
       }
       var type = ev.type||'';
@@ -9374,12 +9418,15 @@ CABLE|1|Villa Nova|48.73478|2.46475`;
         + '<span style="font-family:Jost,sans-serif;font-size:14px;font-weight:600;color:var(--noir);">'+escH(ev.title||'Sans titre')+'</span>'
         + (statBadge ? statBadge : '')
         + '</div>'
-        + (ev.heure ? '<div style="font-size:12px;color:var(--gris-2);margin-top:3px;">🕐 '+escH(ev.heure)+(ev.heureFin?' → '+escH(ev.heureFin):'')+'</div>' : '')
+        + (_mobL ? (function(){ var h1=ev.allDay?'':(ev.heure||ev.timeStart||''), h2=ev.allDay?'':(ev.heureFin||ev.timeEnd||''); return ev.allDay ? '<div class="pl-h">Toute la journée</div>' : (h1 ? '<div class="pl-h">🕐 '+escH(h1)+(h2?' → '+escH(h2):'')+'</div>' : ''); })()
+                  : (ev.heure ? '<div style="font-size:12px;color:var(--gris-2);margin-top:3px;">🕐 '+escH(ev.heure)+(ev.heureFin?' → '+escH(ev.heureFin):'')+'</div>' : ''))
         + ((ev.lieu||ev.adresse) ? '<div style="font-size:12px;color:var(--gris-2);">📍 '+escH(ev.lieu||ev.adresse)+'</div>' : '')
         + ((ev.visiteur||ev.proprio) ? '<div style="font-size:12px;color:var(--gris-2);">👤 '+escH([ev.visiteur,ev.proprio].filter(Boolean).join(' · '))+'</div>' : '')
         + (ev.contact ? '<div style="font-size:12px;color:var(--gris-2);">👤 '+escH(ev.contact)+'</div>' : '')
         + '</div>'
-        + '<div style="font-size:12px;color:var(--gris-2);white-space:nowrap;">'+(ev.user||'')+'</div>'
+        + (_mobL ? '<div class="pl-q">'+(function(){ var us=Array.isArray(ev.users)?ev.users:[]; if(us.length>=4 && PLAN_USERS.length && us.length>=PLAN_USERS.length) return '<i style="background:#1a1a18;">tous</i>';
+                      return us.map(function(u){ var pu=PLAN_USERS.find(function(x){ return x.id===u; }); if(!pu) return ''; var ini=(window.ROLES&&window.ROLES[u]&&window.ROLES[u].initials)||pu.name.split(' ').map(function(w){ return w.charAt(0); }).join('').slice(0,2).toUpperCase(); return '<i style="background:'+pu.color+';" title="'+escH(pu.name)+'">'+escH(ini)+'</i>'; }).join(''); })()+'</div>'
+                  : '<div style="font-size:12px;color:var(--gris-2);white-space:nowrap;">'+(ev.user||'')+'</div>')
         + '</div>';
     });
     el.innerHTML = html;
@@ -10203,7 +10250,7 @@ CABLE|1|Villa Nova|48.73478|2.46475`;
   function planInit(){
     /* v11.26 : on arrive TOUJOURS sur la période qui contient aujourd'hui (demande Laurent
        14/10) — avant, le planning gardait la semaine/le mois consulté précédemment. */
-    planDate=new Date();
+    planDate=new Date(); _planCalSig='';   /* v12.66 : à chaque arrivée, la grille du téléphone se recale sur maintenant */
     /* v11.55 : sur téléphone, on arrive sur la vue Jour (la semaine à 7 colonnes ne tenait pas, aujourd'hui était hors écran) */
     try{ if(!window._planViewChoisie && window.innerWidth<=880 && planView==='week'){ planView='day';
       document.querySelectorAll('.plan-view-btn').forEach(function(b){ b.classList.remove('active'); });
@@ -14986,7 +15033,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     try{ _it_boot(); }catch(e){}   /* v12.52 */
     var ov=document.getElementById('ach-login-overlay'); if(ov) ov.classList.add('ach-hidden');
     var ub=document.getElementById('ach-userbar'); if(ub) ub.style.display='none';
-    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v12.65';
+    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v12.66';
     flag('Synchronis\u00e9');
     // fin de l'init : on autorise la journalisation des actions
     setTimeout(function(){ installInterceptor._init=false; }, 1500);
@@ -27467,6 +27514,49 @@ body.pi-grabbing *{user-select:none!important;}
   .plan-cal{min-height:380px;}
   .plan-cal > *{min-width:760px;}
   .plan-cal.day-mode > *{min-width:0!important;}   /* v11.55 : vue Jour sans défilement horizontal */
+  /* ── v12.66 : planning très clair sur téléphone (même visuel, tout à l'écran) ── */
+  #page-planning .plan-toolbar{flex-wrap:wrap!important;overflow:visible!important;gap:7px 8px;padding:8px 10px;}
+  #page-planning .plan-toolbar .plan-nav-btn{width:38px;height:38px;flex-shrink:0;font-size:15px;}
+  #page-planning .plan-toolbar .plan-period{flex:1 1 0;min-width:0!important;font-size:19px;line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  #page-planning .plan-toolbar .plan-today-btn{height:38px;padding:0 12px;font-size:13.5px;flex-shrink:0;}
+  #page-planning .plan-toolbar .plan-view-toggle{order:5;flex:1 1 220px!important;min-width:0;}
+  #page-planning .plan-toolbar .plan-view-btn{flex:1 1 0;min-width:0;padding:0 2px;height:38px;font-size:13.5px;}
+  #page-planning .plan-toolbar .plan-add-btn:not(.plan-ro-btn){order:6;margin-left:0!important;height:38px;padding:0 12px;font-size:13.5px;flex-shrink:0;}
+  #page-planning .plan-toolbar > div[style*="width:1px"]{display:none;}
+  #page-planning .plan-toolbar .plan-users{order:7;flex:1 0 100%!important;flex-wrap:nowrap;overflow-x:auto;gap:5px;scrollbar-width:none;-webkit-overflow-scrolling:touch;}
+  #page-planning .plan-toolbar .plan-users::-webkit-scrollbar{display:none;}
+  #page-planning .plan-toolbar .plan-user-chip{font-size:12px;padding:0 9px;min-height:34px;flex-shrink:0;white-space:nowrap;}
+  #page-planning .plan-toolbar .plan-ro-btn{order:8;margin-left:0!important;height:36px;padding:0 12px;font-size:13px;flex-shrink:0;}
+  #page-planning .plan-toolbar .plan-fetes-btn{order:9;height:36px;font-size:13px;flex-shrink:0;}
+  /* petits téléphones : la date garde sa place (« Aujourd'hui » descend d'une ligne), boutons un peu plus serrés */
+  @media (max-width:380px){ #page-planning .plan-toolbar .plan-period{font-size:17px;} }
+  @media (max-width:360px){
+    #page-planning .plan-toolbar{gap:6px 6px;padding:7px 10px;}
+    #page-planning .plan-toolbar .plan-view-toggle{flex:1 0 100%!important;}
+    #page-planning .plan-toolbar .plan-nav-btn{width:36px;height:36px;}
+    #page-planning .plan-toolbar .plan-view-btn{height:36px;}
+    #page-planning .plan-toolbar .plan-today-btn{order:6;height:36px;padding:0 9px;font-size:12.5px;}
+    #page-planning .plan-toolbar .plan-add-btn:not(.plan-ro-btn){order:6;height:36px;padding:0 9px;font-size:12.5px;}
+    #page-planning .plan-toolbar .plan-ro-btn{order:6;height:36px;padding:0 9px;font-size:12.5px;}
+    #page-planning .plan-toolbar .plan-fetes-btn{order:8;height:34px;font-size:12.5px;}
+  }
+  /* vue Jour : heures plus hautes, texte plus gros ; le rappel du jour en tête de grille fait doublon avec la barre */
+  .week-grid.mob-j .week-header{display:none;}
+  .week-grid.mob-j .week-hour-slot,.week-grid.mob-j .week-time-label{height:64px;}
+  .week-grid.mob-j .week-half-slot{height:32px;}
+  .week-grid.mob-j .week-time-label{font-size:12px;}
+  .week-grid.mob-j .cal-event{font-size:13.5px;padding:4px 9px;line-height:1.25;border-radius:7px;}
+  .week-grid.mob-j .cal-event-time{font-size:12px;opacity:.9;}
+  .week-grid.mob-j .cal-event-adr{font-size:12px;}
+  .week-grid.mob-j .cal-event .mj-h{font-weight:700;margin-right:5px;}
+  /* vue Semaine : la colonne des heures reste en place quand on glisse vers la droite */
+  .plan-cal:not(.day-mode) .week-time-col,.plan-cal:not(.day-mode) .week-allday-time{position:sticky;left:0;z-index:5;background:var(--beige);}
+  .plan-cal:not(.day-mode) .week-header-time{position:sticky;left:0;z-index:11;background:var(--blanc);}
+  /* vue Liste : l'heure bien visible, qui y va */
+  #plan-list .pl-h{font-size:13.5px;font-weight:600;color:var(--noir);margin-top:3px;}
+  #plan-list .pl-q{display:flex;gap:3px;flex-shrink:0;}
+  #plan-list .pl-q i{font-style:normal;min-width:24px;height:24px;border-radius:12px;padding:0 4px;box-sizing:border-box;color:#fff;font:600 10.5px 'Jost',sans-serif;display:flex;align-items:center;justify-content:center;}
+  #plan-list .pl-auj{font-family:'Jost',sans-serif;font-size:10.5px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;background:var(--terra);color:#fff;border-radius:10px;padding:2px 8px;margin-left:8px;vertical-align:2px;}
   .plan-todo{width:100%!important;max-width:none!important;}
   /* ── Post-its : colonnes empilées ── */
   .pi-cols{flex-direction:column;overflow-y:auto;}
