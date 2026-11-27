@@ -1805,7 +1805,7 @@ document.addEventListener('DOMContentLoaded',function(){ window.numFmtAll(); });
     </div>
   </div>
   </div>
-  <div class="logo-ver app-ver">Achille App — v12.62</div>
+  <div class="logo-ver app-ver">Achille App — v12.63</div>
 </aside>
 <div id="mob-bk" onclick="mobNav(false)"></div>
 <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Réduire la barre latérale">‹</button>
@@ -3351,7 +3351,7 @@ table.es-t td.del button{border:none;background:none;color:var(--gris-2);cursor:
         <!-- v8.22 : titre retiré (déjà dans le bandeau du haut) — la barre de recherche gagne toute la largeur -->
         <div class="sect-search-wrap" style="position:relative;">
           <input class="sect-search" id="sect-input" type="text" placeholder="Ex : 115 Avenue Achille Peretti, Neuilly-sur-Seine" onkeydown="if(event.key==='Enter'){sectHideAC();sectGo();}else if(event.key!=='ArrowDown'&&event.key!=='ArrowUp')sectAutocomplete(this.value)" oninput="sectAutocomplete(this.value)" autocomplete="off">
-          <div id="sect-ac-list" style="position:absolute;top:100%;left:0;right:0;background:#fff;border:1px solid var(--gris-1);border-radius:0 0 6px 6px;z-index:9999;max-height:220px;overflow-y:auto;display:none;box-shadow:0 4px 12px rgba(0,0,0,.1);"></div><button class="sect-btn" id="sect-btn" onclick="sectHideAC();sectGo()">Rechercher</button> </div><button class="sect-link-btn" onclick="sectOpenMaps()" title="Ouvrir l'adresse dans Google Maps">📍 Google Maps</button><a class="sect-link-btn" href="https://www.meilleursagents.com/prix-immobilier/" target="_blank" rel="noopener" onclick="sectCopyAddr()" title="Prix au m² par quartier (MeilleursAgents)">📈 MeilleursAgents</a><button class="sect-link-btn" onclick="sectOpenPappers()" title="Carte des prix de l'immobilier (Pappers)">🗺️ Pappers Immo</button><button class="sect-link-btn" onclick="sectOpenIDFM()" title="Plan des transports autour de l'adresse — Île-de-France Mobilités (adresse copiée, à coller)">🚇 Transports (IDFM)</button>
+          <div id="sect-ac-list" style="position:absolute;top:100%;left:0;right:0;background:#fff;border:1px solid var(--gris-1);border-radius:0 0 6px 6px;z-index:9999;max-height:220px;overflow-y:auto;display:none;box-shadow:0 4px 12px rgba(0,0,0,.1);"></div><button class="sect-btn" id="sect-btn" onclick="sectHideAC();sectGo()">Rechercher</button> </div><button class="sect-link-btn" onclick="sectOpenMaps()" title="Ouvrir l'adresse dans Google Maps">📍 Google Maps</button><a class="sect-link-btn" href="https://www.meilleursagents.com/prix-immobilier/" target="_blank" rel="noopener" onclick="sectCopyAddr()" title="Prix au m² par quartier (MeilleursAgents)">📈 MeilleursAgents</a><button class="sect-link-btn" onclick="sectOpenPappers()" title="Carte des prix de l'immobilier (Pappers)">🗺️ Pappers Immo</button><button class="sect-link-btn" id="sect-gabin-btn" onclick="sectOpenGabin()" title="Carte des bâtiments : propriétaires (sociétés), syndic, copropriété, DPE, permis, ventes (Gabin)">🏢 Gabin</button><button class="sect-link-btn" onclick="sectOpenIDFM()" title="Plan des transports autour de l'adresse — Île-de-France Mobilités (adresse copiée, à coller)">🚇 Transports (IDFM)</button>
        
         </div>
       <!-- v12.19 : adresses récentes (partagées entre les postes) — demande Laurent 04/11 -->
@@ -6516,6 +6516,14 @@ table.es-t td.del button{border:none;background:none;color:var(--gris-2);cursor:
     var url = ll ? ('https://immobilier.pappers.fr/?lat='+(+ll.lat).toFixed(6)+'&lon='+(+ll.lon).toFixed(6)+'&z=15.00')
                  : 'https://immobilier.pappers.fr/?lat=46.450000&lon=-0.830000&z=5.00';
     window.open(url,'_blank','noopener');
+  };
+  /* v12.63 : Gabin — carte des bâtiments ouverte SUR l'adresse cherchée (zoom immeuble). Sans adresse cherchée : la carte générale,
+     avec l'adresse saisie copiée pour la coller dans leur recherche. */
+  window.sectOpenGabin=function(){
+    var ll=window.__sectLL;
+    if(ll && isFinite(+ll.lat) && isFinite(+ll.lon)){ window.open('https://gabin.ai/carte#18/'+(+ll.lat).toFixed(6)+'/'+(+ll.lon).toFixed(6),'_blank','noopener'); return; }
+    var el=document.getElementById('sect-input'); if(el && el.value.trim()) sectCopyAddr();
+    window.open('https://gabin.ai/carte','_blank','noopener');
   };
   window.sectOpenMaps=function(){
     var el=document.getElementById('sect-input');
@@ -14921,7 +14929,7 @@ window.downloadProspection=function(){var url=_prospBlobUrl();var a=document.cre
     try{ _it_boot(); }catch(e){}   /* v12.52 */
     var ov=document.getElementById('ach-login-overlay'); if(ov) ov.classList.add('ach-hidden');
     var ub=document.getElementById('ach-userbar'); if(ub) ub.style.display='none';
-    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v12.62';
+    var verEl=document.querySelector('.logo-ver'); if(verEl) verEl.textContent='v12.63';
     flag('Synchronis\u00e9');
     // fin de l'init : on autorise la journalisation des actions
     setTimeout(function(){ installInterceptor._init=false; }, 1500);
