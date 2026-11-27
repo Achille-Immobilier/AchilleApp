@@ -1,0 +1,6 @@
+# Essai du 27/11/2026 (grande revue) : faire revenir l'empreinte « ETag » sur les pages HTML, que Cloudflare retire aujourd'hui,
+# pour que le navigateur ne re-télécharge plus une page inchangée. Ces règles ne concernent QUE deux pages d'essai.
+/essai-cache-a
+  ETag: "e8b6c67bceb23957cfd8a17585e1f0fc"
+/essai-cache-b
+  Cache-Control: no-transform
